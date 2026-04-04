@@ -1,6 +1,7 @@
-[gd_scene load_steps=20 format=3 uid="uid://bw45043vija8o"]
+[gd_scene load_steps=21 format=3 uid="uid://bw45043vija8o"]
 
 [ext_resource type="PackedScene" uid="uid://btjx4a4g25xj3" path="res://scenes/network/multiplayer_manager.tscn" id="1_jlwa7"]
+[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="debug_overlay"]
 [ext_resource type="PackedScene" uid="uid://cys03q34jt762" path="res://scenes/menus/in_game_menu.tscn" id="2_u1u8q"]
 [ext_resource type="Shape3D" uid="uid://b3p7215rpyj7p" path="res://scenes/world/env/BOUNDRY.tres" id="3_amemp"]
 [ext_resource type="PackedScene" uid="uid://deukdfofsqitg" path="res://assets/world/env/grass.glb" id="4_32jgm"]
@@ -197,6 +198,8 @@ transform = Transform3D(-1, 0, 2.98023e-08, 0, 1, 0, -2.98023e-08, 0, -1, -24.5,
 transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, -25.7312, 0, -27.1481)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="DebugOverlay" parent="CanvasLayer" instance=ExtResource("debug_overlay")]
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
 visible = false

@@ -12,7 +12,7 @@ const SERVER_PORT = 8080
 
 func create_server_peer(network_connection_configs: NetworkConnectionConfigs):
 	var enet_network_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	enet_network_peer.create_server(SERVER_PORT)
+	enet_network_peer.create_server(SERVER_PORT, GameConstants.MAX_PLAYERS)
 	multiplayer.multiplayer_peer = enet_network_peer
 
 func create_client_peer(network_connection_configs: NetworkConnectionConfigs):

@@ -15,9 +15,11 @@ dest_files=["res://.godot/imported/Floor_2x2.fbx-091bc5b776da2aa7ae7576e94472bf3
 
 nodes/root_type=""
 nodes/root_name=""
+nodes/root_script=null
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 nodes/import_as_skeleton_bones=false
+nodes/use_name_suffixes=true
 nodes/use_node_type_suffixes=true
 meshes/ensure_tangents=true
 meshes/generate_lods=true
@@ -32,6 +34,9 @@ animation/trimming=true
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
+materials/extract=0
+materials/extract_format=0
+materials/extract_path=""
 _subresources={
 "meshes": {
 "Cube_018": {
@@ -40,10 +45,12 @@ _subresources={
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/world/env/mod-castle/Floors&Ramps/Floors/Cube_018.res"
+"save_to_file/fallback_path": "res://assets/world/env/mod-castle/Floors&Ramps/Floors/Cube_018.res",
+"save_to_file/path": "uid://b7817hijbso6w"
 }
 }
 }
 fbx/importer=0
 fbx/allow_geometry_helper_nodes=false
 fbx/embedded_image_handling=1
+fbx/naming_version=1

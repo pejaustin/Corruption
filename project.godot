@@ -8,25 +8,29 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Corruption"
 run/main_scene="res://scenes/menus/main_menu.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/image="res://splash_screen.png"
 config/icon="res://bad_icon.png"
 
 [autoload]
 
 NetworkManager="*res://scripts/network/network_manager.gd"
-WindowTiler="*res://addons/netfox.extras/window-tiler.gd"
-Noray="*res://addons/netfox.noray/noray.gd"
-PacketHandshake="*res://addons/netfox.noray/packet-handshake.gd"
-NetworkTime="*res://addons/netfox/network-time.gd"
-NetworkTimeSynchronizer="*res://addons/netfox/network-time-synchronizer.gd"
-NetworkRollback="*res://addons/netfox/rollback/network-rollback.gd"
-NetworkEvents="*res://addons/netfox/network-events.gd"
-NetworkPerformance="*res://addons/netfox/network-performance.gd"
+WindowTiler="*uid://dry813s1vn4br"
+Noray="*uid://cqmaepyja1ddf"
+PacketHandshake="*uid://cg1b2yk7hyyw3"
+NetworkTime="*uid://b82hojojtqvl6"
+NetworkTimeSynchronizer="*uid://cx34badjjkubi"
+NetworkRollback="*uid://6g20o4bvvo0b"
+NetworkEvents="*uid://t0x3pwleunvb"
+NetworkPerformance="*uid://cd6jow8ff02im"
 
 [display]
 

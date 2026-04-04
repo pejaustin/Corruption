@@ -62,7 +62,7 @@ func _start_noray_host():
 	var err = OK
 	
 	var noray_network_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	err = noray_network_peer.create_server(Noray.local_port)
+	err = noray_network_peer.create_server(Noray.local_port, GameConstants.MAX_PLAYERS)
 	multiplayer.multiplayer_peer = noray_network_peer
 	
 	if err != OK:
