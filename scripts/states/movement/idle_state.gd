@@ -1,6 +1,8 @@
 extends MovementState
 
 func tick(delta, tick, is_fresh):
+	parent.velocity.x = 0
+	parent.velocity.z = 0
 	rotate_player_model(delta)
 	move_player(delta)
 	

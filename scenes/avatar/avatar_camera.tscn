@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_camera.gd" id="1_avcam"]
+
+[node name="AvatarCamera" type="Node3D" node_paths=PackedStringArray("camera_mount", "camera_rot", "camera_3d")]
+script = ExtResource("1_avcam")
+camera_mount = NodePath("CameraMount")
+camera_rot = NodePath("CameraMount/CameraRot")
+camera_3d = NodePath("CameraMount/CameraRot/Camera3D")
+
+[node name="CameraMount" type="Node3D" parent="."]
+
+[node name="CameraRot" type="Node3D" parent="CameraMount"]
+
+[node name="Camera3D" type="Camera3D" parent="CameraMount/CameraRot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 4)

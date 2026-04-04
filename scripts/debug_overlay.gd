@@ -43,15 +43,42 @@ func _process(delta: float):
 		lines.append("  %d = [color=#%s]%s[/color]" % [faction, color.to_html(false), name])
 	lines.append("")
 
+	# Game state
+	lines.append("[b]Game State[/b]")
+	if GameState.has_avatar():
+		var avatar_id = GameState.avatar_peer_id
+		var is_me = avatar_id == peer_id
+		lines.append("  Avatar Controller: %d%s" % [avatar_id, " (YOU)" if is_me else ""])
+	else:
+		lines.append("  Avatar: [color=#888888]dormant[/color]")
+
+	# Avatar entity info
+	var avatar_node = get_tree().current_scene.get_node_or_null("World/Avatar")
+	if avatar_node and avatar_node is Avatar:
+		var apos = avatar_node.global_position
+		lines.append("  Avatar Pos: (%.1f, %.1f, %.1f)" % [apos.x, apos.y, apos.z])
+		lines.append("  Avatar Dormant: %s" % str(avatar_node.is_dormant))
+	else:
+		lines.append("  Avatar Entity: [color=#ff4444]NOT FOUND[/color]")
+	lines.append("")
+
 	# Players in game
 	lines.append("[b]Players in Scene[/b]")
 	var spawn_point = get_tree().current_scene.get_node_or_null("World/PlayerSpawnPoint")
 	if spawn_point:
 		for child in spawn_point.get_children():
 			var pos = child.global_position if child is Node3D else Vector3.ZERO
-			lines.append("  %s — pos: (%.1f, %.1f, %.1f)" % [child.name, pos.x, pos.y, pos.z])
+			var label = child.name
+			if DebugManager.is_dummy(child.name.to_int()):
+				label += " (DUMMY)"
+			lines.append("  %s — pos: (%.1f, %.1f, %.1f)" % [label, pos.x, pos.y, pos.z])
 	else:
 		lines.append("  (no spawn point found)")
+	lines.append("")
+
+	# Debug info
+	lines.append("[b]Debug (F2 = add dummy)[/b]")
+	lines.append("  Dummy players: %d (slots open: %d)" % [DebugManager.get_dummy_count(), DebugManager.get_max_dummy_players()])
 	lines.append("")
 
 	# Performance

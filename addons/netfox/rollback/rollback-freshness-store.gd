@@ -4,6 +4,7 @@ class_name RollbackFreshnessStore
 ## This class tracks nodes and whether they have processed any given tick during
 ## a rollback.
 
+# TODO: _Set
 var _data: Dictionary = {}
 
 func is_fresh(node: Node, tick: int) -> bool:
@@ -15,12 +16,19 @@ func is_fresh(node: Node, tick: int) -> bool:
 	
 	return false
 
-func notify_processed(node: Node, tick: int):
+func notify_processed(node: Node, tick: int) -> void:
 	if not _data.has(tick):
 		_data[tick] = {}
 	
 	_data[tick][node] = true
 
-func trim():
-	while _data.size() > NetworkRollback.history_limit:
-		_data.erase(_data.keys().min())
+func trim() -> void:
+	while not _data.is_empty():
+		var earliest_tick := _data.keys().min()
+		if earliest_tick < NetworkRollback.history_start:
+			_data.erase(earliest_tick)
+		else:
+			break
+
+func clear():
+	_data.clear()

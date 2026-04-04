@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/interactibles/avatar_claim.gd" id="1_claim"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_area"]
+radius = 1.5
+height = 3.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_visual"]
+top_radius = 0.3
+bottom_radius = 0.5
+height = 1.2
+
+[node name="AvatarClaim" type="Area3D" node_paths=PackedStringArray("interact_prompt")]
+script = ExtResource("1_claim")
+interact_prompt = NodePath("Label3D")
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_area")
+
+[node name="Pedestal" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_visual")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+text = "Claim the Avatar"
+font_size = 32
+billboard = 1

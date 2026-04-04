@@ -14,40 +14,52 @@ var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var rollback_synchronizer = $RollbackSynchronizer
 
 var _animation_player
+var _overlord_active := true
 
 func _enter_tree():
-	print("Setting authority")
-	print(name)
 	_player_input.set_multiplayer_authority(str(name).to_int())
 	_camera_input.set_multiplayer_authority(str(name).to_int())
-	print(get_multiplayer_authority())
 
 func _ready():
 	# Default state
 	_state_machine.state = &"IdleState"
 	_animation_player = _player_model.get_node("AnimationPlayer")
 
-	print("READY READY")
-	print(get_multiplayer_authority())
-	print(_camera_input.get_multiplayer_authority())
-	# TODO: can this be moved to movement_state
 	_state_machine.on_display_state_changed.connect(_on_display_state_changed)
 
-		
-		
 	# Call this after setting authority
-	# https://foxssake.github.io/netfox/netfox/tutorials/responsive-player-movement/#ownership
-	
 	rollback_synchronizer.process_settings()
-	
+
 	# Hide the loading screen once our player is spawned in game and ready
 	if multiplayer.get_unique_id() == str(name).to_int():
 		NetworkManager.hide_loading()
 	else:
-		for node in $"Model/RootNode/Lich-applying/Armature/Skeleton3D".get_children():
-			if node is VisualInstance3D:
-				node.set_layer_mask_value(1, true)
-				node.set_layer_mask_value(2, false)
+		# Other players' models should be on layer 1 (visible to everyone)
+		_set_model_layer(1)
+
+func set_overlord_active(active: bool):
+	## Enable/disable this Overlord's input and camera.
+	## Called when the player warps to/from the Avatar entity.
+	_overlord_active = active
+	var is_local = multiplayer.get_unique_id() == str(name).to_int()
+
+	_player_input.input_enabled = active
+
+	if is_local:
+		if active:
+			_camera_input.camera_3D.current = true
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		else:
+			_camera_input.camera_3D.current = false
+
+func _set_model_layer(layer: int):
+	# Set all visual meshes on the model to the specified layer
+	# Layer 1 = visible to all cameras, Layer 2 = hidden from own camera
+	var other_layer = 2 if layer == 1 else 1
+	for node in $"Model/RootNode/Lich-applying/Armature/Skeleton3D".get_children():
+		if node is VisualInstance3D:
+			node.set_layer_mask_value(layer, true)
+			node.set_layer_mask_value(other_layer, false)
 
 func _rollback_tick(delta: float, tick: int, is_fresh: bool) -> void:
 	_force_update_is_on_floor()
@@ -55,16 +67,13 @@ func _rollback_tick(delta: float, tick: int, is_fresh: bool) -> void:
 		apply_gravity(delta)
 
 func _on_display_state_changed(old_state, new_state):
-	# print("Old state %s, new %s" % [old_state, new_state])
-	
 	var animation_name = new_state.animation_name
 	if _animation_player && animation_name != "":
-		# print("Play animation %s" % animation_name)
 		_animation_player.play(animation_name)
 
 func apply_gravity(delta):
 	velocity.y -= gravity * delta
-				
+
 # https://foxssake.github.io/netfox/netfox/tutorials/rollback-caveats/#characterbody-on-floor
 func _force_update_is_on_floor():
 	var old_velocity = velocity

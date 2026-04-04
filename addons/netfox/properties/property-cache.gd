@@ -4,7 +4,7 @@ class_name PropertyCache
 var root: Node
 var _cache: Dictionary = {}
 
-static var _logger: _NetfoxLogger = _NetfoxLogger.for_netfox("PropertyCache")
+static var _logger: NetfoxLogger = NetfoxLogger._for_netfox("PropertyCache")
 
 func _init(p_root: Node):
 	root = p_root
@@ -23,3 +23,6 @@ func properties() -> Array:
 	# See: https://github.com/godotengine/godot/issues/72627
 	result.assign(_cache.values())
 	return result
+
+func clear():
+	_cache.clear()

@@ -1,14 +1,17 @@
-[gd_scene load_steps=21 format=3 uid="uid://bw45043vija8o"]
+[gd_scene format=3 uid="uid://bw45043vija8o"]
 
 [ext_resource type="PackedScene" uid="uid://btjx4a4g25xj3" path="res://scenes/network/multiplayer_manager.tscn" id="1_jlwa7"]
-[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="debug_overlay"]
 [ext_resource type="PackedScene" uid="uid://cys03q34jt762" path="res://scenes/menus/in_game_menu.tscn" id="2_u1u8q"]
 [ext_resource type="Shape3D" uid="uid://b3p7215rpyj7p" path="res://scenes/world/env/BOUNDRY.tres" id="3_amemp"]
 [ext_resource type="PackedScene" uid="uid://deukdfofsqitg" path="res://assets/world/env/grass.glb" id="4_32jgm"]
 [ext_resource type="Material" uid="uid://dtbe06c2i0ktm" path="res://assets/world/world_material.tres" id="4_ugy4f"]
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="5_70a1q"]
+[ext_resource type="PackedScene" path="res://scenes/avatar/avatar.tscn" id="6_uv732"]
 [ext_resource type="PackedScene" uid="uid://brlisvoeolipa" path="res://assets/world/env/stone_tallB.glb" id="7_xl84e"]
 [ext_resource type="Shader" uid="uid://bvl4kfacs2hfw" path="res://shaders/ps1+postprocess.gdshader" id="8_xl84e"]
+[ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="9_nsr5c"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/gem.tscn" id="10_jlvw8"]
+[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="debug_overlay"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -38,7 +41,7 @@ size = Vector2(30, 30)
 data = PackedVector3Array(15, 0, 15, -15, 0, 15, 15, 0, -15, -15, 0, 15, -15, 0, -15, 15, 0, -15)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_70a1q"]
-size = Vector3(500, 5, 500)
+size = Vector3(500, 2.1572266, 500)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_70a1q"]
 albedo_color = Color(0.1176, 0.21, 0.12376, 1)
@@ -53,155 +56,164 @@ viewport_path = NodePath("SubViewport")
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
 shader = ExtResource("8_xl84e")
 
-[node name="Game" type="Node3D"]
+[node name="Game" type="Node3D" unique_id=129504398]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=913043429]
 _spawnable_scenes = PackedStringArray("uid://xjygpllvas2q")
 spawn_path = NodePath("../World/PlayerSpawnPoint")
 
-[node name="MultiplayerManager" parent="." node_paths=PackedStringArray("_player_spawn_point") instance=ExtResource("1_jlwa7")]
+[node name="MultiplayerManager" parent="." unique_id=2073742876 node_paths=PackedStringArray("_player_spawn_point") instance=ExtResource("1_jlwa7")]
 _player_spawn_point = NodePath("../World/PlayerSpawnPoint")
 
-[node name="InGameMenu" parent="." instance=ExtResource("2_u1u8q")]
+[node name="InGameMenu" parent="." unique_id=1677894570 instance=ExtResource("2_u1u8q")]
 
-[node name="World" type="Node3D" parent="."]
+[node name="World" type="Node3D" parent="." unique_id=2119048474]
 
-[node name="Atmosphere" type="Node3D" parent="World"]
+[node name="Atmosphere" type="Node3D" parent="World" unique_id=1498438339]
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="World/Atmosphere"]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="World/Atmosphere" unique_id=442470144]
 transform = Transform3D(1, 0, 0, 0, 0.696001, 0.718041, 0, -0.718041, 0.696001, 0, 11.4862, 6.19946)
 light_color = Color(0.980392, 0.717647, 0.0470588, 1)
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere" unique_id=446517867]
 environment = SubResource("Environment_s4jie")
 
-[node name="Env" type="Node3D" parent="World"]
+[node name="Env" type="Node3D" parent="World" unique_id=932413741]
 
-[node name="Perimeter" type="Node3D" parent="World/Env"]
+[node name="Perimeter" type="Node3D" parent="World/Env" unique_id=932946653]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 153, 39.3021, 0)
 
-[node name="Boundry" type="StaticBody3D" parent="World/Env/Perimeter"]
+[node name="Boundry" type="StaticBody3D" parent="World/Env/Perimeter" unique_id=479734306]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.5, 0, 3.5)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry" unique_id=899285130]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -91, 2, 1.25)
 shape = SubResource("BoxShape3D_mqs41")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry"]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry" unique_id=66426363]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -87, 2, 5.75)
 shape = SubResource("BoxShape3D_mqs41")
 
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry"]
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry" unique_id=1508750720]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -87, 2, -3.75)
 shape = SubResource("BoxShape3D_mqs41")
 
-[node name="CollisionShape3D4" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry"]
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry" unique_id=706440549]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.5, 2.5, -8.75)
 shape = SubResource("BoxShape3D_mqs41")
 
-[node name="Boundry2" type="StaticBody3D" parent="World/Env/Perimeter"]
+[node name="Boundry2" type="StaticBody3D" parent="World/Env/Perimeter" unique_id=1143161717]
 transform = Transform3D(-4.37114e-08, 3.48787e-16, 1, 3.48787e-16, 1, -3.48787e-16, -1, 3.48787e-16, -4.37114e-08, 2.08165e-12, 2.08165e-12, 2.08165e-12)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry2"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry2" unique_id=1587694828]
 transform = Transform3D(-4.37114e-08, 1.85288e-22, -1, 6.97574e-16, 1, 0, 1, -6.97574e-16, -4.37114e-08, -17.5, 15, -77.5)
 shape = ExtResource("3_amemp")
 
-[node name="Boundry3" type="StaticBody3D" parent="World/Env/Perimeter"]
+[node name="Boundry3" type="StaticBody3D" parent="World/Env/Perimeter" unique_id=1586879048]
 transform = Transform3D(-4.37114e-08, 3.48787e-16, 1, 3.48787e-16, 1, -3.48787e-16, -1, 3.48787e-16, -4.37114e-08, 2.08165e-12, 2.08165e-12, -30)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry3"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry3" unique_id=1337559273]
 transform = Transform3D(-4.37114e-08, 7.94093e-23, -1, 6.97574e-16, 1, 0, 1, -6.97574e-16, -4.37114e-08, -14.5, 2.5, -76.5)
 shape = ExtResource("3_amemp")
 
-[node name="Boundry4" type="StaticBody3D" parent="World/Env/Perimeter"]
+[node name="Boundry4" type="StaticBody3D" parent="World/Env/Perimeter" unique_id=1701103783]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2.08165e-12, 2.08165e-12)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry4"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Env/Perimeter/Boundry4" unique_id=915151556]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -91, 15, 2.08165e-12)
 shape = ExtResource("3_amemp")
 
-[node name="Stuff" type="Node3D" parent="World/Env"]
+[node name="Stuff" type="Node3D" parent="World/Env" unique_id=1080089041]
 
-[node name="grass2" parent="World/Env" instance=ExtResource("4_32jgm")]
+[node name="grass2" parent="World/Env/Stuff" unique_id=1286567443 instance=ExtResource("4_32jgm")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -27.5)
 
-[node name="grass3" parent="World/Env" instance=ExtResource("4_32jgm")]
+[node name="grass3" parent="World/Env/Stuff" unique_id=1404685340 instance=ExtResource("4_32jgm")]
 transform = Transform3D(0.258819, 0, 0.965926, 0, 1, 0, -0.965926, 0, 0.258819, 31.6019, 0, 19.4812)
 
-[node name="grass4" parent="World/Env" instance=ExtResource("4_32jgm")]
+[node name="grass4" parent="World/Env/Stuff" unique_id=1107182228 instance=ExtResource("4_32jgm")]
 transform = Transform3D(-1, 0, 2.98023e-08, 0, 1, 0, -2.98023e-08, 0, -1, -36, 0, 20)
 
-[node name="grass5" parent="World/Env" instance=ExtResource("4_32jgm")]
+[node name="grass5" parent="World/Env/Stuff" unique_id=1263992877 instance=ExtResource("4_32jgm")]
 transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, -34.7688, 0, -37.8519)
 
-[node name="MapSpawnPoint" type="Node3D" parent="World"]
+[node name="Gem" parent="World/Env/Stuff" unique_id=2072783906 instance=ExtResource("10_jlvw8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.8988876, -0.99663496, 4.536481)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="World/MapSpawnPoint"]
+[node name="MapSpawnPoint" type="Node3D" parent="World" unique_id=1801573989]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World/MapSpawnPoint" unique_id=364634961]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.25, -0.25)
 mesh = SubResource("PlaneMesh_lpk0h")
 metadata/_edit_lock_ = true
 
-[node name="StaticBody3D" type="StaticBody3D" parent="World/MapSpawnPoint/MeshInstance3D"]
+[node name="StaticBody3D" type="StaticBody3D" parent="World/MapSpawnPoint/MeshInstance3D" unique_id=464157407]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/MapSpawnPoint/MeshInstance3D/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/MapSpawnPoint/MeshInstance3D/StaticBody3D" unique_id=234246415]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 0, 0)
 shape = SubResource("ConcavePolygonShape3D_m5eq6")
 
-[node name="PlayerSpawnPoint" type="Node3D" parent="World"]
+[node name="PlayerSpawnPoint" type="Node3D" parent="World" unique_id=975852457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.9944, 40.9769, 1.018)
 
-[node name="Ground" type="StaticBody3D" parent="World"]
+[node name="Ground" type="StaticBody3D" parent="World" unique_id=966448125]
 metadata/_edit_lock_ = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Ground"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Ground" unique_id=1725930906]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.4213867, 0)
 shape = SubResource("BoxShape3D_70a1q")
 metadata/_edit_lock_ = true
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Ground"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Ground" unique_id=398660114]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
 mesh = SubResource("BoxMesh_70a1q")
 metadata/_edit_lock_ = true
 
-[node name="Tower" parent="." instance=ExtResource("5_70a1q")]
+[node name="Avatar" parent="World" unique_id=1609271671 instance=ExtResource("6_uv732")]
+
+[node name="Tower" parent="." unique_id=984997556 instance=ExtResource("5_70a1q")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -0.5, -0.5)
 
-[node name="Tower2" parent="." instance=ExtResource("5_70a1q")]
+[node name="Tower2" parent="." unique_id=2114439563 instance=ExtResource("5_70a1q")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.5, 0, 68)
 
-[node name="Tower3" parent="." instance=ExtResource("5_70a1q")]
+[node name="Tower3" parent="." unique_id=1015982083 instance=ExtResource("5_70a1q")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -70, 0, 0)
 
-[node name="Tower4" parent="." instance=ExtResource("5_70a1q")]
+[node name="Tower4" parent="." unique_id=817588753 instance=ExtResource("5_70a1q")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.5, 0, -62.5)
 
-[node name="SubViewport" type="SubViewport" parent="."]
+[node name="SubViewport" type="SubViewport" parent="." unique_id=877719122]
 
-[node name="Camera3D" type="Camera3D" parent="SubViewport"]
+[node name="Camera3D" type="Camera3D" parent="SubViewport" unique_id=1687769571]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.5, 50, 11.5)
 cull_mask = 1048571
 
-[node name="Sprite3D" type="Sprite3D" parent="."]
+[node name="Sprite3D" type="Sprite3D" parent="." unique_id=790336742]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.5207, 49.9242, 11.8033)
 texture = SubResource("ViewportTexture_70a1q")
 
-[node name="stone_tallB2" parent="." instance=ExtResource("7_xl84e")]
+[node name="stone_tallB2" parent="." unique_id=981379216 instance=ExtResource("7_xl84e")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0, -35.5)
 
-[node name="stone_tallB3" parent="." instance=ExtResource("7_xl84e")]
+[node name="stone_tallB3" parent="." unique_id=698604119 instance=ExtResource("7_xl84e")]
 transform = Transform3D(0.258819, 0, 0.965926, 0, 1, 0, -0.965926, 0, 0.258819, 20.8981, 0, 28.5188)
 
-[node name="stone_tallB4" parent="." instance=ExtResource("7_xl84e")]
+[node name="stone_tallB4" parent="." unique_id=423006812 instance=ExtResource("7_xl84e")]
 transform = Transform3D(-1, 0, 2.98023e-08, 0, 1, 0, -2.98023e-08, 0, -1, -24.5, 0, 28)
 
-[node name="stone_tallB5" parent="." instance=ExtResource("7_xl84e")]
+[node name="stone_tallB5" parent="." unique_id=336409222 instance=ExtResource("7_xl84e")]
 transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, -25.7312, 0, -27.1481)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1495107198]
 
-[node name="DebugOverlay" parent="CanvasLayer" instance=ExtResource("debug_overlay")]
+[node name="DebugOverlay" parent="CanvasLayer" unique_id=1436136412 instance=ExtResource("debug_overlay")]
 
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+[node name="WinScreen" parent="CanvasLayer" unique_id=401192825 instance=ExtResource("9_nsr5c")]
+visible = false
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=1565447642]
 visible = false
 material = SubResource("ShaderMaterial_5nagr")
 anchors_preset = 15

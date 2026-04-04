@@ -13,53 +13,38 @@ const CAMERA_X_ROT_MAX := deg_to_rad(60)
 const CAMERA_UP_DOWN_MOVEMENT = -1
 const CAMERA_JOYSTICK_ROTATION_SPEED := 5
 
+
 func _ready():
 	NetworkTime.before_tick_loop.connect(_gather)
-	
+
 	if multiplayer.get_unique_id() == str(get_parent().name).to_int():
 		camera_3D.current = true
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	else:
 		camera_3D.current = false
 		$CameraMount/CameraRot/Camera3D/ViewModel.visible = false
-		
+
 
 func _gather():
 	camera_basis = get_camera_rotation_basis()
 
 func _input(event):
-	if event is InputEventMouseMotion and is_multiplayer_authority():
+	if event is InputEventMouseMotion and is_multiplayer_authority() and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		rotate_camera(event.relative * CAMERA_MOUSE_ROTATION_SPEED)
 
 func get_input_joystick(delta):
-	# Rotate outer gimbal around y axis
-	var y_rotation = Input.get_axis("camera_left", "camera_right")
-	var x_rotation = Input.get_axis("camera_up", "camera_down")
 	var total = Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
-	if total.y != 0:
-		print(total)
 	rotate_camera(total * CAMERA_JOYSTICK_ROTATION_SPEED * delta)
-	
-		
 
 func _process(delta: float) -> void:
 	get_input_joystick(delta)
-	
 
 func rotate_camera(move):
-	
-	
-	# Horizontal camera movement
-	# Currently, we only care to synch horizontal rotation, vertical camera changes are only for local client.
 	camera_mount.rotate_y(-move.x)
-	#camera_mount.orthonormalize()
-	
-	# Vertical camera movement
 	camera_rot.rotation.x = clamp(camera_rot.rotation.x + (CAMERA_UP_DOWN_MOVEMENT * move.y), CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX)
 
 func get_camera_rotation_basis() -> Basis:
-	# Use camera_mount here so we don't have to worry about correcting for lean
-	return camera_mount.global_transform.basis 
+	return camera_mount.global_transform.basis
 
 func _exit_tree():
 	NetworkTime.before_tick_loop.disconnect(_gather)

@@ -1,0 +1,83 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar.gd" id="1_avatar"]
+[ext_resource type="Script" path="res://scripts/avatar_input.gd" id="2_avinp"]
+[ext_resource type="PackedScene" path="res://scenes/avatar/avatar_camera.tscn" id="3_avcam"]
+[ext_resource type="PackedScene" path="res://assets/characters/characterLargeMale.fbx" id="4_model"]
+[ext_resource type="Script" path="res://addons/netfox/rollback/rollback-synchronizer.gd" id="5_rbsync"]
+[ext_resource type="Script" path="res://addons/netfox/tick-interpolator.gd" id="6_tick"]
+[ext_resource type="Script" path="res://addons/netfox.extras/state-machine/rewindable-state-machine.gd" id="7_sm"]
+[ext_resource type="Script" path="res://scripts/states/avatar_movement/avatar_idle_state.gd" id="8_idle"]
+[ext_resource type="Script" path="res://scripts/states/avatar_movement/avatar_move_state.gd" id="9_move"]
+[ext_resource type="Script" path="res://scripts/states/avatar_movement/avatar_jump_state.gd" id="10_jump"]
+[ext_resource type="Script" path="res://scripts/states/avatar_movement/avatar_fall_state.gd" id="11_fall"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_av"]
+radius = 0.4
+height = 3.0
+
+[node name="Avatar" type="CharacterBody3D" node_paths=PackedStringArray("_avatar_input", "_avatar_camera", "_avatar_model", "_state_machine")]
+script = ExtResource("1_avatar")
+_avatar_input = NodePath("AvatarInput")
+_avatar_camera = NodePath("AvatarCamera")
+_avatar_model = NodePath("Model")
+_state_machine = NodePath("RewindableStateMachine")
+
+[node name="AvatarCamera" parent="." instance=ExtResource("3_avcam")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+
+[node name="Model" parent="." instance=ExtResource("4_model")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("CapsuleShape3D_av")
+
+[node name="AvatarInput" type="Node" parent="."]
+script = ExtResource("2_avinp")
+
+[node name="RollbackSynchronizer" type="Node" parent="." node_paths=PackedStringArray("root")]
+script = ExtResource("5_rbsync")
+root = NodePath("..")
+state_properties = Array[String]([":transform", ":velocity", "Model:transform", "RewindableStateMachine:state"])
+input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarCamera:camera_basis"])
+
+[node name="TickInterpolator" type="Node" parent="." node_paths=PackedStringArray("root")]
+script = ExtResource("6_tick")
+root = NodePath("..")
+properties = Array[String]([":transform", "Model:transform"])
+
+[node name="RewindableStateMachine" type="Node" parent="."]
+script = ExtResource("7_sm")
+
+[node name="IdleState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("avatar_camera", "avatar_model", "avatar_input", "parent")]
+script = ExtResource("8_idle")
+animation_name = ""
+avatar_camera = NodePath("../../AvatarCamera")
+avatar_model = NodePath("../../Model")
+avatar_input = NodePath("../../AvatarInput")
+parent = NodePath("../..")
+
+[node name="MoveState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("avatar_camera", "avatar_model", "avatar_input", "parent")]
+script = ExtResource("9_move")
+animation_name = ""
+avatar_camera = NodePath("../../AvatarCamera")
+avatar_model = NodePath("../../Model")
+avatar_input = NodePath("../../AvatarInput")
+parent = NodePath("../..")
+
+[node name="JumpState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("avatar_camera", "avatar_model", "avatar_input", "parent")]
+script = ExtResource("10_jump")
+animation_name = ""
+avatar_camera = NodePath("../../AvatarCamera")
+avatar_model = NodePath("../../Model")
+avatar_input = NodePath("../../AvatarInput")
+parent = NodePath("../..")
+
+[node name="FallState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("avatar_camera", "avatar_model", "avatar_input", "parent")]
+script = ExtResource("11_fall")
+animation_name = ""
+avatar_camera = NodePath("../../AvatarCamera")
+avatar_model = NodePath("../../Model")
+avatar_input = NodePath("../../AvatarInput")
+parent = NodePath("../..")

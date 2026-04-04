@@ -5,7 +5,7 @@ class_name RollbackSynchronizer
 ## Similar to [MultiplayerSynchronizer], this class is responsible for
 ## synchronizing data between players, but with support for rollback.
 ## [br][br]
-## @tutorial(RollbackSynchronizer Guide): https://foxssake.github.io/netfox/netfox/nodes/rollback-synchronizer/
+## @tutorial(RollbackSynchronizer Guide): https://foxssake.github.io/netfox/latest/netfox/nodes/rollback-synchronizer/
 
 ## The root node for resolving node paths in properties. Defaults to the parent
 ## node.
@@ -41,7 +41,7 @@ var full_state_interval: int = 24
 ## more often acknowledging received states. To avoid introducing hickups, these
 ## are sent unreliably.
 ## [br][br]
-## If set to 0, diff states will never be acknowledged. If set to 1, all diff 
+## If set to 0, diff states will never be acknowledged. If set to 1, all diff
 ## states will be acknowledged. If set higher, ack's will be sent regularly, but
 ## not for every diff state.
 ## [br][br]
@@ -64,10 +64,12 @@ var diff_ack_interval: int = 0
 ## bandwidth and reduce cheating risks.
 @export var enable_input_broadcast: bool = true
 
-var _record_state_property_entries: Array[PropertyEntry] = []
-var _record_input_property_entries: Array[PropertyEntry] = []
-var _auth_state_property_entries: Array[PropertyEntry] = []
-var _auth_input_property_entries: Array[PropertyEntry] = []
+# Make sure this exists from the get-go, just not in the scene tree
+## Decides which peers will receive updates
+var visibility_filter := PeerVisibilityFilter.new()
+
+var _state_property_config: _PropertyConfig = _PropertyConfig.new()
+var _input_property_config: _PropertyConfig = _PropertyConfig.new()
 var _nodes: Array[Node] = []
 
 var _simset: _Set = _Set.new()
@@ -75,61 +77,36 @@ var _skipset: _Set = _Set.new()
 
 var _properties_dirty: bool = false
 
-var _states: Dictionary = {}
-var _inputs: Dictionary = {}
-var _latest_state_tick: int
-var _earliest_input_tick: int
+var _property_cache := PropertyCache.new(root)
+var _freshness_store := RollbackFreshnessStore.new()
 
-var _ackd_state: Dictionary = {}
-var _next_full_state_tick: int
-var _next_diff_ack_tick: int
+var _states := _PropertyHistoryBuffer.new()
+var _inputs := _PropertyHistoryBuffer.new()
+var _last_simulated_tick: int
 
-var _retrieved_tick: int
 var _has_input: bool
 var _input_tick: int
 var _is_predicted_tick: bool
 
-var _property_cache: PropertyCache
-var _freshness_store: RollbackFreshnessStore
+static var _logger: NetfoxLogger = NetfoxLogger._for_netfox("RollbackSynchronizer")
 
-var _is_initialized: bool = false
-
-static var _logger: _NetfoxLogger = _NetfoxLogger.for_netfox("RollbackSynchronizer")
-
-signal _on_transmit_state(state: Dictionary, tick: int)
+# Composition
+var _history_transmitter: _RollbackHistoryTransmitter
+var _history_recorder: _RollbackHistoryRecorder
 
 ## Process settings.
 ##
 ## Call this after any change to configuration. Updates based on authority too
 ## ( calls process_authority ).
-func process_settings():
-	_property_cache = PropertyCache.new(root)
-	_freshness_store = RollbackFreshnessStore.new()
+func process_settings() -> void:
+	_property_cache.root = root
+	_property_cache.clear()
+	_freshness_store.clear()
 
 	_nodes.clear()
-	_record_state_property_entries.clear()
-	
+
 	_states.clear()
 	_inputs.clear()
-	_ackd_state.clear()
-	_latest_state_tick = NetworkTime.tick - 1
-	_earliest_input_tick = NetworkTime.tick
-	_next_full_state_tick = NetworkTime.tick
-	_next_diff_ack_tick = NetworkTime.tick
-
-	# Scatter full state sends, so not all nodes send at the same tick
-	if is_inside_tree():
-		_next_full_state_tick += hash(get_path()) % maxi(1, full_state_interval)
-		_next_diff_ack_tick += hash(get_path()) % maxi(1, diff_ack_interval)
-	else:
-		_next_full_state_tick += hash(name) % maxi(1, full_state_interval)
-		_next_diff_ack_tick += hash(name) % maxi(1, diff_ack_interval)
-
-	# Gather state properties - all state properties are recorded
-	for property in state_properties:
-		var property_entry = _property_cache.get_entry(property)
-		_record_state_property_entries.push_back(property_entry)
-	
 	process_authority()
 
 	# Gather all rollback-aware nodes to simulate during rollbacks
@@ -137,8 +114,10 @@ func process_settings():
 	_nodes.push_front(root)
 	_nodes = _nodes.filter(func(it): return NetworkRollback.is_rollback_aware(it))
 	_nodes.erase(self)
-	
-	_is_initialized = true
+
+	_history_transmitter.sync_settings(root, enable_input_broadcast, full_state_interval, diff_ack_interval)
+	_history_transmitter.configure(_states, _inputs, _state_property_config, _input_property_config, visibility_filter, _property_cache, _skipset)
+	_history_recorder.configure(_states, _inputs, _state_property_config, _input_property_config, _property_cache, _skipset)
 
 ## Process settings based on authority.
 ##
@@ -146,29 +125,16 @@ func process_settings():
 ## RollbackSynchronizer changes. Make sure to do this at the same time on all
 ## peers.
 func process_authority():
-	_record_input_property_entries.clear()
-	_auth_input_property_entries.clear()
-	_auth_state_property_entries.clear()
+	_state_property_config.local_peer_id = multiplayer.get_unique_id()
+	_input_property_config.local_peer_id = multiplayer.get_unique_id()
 
-	# Gather state properties that we own
-	# i.e. it's the state of a node that belongs to the local peer
-	for property in state_properties:
-		var property_entry = _property_cache.get_entry(property)
-		if property_entry.node.is_multiplayer_authority():
-			_auth_state_property_entries.push_back(property_entry)
-
-	# Gather input properties that we own
-	# Only record input that is our own
-	for property in input_properties:
-		var property_entry = _property_cache.get_entry(property)
-		if property_entry.node.is_multiplayer_authority():
-			_auth_input_property_entries.push_back(property_entry)
-			_record_input_property_entries.push_back(property_entry)
+	_state_property_config.set_properties_from_paths(state_properties, _property_cache)
+	_input_property_config.set_properties_from_paths(input_properties, _property_cache)
 
 ## Add a state property.
 ## [br][br]
 ## Settings will be automatically updated. The [param node] may be a string or
-## [NodePath] pointing to a node, or an actual [Node] instance. If the given 
+## [NodePath] pointing to a node, or an actual [Node] instance. If the given
 ## property is already tracked, this method does nothing.
 func add_state(node: Variant, property: String):
 	var property_path := PropertyEntry.make_path(root, node, property)
@@ -182,9 +148,9 @@ func add_state(node: Variant, property: String):
 ## Add an input property.
 ## [br][br]
 ## Settings will be automatically updated. The [param node] may be a string or
-## [NodePath] pointing to a node, or an actual [Node] instance. If the given 
+## [NodePath] pointing to a node, or an actual [Node] instance. If the given
 ## property is already tracked, this method does nothing.
-func add_input(node: Variant, property: String):
+func add_input(node: Variant, property: String) -> void:
 	var property_path := PropertyEntry.make_path(root, node, property)
 	if not property_path or input_properties.has(property_path):
 		return
@@ -226,123 +192,221 @@ func is_predicting() -> bool:
 ##
 ## Call this when the input is too old to base predictions on. This call is
 ## ignored if [member enable_prediction] is false.
-func ignore_prediction(node: Node):
+func ignore_prediction(node: Node) -> void:
 	if enable_prediction:
 		_skipset.add(node)
 
-func _ready():
+## Get the tick of the last known input.
+## [br][br]
+## This is the latest tick where input information is available. If there's
+## locally owned input for this instance ( e.g. running as client ), this value
+## will be the current tick. Otherwise, this will be the latest tick received
+## from the input owner.
+## [br][br]
+## If [member enable_input_broadcast] is false, there may be no input available
+## for peers who own neither state nor input.
+## [br][br]
+## Returns -1 if there's no known input.
+func get_last_known_input() -> int:
+	# If we own input, it is updated regularly, this will be the current tick
+	# If we don't own input, _inputs is only updated when input data is received
+	if not _inputs.is_empty():
+		return _inputs.keys().max()
+	return -1
+
+## Get the tick of the last known state.
+## [br][br]
+## This is the latest tick where information is available for state. For state
+## owners ( usually the host ), this is the current tick. Note that even this
+## data may change as new input arrives. For peers that don't own state, this
+## will be the tick of the latest state received from the state owner.
+func get_last_known_state() -> int:
+	# If we own state, this will be updated when recording and broadcasting
+	# state, this will be the current tick
+	# If we don't own state, this will be updated when state data is received
+	return _history_transmitter.get_latest_state_tick()
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
+
 	if not NetworkTime.is_initial_sync_done():
 		# Wait for time sync to complete
 		await NetworkTime.after_sync
+
 	process_settings.call_deferred()
 
-func _connect_signals():
+func _connect_signals() -> void:
 	NetworkTime.before_tick.connect(_before_tick)
 	NetworkTime.after_tick.connect(_after_tick)
-	NetworkRollback.before_loop.connect(_before_loop)
-	NetworkRollback.on_prepare_tick.connect(_prepare_tick)
-	NetworkRollback.on_process_tick.connect(_process_tick)
-	NetworkRollback.on_record_tick.connect(_record_tick)
-	NetworkRollback.after_loop.connect(_after_loop)
 
-func _disconnect_signals():
+	NetworkRollback.on_prepare_tick.connect(_on_prepare_tick)
+	NetworkRollback.on_process_tick.connect(_process_tick)
+	NetworkRollback.on_record_tick.connect(_on_record_tick)
+
+	NetworkRollback.before_loop.connect(_before_rollback_loop)
+	NetworkRollback.after_loop.connect(_after_rollback_loop)
+
+func _disconnect_signals() -> void:
 	NetworkTime.before_tick.disconnect(_before_tick)
 	NetworkTime.after_tick.disconnect(_after_tick)
-	NetworkRollback.before_loop.disconnect(_before_loop)
-	NetworkRollback.on_prepare_tick.disconnect(_prepare_tick)
-	NetworkRollback.on_process_tick.disconnect(_process_tick)
-	NetworkRollback.on_record_tick.disconnect(_record_tick)
-	NetworkRollback.after_loop.disconnect(_after_loop)
 
-func _notification(what):
+	NetworkRollback.on_prepare_tick.disconnect(_on_prepare_tick)
+	NetworkRollback.on_process_tick.disconnect(_process_tick)
+	NetworkRollback.on_record_tick.disconnect(_on_record_tick)
+
+	NetworkRollback.before_loop.disconnect(_before_rollback_loop)
+	NetworkRollback.after_loop.disconnect(_after_rollback_loop)
+
+func _before_tick(_dt: float, tick: int) -> void:
+	_history_recorder.apply_state(tick)
+
+func _after_tick(_dt: float, tick: int) -> void:
+	_history_recorder.record_input(tick)
+	_history_transmitter.transmit_input(tick)
+	_history_recorder.trim_history()
+	_freshness_store.trim()
+
+func _before_rollback_loop() -> void:
+	_notify_resim()
+
+func _on_prepare_tick(tick: int) -> void:
+	_history_recorder.apply_tick(tick)
+	_prepare_tick_process(tick)
+
+func _process_tick(tick: int) -> void:
+	_run_rollback_tick(tick)
+	_push_simset_metrics()
+
+func _on_record_tick(tick: int) -> void:
+	_history_recorder.record_state(tick)
+	_history_transmitter.transmit_state(tick)
+
+func _after_rollback_loop() -> void:
+	_history_recorder.apply_display_state()
+	_history_transmitter.conclude_tick_loop()
+
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_EDITOR_PRE_SAVE:
 		update_configuration_warnings()
 
-func _get_configuration_warnings():
+func _get_configuration_warnings() -> PackedStringArray:
 	if not root:
 		root = get_parent()
 
 	# Explore state and input properties
 	if not root:
 		return ["No valid root node found!"]
-	
-	var result = []
+
+	var result := PackedStringArray()
 	result.append_array(_NetfoxEditorUtils.gather_properties(root, "_get_rollback_state_properties",
 		func(node, prop):
 			add_state(node, prop)
 	))
-	
+
 	result.append_array(_NetfoxEditorUtils.gather_properties(root, "_get_rollback_input_properties",
 		func(node, prop):
 			add_input(node, prop)
 	))
-	
+
 	return result
 
-func _enter_tree():
+func _enter_tree() -> void:
 	if Engine.is_editor_hint():
 		return
-	
+
+	if not visibility_filter:
+		visibility_filter = PeerVisibilityFilter.new()
+
+	if not visibility_filter.get_parent():
+		add_child(visibility_filter)
+
+	if _history_transmitter == null:
+		_history_transmitter = _RollbackHistoryTransmitter.new()
+		add_child(_history_transmitter, true)
+		_history_transmitter.set_multiplayer_authority(get_multiplayer_authority())
+
+	if _history_recorder == null:
+		_history_recorder = _RollbackHistoryRecorder.new()
+
 	if not NetworkTime.is_initial_sync_done():
 		# Wait for time sync to complete
 		await NetworkTime.after_sync
 	_connect_signals.call_deferred()
 	process_settings.call_deferred()
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if Engine.is_editor_hint():
 		return
-	
-	_is_initialized = false
+
 	_disconnect_signals()
 
-func _before_loop():
-	if _auth_input_property_entries.is_empty():
+func _notify_resim() -> void:
+	if _get_owned_input_props().is_empty():
 		# We don't have any inputs we own, simulate from earliest we've received
-		NetworkRollback.notify_resimulation_start(_earliest_input_tick)
+		NetworkRollback.notify_resimulation_start(_history_transmitter.get_earliest_input_tick())
 	else:
 		# We own inputs, simulate from latest authorative state
-		NetworkRollback.notify_resimulation_start(_latest_state_tick)
+		NetworkRollback.notify_resimulation_start(_history_transmitter.get_latest_state_tick())
 
-func _prepare_tick(tick: int):
-	# Prepare state
-	#	Done individually by Rewindables ( usually Rollback Synchronizers )
-	#	Restore input and state for tick
-	var state = _get_history(_states, tick)
-	var input = _get_history(_inputs, tick)
-
-	PropertySnapshot.apply(state, _property_cache)
-	PropertySnapshot.apply(input, _property_cache)
+func _prepare_tick_process(tick: int) -> void:
+	_history_recorder.set_latest_state_tick(_history_transmitter._latest_state_tick)
 
 	# Save data for input prediction
-	_has_input = _retrieved_tick != -1
-	_input_tick = _retrieved_tick
-	_is_predicted_tick = not _inputs.has(tick)
-	
+	var retrieved_tick := _inputs.get_closest_tick(tick)
+
+	# These are used as input for input age ( i.e. do we even have input, and if so, how old? )
+	_has_input = retrieved_tick != -1
+	_input_tick = retrieved_tick
+
+	# Used to explicitly determine if this is a predicted tick
+	# ( even if we could grab *some* input )
+	_is_predicted_tick = _is_predicted_tick_for(null, tick)
+	_history_transmitter.set_predicted_tick(_is_predicted_tick)
+
 	# Reset the set of simulated and ignored nodes
 	_simset.clear()
 	_skipset.clear()
-	
+
 	# Gather nodes that can be simulated
 	for node in _nodes:
 		if _can_simulate(node, tick):
 			NetworkRollback.notify_simulated(node)
 
 func _can_simulate(node: Node, tick: int) -> bool:
-	if not enable_prediction and not _inputs.has(tick):
-		# Don't simulate if prediction is not allowed and input is unknown
+	if not enable_prediction and _is_predicted_tick_for(node, tick):
+		# Don't simulate if prediction is not allowed and tick is predicted
 		return false
+	if NetworkRollback.is_mutated(node, tick):
+		# Mutated nodes are always resimulated
+		return true
+	if input_properties.is_empty():
+		# If we're running inputless and own the node, simulate it if we haven't
+		if node.is_multiplayer_authority():
+			return tick > _last_simulated_tick
+		# If we're running inputless and don't own the node, only run as prediction
+		return enable_prediction
 	if node.is_multiplayer_authority():
 		# Simulate from earliest input
 		# Don't simulate frames we don't have input for
-		return tick >= _earliest_input_tick
+		return tick >= _history_transmitter.get_earliest_input_tick()
 	else:
 		# Simulate ONLY if we have state from server
 		# Simulate from latest authorative state - anything the server confirmed we don't rerun
 		# Don't simulate frames we don't have input for
-		return tick >= _latest_state_tick
+		return tick >= _history_transmitter.get_latest_state_tick()
 
-func _process_tick(tick: int):
+# `node` can be set to null, in case we're not simulating a specific node
+func _is_predicted_tick_for(node: Node, tick: int) -> bool:
+	if input_properties.is_empty() and node != null:
+		# We're running without inputs
+		# It's only predicted if we don't own the node
+		return not node.is_multiplayer_authority()
+	else:
+		# We have input properties, it's only predicted if we don't have the input for the tick
+		return not _inputs.has(tick)
+
+func _run_rollback_tick(tick: int) -> void:
 	# Simulate rollback tick
 	#	Method call on rewindables
 	#	Rollback synchronizers go through each node they manage
@@ -353,7 +417,8 @@ func _process_tick(tick: int):
 		if not NetworkRollback.is_simulated(node):
 			continue
 
-		var is_fresh = _freshness_store.is_fresh(node, tick)
+		var is_fresh := _freshness_store.is_fresh(node, tick)
+		_is_predicted_tick = _is_predicted_tick_for(node, tick)
 		NetworkRollback.process_rollback(node, NetworkTime.ticktime, tick, is_fresh)
 
 		if _skipset.has(node):
@@ -362,283 +427,25 @@ func _process_tick(tick: int):
 		_freshness_store.notify_processed(node, tick)
 		_simset.add(node)
 
-func _record_tick(tick: int):
-	# Broadcast state we own
-	if not _auth_state_property_entries.is_empty() and not _is_predicted_tick:
-		var full_state: Dictionary = {}
-
-		for property in _auth_state_property_entries:
-			if _can_simulate(property.node, tick - 1) and not _skipset.has(property.node):
-				# Only broadcast if we've simulated the node
-				full_state[property.to_string()] = property.get_value()
-			
-		_on_transmit_state.emit(full_state, tick)
-
-		if full_state.size() > 0:
-			_latest_state_tick = max(_latest_state_tick, tick)
-			_states[tick] = PropertySnapshot.merge(_states.get(tick, {}), full_state)
-			
-			if not NetworkRollback.enable_diff_states:
-				# Broadcast new full state
-				_submit_full_state.rpc(full_state, tick)
-				
-				NetworkPerformance.push_full_state_broadcast(full_state)
-				NetworkPerformance.push_sent_state_broadcast(full_state)
-			elif full_state_interval > 0 and tick > _next_full_state_tick:
-				# Send full state so we can send deltas from there
-				_logger.trace("Broadcasting full state for tick %d", [tick])
-				_submit_full_state.rpc(full_state, tick)
-				_next_full_state_tick = tick + full_state_interval
-				
-				NetworkPerformance.push_full_state_broadcast(full_state)
-				NetworkPerformance.push_sent_state_broadcast(full_state)
-			else:
-				for peer in multiplayer.get_peers():
-					NetworkPerformance.push_full_state(full_state)
-					
-					# Peer hasn't received a full state yet, can't send diffs
-					if not _ackd_state.has(peer):
-						_submit_full_state.rpc_id(peer, full_state, tick)
-						NetworkPerformance.push_sent_state(full_state)
-						continue
-					
-					# History doesn't have reference tick?
-					var reference_tick = _ackd_state[peer]
-					if not _states.has(reference_tick):
-						_submit_full_state.rpc_id(peer, full_state, tick)
-						NetworkPerformance.push_sent_state(full_state)
-						continue
-					
-					# Prepare diff and send
-					var reference_state = _get_history(_states, reference_tick)
-					var diff_state = PropertySnapshot.make_patch(reference_state, full_state)
-					
-					if diff_state.size() == full_state.size():
-						# State is completely different, send full state
-						_submit_full_state.rpc_id(peer, full_state, tick)
-						NetworkPerformance.push_sent_state(full_state)
-					else:
-						# Send only diff
-						_submit_diff_state.rpc_id(peer, diff_state, tick, reference_tick)
-						NetworkPerformance.push_sent_state(diff_state)
-
-	# Record state for specified tick ( current + 1 )
-	if not _record_state_property_entries.is_empty() and tick > _latest_state_tick:
-		if _skipset.is_empty():
-			_states[tick] = PropertySnapshot.extract(_record_state_property_entries)
-		else:
-			var record_properties = _record_state_property_entries\
-				.filter(func(pe): return not _skipset.has(pe.node))
-
-			var merge_state = _get_history(_states, tick - 1)
-			var record_state = PropertySnapshot.extract(record_properties)
-
-			_states[tick] = PropertySnapshot.merge(merge_state, record_state)
-	
+func _push_simset_metrics():
 	# Push metrics
 	NetworkPerformance.push_rollback_nodes_simulated(_simset.size())
 
-func _after_loop():
-	_earliest_input_tick = NetworkTime.tick
-
-	# Apply display state
-	var display_state = _get_history(_states, NetworkTime.tick - NetworkRollback.display_offset)
-	PropertySnapshot.apply(display_state, _property_cache)
-
-func _before_tick(_delta, tick):
-	# Apply state for tick
-	var state = _get_history(_states, tick)
-	PropertySnapshot.apply(state, _property_cache)
-
-func _after_tick(_delta, _tick):
-	# Record input
-	if not _record_input_property_entries.is_empty():
-		var input = PropertySnapshot.extract(_record_input_property_entries)
-		_inputs[NetworkTime.tick] = input
-
-		#Send the last n inputs for each property
-		var inputs = {}
-		for i in range(0, NetworkRollback.input_redundancy):
-			var tick_input = _inputs.get(NetworkTime.tick - i, {})
-			for property in tick_input:
-				if not inputs.has(property):
-					inputs[property] = []
-				inputs[property].push_back(tick_input[property])
-
-		_attempt_submit_input(inputs)
-
-	# Trim history
-	while _states.size() > NetworkRollback.history_limit:
-		_states.erase(_states.keys().min())
-
-	while _inputs.size() > NetworkRollback.history_limit:
-		_inputs.erase(_inputs.keys().min())
-
-	_freshness_store.trim()
-
-func _attempt_submit_input(input: Dictionary):
-	# TODO: Default to input broadcast in mesh network setups
-	if enable_input_broadcast:
-		_submit_input.rpc(input, NetworkTime.tick)
-	elif not multiplayer.is_server():
-		_submit_input.rpc_id(1, input, NetworkTime.tick)
-
-func _reprocess_settings():
+func _reprocess_settings() -> void:
 	if not _properties_dirty or Engine.is_editor_hint():
 		return
 
 	_properties_dirty = false
 	process_settings()
 
-# TODO: Eventually refactor into separate HistoryBuffer class
-func _get_history(buffer: Dictionary, tick: int) -> Dictionary:
-	if buffer.has(tick):
-		_retrieved_tick = tick
-		return buffer[tick]
+func _get_recorded_state_props() -> Array[PropertyEntry]:
+	return _state_property_config.get_properties()
 
-	if buffer.is_empty():
-		_retrieved_tick = -1
-		return {}
+func _get_owned_state_props() -> Array[PropertyEntry]:
+	return _state_property_config.get_owned_properties()
 
-	var earliest_tick = buffer.keys().min()
-	var latest_tick = buffer.keys().max()
+func _get_recorded_input_props() -> Array[PropertyEntry]:
+	return _input_property_config.get_owned_properties()
 
-	if tick < earliest_tick:
-		_retrieved_tick = earliest_tick
-		return buffer[earliest_tick]
-	
-	if tick > latest_tick:
-		_retrieved_tick = latest_tick
-		return buffer[latest_tick]
-	
-	var before = buffer.keys() \
-		.filter(func (key): return key < tick) \
-		.max()
-	
-	_retrieved_tick = before
-	return buffer[before]
-
-func _sanitize_by_authority(snapshot: Dictionary, sender: int) -> Dictionary:
-	var sanitized := {}
-	
-	for property in snapshot:
-		var property_entry := _property_cache.get_entry(property)
-		var value = snapshot[property]
-		var authority := property_entry.node.get_multiplayer_authority()
-		
-		if authority == sender:
-			sanitized[property] = value
-		else:
-			_logger.warning(
-				"Received data for property %s, owned by %s, from sender %s",
-				[ property, authority, sender ]
-			)
-	
-	return sanitized
-
-@rpc("any_peer", "unreliable", "call_remote")
-func _submit_input(input: Dictionary, tick: int):
-	if not _is_initialized:
-		# Settings not processed yet
-		return
-	
-	var sender = multiplayer.get_remote_sender_id()
-	var sanitized = _sanitize_by_authority(input, sender)
-
-	if sanitized.size() > 0:
-		for property in sanitized:
-			for i in range(0, sanitized[property].size()):
-				var t = tick - i
-				if t < NetworkTime.tick - NetworkRollback.history_limit:
-					# Input too old
-					_logger.error("Received input for %s, rejecting because older than %s frames", [t, NetworkRollback.history_limit])
-					continue
-
-				var old_input = _inputs.get(t, {}).get(property)
-				var new_input = sanitized[property][i]
-
-				if old_input == null:
-					# We received an array of current and previous inputs, merge them into our history.
-					_inputs[t] = _inputs.get(t, {})
-					_inputs[t][property] = new_input
-					_earliest_input_tick = min(_earliest_input_tick, t)
-	else:
-		_logger.warning("Received invalid input from %s for tick %s for %s", [sender, tick, root.name])
-
-@rpc("any_peer", "unreliable_ordered", "call_remote")
-func _submit_full_state(state: Dictionary, tick: int):
-	if not _is_initialized:
-		# Settings not processed yet
-		return
-
-	if tick < NetworkTime.tick - NetworkRollback.history_limit:
-		# State too old!
-		_logger.error("Received full state for %s, rejecting because older than %s frames", [tick, NetworkRollback.history_limit])
-		return
-
-	var sender = multiplayer.get_remote_sender_id()
-	var sanitized = _sanitize_by_authority(state, sender)
-	
-	if sanitized.is_empty():
-		# State is completely invalid
-		_logger.warning("Received invalid state from %s for tick %s", [sender, tick])
-		return
-
-	_states[tick] = PropertySnapshot.merge(_states.get(tick, {}), sanitized)
-	_latest_state_tick = tick
-		
-	if NetworkRollback.enable_diff_states:
-		_ack_full_state.rpc_id(get_multiplayer_authority(), tick)
-
-@rpc("any_peer", "unreliable_ordered", "call_remote")
-func _submit_diff_state(diff_state: Dictionary, tick: int, reference_tick: int):
-	if not _is_initialized:
-		# Settings not processed yet
-		return
-
-	if tick < NetworkTime.tick - NetworkRollback.history_limit:
-		# State too old!
-		_logger.error("Received diff state for %s, rejecting because older than %s frames", [tick, NetworkRollback.history_limit])
-		return
-
-	if not _states.has(reference_tick):
-		# Reference tick missing, hope for the best
-		_logger.warning("Reference tick %d missing for %d", [reference_tick, tick])
-
-	var reference_state = _states.get(reference_tick, {})
-	var is_valid_state := true
-
-	if (diff_state.is_empty()):
-		_latest_state_tick = tick
-		_states[tick] = reference_state
-	else:
-		var sender = multiplayer.get_remote_sender_id()
-		var sanitized = _sanitize_by_authority(diff_state, sender)
-
-		if not sanitized.is_empty():
-			var result_state := PropertySnapshot.merge(reference_state, sanitized)
-			_states[tick] = result_state
-			_latest_state_tick = tick
-		else:
-			# State is completely invalid
-			_logger.warning("Received invalid state from %s for tick %s", [sender, tick])
-			is_valid_state = false
-	
-	if NetworkRollback.enable_diff_states:
-		if is_valid_state and diff_ack_interval > 0 and tick > _next_diff_ack_tick:
-			_ack_diff_state.rpc_id(get_multiplayer_authority(), tick)
-			_next_diff_ack_tick = tick + diff_ack_interval
-
-@rpc("any_peer", "reliable", "call_remote")
-func _ack_full_state(tick: int):
-	var sender_id := multiplayer.get_remote_sender_id()
-	_ackd_state[sender_id] = tick
-	
-	_logger.trace("Peer %d ack'd full state for tick %d", [sender_id, tick])
-
-@rpc("any_peer", "unreliable_ordered", "call_remote")
-func _ack_diff_state(tick: int):
-	var sender_id := multiplayer.get_remote_sender_id()
-	_ackd_state[sender_id] = tick
-	
-	_logger.trace("Peer %d ack'd diff state for tick %d", [sender_id, tick])
+func _get_owned_input_props() -> Array[PropertyEntry]:
+	return _input_property_config.get_owned_properties()

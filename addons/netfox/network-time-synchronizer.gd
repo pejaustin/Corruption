@@ -20,7 +20,7 @@ const MIN_SYNC_INTERVAL := 0.1
 var sync_interval: float:
 	get:
 		return maxf(
-			ProjectSettings.get_setting("netfox/time/sync_interval", 0.25),
+			_sync_interval,
 			MIN_SYNC_INTERVAL
 		)
 	set(v):
@@ -31,7 +31,7 @@ var sync_interval: float:
 ## [i]read-only[/i], you can change this in the Netfox project settings
 var sync_samples: int:
 	get:
-		return ProjectSettings.get_setting("netfox/time/sync_samples", 8)
+		return _sync_samples
 	set(v):
 		push_error("Trying to set read-only variable sync_samples")
 
@@ -44,7 +44,7 @@ var sync_samples: int:
 ## [i]read-only[/i], you can change this in the Netfox project settings
 var adjust_steps: int:
 	get:
-		return ProjectSettings.get_setting("netfox/time/sync_adjust_steps", 8)
+		return _adjust_steps
 	set(v):
 		push_error("Trying to set read-only variable adjust_steps")
 
@@ -56,7 +56,7 @@ var adjust_steps: int:
 ## [i]read-only[/i], you can change this in the Netfox project settings
 var panic_threshold: float:
 	get:
-		return ProjectSettings.get_setting("netfox/time/recalibrate_threshold", 2.)
+		return _panic_threshold
 	set(v):
 		push_error("Trying to set read-only variable panic_threshold")
 
@@ -95,9 +95,15 @@ var remote_offset: float:
 		return _offset
 	set(v):
 		push_error("Trying to set read-only variable remote_offset")
+		
+# Settings
+var _sync_interval: float = ProjectSettings.get_setting(&"netfox/time/sync_interval", 0.25)
+var _sync_samples: int = ProjectSettings.get_setting(&"netfox/time/sync_samples", 8)
+var _adjust_steps: int =ProjectSettings.get_setting(&"netfox/time/sync_adjust_steps", 8)
+var _panic_threshold: float = ProjectSettings.get_setting(&"netfox/time/recalibrate_threshold", 2.)
 
 var _active: bool = false
-static var _logger: _NetfoxLogger = _NetfoxLogger.for_netfox("NetworkTimeSynchronizer")
+static var _logger: NetfoxLogger = NetfoxLogger._for_netfox("NetworkTimeSynchronizer")
 
 # Samples are stored in a ring buffer
 var _sample_buffer: _RingBuffer
@@ -128,7 +134,7 @@ signal on_panic(offset: float)
 ## Start the time synchronization loop.
 ##
 ## Starting multiple times has no effect.
-func start():
+func start() -> void:
 	if _active:
 		return
 		
@@ -142,7 +148,7 @@ func start():
 		_request_timestamp.rpc_id(1)
 
 ## Stop the time synchronization loop.
-func stop():
+func stop() -> void:
 	_active = false
 
 ## Get the current time from the reference clock.
@@ -151,23 +157,30 @@ func stop():
 func get_time() -> float:
 	return _clock.get_time()
 
-func _loop():
+func _loop() -> void:
 	_logger.info("Time sync loop started! Initial timestamp: %ss", [_clock.get_time()])
 	on_initial_sync.emit()
 
 	while _active:
-		var sample = NetworkClockSample.new()
+		if multiplayer.is_server():
+			return stop()
+
+		var sample := NetworkClockSample.new()
 		_awaiting_samples[_sample_idx] = sample
-		
+
 		sample.ping_sent = _clock.get_time()
 		_send_ping.rpc_id(1, _sample_idx)
-		
+
 		_sample_idx += 1
-		
+
 		await get_tree().create_timer(sync_interval).timeout
 
-func _discipline_clock():
+func _discipline_clock() -> void:
 	var sorted_samples := _sample_buffer.get_data()
+	if sorted_samples.is_empty():
+		# Should never happen
+		_logger.warning("Trying to discipline the clock with no samples available!")
+		return
 	
 	# Sort samples by latency
 	sorted_samples.sort_custom(
@@ -180,21 +193,26 @@ func _discipline_clock():
 	])
 	
 	# Calculate rtt bounds
-	var rtt_min = sorted_samples.front().get_rtt()
-	var rtt_max = sorted_samples.back().get_rtt()
+	var rtt_min := sorted_samples.front().get_rtt() as float
+	var rtt_max := sorted_samples.back().get_rtt() as float
 	_rtt = (rtt_max + rtt_min) / 2.
 	_rtt_jitter = (rtt_max - rtt_min) / 2.
 	
 	# Calculate offset
 	var offset := 0.
-	var offsets = sorted_samples.map(func(it): return it.get_offset())
-	var offset_weight = 0.
+	var offsets := sorted_samples.map(func(it): return it.get_offset())
+	var offset_weight := 0.
 	for i in range(offsets.size()):
 		var w = log(1 + sorted_samples[i].get_rtt())
 		offset += offsets[i] * w
 		offset_weight += w
 	
-	offset /= offset_weight
+	if not is_zero_approx(offset_weight):
+		offset /= offset_weight
+	else:
+		# RTT is so good it's basically zero, which means offset_weight is zero
+		# Use a simple average instead
+		offset /= sorted_samples.size()
 	
 	# Panic / Adjust
 	if abs(offset) > panic_threshold:
@@ -218,21 +236,21 @@ func _discipline_clock():
 		_offset = offset - nudge
 
 @rpc("any_peer", "call_remote", "unreliable")
-func _send_ping(idx: int):
-	var ping_received = _clock.get_time()
-	var sender = multiplayer.get_remote_sender_id()
+func _send_ping(idx: int) -> void:
+	var ping_received := _clock.get_time()
+	var sender := multiplayer.get_remote_sender_id()
 
 	_send_pong.rpc_id(sender, idx, ping_received, _clock.get_time())
 
 @rpc("any_peer", "call_remote", "unreliable")
-func _send_pong(idx: int, ping_received: float, pong_sent: float):
-	var pong_received = _clock.get_time()
+func _send_pong(idx: int, ping_received: float, pong_sent: float) -> void:
+	var pong_received := _clock.get_time()
 	
 	if not _awaiting_samples.has(idx):
 		# Sample was dropped mid-flight during a panic episode
 		return
 	
-	var sample = _awaiting_samples[idx] as NetworkClockSample
+	var sample := _awaiting_samples[idx] as NetworkClockSample
 	sample.ping_received = ping_received
 	sample.pong_sent = pong_sent
 	sample.pong_received = pong_received
@@ -247,12 +265,12 @@ func _send_pong(idx: int, ping_received: float, pong_sent: float):
 	_discipline_clock()
 
 @rpc("any_peer", "call_remote", "reliable")
-func _request_timestamp():
+func _request_timestamp() -> void:
 	_logger.debug("Requested initial timestamp @ %.4fs raw time", [_clock.get_raw_time()])
 	_set_timestamp.rpc_id(multiplayer.get_remote_sender_id(), _clock.get_time())
 
 @rpc("any_peer", "call_remote", "reliable")
-func _set_timestamp(timestamp: float):
+func _set_timestamp(timestamp: float) -> void:
 	_logger.debug("Received initial timestamp @ %.4fs raw time", [_clock.get_raw_time()])
 	_clock.set_time(timestamp)
 	_loop()

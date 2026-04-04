@@ -16,6 +16,11 @@ static var faction_names := {
 	Faction.ELDRITCH: "Eldritch",
 }
 
+enum PlayerMode {
+	OVERLORD,
+	AVATAR,
+}
+
 static var faction_colors := {
 	Faction.UNDEATH: Color(0.4, 0.8, 0.4),
 	Faction.DEMONIC: Color(0.9, 0.2, 0.1),

@@ -84,6 +84,7 @@ func disconnect_from_game():
 		child.queue_free()
 	
 	# Reset properties
+	GameState.reset()
 	reset_selected_network()
 	reset_network_properties()
 	
