@@ -58,6 +58,7 @@ func _process(delta: float):
 		var apos = avatar_node.global_position
 		lines.append("  Avatar Pos: (%.1f, %.1f, %.1f)" % [apos.x, apos.y, apos.z])
 		lines.append("  Avatar Dormant: %s" % str(avatar_node.is_dormant))
+		lines.append("  Watchers: %d" % GameState.watcher_count)
 	else:
 		lines.append("  Avatar Entity: [color=#ff4444]NOT FOUND[/color]")
 	lines.append("")
@@ -77,6 +78,9 @@ func _process(delta: float):
 	lines.append("")
 
 	# Debug info
+	lines.append("[b]Controls[/b]")
+	lines.append("  E = interact/claim | Q = recall Avatar")
+	lines.append("")
 	lines.append("[b]Debug (F2 = add dummy)[/b]")
 	lines.append("  Dummy players: %d (slots open: %d)" % [DebugManager.get_dummy_count(), DebugManager.get_max_dummy_players()])
 	lines.append("")
