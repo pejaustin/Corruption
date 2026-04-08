@@ -14,9 +14,6 @@ var _mirror_quad: MeshInstance3D:
 	get: return _mirror3d.mirror_quad if _mirror3d else null
 var _mirror_camera: Camera3D  # The reflection camera (Mirror3D's main one)
 var _recording_camera: Camera3D  # Sibling camera used while recording
-var _recording_camera_local_xform: Transform3D  # Original local-space xform from the .tscn
-var _saved_viewport_size: Vector2i  # Original SubViewport size, restored after recording
-const RECORDING_VIEWPORT_SIZE := Vector2i(640, 480)
 
 enum State { IDLE, SELECTING, RECORDING, PREVIEW, PLAYING }
 
@@ -28,7 +25,7 @@ var _record_frames: Array[PackedByteArray] = []
 var _record_audio: PackedFloat32Array = PackedFloat32Array()
 var _record_timer: float = 0.0
 var _record_duration: float = 0.0
-const FRAME_INTERVAL := 0.1  # 10 fps
+const FRAME_INTERVAL := 1.0 / 15.0  # 15 fps
 const MAX_RECORD_SECONDS := 10.0
 const FRAME_MAX_DIMENSION := 480
 const FRAME_JPEG_QUALITY := 0.85
@@ -75,11 +72,6 @@ func _setup_mirror3d():
 	# Cache references to the two cameras inside the Mirror3D's SubViewport
 	_mirror_camera = _mirror3d.get_node_or_null("Viewport/Camera")
 	_recording_camera = _mirror3d.get_node_or_null("Viewport/RecordingCamera")
-	if _recording_camera:
-		# The .tscn-authored transform is treated as world-space (the camera
-		# has no Node3D parent in the SubViewport). Save it so we can compose
-		# it relative to this Mirror3D's quad at recording start.
-		_recording_camera_local_xform = _recording_camera.transform
 	print("Mirror: Mirror3D resolved at %s (mirror_cam=%s rec_cam=%s)" % [
 		_mirror3d.get_path(), _mirror_camera, _recording_camera
 	])
@@ -203,19 +195,16 @@ func _start_recording():
 	_record_timer = 0.0
 	_record_duration = 0.0
 
-	# Bump the SubViewport to a higher resolution for recording so frames
-	# aren't capped at the mirror's reflection-quality size.
-	if _mirror_viewport:
-		_saved_viewport_size = _mirror_viewport.size
-		_mirror_viewport.size = RECORDING_VIEWPORT_SIZE
-
 	# Switch the SubViewport to render from RecordingCamera instead of the
 	# reflection camera. This both gives us the right POV for the recording
 	# AND turns the mirror surface into a live preview while recording.
-	if _recording_camera and _mirror_quad:
-		# Position the recording camera in world space at the mirror's location,
-		# composing the .tscn-authored offset onto the mirror quad's transform.
-		_recording_camera.global_transform = _mirror_quad.global_transform * _recording_camera_local_xform
+	if _recording_camera and _mirror3d:
+		# Static "selfie" framing: sit at the mirror, facing out the player side.
+		# Default Camera3D forward is local -Z, which matches this scene's setup
+		# (player approaches from the -Z side of the Mirror3D node). If the
+		# mirror is reoriented in the editor and the camera ends up facing the
+		# wrong way, rotate the Mirror3D node 180° around its Y axis.
+		_recording_camera.global_transform = _mirror3d.global_transform
 		_recording_camera.current = true
 
 	# Start mic capture
@@ -229,10 +218,7 @@ func _stop_recording():
 	if _mirror_camera:
 		_mirror_camera.current = true
 
-	# Restore the original viewport size and tell the addon to reapply its
-	# config (it only resizes the viewport when config_dirty is true).
-	if _mirror_viewport and _saved_viewport_size != Vector2i.ZERO:
-		_mirror_viewport.size = _saved_viewport_size
+	# Tell the addon to reapply its config so the reflection feed resumes cleanly.
 	if _mirror3d:
 		_mirror3d.config_dirty = true
 
