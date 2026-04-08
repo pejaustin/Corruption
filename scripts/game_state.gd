@@ -137,7 +137,16 @@ func remove_watcher_position(peer_id: int):
 signal mirror_message_received(message: MirrorMessage)
 
 @rpc("any_peer", "reliable")
-func deliver_mirror_message(sender_id: int, recipient_id: int, frames: Array, audio_data: PackedByteArray, duration: float, sample_rate: int = 22050, frame_rate: float = 5.0):
+func deliver_mirror_message(
+	sender_id: int,
+	recipient_id: int,
+	ghost_xforms: Array,
+	anim_states: PackedStringArray,
+	pose_sample_rate: float,
+	audio_data: PackedByteArray,
+	audio_sample_rate: int,
+	duration: float
+):
 	## Route mirror messages through this autoload so the RPC path is consistent.
 	## Called by sender, arrives on recipient.
 	if multiplayer.get_unique_id() != recipient_id:
@@ -145,13 +154,16 @@ func deliver_mirror_message(sender_id: int, recipient_id: int, frames: Array, au
 	var msg = MirrorMessage.new()
 	msg.sender_peer_id = sender_id
 	msg.recipient_peer_id = recipient_id
-	for f in frames:
-		msg.frames.append(f)
+	for x in ghost_xforms:
+		msg.ghost_xforms.append(x)
+	msg.anim_states = anim_states
+	msg.pose_sample_rate = pose_sample_rate
 	msg.audio_data = audio_data
+	msg.audio_sample_rate = audio_sample_rate
 	msg.duration = duration
-	msg.sample_rate = sample_rate
-	msg.frame_rate = frame_rate
-	print("Mirror: received message - %d frames, %d audio bytes, %.1fs @ %dhz, %.1ffps" % [frames.size(), audio_data.size(), duration, sample_rate, frame_rate])
+	print("Mirror: received message - %d pose samples @ %.1fhz, %d audio bytes, %.1fs" % [
+		msg.ghost_xforms.size(), msg.pose_sample_rate, msg.audio_data.size(), msg.duration
+	])
 	mirror_message_received.emit(msg)
 
 func reset():

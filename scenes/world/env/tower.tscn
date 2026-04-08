@@ -992,7 +992,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5264935, 39.29396, 0.83745
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, 5.67113)
 
 [node name="Mirror" parent="." unique_id=1746222107 instance=ExtResource("19_eoso1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5465364, 49.17008, 10.239577)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5465364, 47.67545, 14.156852)
 
 [node name="Table3" parent="." unique_id=460681090 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.0855, 47.75, 5.67113)

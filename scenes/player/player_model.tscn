@@ -1,14 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://cxjk8dd2j2a0y"]
+[gd_scene format=3 uid="uid://cxjk8dd2j2a0y"]
 
 [ext_resource type="PackedScene" uid="uid://nqo7hkflihyl" path="res://assets/characters/Lich-applying.glb" id="2_ppjps"]
 
-[node name="Model" type="Node3D"]
+[node name="Model" type="Node3D" unique_id=220719569]
 
-[node name="RootNode" type="Node3D" parent="."]
+[node name="RootNode" type="Node3D" parent="." unique_id=1607072668]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0)
 
-[node name="Lich-applying" parent="RootNode" instance=ExtResource("2_ppjps")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0626569, 0, 0.507571)
+[node name="Lich-applying" parent="RootNode" unique_id=601005526 instance=ExtResource("2_ppjps")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.508)
 
 [node name="Skeleton3D" parent="RootNode/Lich-applying/Armature" index="0"]
 bones/0/position = Vector3(0, -0.355758, 0)
@@ -36,8 +36,8 @@ bones/31/rotation = Quaternion(-6.48194e-08, -0.707107, 0.707107, -1.37679e-07)
 bones/32/position = Vector3(0.0925207, -0.475224, -0.421997)
 bones/32/rotation = Quaternion(0.349441, 3.15215e-12, 5.27556e-08, 0.936959)
 
-[node name="hand" type="BoneAttachment3D" parent="RootNode/Lich-applying/Armature/Skeleton3D" index="2"]
-transform = Transform3D(-0.997619, 0.0668412, 0.0170109, -0.0523981, -0.894862, 0.443257, 0.0448505, 0.441311, 0.896234, 0.345178, 0.668589, 0.0184961)
+[node name="hand" type="BoneAttachment3D" parent="RootNode/Lich-applying/Armature/Skeleton3D" index="2" unique_id=980061578]
+transform = Transform3D(-0.99761844, 0.066842616, 0.017011434, -0.052399397, -0.8948631, 0.44325498, 0.044851363, 0.44130933, 0.8962349, 0.34517783, 0.66858953, 0.018495537)
 bone_name = "Hand.L"
 bone_idx = 9
 

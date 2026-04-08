@@ -1,12 +1,12 @@
-[gd_scene load_steps=15 format=3 uid="uid://xjygpllvas2q"]
+[gd_scene format=3 uid="uid://xjygpllvas2q"]
 
 [ext_resource type="Script" uid="uid://bkgyb5d5m4se0" path="res://scripts/player.gd" id="1_hkxbp"]
 [ext_resource type="PackedScene" uid="uid://l1d8hwvn7hbq" path="res://scenes/player/camera_input.tscn" id="2_24wjx"]
 [ext_resource type="Script" uid="uid://b4vv0uthpt8nf" path="res://scripts/player_input.gd" id="2_e03e3"]
-[ext_resource type="PackedScene" uid="uid://cxjk8dd2j2a0y" path="res://scenes/player/military_male.tscn" id="4_fvytd"]
-[ext_resource type="Script" uid="uid://csux4n83qhbue" path="res://addons/netfox/rollback/rollback-synchronizer.gd" id="5_sf48l"]
-[ext_resource type="Script" uid="uid://h66ntnhws4ae" path="res://addons/netfox/tick-interpolator.gd" id="6_rwdl2"]
-[ext_resource type="Script" uid="uid://c5oy5ps2bt7hb" path="res://addons/netfox.extras/state-machine/rewindable-state-machine.gd" id="7_b1gbo"]
+[ext_resource type="PackedScene" uid="uid://cxjk8dd2j2a0y" path="res://scenes/player/player_model.tscn" id="4_fvytd"]
+[ext_resource type="Script" uid="uid://d350u8evihs1u" path="res://addons/netfox/rollback/rollback-synchronizer.gd" id="5_sf48l"]
+[ext_resource type="Script" uid="uid://dour8fehaaugp" path="res://addons/netfox/tick-interpolator.gd" id="6_rwdl2"]
+[ext_resource type="Script" uid="uid://byrgwv2o7hstx" path="res://addons/netfox.extras/state-machine/rewindable-state-machine.gd" id="7_b1gbo"]
 [ext_resource type="Script" uid="uid://o4nlc4njxl0i" path="res://scripts/states/movement/idle_state.gd" id="8_lfiis"]
 [ext_resource type="Script" uid="uid://bse11sjrcympt" path="res://scripts/states/movement/move_state.gd" id="9_yw7u2"]
 [ext_resource type="Script" uid="uid://blikma28g5cv" path="res://scripts/states/movement/jump_state.gd" id="10_ak1iu"]
@@ -18,18 +18,18 @@
 radius = 0.35
 height = 2.8
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_player_input", "_camera_input", "_player_model", "_state_machine")]
+[node name="Player" type="CharacterBody3D" unique_id=1838049823 node_paths=PackedStringArray("_player_input", "_camera_input", "_player_model", "_state_machine")]
 script = ExtResource("1_hkxbp")
 _player_input = NodePath("PlayerInput")
 _camera_input = NodePath("CameraInput")
 _player_model = NodePath("Model")
 _state_machine = NodePath("RewindableStateMachine")
 
-[node name="CameraInput" parent="." node_paths=PackedStringArray("rollback_synchronizer") instance=ExtResource("2_24wjx")]
+[node name="CameraInput" parent="." unique_id=698534583 node_paths=PackedStringArray("rollback_synchronizer") instance=ExtResource("2_24wjx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.314, 0)
 rollback_synchronizer = NodePath("../RollbackSynchronizer")
 
-[node name="Model" parent="." instance=ExtResource("4_fvytd")]
+[node name="Model" parent="." unique_id=1859756760 instance=ExtResource("4_fvytd")]
 
 [node name="Lich-applying" parent="Model/RootNode" index="0"]
 transform = Transform3D(1.71601, 0, 0, 0, 1.71601, 0, 0, 0, 1.71601, 0.0626569, 0, -0.0139697)
@@ -41,30 +41,30 @@ layers = 2
 layers = 2
 
 [node name="hand" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="2"]
-transform = Transform3D(-0.997618, 0.0668426, 0.0170114, -0.0523994, -0.894863, 0.443255, 0.0448514, 0.441309, 0.896235, 0.345178, 0.66859, 0.0184955)
+transform = Transform3D(-0.99761844, 0.066842616, 0.017011434, -0.052399397, -0.8948631, 0.44325498, 0.044851363, 0.44130933, 0.8962349, 0.34517783, 0.66858953, 0.018495537)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1950139549]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.08165e-12, 1.41129, 2.08165e-12)
 shape = SubResource("CapsuleShape3D_ihjgv")
 
-[node name="PlayerInput" type="Node" parent="."]
+[node name="PlayerInput" type="Node" parent="." unique_id=1599331421]
 script = ExtResource("2_e03e3")
 
-[node name="RollbackSynchronizer" type="Node" parent="." node_paths=PackedStringArray("root")]
+[node name="RollbackSynchronizer" type="Node" parent="." unique_id=269519820 node_paths=PackedStringArray("root")]
 script = ExtResource("5_sf48l")
 root = NodePath("..")
 state_properties = Array[String]([":transform", ":velocity", "Model:transform", "RewindableStateMachine:state"])
 input_properties = Array[String](["PlayerInput:input_dir", "PlayerInput:jump_input", "PlayerInput:run_input", "CameraInput:camera_basis"])
 
-[node name="TickInterpolator" type="Node" parent="." node_paths=PackedStringArray("root")]
+[node name="TickInterpolator" type="Node" parent="." unique_id=969908697 node_paths=PackedStringArray("root")]
 script = ExtResource("6_rwdl2")
 root = NodePath("..")
 properties = Array[String]([":transform", "Model:transform"])
 
-[node name="RewindableStateMachine" type="Node" parent="."]
+[node name="RewindableStateMachine" type="Node" parent="." unique_id=59790105]
 script = ExtResource("7_b1gbo")
 
-[node name="IdleState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
+[node name="IdleState" type="Node" parent="RewindableStateMachine" unique_id=552815993 node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
 script = ExtResource("8_lfiis")
 animation_name = "male_animation_lib/idle"
 camera_input = NodePath("../../CameraInput")
@@ -72,7 +72,7 @@ player_model = NodePath("../../Model")
 player_input = NodePath("../../PlayerInput")
 parent = NodePath("../..")
 
-[node name="MoveState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
+[node name="MoveState" type="Node" parent="RewindableStateMachine" unique_id=1209188061 node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
 script = ExtResource("9_yw7u2")
 animation_name = "male_animation_lib/walk"
 camera_input = NodePath("../../CameraInput")
@@ -80,7 +80,7 @@ player_model = NodePath("../../Model")
 player_input = NodePath("../../PlayerInput")
 parent = NodePath("../..")
 
-[node name="JumpState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
+[node name="JumpState" type="Node" parent="RewindableStateMachine" unique_id=1610863537 node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
 script = ExtResource("10_ak1iu")
 animation_name = "male_animation_lib/jump"
 camera_input = NodePath("../../CameraInput")
@@ -88,7 +88,7 @@ player_model = NodePath("../../Model")
 player_input = NodePath("../../PlayerInput")
 parent = NodePath("../..")
 
-[node name="FallState" type="Node" parent="RewindableStateMachine" node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
+[node name="FallState" type="Node" parent="RewindableStateMachine" unique_id=305987154 node_paths=PackedStringArray("camera_input", "player_model", "player_input", "parent")]
 script = ExtResource("11_28r1c")
 animation_name = "male_animation_lib/jump"
 camera_input = NodePath("../../CameraInput")
@@ -96,10 +96,10 @@ player_model = NodePath("../../Model")
 player_input = NodePath("../../PlayerInput")
 parent = NodePath("../..")
 
-[node name="AttackState" type="Node" parent="RewindableStateMachine"]
+[node name="AttackState" type="Node" parent="RewindableStateMachine" unique_id=1931892902]
 metadata/_custom_type_script = "uid://dij2fvxmmxyn4"
 
-[node name="PerspectiveManager" parent="." node_paths=PackedStringArray("player", "bullet_raycast", "view_model_container", "world_model_container") instance=ExtResource("12_fm80t")]
+[node name="PerspectiveManager" parent="." unique_id=729530649 node_paths=PackedStringArray("player", "bullet_raycast", "view_model_container", "world_model_container") instance=ExtResource("12_fm80t")]
 current_perspective = ExtResource("13_gx1jg")
 player = NodePath("..")
 bullet_raycast = NodePath("../CameraInput/CameraMount/CameraRot/Camera3D/RayCast3D")

@@ -1,10 +1,21 @@
 extends Area3D
 
-## The Mirror — record and send video messages to rival Overlords.
-## Uses the tower's existing SubViewport/Sprite3D for the mirror surface.
-## Diegetic UI: buttons are Area3D children positioned on the mirror.
+## The Mirror — record and send "video" messages to rival Overlords.
+##
+## Instead of capturing pixel frames (which forces a per-frame GPU readback
+## and tanks fps), we record the sender's player-model pose at a fixed rate.
+## On playback the recipient's mirror loads its own isolated stage scene
+## into the Mirror3D SubViewport and drives a ghost copy of player_model.tscn
+## from the recorded pose track.
 
 @export var interact_prompt: Label3D
+
+const STAGE_SCENE := preload("res://scenes/interactibles/mirror_stage.tscn")
+
+# Pose recording cadence
+const POSE_SAMPLE_RATE := 30.0
+const POSE_SAMPLE_INTERVAL := 1.0 / POSE_SAMPLE_RATE
+const MAX_RECORD_SECONDS := 10.0
 
 var _mirror3d: Node3D  # The Mirror3D addon node (typed loosely to avoid class load issues)
 # Convenience accessors into the addon (which has its own per-instance material)
@@ -12,23 +23,19 @@ var _mirror_viewport: SubViewport:
 	get: return _mirror3d.mirror_viewport if _mirror3d else null
 var _mirror_quad: MeshInstance3D:
 	get: return _mirror3d.mirror_quad if _mirror3d else null
-var _mirror_camera: Camera3D  # The reflection camera (Mirror3D's main one)
-var _recording_camera: Camera3D  # Sibling camera used while recording
 
 enum State { IDLE, SELECTING, RECORDING, PREVIEW, PLAYING }
 
 var _player_in_range: Player = null
 var _state: State = State.IDLE
 
-# Recording
-var _record_frames: Array[PackedByteArray] = []
+# Recording — pose track (stage-local) + audio
+var _record_origin: Transform3D
+var _record_xforms: Array[Transform3D] = []
+var _record_anims: PackedStringArray = PackedStringArray()
 var _record_audio: PackedFloat32Array = PackedFloat32Array()
-var _record_timer: float = 0.0
+var _record_sample_timer: float = 0.0
 var _record_duration: float = 0.0
-const FRAME_INTERVAL := 1.0 / 15.0  # 15 fps
-const MAX_RECORD_SECONDS := 10.0
-const FRAME_MAX_DIMENSION := 480
-const FRAME_JPEG_QUALITY := 0.85
 
 # Audio capture
 var _mic_player: AudioStreamPlayer
@@ -37,15 +44,17 @@ var _mic_bus_idx: int = -1
 
 # Playback
 var _play_message: MirrorMessage = null
-var _play_frame_idx: int = 0
-var _play_timer: float = 0.0
+var _play_stage: Node3D = null
+var _play_ghost: Node3D = null
+var _play_ghost_anim: AnimationPlayer = null
+var _play_last_anim: String = ""
 var _play_audio_player: AudioStreamPlayer
 var _play_audio_samples: PackedFloat32Array
 var _play_audio_pos: int = 0
+var _play_timer: float = 0.0
 
 # Pending messages (received from other players)
 var _inbox: Array[MirrorMessage] = []
-var _original_mirror_texture: Texture2D = null
 
 # Selected recipient for sending
 var _selected_recipient: int = -1
@@ -53,7 +62,7 @@ var _recorded_message: MirrorMessage = null
 
 func _ready():
 	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
+	#body_exited.connect(_on_body_exited)
 	GameState.mirror_message_received.connect(_on_message_received)
 	_setup_mic_bus()
 	_update_prompt()
@@ -69,12 +78,7 @@ func _setup_mirror3d():
 	if not _mirror3d:
 		push_warning("Mirror: Mirror3D sibling not found under parent %s" % parent)
 		return
-	# Cache references to the two cameras inside the Mirror3D's SubViewport
-	_mirror_camera = _mirror3d.get_node_or_null("Viewport/Camera")
-	_recording_camera = _mirror3d.get_node_or_null("Viewport/RecordingCamera")
-	print("Mirror: Mirror3D resolved at %s (mirror_cam=%s rec_cam=%s)" % [
-		_mirror3d.get_path(), _mirror_camera, _recording_camera
-	])
+	print("Mirror: Mirror3D resolved at %s" % _mirror3d.get_path())
 
 func _setup_mic_bus():
 	# All mirrors share a single "MirrorMic" bus. If another mirror already
@@ -127,14 +131,14 @@ func _on_body_entered(body: Node3D):
 		_player_in_range = body
 		_update_prompt()
 
-func _on_body_exited(body: Node3D):
-	if body == _player_in_range:
-		_player_in_range = null
-		if _state == State.RECORDING:
-			_stop_recording()
-		if _state != State.IDLE:
-			_state = State.IDLE
-		_update_prompt()
+#func _on_body_exited(body: Node3D):
+	#if body == _player_in_range:
+		#_player_in_range = null
+		#if _state == State.RECORDING:
+			#_stop_recording()
+		#if _state != State.IDLE:
+			#_state = State.IDLE
+		#_update_prompt()
 
 func _unhandled_input(event: InputEvent):
 	if not _player_in_range:
@@ -152,13 +156,11 @@ func _unhandled_input(event: InputEvent):
 			else:
 				_enter_selecting()
 		State.SELECTING:
-			# Selected recipient is set by _process raycast
 			if _selected_recipient > 0:
 				_start_recording()
 		State.RECORDING:
 			_stop_recording()
 		State.PREVIEW:
-			# E confirms send
 			_send_message()
 		State.PLAYING:
 			_stop_playback()
@@ -188,24 +190,31 @@ func _enter_selecting():
 	_state = State.SELECTING
 	_selected_recipient = -1
 
+# ---------------------------------------------------------------------------
+# RECORDING
+# ---------------------------------------------------------------------------
+
 func _start_recording():
+	if not _player_in_range:
+		return
 	_state = State.RECORDING
-	_record_frames.clear()
+	_record_xforms.clear()
+	_record_anims = PackedStringArray()
 	_record_audio = PackedFloat32Array()
-	_record_timer = 0.0
+	_record_sample_timer = 0.0
 	_record_duration = 0.0
 
-	# Switch the SubViewport to render from RecordingCamera instead of the
-	# reflection camera. This both gives us the right POV for the recording
-	# AND turns the mirror surface into a live preview while recording.
-	if _recording_camera and _mirror3d:
-		# Static "selfie" framing: sit at the mirror, facing out the player side.
-		# Default Camera3D forward is local -Z, which matches this scene's setup
-		# (player approaches from the -Z side of the Mirror3D node). If the
-		# mirror is reoriented in the editor and the camera ends up facing the
-		# wrong way, rotate the Mirror3D node 180° around its Y axis.
-		_recording_camera.global_transform = _mirror3d.global_transform
-		_recording_camera.current = true
+	# Snapshot the recorder's Model global transform as the stage origin.
+	# All subsequent samples are stored relative to this so the ghost ends
+	# up centered on the stage regardless of where the recorder stood.
+	var model := _get_player_model(_player_in_range)
+	if model:
+		_record_origin = model.global_transform
+	else:
+		_record_origin = _player_in_range.global_transform
+
+	# Take an initial sample so the very first frame of playback is correct
+	_capture_pose_sample()
 
 	# Start mic capture
 	_audio_capture.clear_buffer()
@@ -213,49 +222,81 @@ func _start_recording():
 
 func _stop_recording():
 	_mic_player.stop()
-
-	# Restore the reflection camera as the SubViewport's active camera
-	if _mirror_camera:
-		_mirror_camera.current = true
-
-	# Tell the addon to reapply its config so the reflection feed resumes cleanly.
-	if _mirror3d:
-		_mirror3d.config_dirty = true
-
-	# Grab remaining audio
 	_grab_audio()
 
 	# Build message
 	_recorded_message = MirrorMessage.new()
 	_recorded_message.sender_peer_id = multiplayer.get_unique_id()
 	_recorded_message.recipient_peer_id = _selected_recipient
-	_recorded_message.frames = _record_frames.duplicate()
-	_recorded_message.audio_data = _float32_to_bytes(_record_audio)
-	_recorded_message.sample_rate = int(AudioServer.get_mix_rate())
+	_recorded_message.ghost_xforms = _record_xforms.duplicate()
+	_recorded_message.anim_states = _record_anims.duplicate()
+	_recorded_message.pose_sample_rate = POSE_SAMPLE_RATE
+	_recorded_message.audio_data = _record_audio.to_byte_array()
+	_recorded_message.audio_sample_rate = int(AudioServer.get_mix_rate())
 	_recorded_message.duration = _record_duration
-	_recorded_message.frame_rate = 1.0 / FRAME_INTERVAL
-	print("Mirror: recorded %d frames, %d audio samples, %.1fs" % [_record_frames.size(), _record_audio.size(), _record_duration])
+	print("Mirror: recorded %d pose samples, %d audio samples, %.1fs" % [
+		_record_xforms.size(), _record_audio.size(), _record_duration
+	])
 
 	_state = State.PREVIEW
+
+func _process_recording(delta: float):
+	_record_duration += delta
+	_record_sample_timer += delta
+
+	# Capture pose at fixed cadence
+	while _record_sample_timer >= POSE_SAMPLE_INTERVAL:
+		_record_sample_timer -= POSE_SAMPLE_INTERVAL
+		_capture_pose_sample()
+
+	# Drain mic buffer continuously
+	_grab_audio()
+
+	_update_prompt()
+
+	if _record_duration >= MAX_RECORD_SECONDS:
+		_stop_recording()
+		_update_prompt()
+
+func _capture_pose_sample():
+	if not _player_in_range:
+		return
+	var model := _get_player_model(_player_in_range)
+	if not model:
+		return
+	var stage_local := _record_origin.affine_inverse() * model.global_transform
+	_record_xforms.append(stage_local)
+	_record_anims.append(_get_current_anim_name(_player_in_range))
+
+func _get_player_model(player: Player) -> Node3D:
+	# Player.tscn exposes the model under "Model" — see player.tscn:25
+	return player.get_node_or_null("Model") as Node3D
+
+func _get_current_anim_name(player: Player) -> String:
+	# Read the animation name straight off the current state node. This
+	# avoids depending on the (currently broken) AnimationPlayer reference
+	# on the live player; the state machine is the source of truth.
+	if not player or not player._state_machine:
+		return ""
+	var state_name: StringName = player._state_machine.state
+	if state_name == &"":
+		return ""
+	var state_node := player._state_machine.get_node_or_null(NodePath(state_name))
+	if state_node and "animation_name" in state_node:
+		return state_node.animation_name
+	return ""
 
 func _grab_audio():
 	if _audio_capture:
 		var avail = _audio_capture.get_frames_available()
 		if avail > 0:
 			var buf = _audio_capture.get_buffer(avail)
-			var nonzero := 0
 			for frame in buf:
-				if frame.x != 0.0:
-					nonzero += 1
 				_record_audio.append(frame.x)  # Mono: take left channel
-			if nonzero == 0 and buf.size() > 0:
-				print("Mirror: grabbed %d frames, ALL ZERO" % buf.size())
 
-func _float32_to_bytes(samples: PackedFloat32Array) -> PackedByteArray:
-	return samples.to_byte_array()
-
-func _bytes_to_float32(data: PackedByteArray) -> PackedFloat32Array:
-	return data.to_float32_array()
+# ---------------------------------------------------------------------------
+# SENDING
+# ---------------------------------------------------------------------------
 
 func _send_message():
 	if not _recorded_message:
@@ -264,112 +305,145 @@ func _send_message():
 	_recorded_message = null
 	_state = State.IDLE
 
-	# Route through GameState autoload so the RPC path is consistent
-	GameState.deliver_mirror_message.rpc_id(msg.recipient_peer_id,
+	GameState.deliver_mirror_message.rpc_id(
+		msg.recipient_peer_id,
 		msg.sender_peer_id,
 		msg.recipient_peer_id,
-		msg.frames,
+		msg.ghost_xforms,
+		msg.anim_states,
+		msg.pose_sample_rate,
 		msg.audio_data,
-		msg.duration,
-		msg.sample_rate,
-		msg.frame_rate
+		msg.audio_sample_rate,
+		msg.duration
 	)
 
 func _on_message_received(msg: MirrorMessage):
 	_inbox.append(msg)
 	_update_prompt()
 
+# ---------------------------------------------------------------------------
+# PLAYBACK
+# ---------------------------------------------------------------------------
+
 func _start_playback(msg: MirrorMessage):
 	_state = State.PLAYING
 	_play_message = msg
-	_play_frame_idx = 0
 	_play_timer = 0.0
 	_play_audio_pos = 0
+	_play_last_anim = ""
 
-	print("Mirror: _start_playback frames=%d duration=%.2f mirror3d=%s quad=%s" % [
-		msg.frames.size(), msg.duration, _mirror3d, _mirror_quad
-	])
+	if not _mirror_viewport:
+		push_warning("Mirror: cannot play, no SubViewport")
+		return
 
-	# Save original mirror texture so we can restore it
-	if _mirror_quad and not _original_mirror_texture:
-		var mat = _mirror_quad.get_active_material(0)
-		if mat:
-			_original_mirror_texture = mat.get_shader_parameter("mirror_texture_linear")
-			print("Mirror: saved original texture: %s" % _original_mirror_texture)
+	# Hand the SubViewport its own World3D so the stage scene is isolated
+	# from the live game world. This means Mirror3D's reflection won't run
+	# inside the viewport while we're playing back, which is what we want.
+	_mirror_viewport.own_world_3d = true
+
+	# Instance the stage and parent it under the SubViewport
+	_play_stage = STAGE_SCENE.instantiate()
+	_mirror_viewport.add_child(_play_stage)
+
+	# Force our StageCamera to be the current one. With own_world_3d the
+	# SubViewport now contains 3 cameras (Mirror3D's Camera + RecordingCamera
+	# + our StageCamera) and Godot's auto-current pick is unreliable.
+	var stage_cam := _play_stage.get_node_or_null("StageCamera") as Camera3D
+	if stage_cam:
+		stage_cam.current = true
+		print("Mirror: StageCamera global=%s" % stage_cam.global_transform)
+	else:
+		push_warning("Mirror: stage has no StageCamera")
+
+	# Locate the ghost and its AnimationPlayer
+	_play_ghost = _play_stage.get_node_or_null("Ghost") as Node3D
+	if _play_ghost:
+		_play_ghost_anim = _find_animation_player(_play_ghost)
+		# Apply the first sample immediately so the very first frame is right
+		if msg.ghost_xforms.size() > 0:
+			_play_ghost.transform = msg.ghost_xforms[0]
+		if msg.anim_states.size() > 0:
+			_apply_anim_state(msg.anim_states[0])
+		#print("Mirror: Ghost local=%s anim_player=%s mesh_count=%d" % [
+			#_play_ghost.transform, _play_ghost_anim, _count_meshes(_play_ghost)
+		#])
+	else:
+		push_warning("Mirror: stage scene has no Ghost node")
 
 	# Build audio stream for playback
 	if msg.audio_data.size() > 0:
-		_play_audio_samples = _bytes_to_float32(msg.audio_data)
+		_play_audio_samples = msg.audio_data.to_float32_array()
 		var generator = AudioStreamGenerator.new()
-		generator.mix_rate = msg.sample_rate
+		generator.mix_rate = msg.audio_sample_rate
 		generator.buffer_length = 0.5
 		_play_audio_player.stream = generator
 		_play_audio_player.volume_db = 0.0
 		_play_audio_player.bus = "Master"
 		_play_audio_player.play()
-		# Diagnostic: peak amplitude of samples
-		var peak := 0.0
-		for s in _play_audio_samples:
-			var a = abs(s)
-			if a > peak:
-				peak = a
-		print("Mirror: playing %d audio samples at %dhz, duration=%.2fs, peak=%f, player.playing=%s" % [_play_audio_samples.size(), msg.sample_rate, msg.duration, peak, _play_audio_player.playing])
-		# Pre-fill the buffer immediately so the generator doesn't underrun
 		_push_audio_to_buffer()
-	else:
-		print("Mirror: no audio data in message")
+	print("Mirror: playing %d pose samples, %.1fs, %d audio samples" % [
+		msg.ghost_xforms.size(), msg.duration, _play_audio_samples.size() if msg.audio_data.size() > 0 else 0
+	])
 
 func _stop_playback():
 	_play_audio_player.stop()
+
+	if _play_stage and is_instance_valid(_play_stage):
+		_play_stage.queue_free()
+	_play_stage = null
+	_play_ghost = null
+	_play_ghost_anim = null
+	_play_last_anim = ""
+
+	if _mirror_viewport:
+		_mirror_viewport.own_world_3d = false
+	if _mirror3d:
+		# Force the addon to re-apply its config so the reflection feed
+		# resumes cleanly on the next frame.
+		_mirror3d.config_dirty = true
+
 	if _play_message in _inbox:
 		_inbox.erase(_play_message)
 	_play_message = null
 	_state = State.IDLE
 
-	# Restore mirror to live viewport feed
-	if _mirror_quad and _original_mirror_texture:
-		var mat = _mirror_quad.get_active_material(0)
-		if mat:
-			mat.set_shader_parameter("mirror_texture_linear", _original_mirror_texture)
-		_original_mirror_texture = null
+func _process_playback(delta: float):
+	if not _play_message:
+		return
+	_play_timer += delta
 
-func _process(delta: float):
-	match _state:
-		State.RECORDING:
-			_process_recording(delta)
-		State.PLAYING:
-			_process_playback(delta)
-		State.SELECTING:
-			_process_selecting()
+	# Push audio samples to the generator buffer
+	_push_audio_to_buffer()
 
-func _process_recording(delta: float):
-	_record_duration += delta
-	_record_timer += delta
+	# Drive the ghost from pose samples, indexed by playback time so that
+	# pose stays locked to audio even if the local frame rate hitches.
+	if _play_ghost and _play_message.ghost_xforms.size() > 0:
+		var idx := int(_play_timer * _play_message.pose_sample_rate)
+		if idx >= _play_message.ghost_xforms.size():
+			idx = _play_message.ghost_xforms.size() - 1
+		_play_ghost.transform = _play_message.ghost_xforms[idx]
+		if idx < _play_message.anim_states.size():
+			_apply_anim_state(_play_message.anim_states[idx])
 
-	# Capture frame at interval
-	if _record_timer >= FRAME_INTERVAL:
-		_record_timer -= FRAME_INTERVAL
-		if _mirror_viewport:
-			var image = _mirror_viewport.get_texture().get_image()
-			# Scale down proportionally if either dimension exceeds the cap,
-			# preserving the mirror's aspect ratio.
-			var w := image.get_width()
-			var h := image.get_height()
-			if w > FRAME_MAX_DIMENSION or h > FRAME_MAX_DIMENSION:
-				var scale: float = float(FRAME_MAX_DIMENSION) / float(maxi(w, h))
-				image.resize(int(w * scale), int(h * scale))
-			var jpg = image.save_jpg_to_buffer(FRAME_JPEG_QUALITY)
-			_record_frames.append(jpg)
-
-	# Capture audio
-	_grab_audio()
-
-	_update_prompt()
-
-	# Auto-stop at max duration
-	if _record_duration >= MAX_RECORD_SECONDS:
-		_stop_recording()
+	if _play_timer >= _play_message.duration:
+		_stop_playback()
 		_update_prompt()
+
+func _apply_anim_state(anim_name: String):
+	if anim_name == _play_last_anim:
+		return
+	_play_last_anim = anim_name
+	if _play_ghost_anim and anim_name != "" and _play_ghost_anim.has_animation(anim_name):
+		_play_ghost_anim.play(anim_name)
+
+func _find_animation_player(root: Node) -> AnimationPlayer:
+	if root is AnimationPlayer:
+		return root
+	for child in root.get_children():
+		var result := _find_animation_player(child)
+		if result:
+			return result
+	return null
 
 func _push_audio_to_buffer():
 	if not _play_audio_player.playing or _play_audio_samples.size() == 0:
@@ -387,34 +461,20 @@ func _push_audio_to_buffer():
 		playback.push_frame(Vector2(s, s))
 		_play_audio_pos += 1
 
-func _process_playback(delta: float):
-	if not _play_message:
-		return
-	_play_timer += delta
+# ---------------------------------------------------------------------------
+# MAIN LOOP / UI
+# ---------------------------------------------------------------------------
 
-	# Push audio samples to the generator buffer
-	_push_audio_to_buffer()
-
-	# Show current frame on mirror viewport
-	var frame_idx = int(_play_timer * _play_message.frame_rate)
-	if frame_idx < _play_message.frames.size():
-		if frame_idx != _play_frame_idx:
-			_play_frame_idx = frame_idx
-			var image = Image.new()
-			image.load_jpg_from_buffer(_play_message.frames[frame_idx])
-			if _mirror_quad and image:
-				var tex = ImageTexture.create_from_image(image)
-				var mat = _mirror_quad.get_active_material(0)
-				if mat:
-					mat.set_shader_parameter("mirror_texture_linear", tex)
-					print("Mirror: showing frame %d on %s" % [frame_idx, _mirror_quad.get_path()])
-	elif _play_timer >= _play_message.duration:
-		_stop_playback()
-		_update_prompt()
+func _process(delta: float):
+	match _state:
+		State.RECORDING:
+			_process_recording(delta)
+		State.PLAYING:
+			_process_playback(delta)
+		State.SELECTING:
+			_process_selecting()
 
 func _process_selecting():
-	# Determine which player the reticle is pointing at
-	# For now, cycle through available peers
 	# TODO: raycast-based selection from diegetic mirror buttons
 	var peers = multiplayer.get_peers()
 	if peers.size() > 0 and _selected_recipient <= 0:
