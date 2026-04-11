@@ -1,5 +1,0 @@
-[gd_scene format=3 uid="uid://ucn18sd0rq6g"]
-
-[ext_resource type="PackedScene" uid="uid://cuueotwkkt5an" path="res://assets/characters/characterLargeMale.fbx" id="1_dymc6"]
-
-[node name="characterLargeMale" unique_id=1368267693 instance=ExtResource("1_dymc6")]

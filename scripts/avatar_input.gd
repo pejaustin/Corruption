@@ -20,7 +20,7 @@ func _gather():
 		input_dir = Input.get_vector("left", "right", "forward", "backward")
 		jump_input = Input.is_action_pressed("jump")
 		run_input = Input.is_action_pressed("run")
-		attack_input = Input.is_action_pressed("player_action_1")
+		attack_input = Input.is_action_pressed("attack")
 	else:
 		input_dir = Vector2.ZERO
 		jump_input = false

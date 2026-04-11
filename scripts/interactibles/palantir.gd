@@ -65,7 +65,7 @@ func _unhandled_input(event: InputEvent):
 func _process(delta: float):
 	if _is_scrying and _scry_pivot:
 		var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-		if avatar and avatar is Avatar:
+		if avatar and avatar is PlayerActor:
 			_scry_pivot.global_position = avatar.global_position + Vector3(0, 1.5, 0)
 
 		# Joystick camera
@@ -86,7 +86,7 @@ func _rotate_scry_camera(move: Vector2):
 
 func _start_scrying():
 	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if not avatar or not avatar is Avatar:
+	if not avatar or not avatar is PlayerActor:
 		return
 
 	_is_scrying = true

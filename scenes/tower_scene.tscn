@@ -5,11 +5,12 @@
 [ext_resource type="PackedScene" uid="uid://deukdfofsqitg" path="res://assets/world/env/grass.glb" id="4_32jgm"]
 [ext_resource type="Material" uid="uid://dtbe06c2i0ktm" path="res://assets/world/world_material.tres" id="4_ugy4f"]
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="5_70a1q"]
-[ext_resource type="PackedScene" path="res://scenes/avatar/avatar.tscn" id="6_uv732"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="6_uv732"]
 [ext_resource type="PackedScene" uid="uid://brlisvoeolipa" path="res://assets/world/env/stone_tallB.glb" id="7_xl84e"]
 [ext_resource type="Shader" uid="uid://bvl4kfacs2hfw" path="res://shaders/ps1+postprocess.gdshader" id="8_xl84e"]
 [ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="9_nsr5c"]
 [ext_resource type="PackedScene" path="res://scenes/interactibles/gem.tscn" id="10_jlvw8"]
+[ext_resource type="PackedScene" path="res://scenes/actors/enemy/zombie/zombie_actor.tscn" id="12_guard"]
 [ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="debug_overlay"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
@@ -121,7 +122,18 @@ mesh = SubResource("BoxMesh_70a1q")
 metadata/_edit_lock_ = true
 
 [node name="Avatar" parent="World" unique_id=1609271671 instance=ExtResource("6_uv732")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.105918884, 0.035606384, -0.06253815)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.105918884, -0.22097898, -0.06253815)
+
+[node name="Enemies" type="Node3D" parent="World" unique_id=1090501750]
+
+[node name="Guard1" parent="World/Enemies" unique_id=1160627505 instance=ExtResource("12_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 4)
+
+[node name="Guard2" parent="World/Enemies" unique_id=1971162557 instance=ExtResource("12_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 2)
+
+[node name="Guard3" parent="World/Enemies" unique_id=1741766528 instance=ExtResource("12_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 8)
 
 [node name="Tower" parent="." unique_id=984997556 instance=ExtResource("5_70a1q")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 74.97821, -0.46076965, -0.52825546)

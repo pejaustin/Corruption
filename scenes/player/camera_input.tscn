@@ -1,22 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://l1d8hwvn7hbq"]
+[gd_scene format=3 uid="uid://l1d8hwvn7hbq"]
 
 [ext_resource type="Script" uid="uid://nx661kstmfxn" path="res://scripts/camera_input.gd" id="1_3wtcb"]
 
-[node name="CameraInput" type="Node3D" node_paths=PackedStringArray("camera_mount", "camera_rot", "camera_3D")]
+[node name="CameraInput" type="Node3D" unique_id=1231650479 node_paths=PackedStringArray("camera_mount", "camera_rot", "camera_3D")]
 script = ExtResource("1_3wtcb")
 camera_mount = NodePath("CameraMount")
 camera_rot = NodePath("CameraMount/CameraRot")
 camera_3D = NodePath("CameraMount/CameraRot/Camera3D")
 
-[node name="CameraMount" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.08165e-12, 1.93, 2.08165e-12)
+[node name="CameraMount" type="Node3D" parent="." unique_id=1915918953]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.08165e-12, 1.7669529, 2.08165e-12)
 
-[node name="CameraRot" type="Node3D" parent="CameraMount"]
+[node name="CameraRot" type="Node3D" parent="CameraMount" unique_id=275114153]
 
-[node name="Camera3D" type="Camera3D" parent="CameraMount/CameraRot"]
+[node name="Camera3D" type="Camera3D" parent="CameraMount/CameraRot" unique_id=2139362478]
 cull_mask = 1048573
 
-[node name="RayCast3D" type="RayCast3D" parent="CameraMount/CameraRot/Camera3D"]
+[node name="RayCast3D" type="RayCast3D" parent="CameraMount/CameraRot/Camera3D" unique_id=526813742]
 target_position = Vector3(0, 0, -99)
 
-[node name="ViewModel" type="Node3D" parent="CameraMount/CameraRot/Camera3D"]
+[node name="ViewModel" type="Node3D" parent="CameraMount/CameraRot/Camera3D" unique_id=338069465]

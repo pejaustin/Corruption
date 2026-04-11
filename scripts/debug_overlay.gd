@@ -54,13 +54,23 @@ func _process(delta: float):
 
 	# Avatar entity info
 	var avatar_node = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if avatar_node and avatar_node is Avatar:
+	if avatar_node and avatar_node is PlayerActor:
 		var apos = avatar_node.global_position
 		lines.append("  Avatar Pos: (%.1f, %.1f, %.1f)" % [apos.x, apos.y, apos.z])
 		lines.append("  Avatar Dormant: %s" % str(avatar_node.is_dormant))
+		var hp_color = "00ff00" if avatar_node.hp > 50 else ("ffaa00" if avatar_node.hp > 25 else "ff4444")
+		lines.append("  HP: [color=#%s]%d / %d[/color]%s" % [hp_color, avatar_node.hp, avatar_node.get_max_hp(), " [GOD]" if avatar_node.god_mode else ""])
+		lines.append("  State: %s" % str(avatar_node._state_machine.state))
 		lines.append("  Watchers: %d" % GameState.watcher_count)
 	else:
 		lines.append("  Avatar Entity: [color=#ff4444]NOT FOUND[/color]")
+
+	# Enemy count
+	var enemies_node = get_tree().current_scene.get_node_or_null("World/Enemies")
+	var enemy_count := 0
+	if enemies_node:
+		enemy_count = enemies_node.get_child_count()
+	lines.append("  Enemies alive: %d" % enemy_count)
 	lines.append("")
 
 	# Players in game
@@ -79,9 +89,10 @@ func _process(delta: float):
 
 	# Debug info
 	lines.append("[b]Controls[/b]")
-	lines.append("  E = interact/claim | Q = recall Avatar")
+	lines.append("  E = interact/claim | Q = recall | LMB = attack")
 	lines.append("")
-	lines.append("[b]Debug (F2 = add dummy)[/b]")
+	lines.append("[b]Debug[/b]")
+	lines.append("  F2 = add dummy | F4 = god mode | F5 = kill avatar | F6 = spawn enemy")
 	lines.append("  Dummy players: %d (slots open: %d)" % [DebugManager.get_dummy_count(), DebugManager.get_max_dummy_players()])
 	lines.append("")
 

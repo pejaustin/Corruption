@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://dsnyn2e8y152j"]
+
+[ext_resource type="PackedScene" uid="uid://bq0mxc1lqy3ta" path="res://scenes/actors/player/player_actor.tscn" id="1_base"]
+[ext_resource type="PackedScene" uid="uid://twkv4hspfoay" path="res://assets/characters/large-male/large_male.tscn" id="2_model"]
+[ext_resource type="Material" uid="uid://bewjqqu2d70cl" path="res://assets/characters/skins/fantasy_male_skin_A_material.tres" id="3_flo1d"]
+[ext_resource type="PackedScene" uid="uid://d1f2d2crfxy8x" path="res://assets/characters/accessories/sword.fbx" id="4_7i2nu"]
+
+[node name="AvatarActor" unique_id=1811865404 instance=ExtResource("1_base")]
+
+[node name="RollbackSynchronizer" parent="." index="6" unique_id=734396145]
+state_properties = Array[String]([":transform", ":velocity", ":hp", ":_incoming_damage", "Model:transform", "RewindableStateMachine:state"])
+
+[node name="Model" parent="." index="8" unique_id=1891069405 instance=ExtResource("2_model")]
+
+[node name="characterLargeMale" parent="Model/Root/Skeleton3D" parent_id_path=PackedInt32Array(1891069405, 1757755038) index="0" unique_id=1626034738]
+surface_material_override/0 = ExtResource("3_flo1d")
+
+[node name="BoneAttachment3D" type="BoneAttachment3D" parent="Model/Root/Skeleton3D" parent_id_path=PackedInt32Array(1891069405, 1757755038) index="1" unique_id=140958576]
+transform = Transform3D(0.07913625, -0.16213454, -0.9835906, -0.25083435, -0.9581768, 0.13776435, -0.9647895, 0.23581621, -0.1164954, -0.50239813, 1.3065487, 0.0516539)
+bone_name = "RightHand"
+bone_idx = 40
+
+[node name="sword" parent="Model/Root/Skeleton3D/BoneAttachment3D" index="0" unique_id=1582312483 instance=ExtResource("4_7i2nu")]
+transform = Transform3D(0.068672046, -0.622228, 0.17497672, -0.6052025, -0.12368634, -0.20231606, 0.2269673, -0.14154288, -0.59241134, -0.036100715, 0.14886963, -0.07395977)
+
+[editable path="Model"]

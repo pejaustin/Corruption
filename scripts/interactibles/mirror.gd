@@ -204,14 +204,15 @@ func _start_recording():
 	_record_sample_timer = 0.0
 	_record_duration = 0.0
 
-	# Snapshot the recorder's Model global transform as the stage origin.
-	# All subsequent samples are stored relative to this so the ghost ends
-	# up centered on the stage regardless of where the recorder stood.
-	var model := _get_player_model(_player_in_range)
-	if model:
-		_record_origin = model.global_transform
+	# Anchor pose samples in the recorder's mirror local space. On playback
+	# the recipient anchors their stage to their own mirror, so the ghost
+	# ends up at the same offset from the recipient's mirror as the recorder
+	# was from theirs — Mirror3D's reflection camera then renders it as if
+	# it were a real reflection, parallax and all.
+	if _mirror3d:
+		_record_origin = _mirror3d.global_transform
 	else:
-		_record_origin = _player_in_range.global_transform
+		_record_origin = global_transform
 
 	# Take an initial sample so the very first frame of playback is correct
 	_capture_pose_sample()
@@ -336,27 +337,29 @@ func _start_playback(msg: MirrorMessage):
 		push_warning("Mirror: cannot play, no SubViewport")
 		return
 
-	# Hand the SubViewport its own World3D so the stage scene is isolated
-	# from the live game world. This means Mirror3D's reflection won't run
-	# inside the viewport while we're playing back, which is what we want.
+	# Give the SubViewport its own World3D so the stage scene is isolated
+	# from the live game world.
 	_mirror_viewport.own_world_3d = true
 
-	# Instance the stage and parent it under the SubViewport
+	# Instance the stage and parent it under the SubViewport, then anchor
+	# it to the mirror's world transform. With pose samples stored in
+	# mirror-local space, this places the ghost at the same relative
+	# position to *this* mirror as the recorder was to theirs.
 	_play_stage = STAGE_SCENE.instantiate()
 	_mirror_viewport.add_child(_play_stage)
+	_play_stage.global_transform = _mirror3d.global_transform
 
-	# Force our StageCamera to be the current one. With own_world_3d the
-	# SubViewport now contains 3 cameras (Mirror3D's Camera + RecordingCamera
-	# + our StageCamera) and Godot's auto-current pick is unreliable.
-	var stage_cam := _play_stage.get_node_or_null("StageCamera") as Camera3D
-	if stage_cam:
-		stage_cam.current = true
-		print("Mirror: StageCamera global=%s" % stage_cam.global_transform)
-	else:
-		push_warning("Mirror: stage has no StageCamera")
+	# Make sure Mirror3D's reflection camera is the one rendering — it lives
+	# in the SubViewport's isolated World3D and Godot's auto-current pick is
+	# unreliable when stage scenes also bring cameras along.
+	if _mirror3d.mirror_camera:
+		_mirror3d.mirror_camera.current = true
+	_mirror3d.config_dirty = true
 
-	# Locate the ghost and its AnimationPlayer
-	_play_ghost = _play_stage.get_node_or_null("Ghost") as Node3D
+	# Locate the ghost and its AnimationPlayer. Ghost lives under StageOrigin
+	# so the StageOrigin transform can be edited in mirror_stage.tscn to
+	# adjust where the ghost appears relative to the mirror.
+	_play_ghost = _play_stage.get_node_or_null("StageOrigin/Ghost") as Node3D
 	if _play_ghost:
 		_play_ghost_anim = _find_animation_player(_play_ghost)
 		# Apply the first sample immediately so the very first frame is right
@@ -398,8 +401,9 @@ func _stop_playback():
 	if _mirror_viewport:
 		_mirror_viewport.own_world_3d = false
 	if _mirror3d:
-		# Force the addon to re-apply its config so the reflection feed
-		# resumes cleanly on the next frame.
+		# Re-assert the reflection camera and force a config rebuild so the
+		# live reflection feed comes back cleanly after the world switch.
+		_mirror3d.mirror_camera.current = true
 		_mirror3d.config_dirty = true
 
 	if _play_message in _inbox:

@@ -4,14 +4,14 @@ extends Area3D
 
 @export var interact_prompt: Label3D
 
-var _avatar_in_range: Avatar = null
+var _avatar_in_range: PlayerActor = null
 
 func _ready():
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
 func _on_body_entered(body: Node3D):
-	if body is Avatar:
+	if body is PlayerActor:
 		_avatar_in_range = body
 		_update_prompt()
 

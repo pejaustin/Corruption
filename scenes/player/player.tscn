@@ -26,22 +26,16 @@ _player_model = NodePath("Model")
 _state_machine = NodePath("RewindableStateMachine")
 
 [node name="CameraInput" parent="." unique_id=698534583 node_paths=PackedStringArray("rollback_synchronizer") instance=ExtResource("2_24wjx")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.314, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.57931423, 0)
 rollback_synchronizer = NodePath("../RollbackSynchronizer")
 
 [node name="Model" parent="." unique_id=1859756760 instance=ExtResource("4_fvytd")]
-
-[node name="Lich-applying" parent="Model/RootNode" index="0"]
-transform = Transform3D(1.71601, 0, 0, 0, 1.71601, 0, 0, 0, 1.71601, 0.0626569, 0, -0.0139697)
 
 [node name="Body" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="0"]
 layers = 2
 
 [node name="Head_001" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="1"]
 layers = 2
-
-[node name="hand" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="2"]
-transform = Transform3D(-0.99761844, 0.066842616, 0.017011434, -0.052399397, -0.8948631, 0.44325498, 0.044851363, 0.44130933, 0.8962349, 0.34517783, 0.66858953, 0.018495537)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1950139549]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.08165e-12, 1.41129, 2.08165e-12)

@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://dwg2fjh1jdh28"]
+
+[ext_resource type="PackedScene" path="res://scenes/actors/enemy/enemy_actor.tscn" id="1_base"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
+
+[node name="ZombieActor" unique_id=1961765480 instance=ExtResource("1_base")]
+patrol_point = Vector3(0, 0, 0)
+
+[node name="Model" parent="." index="2" unique_id=2133200183 instance=ExtResource("2_model")]

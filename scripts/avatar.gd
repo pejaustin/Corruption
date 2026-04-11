@@ -6,6 +6,8 @@ class_name Avatar extends CharacterBody3D
 
 const SPEED = 5.0
 const JUMP_VELOCITY = 4.5
+const MAX_HP := 100
+const ATTACK_DAMAGE := 25
 
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -17,9 +19,16 @@ var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var rollback_synchronizer = $RollbackSynchronizer
 @onready var watcher_label: Label3D = $WatcherLabel
 
+signal hp_changed(new_hp: int)
+signal died
+
 var _animation_player: AnimationPlayer
 var controlling_peer_id: int = -1
 var is_dormant: bool = true
+var hp: int = MAX_HP
+var god_mode: bool = false
+var stagger_timer: float = 0.0
+const STAGGER_DURATION := 0.5
 var _watcher_orbs: Dictionary = {}  # peer_id -> MeshInstance3D
 
 const WATCHER_ORB_DISTANCE := 2.5
@@ -38,6 +47,8 @@ func activate(peer_id: int):
 	## A player claims the Avatar. Transfer control.
 	controlling_peer_id = peer_id
 	is_dormant = false
+	hp = MAX_HP
+	hp_changed.emit(hp)
 	_avatar_input.set_controller(peer_id)
 	_avatar_camera.activate(peer_id)
 	# Re-process rollback settings so netfox syncs input from the new authority
@@ -53,6 +64,7 @@ func deactivate():
 	rollback_synchronizer.process_settings()
 	_set_dormant_visual(true)
 	velocity = Vector3.ZERO
+	_state_machine.transition(&"IdleState")
 
 func _set_dormant_visual(dormant: bool):
 	# Always visible — dormant just means no one is controlling it
@@ -71,6 +83,40 @@ func _on_display_state_changed(old_state, new_state):
 	var anim_name = new_state.animation_name
 	if _animation_player and anim_name != "":
 		_animation_player.play(anim_name)
+
+func take_damage(amount: int):
+	if god_mode or is_dormant:
+		return
+	if hp <= 0:
+		return
+	hp = max(0, hp - amount)
+	hp_changed.emit(hp)
+	if hp <= 0:
+		_die()
+	else:
+		stagger_timer = STAGGER_DURATION
+		if _animation_player:
+			_animation_player.play("large-male/Stagger")
+
+func _die():
+	died.emit()
+	_state_machine.transition(&"DeathState")
+	# Host handles the transfer after a short delay
+	if multiplayer.is_server():
+		get_tree().create_timer(2.0).timeout.connect(_on_death_transfer)
+
+func _on_death_transfer():
+	if not multiplayer.is_server():
+		return
+	GameState.release_avatar()
+	_respawn.rpc()
+
+@rpc("authority", "call_local", "reliable")
+func _respawn():
+	deactivate()
+	global_position = Vector3(0.1, 0.04, -0.06)  # Near world origin
+	hp = MAX_HP
+	hp_changed.emit(hp)
 
 func apply_gravity(delta):
 	velocity.y -= gravity * delta
@@ -109,6 +155,8 @@ func _create_watcher_orb() -> MeshInstance3D:
 	return orb
 
 func _process(_delta: float):
+	if stagger_timer > 0:
+		stagger_timer -= _delta
 	var positions = GameState.watcher_positions
 	# Remove orbs for scryers who stopped
 	for peer_id in _watcher_orbs.keys():

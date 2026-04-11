@@ -44,11 +44,11 @@
 - [ ] **Palantir force-activate** — Debug command to enable/disable Palantir without walking to it
 
 ### Core
-- [ ] **Tower interior** — Greybox room with interactible stations (walk up and press E)
-- [ ] **Palantir** — Interact to watch the Avatar in real-time via SubViewport. Avatar gets a visual cue (eye icon, sound) that they're being watched, and can see how many watchers.
-- [ ] **Mirror** — Stand in front, hold record button. Captures: SubViewport of your character + mic audio with reverb effect. Sends to selected Overlord(s). Recipient gets notification, can watch playback.
-- [ ] **Tower balcony** — Overlord can walk to a balcony and directly observe a scaled-down view of the map below. No UI overlay — you physically look out and see the world.
-- [ ] **Avatar transfer (simple)** — Avatar can voluntarily return to tower (recall). Control passes to next player by influence (or round-robin for now).
+- [x] **Tower interior** — Greybox room with interactible stations (walk up and press E)
+- [x] **Palantir** — Interact to watch the Avatar in real-time via SubViewport. Avatar gets a visual cue (eye icon, sound) that they're being watched, and can see how many watchers.
+- [x] **Mirror** — Stand in front, record button captures pose track + mic audio with reverb. Plays back as ghost reflection in Mirror3D. Sends to selected Overlord(s). Recipient gets notification, can watch playback.
+- [x] **Tower balcony** — Overlord can walk to a balcony and directly observe a scaled-down view of the map below. No UI overlay — you physically look out and see the world.
+- [x] **Avatar transfer (simple)** — Avatar can voluntarily return to tower (recall). Control passes to next player by influence (or round-robin for now).
 
 **Riskiest thing:** Mirror recording — mic capture + SubViewport + audio effects + network delivery. Prototype this early.
 
@@ -62,17 +62,51 @@
 
 ### Debug tooling
 - [ ] **God mode** — Toggle invincibility for Avatar
+  - Key binding toggles a flag that prevents Avatar HP from decreasing
 - [ ] **Spawn enemy** — Debug command to place neutral enemies
+  - Key command places an enemy at a raycast target from the camera
 - [ ] **Kill Avatar** — Force death to test transfer flow
+  - Instant death trigger, bypasses HP — tests the full death→transfer chain
 - [ ] **Influence display** — Show all players' influence scores in debug overlay
+  - All players' influence visible in the F3 debug panel
 
 ### Core
-- [ ] **Basic melee attack** — Light attack with hitbox, stamina cost. Commitment-based (can't cancel).
-- [ ] **HP and damage** — Avatar has health. Takes damage. Death state.
-- [ ] **Simple neutral enemy** — Guards a position, aggros on proximity, attacks, has HP, dies
-- [ ] **Avatar death → transfer** — On death, control passes to highest-influence player (or round-robin)
-- [ ] **Mode switch at runtime** — Player transitions Overlord → Avatar (camera swap, control swap) and back
-- [ ] **Combat sync** — Attack animations and hit detection sync across clients
+- [x] **Basic melee attack**
+  - Light attack bound to left click (Avatar-only, Overlords cannot attack)
+  - Attack plays a commitment animation — no cancel once started
+  - Hitbox spawns on a specific animation frame window
+  - Hitbox damages any damageable body it overlaps
+  - Stamina cost per attack; can't attack at zero stamina
+  - Stamina regens passively over time
+- [x] **HP and damage**
+  - Avatar has an HP value displayed in debug overlay (HUD later)
+  - Taking damage reduces HP; HP floors at 0
+  - Death state triggers at 0 HP (no knockback/hitstun yet)
+  - No healing for now
+- [x] **Simple neutral enemy**
+  - Enemy scene with HP, a patrol point, and an aggro radius
+  - Idles at patrol point until Avatar enters aggro range
+  - Chases Avatar while in aggro range
+  - Has a melee attack with its own hitbox and commitment animation
+  - Takes damage from Avatar attacks; dies at 0 HP
+  - Death plays animation then frees the node
+  - Hand-placed in the world scene (not procedural)
+- [x] **Avatar death → transfer**
+  - 0 HP triggers death animation/state
+  - Avatar is disabled after death (hidden, no collision, no input)
+  - Control transfers to next player via round-robin (existing `game_state.gd`)
+  - New Avatar owner gets camera/input swap to Avatar mode
+  - Avatar respawns at a fixed point (TBD: Capitol center or tower)
+  - Previous controller returns to Overlord mode
+- [ ] **Mode switch at runtime**
+  - Existing Tier 0 claim/recall still works cleanly with the death→transfer flow
+  - Verify no regressions when cycling through claim → death → transfer → re-claim
+- [ ] **Combat sync**
+  - Attack animations visible to all clients
+  - Hitbox activation/deactivation synced (host-authoritative)
+  - Damage is host-validated
+  - Enemy HP and death synced to all clients
+  - No desync on hit — if host says hit, all clients see the hit
 
 **Riskiest thing:** Combat sync over P2P with rollback. Tight latency tolerance.
 
@@ -149,7 +183,7 @@
 | Tier | Name | Win Condition | Status | Playable? |
 |------|------|---------------|--------|-----------|
 | 0 | The Board is Set | Walk to gem | **Complete** | Yes |
-| 1 | The Tower is Alive | Walk to gem (with social tools) | Not started | - |
+| 1 | The Tower is Alive | Walk to gem (with social tools) | **Core complete** | Yes |
 | 2 | Blood on the Ground | Fight to gem (combat + transfer) | Not started | - |
 | 3 | The Dark Lords Scheme | Beat guardian boss (minions + territory) | Not started | - |
 | 4 | Corruption Has a Face | Full 2-boss endgame + factions | Not started | - |

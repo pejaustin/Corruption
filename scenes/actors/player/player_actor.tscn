@@ -1,0 +1,82 @@
+[gd_scene format=3 uid="uid://bq0mxc1lqy3ta"]
+
+[ext_resource type="PackedScene" uid="uid://bo3nbxk380v3d" path="res://scenes/actors/actor.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://6sonh5jghrlq" path="res://scenes/actors/player/player_actor.gd" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar_camera.tscn" id="4_camera"]
+[ext_resource type="Script" uid="uid://dsexvs6cjukd6" path="res://scripts/avatar_input.gd" id="5_input"]
+[ext_resource type="Script" uid="uid://d350u8evihs1u" path="res://addons/netfox/rollback/rollback-synchronizer.gd" id="6_rbsync"]
+[ext_resource type="Script" uid="uid://dour8fehaaugp" path="res://addons/netfox/tick-interpolator.gd" id="7_tick"]
+[ext_resource type="Script" uid="uid://ckckbdlbq61aw" path="res://scenes/actors/player/states/idle_state.gd" id="8_idle"]
+[ext_resource type="Script" uid="uid://bgvpvaxybmhvs" path="res://scenes/actors/player/states/move_state.gd" id="9_move"]
+[ext_resource type="Script" uid="uid://bivjhfmcrp82a" path="res://scenes/actors/player/states/jump_state.gd" id="10_jump"]
+[ext_resource type="Script" uid="uid://bnpuh35auete6" path="res://scenes/actors/player/states/fall_state.gd" id="11_fall"]
+[ext_resource type="Script" uid="uid://cxpclo6q7yoem" path="res://scenes/actors/player/states/attack_state.gd" id="12_attack"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.4
+height = 3.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 1.5
+
+[node name="PlayerActor" unique_id=2142461512 instance=ExtResource("1_base")]
+script = ExtResource("2_player")
+
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="IdleState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2" unique_id=1173378999]
+script = ExtResource("8_idle")
+animation_name = "large-male/Idle"
+
+[node name="MoveState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=655784458]
+script = ExtResource("9_move")
+animation_name = "large-male/Walk"
+
+[node name="JumpState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4" unique_id=87081217]
+script = ExtResource("10_jump")
+animation_name = "large-male/Jump"
+
+[node name="FallState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5" unique_id=1876940063]
+script = ExtResource("11_fall")
+
+[node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
+script = ExtResource("12_attack")
+animation_name = "large-male/Attack"
+
+[node name="AvatarCamera" parent="." index="2" unique_id=108768714 instance=ExtResource("4_camera")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+
+[node name="AvatarInput" type="Node" parent="." index="3" unique_id=597958932]
+script = ExtResource("5_input")
+
+[node name="AttackHitbox" type="Area3D" parent="." index="4" unique_id=1546805926]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -1.5)
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox" index="0" unique_id=1540985233]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.752328, 1.99899)
+shape = SubResource("SphereShape3D_hitbox")
+disabled = true
+
+[node name="WatcherLabel" type="Label3D" parent="." index="5" unique_id=957424953]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+visible = false
+billboard = 1
+modulate = Color(1, 0.6, 0.6, 1)
+font_size = 24
+outline_size = 8
+
+[node name="RollbackSynchronizer" type="Node" parent="." index="6" unique_id=734396145 node_paths=PackedStringArray("root")]
+script = ExtResource("6_rbsync")
+root = NodePath("..")
+state_properties = Array[String]([":transform", ":velocity", ":hp", "Model:transform", "RewindableStateMachine:state"])
+input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis"])
+
+[node name="TickInterpolator" type="Node" parent="." index="7" unique_id=233949403 node_paths=PackedStringArray("root")]
+script = ExtResource("7_tick")
+root = NodePath("..")
+properties = Array[String]([":transform", "Model:transform"])

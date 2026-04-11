@@ -8,7 +8,7 @@
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="Lich-applying" parent="RootNode" unique_id=601005526 instance=ExtResource("2_ppjps")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.508)
+transform = Transform3D(1.78, 0, 0, 0, 1.78, 0, 0, 0, 1.78, 0, 0, 0)
 
 [node name="Skeleton3D" parent="RootNode/Lich-applying/Armature" index="0"]
 bones/0/position = Vector3(0, -0.355758, 0)

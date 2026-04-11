@@ -84,7 +84,7 @@ func get_player_slot(network_id: int) -> int:
 func _on_avatar_changed(old_peer_id: int, new_peer_id: int):
 	# Transfer control to/from the shared Avatar entity
 	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if not avatar or not avatar is Avatar:
+	if not avatar or not avatar is PlayerActor:
 		push_warning("Avatar node not found in scene tree at World/Avatar")
 		return
 
