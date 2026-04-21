@@ -4,19 +4,19 @@ class_name Avatar extends CharacterBody3D
 ## When a player claims it, their input drives this entity
 ## while their Overlord body stays idle in the tower.
 
-const SPEED = 5.0
-const JUMP_VELOCITY = 4.5
-const MAX_HP := 100
-const ATTACK_DAMAGE := 25
+const SPEED: float = 5.0
+const JUMP_VELOCITY: float = 4.5
+const MAX_HP: int = 100
+const ATTACK_DAMAGE: int = 25
 
-var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 @export var _avatar_input: AvatarInput
 @export var _avatar_camera: AvatarCamera
 @export var _avatar_model: Node3D
 @export var _state_machine: RewindableStateMachine
 
-@onready var rollback_synchronizer = $RollbackSynchronizer
+@onready var rollback_synchronizer: RollbackSynchronizer = $RollbackSynchronizer
 @onready var watcher_label: Label3D = $WatcherLabel
 
 signal hp_changed(new_hp: int)
@@ -28,13 +28,18 @@ var is_dormant: bool = true
 var hp: int = MAX_HP
 var god_mode: bool = false
 var stagger_timer: float = 0.0
-const STAGGER_DURATION := 0.5
+const STAGGER_DURATION: float = 0.5
+const DEATH_TRANSFER_DELAY: float = 2.0
+const RESPAWN_POSITION: Vector3 = Vector3(0.1, 0.04, -0.06)
+const WATCHER_ORB_DISTANCE: float = 2.5
+const WATCHER_ORB_HEIGHT: float = 2.0
+const WATCHER_ORB_SIZE: Vector3 = Vector3(0.3, 0.3, 0.3)
+const WATCHER_ORB_COLOR: Color = Color(0.4, 0.6, 1.0, 0.7)
+const WATCHER_ORB_EMISSION: Color = Color(0.4, 0.6, 1.0)
+const WATCHER_ORB_EMISSION_ENERGY: float = 2.0
 var _watcher_orbs: Dictionary = {}  # peer_id -> MeshInstance3D
 
-const WATCHER_ORB_DISTANCE := 2.5
-const WATCHER_ORB_HEIGHT := 2.0
-
-func _ready():
+func _ready() -> void:
 	_state_machine.state = &"IdleState"
 	_animation_player = _avatar_model.get_node_or_null("AnimationPlayer")
 	_state_machine.on_display_state_changed.connect(_on_display_state_changed)
@@ -43,7 +48,7 @@ func _ready():
 	GameState.watcher_count_changed.connect(_on_watcher_count_changed)
 	_update_watcher_label(0)
 
-func activate(peer_id: int):
+func activate(peer_id: int) -> void:
 	## A player claims the Avatar. Transfer control.
 	controlling_peer_id = peer_id
 	is_dormant = false
@@ -55,7 +60,7 @@ func activate(peer_id: int):
 	rollback_synchronizer.process_settings()
 	_set_dormant_visual(false)
 
-func deactivate():
+func deactivate() -> void:
 	## Release the Avatar back to dormant state.
 	controlling_peer_id = -1
 	is_dormant = true
@@ -66,11 +71,11 @@ func deactivate():
 	velocity = Vector3.ZERO
 	_state_machine.transition(&"IdleState")
 
-func _set_dormant_visual(dormant: bool):
+func _set_dormant_visual(dormant: bool) -> void:
 	# Always visible — dormant just means no one is controlling it
 	_avatar_model.visible = true
 
-func _unhandled_input(event: InputEvent):
+func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("avatar_recall") and controlling_peer_id == multiplayer.get_unique_id():
 		GameState.request_recall_avatar()
 
@@ -79,12 +84,12 @@ func _rollback_tick(delta: float, tick: int, is_fresh: bool) -> void:
 	if not is_on_floor():
 		apply_gravity(delta)
 
-func _on_display_state_changed(old_state, new_state):
+func _on_display_state_changed(old_state: RewindableState, new_state: RewindableState) -> void:
 	var anim_name = new_state.animation_name
 	if _animation_player and anim_name != "":
 		_animation_player.play(anim_name)
 
-func take_damage(amount: int):
+func take_damage(amount: int) -> void:
 	if god_mode or is_dormant:
 		return
 	if hp <= 0:
@@ -98,39 +103,39 @@ func take_damage(amount: int):
 		if _animation_player:
 			_animation_player.play("large-male/Stagger")
 
-func _die():
+func _die() -> void:
 	died.emit()
 	_state_machine.transition(&"DeathState")
 	# Host handles the transfer after a short delay
 	if multiplayer.is_server():
-		get_tree().create_timer(2.0).timeout.connect(_on_death_transfer)
+		get_tree().create_timer(DEATH_TRANSFER_DELAY).timeout.connect(_on_death_transfer)
 
-func _on_death_transfer():
+func _on_death_transfer() -> void:
 	if not multiplayer.is_server():
 		return
 	GameState.release_avatar()
 	_respawn.rpc()
 
 @rpc("authority", "call_local", "reliable")
-func _respawn():
+func _respawn() -> void:
 	deactivate()
-	global_position = Vector3(0.1, 0.04, -0.06)  # Near world origin
+	global_position = RESPAWN_POSITION
 	hp = MAX_HP
 	hp_changed.emit(hp)
 
-func apply_gravity(delta):
+func apply_gravity(delta: float) -> void:
 	velocity.y -= gravity * delta
 
-func _force_update_is_on_floor():
+func _force_update_is_on_floor() -> void:
 	var old_velocity = velocity
 	velocity *= 0
 	move_and_slide()
 	velocity = old_velocity
 
-func _on_watcher_count_changed(count: int):
+func _on_watcher_count_changed(count: int) -> void:
 	_update_watcher_label(count)
 
-func _update_watcher_label(count: int):
+func _update_watcher_label(count: int) -> void:
 	if not watcher_label:
 		return
 	if count > 0:
@@ -142,19 +147,19 @@ func _update_watcher_label(count: int):
 func _create_watcher_orb() -> MeshInstance3D:
 	var orb = MeshInstance3D.new()
 	var box = BoxMesh.new()
-	box.size = Vector3(0.3, 0.3, 0.3)
+	box.size = WATCHER_ORB_SIZE
 	orb.mesh = box
 	var mat = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.4, 0.6, 1.0, 0.7)
+	mat.albedo_color = WATCHER_ORB_COLOR
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.emission_enabled = true
-	mat.emission = Color(0.4, 0.6, 1.0)
-	mat.emission_energy_multiplier = 2.0
+	mat.emission = WATCHER_ORB_EMISSION
+	mat.emission_energy_multiplier = WATCHER_ORB_EMISSION_ENERGY
 	orb.set_surface_override_material(0, mat)
 	add_child(orb)
 	return orb
 
-func _process(_delta: float):
+func _process(_delta: float) -> void:
 	if stagger_timer > 0:
 		stagger_timer -= _delta
 	var positions = GameState.watcher_positions

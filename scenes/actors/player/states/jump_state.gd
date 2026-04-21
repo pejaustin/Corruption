@@ -1,9 +1,9 @@
 extends PlayerState
 
-func enter(previous_state: RewindableState, tick: int):
+func enter(previous_state: RewindableState, tick: int) -> void:
 	actor.velocity.y = JUMP_VELOCITY
 
-func tick(delta: float, tick: int, is_fresh: bool):
+func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	rotate_player_model(delta)
 	move_air(delta)
 	physics_move()

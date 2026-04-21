@@ -1,6 +1,6 @@
 extends PlayerState
 
-func tick(delta: float, tick: int, is_fresh: bool):
+func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	rotate_player_model(delta)
 	move_air(delta)
 	physics_move()

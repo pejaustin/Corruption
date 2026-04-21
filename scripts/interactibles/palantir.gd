@@ -1,50 +1,52 @@
-extends Area3D
+extends Interactable
 
 ## Palantir scrying orb. Overlord interacts to enter scrying mode:
 ## Camera warps to a 3rd-person view orbiting the Avatar.
 ## A greybox cube appears at the scry camera position visible to the Avatar.
 ## Press Q to return to Overlord mode.
 
-@export var interact_prompt: Label3D
-
-var _player_in_range: Player = null
 var _is_scrying := false
 var _scry_camera: Camera3D
 var _scry_cube: MeshInstance3D
 var _scry_pivot: Node3D
 var _overlord_camera: Camera3D
 
-const SCRY_DISTANCE := 6.0
-const SCRY_HEIGHT := 3.0
-const CAMERA_MOUSE_ROTATION_SPEED := 0.005
-const CAMERA_JOYSTICK_ROTATION_SPEED := 5.0
-const CAMERA_X_ROT_MIN := deg_to_rad(-70)
-const CAMERA_X_ROT_MAX := deg_to_rad(60)
+const SCRY_DISTANCE: float = 6.0
+const SCRY_HEIGHT: float = 3.0
+const CAMERA_MOUSE_ROTATION_SPEED: float = 0.005
+const CAMERA_JOYSTICK_ROTATION_SPEED: float = 5.0
+const CAMERA_X_ROT_MIN: float = deg_to_rad(-70)
+const CAMERA_X_ROT_MAX: float = deg_to_rad(60)
 
-func _ready():
-	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
+func _interactable_ready() -> void:
 	GameState.avatar_changed.connect(func(_o, _n): _on_avatar_changed())
-	_update_prompt()
 
-func _on_body_entered(body: Node3D):
-	if body is Player:
-		_player_in_range = body
-		_update_prompt()
+func _on_player_exited() -> void:
+	if _is_scrying:
+		_stop_scrying()
 
-func _on_body_exited(body: Node3D):
-	if body == _player_in_range:
-		_player_in_range = null
-		if _is_scrying:
-			_stop_scrying()
-		_update_prompt()
+func get_prompt_text() -> String:
+	if _is_scrying:
+		return "Q to return"
+	elif is_overlord_in_range():
+		return "Press E to scry"
+	return "Palantir"
 
-func _unhandled_input(event: InputEvent):
+func get_prompt_color() -> Color:
+	return Color(0.5, 0.8, 1)
+
+func _on_interact() -> void:
+	if _is_scrying:
+		return  # Use Q to exit, not E
+	if not is_overlord_in_range():
+		return
+	_start_scrying()
+
+func _unhandled_input(event: InputEvent) -> void:
 	if _is_scrying:
 		# Q to exit scrying
 		if event.is_action_pressed("avatar_recall"):
 			_stop_scrying()
-			_update_prompt()
 			get_viewport().set_input_as_handled()
 			return
 		# Mouse look while scrying
@@ -52,17 +54,11 @@ func _unhandled_input(event: InputEvent):
 			_rotate_scry_camera(event.relative * CAMERA_MOUSE_ROTATION_SPEED)
 			get_viewport().set_input_as_handled()
 		return
+	# Delegate to base class for focus-based interact
+	super(event)
 
-	if not _player_in_range:
-		return
-	var peer_id = _player_in_range.name.to_int()
-	if multiplayer.get_unique_id() != peer_id:
-		return
-	if event.is_action_pressed("player_action_1"):
-		_start_scrying()
-		_update_prompt()
-
-func _process(delta: float):
+func _process(delta: float) -> void:
+	super(delta)
 	if _is_scrying and _scry_pivot:
 		var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
 		if avatar and avatar is PlayerActor:
@@ -77,14 +73,14 @@ func _process(delta: float):
 		if _scry_camera:
 			GameState.update_watcher_position.rpc(_scry_camera.global_position)
 
-func _rotate_scry_camera(move: Vector2):
+func _rotate_scry_camera(move: Vector2) -> void:
 	if not _scry_pivot:
 		return
 	_scry_pivot.rotate_y(-move.x)
 	var cam_rot = _scry_pivot.get_node("CamRot")
 	cam_rot.rotation.x = clamp(cam_rot.rotation.x + (-1 * move.y), CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX)
 
-func _start_scrying():
+func _start_scrying() -> void:
 	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
 	if not avatar or not avatar is PlayerActor:
 		return
@@ -95,7 +91,7 @@ func _start_scrying():
 	var player = _player_in_range
 	if player:
 		player.set_overlord_active(false)
-		_overlord_camera = player._camera_input.camera_3D
+		_overlord_camera = player._camera_input.camera_3d
 
 	# Build scry rig: pivot -> cam_rot -> camera + cube
 	_scry_pivot = Node3D.new()
@@ -132,7 +128,7 @@ func _start_scrying():
 
 	GameState.request_add_watcher.rpc_id(1)
 
-func _stop_scrying():
+func _stop_scrying() -> void:
 	_is_scrying = false
 
 	# Re-enable Overlord
@@ -153,20 +149,6 @@ func _stop_scrying():
 	GameState.remove_watcher_position(my_peer)
 	GameState.request_remove_watcher.rpc_id(1)
 
-func _on_avatar_changed():
+func _on_avatar_changed() -> void:
 	if _is_scrying and not GameState.has_avatar():
 		_stop_scrying()
-	_update_prompt()
-
-func _update_prompt():
-	if not interact_prompt:
-		return
-	if _is_scrying:
-		interact_prompt.text = "Q to return"
-		interact_prompt.modulate = Color(0.5, 0.8, 1)
-	elif _player_in_range:
-		interact_prompt.text = "Press E to scry"
-		interact_prompt.modulate = Color(0.5, 0.8, 1)
-	else:
-		interact_prompt.text = "Palantir"
-		interact_prompt.modulate = Color(0.5, 0.8, 1)

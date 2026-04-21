@@ -1,6 +1,6 @@
 extends EnemyState
 
-func tick(delta: float, tick: int, is_fresh: bool):
+func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	var avatar := find_avatar()
 	if not avatar or avatar.is_dormant:
 		state_machine.transition(&"IdleState")

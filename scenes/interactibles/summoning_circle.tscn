@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bmhorpo2bdnbf"]
+
+[ext_resource type="Script" uid="uid://e2apbn3oog5j" path="res://scripts/interactibles/summoning_circle.gd" id="1_b2idc"]
+[ext_resource type="PackedScene" uid="uid://dqenbqq12tohd" path="res://assets/world/env/table.glb" id="2_ttk50"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ttk50"]
+size = Vector3(3.5803223, 1.9464111, 4.8031616)
+
+[node name="SummoningCircle" type="Area3D" unique_id=492818308]
+collision_layer = 0
+script = ExtResource("1_b2idc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=262620247]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26428223, 1.0054932, -0.29330444)
+shape = SubResource("BoxShape3D_ttk50")
+
+[node name="table" parent="." unique_id=1634434427 instance=ExtResource("2_ttk50")]

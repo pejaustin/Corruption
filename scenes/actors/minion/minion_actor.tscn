@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://b25akr8pwv23f"]
+
+[ext_resource type="PackedScene" uid="uid://bo3nbxk380v3d" path="res://scenes/actors/actor.tscn" id="1_e3vac"]
+[ext_resource type="Script" uid="uid://dccl2flwdgw2f" path="res://scenes/actors/minion/minion_actor.gd" id="2_irlat"]
+[ext_resource type="Script" uid="uid://ggrnj44d0mbc" path="res://scenes/actors/minion/states/attack_state.gd" id="3_b4w6l"]
+[ext_resource type="Script" uid="uid://bf5luvbrh418g" path="res://scenes/actors/minion/states/idle_state.gd" id="4_m8qn8"]
+[ext_resource type="Script" uid="uid://bwxume2kqi83t" path="res://scenes/actors/minion/states/chase_state.gd" id="5_r2q84"]
+[ext_resource type="Script" uid="uid://mc37sb6ml8ea" path="res://scenes/actors/minion/states/jump_state.gd" id="6_m8qn8"]
+
+[node name="MinionActor" unique_id=336466554 instance=ExtResource("1_e3vac")]
+collision_layer = 128
+script = ExtResource("2_irlat")
+minion_type = null
+
+[node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2" unique_id=28729707]
+script = ExtResource("3_b4w6l")
+animation_name = "large-male/Attack"
+metadata/_custom_type_script = "uid://usyufdtn83hc"
+
+[node name="IdleState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=1500154886]
+script = ExtResource("4_m8qn8")
+animation_name = "large-male/Idle"
+metadata/_custom_type_script = "uid://usyufdtn83hc"
+
+[node name="ChaseState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4" unique_id=585518695]
+script = ExtResource("5_r2q84")
+animation_name = "large-male/Run"
+metadata/_custom_type_script = "uid://usyufdtn83hc"
+
+[node name="JumpState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5" unique_id=1889141470]
+script = ExtResource("6_m8qn8")
+animation_name = "large-male/Jump"
+metadata/_custom_type_script = "uid://usyufdtn83hc"
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." index="2" unique_id=990365429]

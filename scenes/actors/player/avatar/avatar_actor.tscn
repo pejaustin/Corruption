@@ -6,9 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://d1f2d2crfxy8x" path="res://assets/characters/accessories/sword.fbx" id="4_7i2nu"]
 
 [node name="AvatarActor" unique_id=1811865404 instance=ExtResource("1_base")]
-
-[node name="RollbackSynchronizer" parent="." index="6" unique_id=734396145]
-state_properties = Array[String]([":transform", ":velocity", ":hp", ":_incoming_damage", "Model:transform", "RewindableStateMachine:state"])
+collision_layer = 5
 
 [node name="Model" parent="." index="8" unique_id=1891069405 instance=ExtResource("2_model")]
 

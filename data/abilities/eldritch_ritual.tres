@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AvatarAbility" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_ability.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/abilities/eldritch_ritual.tscn" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eldritch_ritual"
+display_name = "Eldritch Ritual"
+cooldown = 30.0
+description = "Channel for 5 seconds at a ritual site to unlock Overlord ability"
+effect_scene = ExtResource("2_effect")

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AvatarAbility" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_ability.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/abilities/mind_blast.tscn" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"mind_blast"
+display_name = "Mind Blast"
+cooldown = 8.0
+description = "Stagger all enemies in a cone for 3 seconds"
+effect_scene = ExtResource("2_effect")

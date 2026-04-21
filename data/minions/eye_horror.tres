@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eye_horror"
+display_name = "Eye Horror"
+faction = 3
+hp = 35
+damage = 12
+speed = 3.0
+cost = 10
+aggro_radius = 8.0
+attack_range = 1.8
+attack_cooldown = 1.5
+color = Color(0.6, 0.1, 0.9, 1)
+trait_tag = &"dominate"

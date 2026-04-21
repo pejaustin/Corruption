@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bblv3fe3c2a5k"]
+
+[ext_resource type="Script" uid="uid://bptq8hfxoiriu" path="res://scenes/actors/minion/minion_rally_point.gd" id="1_aqtpd"]
+[ext_resource type="PackedScene" uid="uid://bg40nyfmbpr7q" path="res://assets/world/env/markers/flag.tscn" id="2_2sd6n"]
+[ext_resource type="Material" uid="uid://bnyyqfgx14oao" path="res://assets/world/env/markers/colormap_material.tres" id="3_h5pld"]
+
+[node name="MinionRallyPoint" type="Marker3D" unique_id=1014142531]
+script = ExtResource("1_aqtpd")
+
+[node name="Flag" parent="." unique_id=1078874684 instance=ExtResource("2_2sd6n")]
+transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0)
+
+[node name="flag" parent="Flag" index="0" unique_id=1042791103]
+surface_material_override/0 = ExtResource("3_h5pld")
+
+[editable path="Flag"]

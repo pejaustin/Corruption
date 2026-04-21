@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wraith"
+display_name = "Wraith"
+faction = 0
+hp = 20
+damage = 15
+speed = 5.0
+cost = 12
+aggro_radius = 8.0
+attack_range = 1.8
+attack_cooldown = 1.5
+color = Color(0.3, 0.9, 0.3, 1)
+trait_tag = &""

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MinionType" format=3 uid="uid://cd8udfdcyee6k"]
+
+[ext_resource type="Script" uid="uid://b2bon8dni7iqa" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"skeleton"
+display_name = "Skeleton"
+hp = 25
+damage = 8
+speed = 4.0
+cost = 5
+color = Color(0.6, 0.8, 0.5, 1)

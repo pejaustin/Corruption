@@ -3,17 +3,17 @@ extends PanelContainer
 @onready var info_label: RichTextLabel = $MarginContainer/InfoLabel
 
 var _update_timer := 0.0
-const UPDATE_INTERVAL := 0.5
+const UPDATE_INTERVAL: float = 0.5
 
-func _ready():
+func _ready() -> void:
 	# Toggle with F3
 	visible = true
 
-func _unhandled_input(event: InputEvent):
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F3:
 		visible = !visible
 
-func _process(delta: float):
+func _process(delta: float) -> void:
 	if not visible:
 		return
 
@@ -87,12 +87,82 @@ func _process(delta: float):
 		lines.append("  (no spawn point found)")
 	lines.append("")
 
+	# Influence scores
+	lines.append("[b]Influence[/b]")
+	if GameState.influence.size() > 0:
+		for pid in GameState.influence:
+			var score = GameState.influence[pid]
+			var marker = " (YOU)" if pid == peer_id else ""
+			lines.append("  Peer %d: %.1f%s" % [pid, score, marker])
+	else:
+		lines.append("  (no scores yet)")
+	lines.append("")
+
+	# Minions
+	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
+	if mm:
+		lines.append("[b]Minions[/b]")
+		var all_minions = mm.get_all_minions()
+		lines.append("  Total: %d" % all_minions.size())
+		var my_minions = mm.get_minion_count(peer_id)
+		var my_res = mm.get_resources(peer_id)
+		lines.append("  Mine: %d/%d | Resources: %.0f" % [my_minions, MinionManager.MAX_MINIONS_PER_PLAYER, my_res])
+		lines.append("")
+
+	# Territory
+	var tm = get_tree().current_scene.get_node_or_null("TerritoryManager")
+	if tm:
+		lines.append("[b]Territory[/b]")
+		lines.append("  Corrupted cells: %d | Total corruption: %.1f" % [tm._cells.size(), tm.get_total_corruption()])
+		lines.append("")
+
+	# Guardian Boss
+	var boss = get_tree().current_scene.get_node_or_null("World/GuardianBoss")
+	if boss and boss is GuardianBoss:
+		var debuff = int(boss._get_corruption_debuff() * 100)
+		var boss_hp_color = "00ff00" if boss.hp > boss.max_hp_effective * 0.5 else ("ffaa00" if boss.hp > boss.max_hp_effective * 0.25 else "ff4444")
+		lines.append("[b]Guardian Boss[/b]")
+		lines.append("  HP: [color=#%s]%d / %d[/color] (Debuff: %d%%)" % [boss_hp_color, boss.hp, boss.max_hp_effective, debuff])
+		lines.append("  Damage: %d" % boss.get_attack_damage())
+		lines.append("")
+
+	# Boss Manager
+	var bm = get_tree().current_scene.get_node_or_null("BossManager")
+	if bm:
+		lines.append("[b]Boss Phase[/b]")
+		lines.append("  Phase: %s" % bm.get_phase_name())
+		lines.append("")
+
+	# Divine Intervention
+	var di = get_tree().current_scene.get_node_or_null("DivineIntervention")
+	if di:
+		lines.append("[b]Divine Intervention[/b]")
+		if di._triggered:
+			lines.append("  [color=#ff4444]TRIGGERED — GAME OVER[/color]")
+		elif di.is_warning():
+			lines.append("  [color=#ffaa00]WARNING: %.0fs remaining![/color]" % di.get_time_remaining())
+		elif di._active:
+			lines.append("  Active (timer: %.0f / %.0f)" % [di._timer, DivineIntervention.GRACE_PERIOD])
+		else:
+			lines.append("  Inactive (waiting for first corruption)")
+		lines.append("")
+
+	# Faction
+	if mm:
+		var my_faction = mm._get_player_faction(peer_id)
+		var fname = GameConstants.faction_names.get(my_faction, "Unknown")
+		var fcolor = GameConstants.faction_colors.get(my_faction, Color.WHITE)
+		lines.append("[b]My Faction[/b]")
+		lines.append("  [color=#%s]%s[/color] (F9 to swap)" % [fcolor.to_html(false), fname])
+		lines.append("")
+
 	# Debug info
 	lines.append("[b]Controls[/b]")
 	lines.append("  E = interact/claim | Q = recall | LMB = attack")
 	lines.append("")
 	lines.append("[b]Debug[/b]")
 	lines.append("  F2 = add dummy | F4 = god mode | F5 = kill avatar | F6 = spawn enemy")
+	lines.append("  F7 = spawn minion | F8 = +10 influence | F9 = swap faction | F10 = boost corruption")
 	lines.append("  Dummy players: %d (slots open: %d)" % [DebugManager.get_dummy_count(), DebugManager.get_max_dummy_players()])
 	lines.append("")
 

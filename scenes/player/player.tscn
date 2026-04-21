@@ -19,6 +19,8 @@ radius = 0.35
 height = 2.8
 
 [node name="Player" type="CharacterBody3D" unique_id=1838049823 node_paths=PackedStringArray("_player_input", "_camera_input", "_player_model", "_state_machine")]
+collision_layer = 5
+collision_mask = 5
 script = ExtResource("1_hkxbp")
 _player_input = NodePath("PlayerInput")
 _camera_input = NodePath("CameraInput")
@@ -89,9 +91,6 @@ camera_input = NodePath("../../CameraInput")
 player_model = NodePath("../../Model")
 player_input = NodePath("../../PlayerInput")
 parent = NodePath("../..")
-
-[node name="AttackState" type="Node" parent="RewindableStateMachine" unique_id=1931892902]
-metadata/_custom_type_script = "uid://dij2fvxmmxyn4"
 
 [node name="PerspectiveManager" parent="." unique_id=729530649 node_paths=PackedStringArray("player", "bullet_raycast", "view_model_container", "world_model_container") instance=ExtResource("12_fm80t")]
 current_perspective = ExtResource("13_gx1jg")

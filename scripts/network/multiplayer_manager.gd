@@ -5,21 +5,21 @@ extends Node
 
 @export var _player_spawn_point: Node3D
 
-var _multiplayer_scene = preload("res://scenes/player/player.tscn")
+var _multiplayer_scene: PackedScene = preload("res://scenes/player/player.tscn")
 var _players_in_game: Dictionary = {}
 var _player_slot_order: Array[int] = [] # Tracks join order for tower assignment
 
 # Tower spawn positions as offsets from PlayerSpawnPoint (72, 41, 1)
 # Each tower's floor is at local Y=40, so spawn Y = tower_global_Y + 40 + 1 (standing height)
 # Offset = tower_spawn_global - PlayerSpawnPoint_global
-const TOWER_SPAWNS := [
+const TOWER_SPAWNS: Array[Vector3] = [
 	Vector3(3, 0, -1.5),       # Tower 1: global (75, 41, -0.5)
 	Vector3(-72.5, 0, 67),     # Tower 2: global (-0.5, 41, 68)
 	Vector3(-142, 0, -1),      # Tower 3: global (-70, 41, 0)
 	Vector3(-72.5, 0, -63.5),  # Tower 4: global (-0.5, 41, -62.5)
 ]
 
-func _ready():
+func _ready() -> void:
 	print("MultiplayerManager ready!")
 
 	# Listen for avatar changes on all peers so we can update player modes
@@ -33,7 +33,7 @@ func _ready():
 			print("Adding Host player to game...")
 			_add_player_to_game(1)
 
-func _add_player_to_game(network_id: int):
+func _add_player_to_game(network_id: int) -> void:
 	if is_multiplayer_authority():
 		print("Adding player to game: %s" % network_id)
 
@@ -47,7 +47,7 @@ func _add_player_to_game(network_id: int):
 		else:
 			print("Warning! Attempted to add existing player to game: %s" % network_id)
 
-func _remove_player_from_game(network_id: int):
+func _remove_player_from_game(network_id: int) -> void:
 	if is_multiplayer_authority():
 		print("Removing player from game: %s" % network_id)
 		if _players_in_game.has(network_id):
@@ -57,7 +57,7 @@ func _remove_player_from_game(network_id: int):
 				_players_in_game.erase(network_id)
 			_player_slot_order.erase(network_id)
 
-func _ready_player(player: Player, network_id: int):
+func _ready_player(player: Player, network_id: int) -> void:
 	if is_multiplayer_authority():
 		# Assign to next available tower slot
 		_player_slot_order.append(network_id)
@@ -81,7 +81,7 @@ func get_player_slot(network_id: int) -> int:
 	## Returns the tower slot (0-3) for a given player, or -1 if not found.
 	return _player_slot_order.find(network_id)
 
-func _on_avatar_changed(old_peer_id: int, new_peer_id: int):
+func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
 	# Transfer control to/from the shared Avatar entity
 	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
 	if not avatar or not avatar is PlayerActor:
@@ -106,11 +106,11 @@ func _on_avatar_changed(old_peer_id: int, new_peer_id: int):
 		# No one controls it — go dormant
 		avatar.deactivate()
 
-func _peer_connected(network_id: int):
+func _peer_connected(network_id: int) -> void:
 	print("Peer connected: %s" % network_id)
 	if is_multiplayer_authority():
 		_add_player_to_game(network_id)
 
-func _peer_disconnected(network_id: int):
+func _peer_disconnected(network_id: int) -> void:
 	print("Peer disconnected: %s" % network_id)
 	_remove_player_from_game(network_id)

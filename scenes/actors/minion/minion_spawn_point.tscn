@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d24db7jslh5tl"]
+
+[ext_resource type="Script" uid="uid://fuot1gu7uob" path="res://scenes/actors/minion/minion_spawn_point.gd" id="1_vshbh"]
+
+[node name="MinionSpawnPoint" type="Marker3D" unique_id=1793453589]
+script = ExtResource("1_vshbh")

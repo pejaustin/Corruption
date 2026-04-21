@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MinionType" format=3 uid="uid://do57mms1unts3"]
+
+[ext_resource type="Script" uid="uid://b2bon8dni7iqa" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"imp"
+display_name = "Imp"
+hp = 30
+speed = 4.5
+color = Color(0.9, 0.3, 0.2, 1)

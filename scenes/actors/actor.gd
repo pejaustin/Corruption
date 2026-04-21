@@ -9,13 +9,15 @@ signal died
 
 var hp: int
 var incoming_damage: int = 0
+var faction: int = GameConstants.Faction.NEUTRAL
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 var _state_machine: RewindableStateMachine
 var _model: Node3D
 var _animation_player: AnimationPlayer
 
-func _ready():
+func _ready() -> void:
+	add_to_group(&"actors")
 	_state_machine = $RewindableStateMachine
 	_model = get_node_or_null("Model")
 	if _model:
@@ -38,9 +40,24 @@ func get_stagger_duration() -> float:
 func can_take_damage() -> bool:
 	return hp > 0
 
+# --- Faction / Perception ---
+
+func is_hostile_to(other: Actor) -> bool:
+	if other == null or other == self:
+		return false
+	return FactionRelations.is_hostile(faction, other.faction)
+
+func can_see(other: Actor) -> bool:
+	if other == null or not is_instance_valid(other):
+		return false
+	return not other.is_stealthed_from(self)
+
+func is_stealthed_from(_observer: Actor) -> bool:
+	return false
+
 # --- Combat ---
 
-func take_damage(amount: int):
+func take_damage(amount: int) -> void:
 	if not can_take_damage():
 		return
 	hp = max(0, hp - amount)
@@ -50,16 +67,16 @@ func take_damage(amount: int):
 	else:
 		_state_machine.transition(&"StaggerState")
 
-func _die():
+func _die() -> void:
 	died.emit()
 	_state_machine.transition(&"DeathState")
 
 # --- Physics helpers ---
 
-func apply_gravity(delta: float):
+func apply_gravity(delta: float) -> void:
 	velocity.y -= gravity * delta
 
-func force_update_is_on_floor():
+func force_update_is_on_floor() -> void:
 	var old_velocity = velocity
 	velocity *= 0
 	move_and_slide()
@@ -67,7 +84,7 @@ func force_update_is_on_floor():
 
 # --- Animation ---
 
-func _on_display_state_changed(_old_state: RewindableState, new_state: RewindableState):
+func _on_display_state_changed(_old_state: RewindableState, new_state: RewindableState) -> void:
 	if not _animation_player:
 		return
 	var actor_state = new_state as ActorState

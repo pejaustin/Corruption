@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AvatarAbility" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_ability.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/abilities/hellfire_strike.tscn" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hellfire_strike"
+display_name = "Hellfire Strike"
+cooldown = 6.0
+description = "Next attack deals 3x damage with fire AoE"
+effect_scene = ExtResource("2_effect")

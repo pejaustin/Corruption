@@ -59,7 +59,8 @@ When you're not the Avatar, you're in your tower — a first-person 3D space whe
 
 ### Summoning Circle (Minion Spawn)
 - Spend resources to spawn minions.
-- Minions deploy to the map from your tower's location.
+- Minions appear at the tower's `MinionSpawnPoint` (in-scene marker owned by the tower) and immediately march to the overlord's rally flag.
+- The rally flag (`MinionRallyPoint`) is a world marker that only the owning overlord sees and can reposition — clicking the War Table both commands existing minions and moves the rally, so subsequent summons muster at the same spot.
 - Faction-specific minion roster.
 
 ### Upgrade Altar

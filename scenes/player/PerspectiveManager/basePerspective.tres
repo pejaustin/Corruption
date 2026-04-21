@@ -1,18 +1,11 @@
-[gd_resource type="Resource" script_class="PerspectiveResource" load_steps=4 format=3 uid="uid://3ps5pptsmkx7"]
+[gd_resource type="Resource" script_class="PerspectiveResource" format=3 uid="uid://3ps5pptsmkx7"]
 
 [ext_resource type="Script" uid="uid://hdymvbiynuek" path="res://scenes/player/PerspectiveManager/perspective_resource.gd" id="1_pfxbe"]
 [ext_resource type="PackedScene" uid="uid://drbcf3v1fc1y1" path="res://scenes/player/lich_arms.tscn" id="2_p8iji"]
-[ext_resource type="PackedScene" uid="uid://cj5decnuq5lcr" path="res://scenes/player/lich.tscn" id="3_6imy5"]
 
 [resource]
 script = ExtResource("1_pfxbe")
-damage = 10
-world_model = ExtResource("3_6imy5")
 view_model = ExtResource("2_p8iji")
 view_model_pos = Vector3(0, -0.82, -0.13)
 view_model_rot = Vector3(-0.221657, 3.14159, 0)
-view_model_scale = Vector3(1, 1, 1)
-world_model_pos = Vector3(0, 0, 0)
-world_model_rot = Vector3(0, 0, 0)
-world_model_scale = Vector3(1, 1, 1)
 metadata/_custom_type_script = "uid://hdymvbiynuek"

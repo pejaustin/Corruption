@@ -22,10 +22,21 @@ corruption/
 │   ├── systems/             # System design pages
 │   └── technical/           # Implementation notes
 ├── scenes/
+│   ├── actors/
+│   │   ├── minion/
+│   │   │   ├── minion_actor.gd / .tscn     # MinionActor base scene
+│   │   │   ├── minion_spawn_point.gd       # Tower-owned Marker3D where summons appear
+│   │   │   ├── minion_rally_point.gd       # Owner-only rally flag (Marker3D)
+│   │   │   ├── states/                     # idle / chase / attack / jump
+│   │   │   └── types/                      # skeleton_actor.tscn, imp_actor.tscn, ...
+│   │   └── enemy/                          # Neutral enemy actors
 │   ├── menus/               # Main menu, lobby, enet menu, player panel
 │   ├── network/             # Multiplayer manager, enet/noray network
 │   ├── player/              # Player, camera, perspective manager
-│   └── world/env/           # Environment scenes (rocks, towers, etc.)
+│   └── world/env/
+│       ├── tower.gd / .tscn                # Tower — pairs its spawn point w/ a rally at runtime
+│       ├── jumpable_link.gd                # NavigationLink3D subclass minions traverse by jumping
+│       └── ...                             # Other env scenes (rocks, foliage)
 ├── scripts/
 │   ├── menus/               # Menu logic
 │   ├── network/             # Network manager, connection configs

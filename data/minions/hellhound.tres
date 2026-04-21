@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hellhound"
+display_name = "Hellhound"
+faction = 1
+hp = 50
+damage = 18
+speed = 5.5
+cost = 15
+aggro_radius = 8.0
+attack_range = 1.8
+attack_cooldown = 1.5
+color = Color(0.8, 0.2, 0.1, 1)
+trait_tag = &""

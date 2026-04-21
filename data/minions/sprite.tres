@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"sprite"
+display_name = "Sprite"
+faction = 2
+hp = 15
+damage = 5
+speed = 5.0
+cost = 4
+aggro_radius = 8.0
+attack_range = 1.8
+attack_cooldown = 1.5
+color = Color(0.3, 0.8, 0.4, 1)
+trait_tag = &""

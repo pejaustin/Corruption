@@ -5,14 +5,19 @@ class_name Enemy extends CharacterBody3D
 
 enum State { IDLE, CHASE, ATTACK, DEATH, STAGGER }
 
-const SPEED := 3.0
-const AGGRO_RADIUS := 8.0
-const DEAGGRO_RADIUS := 12.0
-const ATTACK_RANGE := 2.0
-const ATTACK_DAMAGE := 15
-const ATTACK_COOLDOWN := 1.2
-const MAX_HP := 60
-const STAGGER_DURATION := 0.4
+const SPEED: float = 3.0
+const AGGRO_RADIUS: float = 8.0
+const DEAGGRO_RADIUS: float = 12.0
+const ATTACK_RANGE: float = 2.0
+const ATTACK_DAMAGE: int = 15
+const ATTACK_COOLDOWN: float = 1.2
+const MAX_HP: int = 60
+const STAGGER_DURATION: float = 0.4
+const COLLISION_LAYER_ENEMY: int = 4
+const COLLISION_MASK_WORLD: int = 1
+const INTERPOLATION_SPEED: float = 10.0
+const SYNC_INTERVAL: float = 0.1
+const DEATH_CLEANUP_TIME: float = 2.0
 
 @export var patrol_point: Vector3 = Vector3.ZERO
 
@@ -32,21 +37,21 @@ var _target_rot: float
 var _anim_player: AnimationPlayer
 var _current_anim: String = ""
 
-func _ready():
+func _ready() -> void:
 	if patrol_point == Vector3.ZERO:
 		patrol_point = global_position
 	_target_pos = global_position
 	_target_rot = rotation.y
 	# Enemy collision is on layer 3 (bit 2) so Avatar hitbox (mask 4 = bit 2) detects it
-	collision_layer = 4  # layer 3
-	collision_mask = 1   # collide with world
+	collision_layer = COLLISION_LAYER_ENEMY
+	collision_mask = COLLISION_MASK_WORLD
 	_anim_player = get_node_or_null("Model/AnimationPlayer")
 
-func _physics_process(delta: float):
+func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
 		# Clients interpolate toward the host-broadcast position
-		global_position = global_position.lerp(_target_pos, 10.0 * delta)
-		rotation.y = lerp_angle(rotation.y, _target_rot, 10.0 * delta)
+		global_position = global_position.lerp(_target_pos, INTERPOLATION_SPEED * delta)
+		rotation.y = lerp_angle(rotation.y, _target_rot, INTERPOLATION_SPEED * delta)
 		# Play animation matching current state
 		match state:
 			State.IDLE: _play_anim("Idle")
@@ -77,11 +82,11 @@ func _physics_process(delta: float):
 
 	# Broadcast state to clients ~10 times/sec
 	_sync_timer += delta
-	if _sync_timer >= 0.1:
+	if _sync_timer >= SYNC_INTERVAL:
 		_sync_timer = 0.0
 		_sync_state.rpc(global_position, rotation.y, state, hp)
 
-func _process_idle(delta: float):
+func _process_idle(delta: float) -> void:
 	_play_anim("Idle")
 	velocity.x = 0
 	velocity.z = 0
@@ -98,7 +103,7 @@ func _process_idle(delta: float):
 	if avatar and _distance_to(avatar) < AGGRO_RADIUS:
 		state = State.CHASE
 
-func _process_chase(delta: float):
+func _process_chase(delta: float) -> void:
 	var avatar := _find_avatar()
 	if not avatar or avatar.is_dormant:
 		state = State.IDLE
@@ -120,7 +125,7 @@ func _process_chase(delta: float):
 	velocity.z = dir.z * SPEED
 	_face_direction(dir)
 
-func _process_attack(delta: float):
+func _process_attack(delta: float) -> void:
 	_play_anim("Attack")
 	_attack_timer += delta
 	velocity.x = 0
@@ -139,14 +144,14 @@ func _process_attack(delta: float):
 		else:
 			state = State.CHASE
 
-func _process_death(delta: float):
+func _process_death(delta: float) -> void:
 	_play_anim("Death")
 	_death_timer += delta
 	velocity = Vector3.ZERO
-	if _death_timer >= 2.0:
+	if _death_timer >= DEATH_CLEANUP_TIME:
 		queue_free()
 
-func _process_stagger(delta: float):
+func _process_stagger(delta: float) -> void:
 	_play_anim("Stagger")
 	_stagger_timer += delta
 	velocity.x = 0
@@ -154,7 +159,7 @@ func _process_stagger(delta: float):
 	if _stagger_timer >= STAGGER_DURATION:
 		state = State.CHASE
 
-func take_damage(amount: int):
+func take_damage(amount: int) -> void:
 	if state == State.DEATH or state == State.STAGGER:
 		return
 	hp = max(0, hp - amount)
@@ -179,12 +184,12 @@ func _distance_to(target: Node3D) -> float:
 	diff.y = 0
 	return diff.length()
 
-func _play_anim(anim_name: String):
+func _play_anim(anim_name: String) -> void:
 	if _anim_player and _current_anim != anim_name:
 		_current_anim = anim_name
 		_anim_player.play("large-male/" + anim_name)
 
-func _face_direction(dir: Vector3):
+func _face_direction(dir: Vector3) -> void:
 	if dir.length() < 0.01:
 		return
 	# Model faces +Z, but look_at points -Z at target, so look away from dir
@@ -192,7 +197,7 @@ func _face_direction(dir: Vector3):
 	look_at(target, Vector3.UP)
 
 @rpc("authority", "call_remote", "unreliable")
-func _sync_state(pos: Vector3, rot_y: float, new_state: int, new_hp: int):
+func _sync_state(pos: Vector3, rot_y: float, new_state: int, new_hp: int) -> void:
 	_target_pos = pos
 	_target_rot = rot_y
 	state = new_state as State

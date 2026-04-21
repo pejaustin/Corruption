@@ -1,4 +1,4 @@
 extends Node3D
 
-func start_animations():
+func start_animations() -> void:
 	$AnimationPlayer.play("ArmatureAction")

@@ -1,6 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://ecbxwo8h2c1l"]
+[gd_scene format=3 uid="uid://bmyo21teny3a8"]
 
-[ext_resource type="Script" uid="uid://b5gggiqk6vtyl" path="res://scripts/menus/enet_menu.gd" id="1_sjfiw"]
+[ext_resource type="Script" path="res://scripts/menus/enet_menu.gd" id="1_sjfiw"]
 [ext_resource type="Theme" uid="uid://giidcej8oij7" path="res://assets/ui/menu_theme.tres" id="2_cobrq"]
 [ext_resource type="PackedScene" uid="uid://dl267poljvrup" path="res://scenes/menus/player_panel.tscn" id="3_m8s1v"]
 
@@ -10,7 +10,7 @@ bg_color = Color(0.460153, 0.658802, 0.474425, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sprw6"]
 bg_color = Color(0.63, 0.6048, 0.6048, 1)
 
-[node name="EnetMenu" type="Control" node_paths=PackedStringArray("go_button", "back_button", "host_ip_input", "host_port_input", "option_label")]
+[node name="EnetMenu" type="Control" unique_id=1091208008 node_paths=PackedStringArray("go_button", "back_button", "host_ip_input", "host_port_input", "option_label")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,7 +25,7 @@ host_ip_input = NodePath("JoinPanel/VBoxContainer/HostIP")
 host_port_input = NodePath("JoinPanel/VBoxContainer/Port")
 option_label = NodePath("JoinPanel/OptionLabel")
 
-[node name="JoinPanel" type="Panel" parent="."]
+[node name="JoinPanel" type="Panel" parent="." unique_id=141293462]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -34,7 +34,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="OptionLabel" type="RichTextLabel" parent="JoinPanel"]
+[node name="OptionLabel" type="RichTextLabel" parent="JoinPanel" unique_id=1581186906]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -50,7 +50,7 @@ grow_vertical = 2
 theme_override_font_sizes/normal_font_size = 22
 text = "Connect to Host's Game"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="JoinPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="JoinPanel" unique_id=532566268]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -65,39 +65,39 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 
-[node name="HostIP" type="LineEdit" parent="JoinPanel/VBoxContainer"]
+[node name="HostIP" type="LineEdit" parent="JoinPanel/VBoxContainer" unique_id=1425065762]
 layout_mode = 2
-theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_colors/font_color = Color(0.631373, 0.556863, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_font_sizes/font_size = 32
 text = "127.0.0.1"
 placeholder_text = "Enter Host's IP"
 
-[node name="Port" type="LineEdit" parent="JoinPanel/VBoxContainer"]
+[node name="Port" type="LineEdit" parent="JoinPanel/VBoxContainer" unique_id=936898102]
 layout_mode = 2
-theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_colors/font_color = Color(0.631373, 0.556863, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_font_sizes/font_size = 32
 text = "8080"
 placeholder_text = "Enter Host's Port"
 
-[node name="BoxContainer" type="BoxContainer" parent="JoinPanel/VBoxContainer"]
+[node name="BoxContainer" type="BoxContainer" parent="JoinPanel/VBoxContainer" unique_id=1556371409]
 layout_mode = 2
 
-[node name="Back" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer"]
+[node name="Back" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer" unique_id=695191983]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "Back"
 flat = true
 
-[node name="Go" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer"]
+[node name="Go" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer" unique_id=840151062]
 layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0, 0.819608, 0, 1)
 text = "Go!"
 flat = true
 
-[node name="LobbyMenu" type="Panel" parent="."]
+[node name="LobbyMenu" type="Panel" parent="." unique_id=1449555739]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -105,7 +105,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="LobbyMenu"]
+[node name="Label" type="Label" parent="LobbyMenu" unique_id=48276071]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -121,9 +121,9 @@ grow_vertical = 2
 theme_override_font_sizes/font_size = 101
 text = "Lobby"
 
-[node name="Start" type="Button" parent="LobbyMenu"]
+[node name="Start" type="Button" parent="LobbyMenu" unique_id=78366737]
 custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
+layout_mode = 0
 offset_left = 610.0
 offset_top = 412.0
 offset_right = 670.0
@@ -133,9 +133,9 @@ theme = ExtResource("2_cobrq")
 theme_override_styles/normal = SubResource("StyleBoxFlat_m8s1v")
 text = "START"
 
-[node name="Back" type="Button" parent="LobbyMenu"]
+[node name="Back" type="Button" parent="LobbyMenu" unique_id=1411826020]
 custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
+layout_mode = 0
 offset_left = 610.0
 offset_top = 440.0
 offset_right = 670.0
@@ -145,7 +145,7 @@ theme = ExtResource("2_cobrq")
 theme_override_styles/normal = SubResource("StyleBoxFlat_sprw6")
 text = "BACK"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="LobbyMenu"]
+[node name="VBoxContainer" type="VBoxContainer" parent="LobbyMenu" unique_id=452156058]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -159,7 +159,7 @@ offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PlayerPanel" parent="LobbyMenu/VBoxContainer" instance=ExtResource("3_m8s1v")]
+[node name="PlayerPanel" parent="LobbyMenu/VBoxContainer" unique_id=977661843 instance=ExtResource("3_m8s1v")]
 layout_mode = 2
 
 [connection signal="pressed" from="JoinPanel/VBoxContainer/BoxContainer/Back" to="." method="_on_back_pressed"]

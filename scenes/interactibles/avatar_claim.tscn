@@ -10,10 +10,9 @@ radius = 1.5
 top_radius = 0.3
 height = 1.2
 
-[node name="AvatarClaim" type="Area3D" unique_id=2112344499 node_paths=PackedStringArray("interact_prompt")]
+[node name="AvatarClaim" type="Area3D" unique_id=2112344499]
 collision_layer = 0
 script = ExtResource("1_claim")
-interact_prompt = NodePath("Label3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=277306395]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9915161, 0)
@@ -22,8 +21,3 @@ shape = SubResource("CylinderShape3D_area")
 [node name="Pedestal" type="MeshInstance3D" parent="." unique_id=38319747]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 mesh = SubResource("CylinderMesh_visual")
-
-[node name="Label3D" type="Label3D" parent="." unique_id=1267372610]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
-billboard = 1
-text = "Claim the Avatar"

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FactionProfile" format=3 uid="uid://dxqhpelixm4x7"]
+
+[ext_resource type="Script" uid="uid://cidrom8q5ad0m" path="res://scripts/faction_profile.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://c3atsw0qdlnig" path="res://scripts/avatar_ability.gd" id="1_tespb"]
+[ext_resource type="Resource" path="res://data/abilities/mind_blast.tres" id="5_mind_blast"]
+[ext_resource type="Resource" path="res://data/abilities/eldritch_ritual.tres" id="6_eldritch_ritual"]
+
+[resource]
+script = ExtResource("1_script")
+id = 3
+display_name = "Eldritch"
+color = Color(0.2745099, 0.109375, 0.4375, 1)
+avatar_abilities = Array[ExtResource("1_tespb")]([ExtResource("5_mind_blast"), ExtResource("6_eldritch_ritual")])

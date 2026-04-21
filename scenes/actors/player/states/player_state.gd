@@ -3,10 +3,10 @@ class_name PlayerState extends ActorState
 ## Base state for player-specific states.
 ## Provides camera, input, and movement helpers.
 
-const WALK_SPEED := 5.0
-const RUN_MODIFIER := 2.0
-const ROTATION_INTERPOLATE_SPEED := 10.0
-const JUMP_VELOCITY := 6.5
+const WALK_SPEED: float = 5.0
+const RUN_MODIFIER: float = 2.0
+const ROTATION_INTERPOLATE_SPEED: float = 10.0
+const JUMP_VELOCITY: float = 6.5
 
 var player: PlayerActor:
 	get: return actor as PlayerActor
@@ -23,7 +23,7 @@ func get_jump() -> bool:
 func get_attack() -> bool:
 	return player.avatar_input.attack_input
 
-func rotate_player_model(delta: float):
+func rotate_player_model(delta: float) -> void:
 	var cam_basis: Basis = player.avatar_camera.camera_basis
 	var player_lookat_target = cam_basis.z
 	var q_from = actor._model.global_transform.basis.get_rotation_quaternion()
@@ -31,7 +31,7 @@ func rotate_player_model(delta: float):
 	var set_rotation = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
 	actor._model.global_transform.basis = set_rotation
 
-func move_horizontal(delta: float, speed: float = WALK_SPEED):
+func move_horizontal(delta: float, speed: float = WALK_SPEED) -> void:
 	var input_dir := get_movement_input()
 	var direction := (player.avatar_camera.camera_basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	var target := direction * speed
@@ -44,7 +44,7 @@ func move_horizontal(delta: float, speed: float = WALK_SPEED):
 		actor.velocity.x = move_toward(actor.velocity.x, 0, speed)
 		actor.velocity.z = move_toward(actor.velocity.z, 0, speed)
 
-func move_air(delta: float):
+func move_air(delta: float) -> void:
 	var input_dir := get_movement_input()
 	var direction := (player.avatar_camera.camera_basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	var speed_mod := WALK_SPEED * 0.6

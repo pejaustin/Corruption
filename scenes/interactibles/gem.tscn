@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/interactibles/gem.gd" id="1_gem"]
 
@@ -16,9 +16,8 @@ emission_enabled = true
 emission = Color(0.6, 0.0, 0.8, 1.0)
 emission_energy_multiplier = 2.0
 
-[node name="Gem" type="Area3D" node_paths=PackedStringArray("interact_prompt")]
+[node name="Gem" type="Area3D"]
 script = ExtResource("1_gem")
-interact_prompt = NodePath("Label3D")
 collision_layer = 0
 collision_mask = 1
 
@@ -29,9 +28,3 @@ shape = SubResource("CylinderShape3D_area")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 mesh = SubResource("SphereMesh_gem")
 surface_material_override/0 = SubResource("StandardMaterial3D_gem")
-
-[node name="Label3D" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0, 0)
-text = "The Gem"
-font_size = 40
-billboard = 1

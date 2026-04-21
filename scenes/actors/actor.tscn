@@ -7,6 +7,7 @@
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_actor"]
 radius = 0.4
+height = 2.8598633
 
 [node name="Actor" type="CharacterBody3D" unique_id=336466554]
 script = ExtResource("1_actor")

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cwic18lbd6p1g"]
+
+[ext_resource type="Script" uid="uid://c1f40td3ye8nb" path="res://scenes/interactibles/interactable.gd" id="1_lo33k"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_vygey"]
+
+[node name="Interactable" type="Area3D" unique_id=1193365716]
+collision_layer = 0
+script = ExtResource("1_lo33k")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2111479269]
+shape = SubResource("CylinderShape3D_vygey")

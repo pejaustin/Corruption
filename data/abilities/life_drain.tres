@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AvatarAbility" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_ability.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/abilities/life_drain.tscn" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"life_drain"
+display_name = "Life Drain"
+cooldown = 8.0
+description = "Drain HP from enemies on hit for 5 seconds"
+effect_scene = ExtResource("2_effect")

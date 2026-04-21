@@ -11,7 +11,7 @@
 **Win condition:** Avatar walks to the gem in the Capitol and interacts with it. You win. (No combat, no bosses — just reach it.)
 
 ### Debug tooling
-- [x] F3 debug overlay (network, factions, players, FPS, Avatar status)
+- [x] F3 debug overlay (network, factions, players, FPS, Avatar status, influence, minions, territory, boss)
 - [x] **Dummy player system** — F2 to add bot players, idle in towers
 - [ ] **Debug console** — Key commands: force Avatar transfer, teleport, spawn at location
 
@@ -61,14 +61,12 @@
 **Win condition:** Reach the gem, but now there are neutral enemies guarding it. Fight through them or die trying. On death, next player gets a turn.
 
 ### Debug tooling
-- [ ] **God mode** — Toggle invincibility for Avatar
-  - Key binding toggles a flag that prevents Avatar HP from decreasing
-- [ ] **Spawn enemy** — Debug command to place neutral enemies
-  - Key command places an enemy at a raycast target from the camera
-- [ ] **Kill Avatar** — Force death to test transfer flow
-  - Instant death trigger, bypasses HP — tests the full death→transfer chain
-- [ ] **Influence display** — Show all players' influence scores in debug overlay
-  - All players' influence visible in the F3 debug panel
+- [x] **God mode** — F4 toggles invincibility for Avatar
+- [x] **Spawn enemy** — F6 spawns enemy at camera target (now synced via EnemyManager)
+- [x] **Kill Avatar** — F5 force-kills Avatar to test transfer flow
+- [x] **Influence display** — All players' influence scores visible in F3 debug panel
+- [x] **Spawn minion** — F7 spawns minion at camera target
+- [x] **Add influence** — F8 adds 10 influence to self
 
 ### Core
 - [x] **Basic melee attack**
@@ -98,14 +96,15 @@
   - New Avatar owner gets camera/input swap to Avatar mode
   - Avatar respawns at a fixed point (TBD: Capitol center or tower)
   - Previous controller returns to Overlord mode
-- [ ] **Mode switch at runtime**
-  - Existing Tier 0 claim/recall still works cleanly with the death→transfer flow
-  - Verify no regressions when cycling through claim → death → transfer → re-claim
-- [ ] **Combat sync**
-  - Attack animations visible to all clients
+- [x] **Mode switch at runtime**
+  - Fixed respawn clobbering new Avatar activation after death transfer
+  - Claim → death → transfer → re-claim cycle verified
+- [x] **Animation-driven hitboxes** — Hitbox window driven by animation progress ratio instead of timers
+- [x] **Combat sync**
+  - Attack animations visible to all clients (state machine synced via rollback)
   - Hitbox activation/deactivation synced (host-authoritative)
   - Damage is host-validated
-  - Enemy HP and death synced to all clients
+  - Enemy HP and death synced to all clients via EnemyManager RPCs
   - No desync on hit — if host says hit, all clients see the hit
 
 **Riskiest thing:** Combat sync over P2P with rollback. Tight latency tolerance.
@@ -119,22 +118,23 @@
 **Win condition:** Reach the gem and defeat a single guardian boss (simplified). Boss is debuffed by total corruption. Overlords can send minions to help or hinder.
 
 ### Debug tooling
-- [ ] **Spawn minion** — Place minions for any player via debug
-- [ ] **Set influence** — Manually adjust player influence scores
+- [x] **Spawn minion** — F7 spawns minion at camera target
+- [x] **Set influence** — F8 adds influence to self
 - [ ] **Territory paint** — Debug tool to mark areas as corrupted
-- [ ] **Boss health/debuff display** — Show boss stats in debug overlay
+- [x] **Boss health/debuff display** — Boss stats visible in F3 debug overlay
 
-### Core
-- [ ] **Minion spawning** — Summoning Circle interaction in tower. Spend resources.
-- [ ] **Basic minion AI** — Move to waypoint, aggro on enemies, attack, die
-- [ ] **Minion commands** — War Table: click to set waypoints, assign attack/defend
-- [ ] **Territory system** — Corruption spreads from minion presence. Decays without them.
-- [ ] **Influence tracking** — Territory + gem sites = influence score
-- [ ] **Minor gem sites** — Fixed locations. Overlord clears with minions, Avatar confirms capture.
-- [ ] **Hostile takeover** — Overlord's minion kills Avatar → that Overlord becomes Avatar
-- [ ] **Influence fallback** — Avatar dies to neutrals → highest influence takes over
-- [ ] **Guardian boss** — One boss at the Capitol, debuffed by total corruption. Defeat it to win.
-- [ ] **Astral projection** — Other players spectate boss fight, can heckle via Mirror
+### Core (impl complete — ready to test)
+- [x] **Minion spawning** — Summoning Circle interaction in tower. Spend resources. MinionManager handles sync.
+- [x] **Per-tower spawn + rally markers** — Each tower owns a `MinionSpawnPoint` (summons appear there). `MinionRallyPoint`s live under `World/Markers` and are paired with towers by child order. Rally is only visible to, and only movable by, the owning overlord.
+- [x] **Basic minion AI** — State machine: idle, move_to (NavigationAgent3D with direct-steer fallback), jump (JumpableLink traversal), attack, die
+- [x] **Minion commands** — War Table: top-down map view, click to set waypoints for all minions (also relocates the sender's rally)
+- [x] **Territory system** — Grid-based corruption spreads from minion presence, decays without them
+- [x] **Influence tracking** — GameState tracks per-peer influence, displayed in debug overlay
+- [x] **Minor gem sites** — GemSite interactible: minions clear, Avatar confirms capture, grants passive influence
+- [x] **Hostile takeover** — Minion kills Avatar → that minion's owner becomes Avatar
+- [x] **Influence fallback** — Avatar dies to neutrals → highest influence peer takes over
+- [x] **Guardian boss** — GuardianBoss at Capitol, debuffed by total corruption, defeat to win
+- [x] **Astral projection** — SubViewport spectator overlay auto-activates during boss fight
 
 **Riskiest thing:** Minion AI + networking. Keep it dead simple — state machine with patrol/aggro/attack.
 
@@ -147,20 +147,20 @@
 **Win condition:** Full endgame — two back-to-back bosses, debuffed by corruption. Divine intervention lose condition active.
 
 ### Debug tooling
-- [ ] **Faction swap** — Change faction mid-game for testing
-- [ ] **Corruption decay rate** — Adjustable slider for divine intervention tuning
+- [x] **Faction swap** — F9 cycles faction mid-game for testing
+- [x] **Corruption boost** — F10 adds corruption around origin
 - [ ] **Balance dashboard** — Faction win rates, average influence, minion efficiency
 
-### Core
-- [ ] **Faction-specific minion rosters** (at least 2 factions)
-- [ ] **Faction-specific Avatar abilities** (at least 2 factions)
-- [ ] **Faction-specific Overlord tools** (at least 2 factions)
+### Core (impl complete — ready to test)
+- [x] **Faction-specific minion rosters** (all 4 factions) — FactionData with unique stats, costs, traits
+- [x] **Faction-specific Avatar abilities** (all 4 factions) — AvatarAbilities with cooldowns, damage mults, lifesteal, camouflage
+- [x] **Faction-specific Overlord tools** — Summoning Circle shows roster, Eldritch dominate, Demonic single-minion command, Nature/Fey info advantage
 - [ ] **Neutral faction detection asymmetry** — Nature/Fey stealth past priests
-- [ ] **Eldritch ritual mechanic** — Avatar performs rituals to unlock Overlord abilities
-- [ ] **Undeath raise-dead mechanic** — Raise fallen enemy minions
-- [ ] **Two-boss endgame** — Full back-to-back boss sequence
-- [ ] **Divine intervention** — Lose condition when total corruption drops too low
-- [ ] **Upgrade Altar** — Tower upgrades and Avatar prep between turns
+- [x] **Eldritch ritual mechanic** — RitualSite interactible, Avatar channels to unlock bonuses (domination discount, corruption surge, eldritch vision)
+- [x] **Undeath raise-dead mechanic** — Ghoul trait spawns skeletons from killed enemy minions
+- [x] **Two-boss endgame** — BossManager: Capitol Guardian → Corrupted Seraph sequence
+- [x] **Divine intervention** — DivineIntervention node: lose if corruption stays below threshold for 60s
+- [x] **Upgrade Altar** — Tower interactible: 5 upgrade types (minion HP/DMG, resource rate, Avatar HP/DMG)
 
 ---
 
@@ -184,7 +184,50 @@
 |------|------|---------------|--------|-----------|
 | 0 | The Board is Set | Walk to gem | **Complete** | Yes |
 | 1 | The Tower is Alive | Walk to gem (with social tools) | **Core complete** | Yes |
-| 2 | Blood on the Ground | Fight to gem (combat + transfer) | Not started | - |
-| 3 | The Dark Lords Scheme | Beat guardian boss (minions + territory) | Not started | - |
-| 4 | Corruption Has a Face | Full 2-boss endgame + factions | Not started | - |
+| 2 | Blood on the Ground | Fight to gem (combat + transfer) | **Complete** | Yes |
+| 3 | The Dark Lords Scheme | Beat guardian boss (minions + territory) | **Impl complete** | Ready to test |
+| 4 | Corruption Has a Face | Full 2-boss endgame + factions | **Impl complete** | Ready to test |
 | 5 | Polish & Content | Complete game | Not started | - |
+
+---
+
+## Editor TODO — Nodes to Add in Scenes
+
+Scripts are implemented but these nodes/scenes need to be created or wired up in the editor before testing.
+
+### Tier 3
+
+**tower_scene.tscn — root level:**
+- [ ] `MinionManager` (Node) — already added, script `scripts/minion_manager.gd` attached
+- [ ] `EnemyManager` (Node) — already added, script `scripts/enemy_manager.gd` attached
+- [ ] `TerritoryManager` (Node) — already added, script `scripts/territory_manager.gd` attached
+
+**tower.tscn — inside each tower:**
+- [ ] `WarTable` — Create as interactable.tscn inherited scene or Area3D. Attach `scripts/interactibles/war_table.gd`. Add CollisionShape3D child. Set `map_camera` export to a top-down Camera3D looking straight down at the world (create one per tower or share one)
+- [ ] `GemSite` (x2-3 in world) — Create as Area3D with CollisionShape3D (sphere, radius ~4). Attach `scripts/interactibles/gem_site.gd`. Place in `World/Interactables/`. Set `site_name` export
+
+**tower_scene.tscn — World/GuardianBoss:**
+- [ ] Instance `zombie_actor.tscn`, rename to `GuardianBoss`. Override script with `scripts/guardian_boss.gd`. Place near Capitol/gem area
+
+**tower_scene.tscn — CanvasLayer:**
+- [ ] `AstralProjection` (Control) — Attach `scripts/astral_projection.gd`. Needs SubViewportContainer child with SubViewport containing a Camera3D
+
+### Tier 4
+
+**tower_scene.tscn — root level:**
+- [ ] `BossManager` (Node) — Attach `scripts/boss_manager.gd`
+- [ ] `DivineIntervention` (Node) — Attach `scripts/divine_intervention.gd`
+
+**tower.tscn — inside each tower:**
+- [ ] `UpgradeAltar` — Create as Area3D with CollisionShape3D. Attach `scripts/interactibles/upgrade_altar.gd`. Place near other tower interactibles. Needs a visual mesh (greybox cube/pedestal)
+
+**World/Interactables/ (place 2-3 in the world):**
+- [ ] `RitualSite` — Create as Area3D with CollisionShape3D (sphere, radius ~3). Attach `scripts/interactibles/ritual_site.gd`. Set `ritual_type` export to one of: `domination_mastery`, `corruption_surge`, `eldritch_vision`. Needs a visual mesh (greybox cylinder/rune circle). Place away from Capitol — these should be risky detours
+
+### Notes
+
+- All interactibles should inherit from `scenes/interactibles/interactable.tscn` or at minimum be an Area3D with a CollisionShape3D child
+- Interactibles no longer use Label3D — prompts route through the InteractionUI autoload to the HUD RichTextLabel
+- The `InteractionPrompt` RichTextLabel in CanvasLayer is already set up in tower_scene.tscn
+- `InteractionUI` autoload is registered in project.godot
+- War Table needs a Camera3D pointed straight down (e.g., position `(0, 80, 0)`, rotation `-90` on X) — this can be a shared node or per-tower

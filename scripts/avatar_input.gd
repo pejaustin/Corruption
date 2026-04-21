@@ -12,10 +12,10 @@ var attack_input := false
 ## The peer ID currently controlling the Avatar. -1 = dormant/no one.
 var controlling_peer_id: int = -1
 
-func _ready():
+func _ready() -> void:
 	NetworkTime.before_tick_loop.connect(_gather)
 
-func _gather():
+func _gather() -> void:
 	if controlling_peer_id == multiplayer.get_unique_id():
 		input_dir = Input.get_vector("left", "right", "forward", "backward")
 		jump_input = Input.is_action_pressed("jump")
@@ -27,7 +27,7 @@ func _gather():
 		run_input = false
 		attack_input = false
 
-func set_controller(peer_id: int):
+func set_controller(peer_id: int) -> void:
 	controlling_peer_id = peer_id
 	# Transfer multiplayer authority so netfox syncs input from the right peer
 	if peer_id > 0:
@@ -36,5 +36,5 @@ func set_controller(peer_id: int):
 		# When dormant, authority goes to server
 		set_multiplayer_authority(1)
 
-func _exit_tree():
+func _exit_tree() -> void:
 	NetworkTime.before_tick_loop.disconnect(_gather)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FactionProfile" format=3 uid="uid://cfd7smagg65uk"]
+
+[ext_resource type="Script" uid="uid://c3atsw0qdlnig" path="res://scripts/avatar_ability.gd" id="1_5rwxe"]
+[ext_resource type="Script" uid="uid://cidrom8q5ad0m" path="res://scripts/faction_profile.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/hellfire_strike.tres" id="5_hellfire"]
+[ext_resource type="Resource" path="res://data/abilities/demon_rage.tres" id="6_demon_rage"]
+
+[resource]
+script = ExtResource("1_script")
+id = 1
+display_name = "Demonic"
+color = Color(0.37109375, 0.08228602, 0.04194973, 1)
+avatar_abilities = Array[ExtResource("1_5rwxe")]([ExtResource("5_hellfire"), ExtResource("6_demon_rage")])

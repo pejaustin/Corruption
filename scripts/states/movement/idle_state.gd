@@ -1,6 +1,6 @@
 extends MovementState
 
-func tick(delta, tick, is_fresh):
+func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	parent.velocity.x = 0
 	parent.velocity.z = 0
 	rotate_player_model(delta)
@@ -12,7 +12,5 @@ func tick(delta, tick, is_fresh):
 			state_machine.transition(&"MoveState")
 		elif get_jump():
 			state_machine.transition(&"JumpState")
-		elif get_attack():
-			state_machine.transition(&"AttackState")
 	else:
 		state_machine.transition(&"FallState")

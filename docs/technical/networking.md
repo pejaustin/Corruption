@@ -10,6 +10,7 @@
 - [x] ENet peer-to-peer server/client
 - [x] Noray NAT punchthrough with relay fallback
 - [x] Lobby with faction selection and player sync
+- [x] Lobby → match faction hand-off: lobby calls `GameState.sync_player_factions.rpc(player_factions)` immediately before `load_game_scene`, so every peer enters the game scene with an authoritative `GameState.player_factions: Dictionary[int, int]` (peer_id → Faction). `MinionManager._get_player_faction` reads it; round-robin assignment is now a fallback only.
 - [x] Max 4 player enforcement at server creation
 - [x] MultiplayerManager: spawn/despawn players on connect/disconnect
 - [x] MultiplayerSpawner for player scene replication

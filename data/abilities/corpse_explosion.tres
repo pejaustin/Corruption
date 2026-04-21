@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AvatarAbility" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_ability.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/abilities/corpse_explosion.tscn" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"corpse_explosion"
+display_name = "Corpse Explosion"
+cooldown = 15.0
+description = "Detonate nearby enemy corpses for AoE damage"
+effect_scene = ExtResource("2_effect")

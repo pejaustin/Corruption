@@ -5,12 +5,12 @@ extends ActorState
 
 var _elapsed: float = 0.0
 
-func enter(previous_state: RewindableState, tick: int):
+func enter(previous_state: RewindableState, tick: int) -> void:
 	_elapsed = 0.0
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 
-func tick(delta: float, tick: int, is_fresh: bool):
+func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	_elapsed += delta
 	actor.velocity.x = 0
 	actor.velocity.z = 0

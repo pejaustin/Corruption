@@ -1,6 +1,6 @@
 extends EnemyState
 
-func tick(delta: float, tick: int, is_fresh: bool):
+func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 

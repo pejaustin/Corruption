@@ -25,7 +25,7 @@ func update_model() -> void:
 			current_view_model.start_animations()
 		if world_model_container and current_perspective.world_model:
 			current_world_model = current_perspective.world_model.instantiate()
-			world_model_container.add_child(current_view_model)
+			world_model_container.add_child(current_world_model)
 			current_world_model.start_animations()
 
 func _ready() -> void:

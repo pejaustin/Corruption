@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FactionProfile" format=3 uid="uid://cd6rmjpmat0t1"]
+
+[ext_resource type="Script" uid="uid://c3atsw0qdlnig" path="res://scripts/avatar_ability.gd" id="1_neae1"]
+[ext_resource type="Script" uid="uid://cidrom8q5ad0m" path="res://scripts/faction_profile.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/abilities/camouflage.tres" id="5_camouflage"]
+[ext_resource type="Resource" path="res://data/abilities/entangle.tres" id="6_entangle"]
+
+[resource]
+script = ExtResource("1_script")
+id = 2
+display_name = "Nature/Fey"
+color = Color(0.1257638, 0.44140625, 0.18987867, 1)
+avatar_abilities = Array[ExtResource("1_neae1")]([ExtResource("5_camouflage"), ExtResource("6_entangle")])

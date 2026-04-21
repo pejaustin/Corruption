@@ -1,13 +1,13 @@
 extends Control
 
-@onready var player_list = $VBoxContainer/PlayerList
-@onready var start_button = $VBoxContainer/StartButton
-@onready var faction_selector = $VBoxContainer/FactionSelector
-@onready var player_count_label = $VBoxContainer/PlayerCount
+@onready var player_list: VBoxContainer = $VBoxContainer/PlayerList
+@onready var start_button: Button = $VBoxContainer/StartButton
+@onready var faction_selector: OptionButton = $VBoxContainer/FactionSelector
+@onready var player_count_label: Label = $VBoxContainer/PlayerCount
 
 var player_factions: Dictionary = {} # peer_id -> Faction enum
 
-func _ready():
+func _ready() -> void:
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 
@@ -19,22 +19,22 @@ func _ready():
 		player_factions[1] = GameConstants.Faction.UNDEATH
 		_update_player_list()
 
-func _setup_faction_selector():
+func _setup_faction_selector() -> void:
 	faction_selector.clear()
 	for faction in GameConstants.Faction.values():
 		faction_selector.add_item(GameConstants.faction_names[faction], faction)
 	faction_selector.selected = 0
 
-func _on_faction_selected(index: int):
+func _on_faction_selected(index: int) -> void:
 	var faction = faction_selector.get_item_id(index)
 	_set_faction.rpc(multiplayer.get_unique_id(), faction)
 
 @rpc("any_peer", "call_local", "reliable")
-func _set_faction(peer_id: int, faction: int):
+func _set_faction(peer_id: int, faction: int) -> void:
 	player_factions[peer_id] = faction as GameConstants.Faction
 	_update_player_list()
 
-func _on_peer_connected(peer_id: int):
+func _on_peer_connected(peer_id: int) -> void:
 	if multiplayer.is_server():
 		# Assign a default faction, avoiding duplicates when possible
 		var taken = player_factions.values()
@@ -48,16 +48,16 @@ func _on_peer_connected(peer_id: int):
 		# Sync full state to all peers
 		_sync_all_factions.rpc(player_factions)
 
-func _on_peer_disconnected(peer_id: int):
+func _on_peer_disconnected(peer_id: int) -> void:
 	player_factions.erase(peer_id)
 	_update_player_list()
 
 @rpc("authority", "call_local", "reliable")
-func _sync_all_factions(factions: Dictionary):
+func _sync_all_factions(factions: Dictionary) -> void:
 	player_factions = factions
 	_update_player_list()
 
-func _update_player_list():
+func _update_player_list() -> void:
 	# Clear existing entries
 	for child in player_list.get_children():
 		child.queue_free()
@@ -79,6 +79,7 @@ func _update_player_list():
 	if multiplayer.is_server():
 		start_button.disabled = false
 
-func _on_start_game_pressed():
+func _on_start_game_pressed() -> void:
 	if multiplayer.is_server():
+		GameState.sync_player_factions.rpc(player_factions)
 		NetworkManager.load_game_scene()

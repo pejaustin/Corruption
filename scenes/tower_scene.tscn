@@ -3,14 +3,17 @@
 [ext_resource type="PackedScene" uid="uid://btjx4a4g25xj3" path="res://scenes/network/multiplayer_manager.tscn" id="1_jlwa7"]
 [ext_resource type="PackedScene" uid="uid://cys03q34jt762" path="res://scenes/menus/in_game_menu.tscn" id="2_u1u8q"]
 [ext_resource type="PackedScene" uid="uid://deukdfofsqitg" path="res://assets/world/env/grass.glb" id="4_32jgm"]
-[ext_resource type="Material" uid="uid://dtbe06c2i0ktm" path="res://assets/world/world_material.tres" id="4_ugy4f"]
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="5_70a1q"]
-[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="6_uv732"]
+[ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="6_uv732"]
 [ext_resource type="PackedScene" uid="uid://brlisvoeolipa" path="res://assets/world/env/stone_tallB.glb" id="7_xl84e"]
 [ext_resource type="Shader" uid="uid://bvl4kfacs2hfw" path="res://shaders/ps1+postprocess.gdshader" id="8_xl84e"]
+[ext_resource type="PackedScene" uid="uid://bblv3fe3c2a5k" path="res://scenes/actors/minion/minion_rally_point.tscn" id="9_ghyor"]
 [ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="9_nsr5c"]
 [ext_resource type="PackedScene" path="res://scenes/interactibles/gem.tscn" id="10_jlvw8"]
-[ext_resource type="PackedScene" path="res://scenes/actors/enemy/zombie/zombie_actor.tscn" id="12_guard"]
+[ext_resource type="PackedScene" uid="uid://dwg2fjh1jdh28" path="res://scenes/actors/enemy/zombie/zombie_actor.tscn" id="12_guard"]
+[ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="13_ghyor"]
+[ext_resource type="Script" uid="uid://dx4qbicgfbcre" path="res://scripts/enemy_manager.gd" id="14_mlmq3"]
+[ext_resource type="Script" uid="uid://ci4j3ujeesv1f" path="res://scripts/territory_manager.gd" id="15_cduk1"]
 [ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="debug_overlay"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
@@ -30,12 +33,10 @@ volumetric_fog_density = 0.0242
 volumetric_fog_albedo = Color(0.964706, 0.698039, 0.431373, 1)
 volumetric_fog_length = 50.0
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_lpk0h"]
-material = ExtResource("4_ugy4f")
-size = Vector2(30, 30)
-
-[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_m5eq6"]
-data = PackedVector3Array(15, 0, 15, -15, 0, 15, 15, 0, -15, -15, 0, 15, -15, 0, -15, 15, 0, -15)
+[sub_resource type="NavigationMesh" id="NavigationMesh_ghyor"]
+vertices = PackedVector3Array(-36, 0, -39, -34.5, 0, -39.25, -34.5, 0, -249.5, -36.25, 0, -38, -249.5, 0, -249.5, -249.5, 0, -38, -33.25, 0, -36.75, -33.75, 0, -36.5, -27.5, 0, -29, -26.25, 0, -29.75, -23.75, 0, -29.25, 18.25, 0, -33.75, 18.25, 0, -37.25, -33.5, 0, -39, 20, 0, -38, 20.25, 0, -249.5, 23, 0, -34.75, 31.75, 0, -29.25, 32.5, 0, -29.25, 22.5, 0, -37.25, 33.25, 0, -28.5, 249.5, 0, -27.25, 22, 0, -37.75, 249.5, 0, -249.5, 33.5, 0, -27.25, -28, 0, -28.75, -35.5, 0, -36, -28.25, 0, -27.25, -37.5, 0, 19.75, -36.25, 0, -37, -249.5, 0, 19.75, -28, 0, -25.75, -37.25, 0, 19, -35.5, 0, 18.5, 19.75, 0.25, -35.25, 20.5, 0.25, -35, 20.5, 0.25, -35.75, -23, 0, -27, -23.5, 0, -26.75, -24, 0, -24.75, 19, 0, -33, 22.5, 0, 26.25, 22.75, 0, 26.75, 30.75, 0, 21, 29.75, 0, 19.75, -22, 0, 26.5, -22, 0, 27.5, 18.5, 0, 28.25, -34.5, 0, 20.75, -35.75, 0, 21.75, -27, 0, 27.25, -25.5, 0, 25.5, 30.5, 0, -28.25, 21.5, 0, -33, 30.75, 0, 18, 31, 0, -26.25, -22.75, 0, 25.5, 19.25, 0, 26.25, 29.75, 0, 18.75, 21, 0, 26, -23.25, 0, -28.75, -35, 0, 19, -26.25, 0, -24.75, 31.75, 0, 18, 31.75, 0, -26, -25.75, 0.25, -27.5, -25.5, 0.25, -26.75, -25, 0.25, -27, -25, 0.25, -27.5, 32.75, 0, 18.25, 33.25, 0, -26.5, 33, 0, 20, 249.5, 0, 20, -27.5, 0, -25, -36.5, 0, 21.75, -26.5, 0, 29.75, -24.25, 0, 249.5, -24, 0, 30.5, -26, 0, 30.25, -249.5, 0, 249.5, -37.25, 0, 21, 23.5, 0, 28, 23.25, 0, 30, 22.75, 0, 31, 32.75, 0, 20.75, 21.5, 0, 249.5, 249.5, 0, 249.5, 21.5, 0, 31.25, -24.5, 0.25, 27.5, -24.5, 0.25, 28.25, -23.75, 0.25, 27.75, 18.25, 0, 29.5, -22.25, 0, 29.5, 20.5, 0.25, 28.75, 21.25, 0.25, 29.25, 21.25, 0.25, 28.5, 18.5, 0, 30.25, -22.75, 0, 30.25)
+polygons = [PackedInt32Array(2, 1, 0), PackedInt32Array(0, 3, 2), PackedInt32Array(2, 3, 5), PackedInt32Array(2, 5, 4), PackedInt32Array(7, 6, 8), PackedInt32Array(8, 6, 9), PackedInt32Array(12, 11, 10), PackedInt32Array(6, 13, 9), PackedInt32Array(9, 13, 10), PackedInt32Array(10, 13, 12), PackedInt32Array(12, 13, 14), PackedInt32Array(13, 1, 14), PackedInt32Array(14, 1, 2), PackedInt32Array(14, 2, 15), PackedInt32Array(17, 16, 18), PackedInt32Array(18, 16, 19), PackedInt32Array(21, 20, 18), PackedInt32Array(19, 22, 18), PackedInt32Array(18, 22, 15), PackedInt32Array(18, 15, 21), PackedInt32Array(21, 15, 23), PackedInt32Array(22, 14, 15), PackedInt32Array(21, 24, 20), PackedInt32Array(7, 8, 25), PackedInt32Array(7, 25, 26), PackedInt32Array(26, 25, 27), PackedInt32Array(29, 28, 3), PackedInt32Array(3, 28, 30), PackedInt32Array(3, 30, 5), PackedInt32Array(26, 27, 31), PackedInt32Array(26, 31, 29), PackedInt32Array(29, 31, 32), PackedInt32Array(29, 32, 28), PackedInt32Array(32, 31, 33), PackedInt32Array(36, 35, 34), PackedInt32Array(38, 37, 39), PackedInt32Array(39, 37, 40), PackedInt32Array(42, 41, 43), PackedInt32Array(43, 41, 44), PackedInt32Array(47, 46, 45), PackedInt32Array(49, 48, 50), PackedInt32Array(50, 48, 51), PackedInt32Array(17, 52, 16), PackedInt32Array(16, 52, 53), PackedInt32Array(57, 56, 54), PackedInt32Array(54, 56, 55), PackedInt32Array(55, 56, 40), PackedInt32Array(40, 56, 39), PackedInt32Array(45, 56, 47), PackedInt32Array(47, 56, 57), PackedInt32Array(44, 41, 58), PackedInt32Array(58, 41, 59), PackedInt32Array(37, 60, 40), PackedInt32Array(48, 61, 51), PackedInt32Array(51, 61, 56), PackedInt32Array(56, 61, 62), PackedInt32Array(56, 62, 39), PackedInt32Array(52, 55, 53), PackedInt32Array(53, 55, 40), PackedInt32Array(57, 58, 59), PackedInt32Array(63, 54, 64), PackedInt32Array(64, 54, 55), PackedInt32Array(54, 58, 57), PackedInt32Array(10, 11, 60), PackedInt32Array(60, 11, 40), PackedInt32Array(67, 66, 68), PackedInt32Array(68, 66, 65), PackedInt32Array(63, 64, 69), PackedInt32Array(69, 64, 70), PackedInt32Array(70, 24, 69), PackedInt32Array(69, 24, 71), PackedInt32Array(71, 24, 21), PackedInt32Array(71, 21, 72), PackedInt32Array(61, 33, 62), PackedInt32Array(62, 33, 73), PackedInt32Array(31, 73, 33), PackedInt32Array(49, 50, 74), PackedInt32Array(74, 50, 75), PackedInt32Array(78, 77, 76), PackedInt32Array(75, 78, 74), PackedInt32Array(74, 78, 30), PackedInt32Array(30, 78, 76), PackedInt32Array(30, 76, 79), PackedInt32Array(30, 28, 80), PackedInt32Array(30, 80, 74), PackedInt32Array(81, 42, 43), PackedInt32Array(82, 81, 43), PackedInt32Array(83, 82, 43), PackedInt32Array(43, 84, 83), PackedInt32Array(83, 84, 72), PackedInt32Array(83, 72, 85), PackedInt32Array(85, 72, 86), PackedInt32Array(72, 84, 71), PackedInt32Array(85, 87, 83), PackedInt32Array(90, 89, 88), PackedInt32Array(47, 91, 46), PackedInt32Array(46, 91, 92), PackedInt32Array(95, 94, 93), PackedInt32Array(91, 96, 92), PackedInt32Array(92, 96, 97), PackedInt32Array(97, 96, 77), PackedInt32Array(77, 96, 87), PackedInt32Array(77, 87, 85), PackedInt32Array(77, 85, 76)]
+geometry_collision_mask = 4294967291
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_70a1q"]
 size = Vector3(500, 2.1572266, 500)
@@ -75,51 +76,22 @@ environment = SubResource("Environment_s4jie")
 
 [node name="Env" type="Node3D" parent="World" unique_id=932413741]
 
-[node name="Stuff" type="Node3D" parent="World/Env" unique_id=1080089041]
+[node name="Towers" type="Node3D" parent="World/Env" unique_id=2126317813]
 
-[node name="grass2" parent="World/Env/Stuff" unique_id=1286567443 instance=ExtResource("4_32jgm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -27.5)
+[node name="Tower" parent="World/Env/Towers" unique_id=984997556 instance=ExtResource("5_70a1q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 74.97821, -0.46076965, -0.52825546)
 
-[node name="grass3" parent="World/Env/Stuff" unique_id=1404685340 instance=ExtResource("4_32jgm")]
-transform = Transform3D(0.258819, 0, 0.965926, 0, 1, 0, -0.965926, 0, 0.258819, 31.6019, 0, 19.4812)
+[node name="Tower2" parent="World/Env/Towers" unique_id=2114439563 instance=ExtResource("5_70a1q")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.52178955, 0.039230347, 67.97174)
 
-[node name="grass4" parent="World/Env/Stuff" unique_id=1107182228 instance=ExtResource("4_32jgm")]
-transform = Transform3D(-1, 0, 2.98023e-08, 0, 1, 0, -2.98023e-08, 0, -1, -36, 0, 20)
+[node name="Tower3" parent="World/Env/Towers" unique_id=1015982083 instance=ExtResource("5_70a1q")]
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -70.02179, 0.039230347, -0.028255463)
 
-[node name="grass5" parent="World/Env/Stuff" unique_id=1263992877 instance=ExtResource("4_32jgm")]
-transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, -34.7688, 0, -37.8519)
-
-[node name="Gem" parent="World/Env/Stuff" unique_id=2072783906 instance=ExtResource("10_jlvw8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.8988876, -0.99663496, 4.536481)
-
-[node name="MapSpawnPoint" type="Node3D" parent="World" unique_id=1801573989]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="World/MapSpawnPoint" unique_id=364634961]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.25, -0.25)
-mesh = SubResource("PlaneMesh_lpk0h")
-metadata/_edit_lock_ = true
-
-[node name="StaticBody3D" type="StaticBody3D" parent="World/MapSpawnPoint/MeshInstance3D" unique_id=464157407]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/MapSpawnPoint/MeshInstance3D/StaticBody3D" unique_id=234246415]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 0, 0)
-shape = SubResource("ConcavePolygonShape3D_m5eq6")
+[node name="Tower4" parent="World/Env/Towers" unique_id=817588753 instance=ExtResource("5_70a1q")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.52178955, 0.039230347, -62.528255)
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="World" unique_id=975852457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.9944, 40.9769, 1.018)
-
-[node name="Ground" type="StaticBody3D" parent="World" unique_id=966448125]
-metadata/_edit_lock_ = true
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Ground" unique_id=1725930906]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.4213867, 0)
-shape = SubResource("BoxShape3D_70a1q")
-metadata/_edit_lock_ = true
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Ground" unique_id=398660114]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
-mesh = SubResource("BoxMesh_70a1q")
-metadata/_edit_lock_ = true
 
 [node name="Avatar" parent="World" unique_id=1609271671 instance=ExtResource("6_uv732")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.105918884, -0.22097898, -0.06253815)
@@ -135,28 +107,65 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 2)
 [node name="Guard3" parent="World/Enemies" unique_id=1741766528 instance=ExtResource("12_guard")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 8)
 
-[node name="Tower" parent="." unique_id=984997556 instance=ExtResource("5_70a1q")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 74.97821, -0.46076965, -0.52825546)
+[node name="Interactables" type="Node3D" parent="World" unique_id=2028170528]
 
-[node name="Tower2" parent="." unique_id=2114439563 instance=ExtResource("5_70a1q")]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.52178955, 0.039230347, 67.97174)
+[node name="Gem" parent="World/Interactables" unique_id=2072783906 instance=ExtResource("10_jlvw8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.8988876, -0.99663496, 4.536481)
 
-[node name="Tower3" parent="." unique_id=1015982083 instance=ExtResource("5_70a1q")]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -70.02179, 0.039230347, -0.028255463)
+[node name="Markers" type="Node3D" parent="World" unique_id=1288722471]
 
-[node name="Tower4" parent="." unique_id=817588753 instance=ExtResource("5_70a1q")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.52178955, 0.039230347, -62.528255)
+[node name="MinionRallyPoint" parent="World/Markers" unique_id=1014142531 instance=ExtResource("9_ghyor")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 45, 0, 0)
 
-[node name="stone_tallB2" parent="." unique_id=981379216 instance=ExtResource("7_xl84e")]
+[node name="MinionRallyPoint2" parent="World/Markers" unique_id=78712720 instance=ExtResource("9_ghyor")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.67276, 0, 42.410748)
+
+[node name="MinionRallyPoint3" parent="World/Markers" unique_id=1567981215 instance=ExtResource("9_ghyor")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -44.02802, 0, 0.75722504)
+
+[node name="MinionRallyPoint4" parent="World/Markers" unique_id=659469130 instance=ExtResource("9_ghyor")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.4895134, 0, -39.175354)
+
+[node name="Nav" type="NavigationRegion3D" parent="World" unique_id=674281798]
+navigation_mesh = SubResource("NavigationMesh_ghyor")
+
+[node name="Ground" type="StaticBody3D" parent="World/Nav" unique_id=966448125]
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Nav/Ground" unique_id=1725930906]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.4213867, 0)
+shape = SubResource("BoxShape3D_70a1q")
+metadata/_edit_lock_ = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Nav/Ground" unique_id=398660114]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
+mesh = SubResource("BoxMesh_70a1q")
+metadata/_edit_lock_ = true
+
+[node name="Stuff" type="Node3D" parent="World/Nav" unique_id=1080089041]
+
+[node name="grass2" parent="World/Nav/Stuff" unique_id=1286567443 instance=ExtResource("4_32jgm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, -27.5)
+
+[node name="grass3" parent="World/Nav/Stuff" unique_id=1404685340 instance=ExtResource("4_32jgm")]
+transform = Transform3D(0.258819, 0, 0.965926, 0, 1, 0, -0.965926, 0, 0.258819, 31.6019, 0, 19.4812)
+
+[node name="grass4" parent="World/Nav/Stuff" unique_id=1107182228 instance=ExtResource("4_32jgm")]
+transform = Transform3D(-1, 0, 2.98023e-08, 0, 1, 0, -2.98023e-08, 0, -1, -36, 0, 20)
+
+[node name="grass5" parent="World/Nav/Stuff" unique_id=1263992877 instance=ExtResource("4_32jgm")]
+transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, -34.7688, 0, -37.8519)
+
+[node name="stone_tallB2" parent="World/Nav/Stuff" unique_id=981379216 instance=ExtResource("7_xl84e")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0, -35.5)
 
-[node name="stone_tallB3" parent="." unique_id=698604119 instance=ExtResource("7_xl84e")]
+[node name="stone_tallB3" parent="World/Nav/Stuff" unique_id=698604119 instance=ExtResource("7_xl84e")]
 transform = Transform3D(0.258819, 0, 0.965926, 0, 1, 0, -0.965926, 0, 0.258819, 20.8981, 0, 28.5188)
 
-[node name="stone_tallB4" parent="." unique_id=423006812 instance=ExtResource("7_xl84e")]
+[node name="stone_tallB4" parent="World/Nav/Stuff" unique_id=423006812 instance=ExtResource("7_xl84e")]
 transform = Transform3D(-1, 0, 2.98023e-08, 0, 1, 0, -2.98023e-08, 0, -1, -24.5, 0, 28)
 
-[node name="stone_tallB5" parent="." unique_id=336409222 instance=ExtResource("7_xl84e")]
+[node name="stone_tallB5" parent="World/Nav/Stuff" unique_id=336409222 instance=ExtResource("7_xl84e")]
 transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, -25.7312, 0, -27.1481)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1495107198]
@@ -166,6 +175,23 @@ transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926
 [node name="WinScreen" parent="CanvasLayer" unique_id=401192825 instance=ExtResource("9_nsr5c")]
 visible = false
 
+[node name="InteractionPrompt" type="RichTextLabel" parent="CanvasLayer" unique_id=501318203]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -80.0
+offset_right = 300.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=1565447642]
 visible = false
 material = SubResource("ShaderMaterial_5nagr")
@@ -174,3 +200,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="MinionManager" type="Node" parent="." unique_id=172942630]
+script = ExtResource("13_ghyor")
+
+[node name="EnemyManager" type="Node" parent="." unique_id=1394506950]
+script = ExtResource("14_mlmq3")
+
+[node name="TerritoryManager" type="Node" parent="." unique_id=824323888]
+script = ExtResource("15_cduk1")

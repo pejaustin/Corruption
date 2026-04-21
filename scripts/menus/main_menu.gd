@@ -1,75 +1,59 @@
 extends Control
 
-@export var host_game_button: Button
-@export var join_game_button: Button
-@export var secondary_network_menu_parent: Control
-@export var toggle_secondary_network_checkbox: CheckButton
+@export var main_panel: Control
+@export var join_panel: Control
+@export var lobby_panel: Control
+@export var host_ip_input: LineEdit
+@export var host_port_input: LineEdit
 
-var _is_hosting = false
-
-func _ready():
+func _ready() -> void:
 	print("Main menu ready...")
+
+	_show_main_panel()
 
 	if OS.has_feature(NetworkManager.DEDICATED_SERVER_FEATURE_NAME):
 		print("Calling host game for dedicated server setup...")
 		NetworkManager.host_game(NetworkConnectionConfigs.new(NetworkManager.LOCALHOST))
 
-func host_game():
+func _show_main_panel() -> void:
+	main_panel.visible = true
+	join_panel.visible = false
+	lobby_panel.visible = false
+
+func _show_join_panel() -> void:
+	main_panel.visible = false
+	join_panel.visible = true
+	lobby_panel.visible = false
+
+func _show_lobby_panel() -> void:
+	main_panel.visible = false
+	join_panel.visible = false
+	lobby_panel.visible = true
+
+func host_game() -> void:
 	print("Host game pressed")
-	_is_hosting = true
-	_show_secondary_network_options(true)
+	NetworkManager.host_game(NetworkConnectionConfigs.new(NetworkManager.LOCALHOST))
+	_show_lobby_panel()
 
-func join_game():
-	_show_secondary_network_options()
+func join_game() -> void:
+	_show_join_panel()
 
-func _show_secondary_network_options(is_hosting: bool = false):
-	_hide_main_menu_options()
-	
-	var second_menu_to_load = load(NetworkManager.selected_network_configuration.menu)
-	var active_secondary_menu = second_menu_to_load.instantiate()
-	
-	# Add whatever necessary configuration is required in the sub menu
-	active_secondary_menu.is_hosting =_is_hosting
-		
-	secondary_network_menu_parent.add_child(active_secondary_menu)
-	secondary_network_menu_parent.visible = true
-	
-	# Wire up completed and cancelled secondary menu signals
-	active_secondary_menu.secondary_menu_completed.connect(_secondary_menu_submitted)
-	active_secondary_menu.secondary_menu_cancelled.connect(_cancel_secondary_menu)
-
-func _secondary_menu_submitted():
+func _on_join_go_pressed() -> void:
+	if host_ip_input.text == "" or host_port_input.text == "":
+		return
+	var configs: NetworkConnectionConfigs = NetworkConnectionConfigs.new(host_ip_input.text)
+	configs.host_port = host_port_input.text.to_int()
+	NetworkManager.join_game(configs)
 	NetworkManager.load_game_scene()
 
-func _reset_main_menu_options():
-	_is_hosting = false
-	host_game_button.visible = true
-	join_game_button.visible = true
-	$Menu.visible = true
-	
-	toggle_secondary_network_checkbox.visible = true
-	toggle_secondary_network_checkbox.set_pressed_no_signal(false) # reset secondary selection
+func _on_join_back_pressed() -> void:
+	_show_main_panel()
 
-	NetworkManager.reset_selected_network()
+func _on_lobby_start_pressed() -> void:
+	NetworkManager.load_game_scene()
 
-func _hide_main_menu_options():
-	host_game_button.visible = false
-	join_game_button.visible = false
-	$Menu.visible = false
-	
-	toggle_secondary_network_checkbox.visible = false
+func _on_lobby_back_pressed() -> void:
+	NetworkManager.disconnect_from_game()
 
-func _cancel_secondary_menu():
-	_reset_main_menu_options()
-	# Remove secondary menu
-	secondary_network_menu_parent.get_children()[0].queue_free()
-
-func _on_secondary_toggle_toggled(noray_enabled):
-	print("Noray enabled %s" % noray_enabled)
-	if noray_enabled:
-		NetworkManager.set_selected_network(NetworkManager.AvailableNetworks.NORAY)
-	else:
-		NetworkManager.set_selected_network(NetworkManager.AvailableNetworks.ENET)
-
-func exit_game():
+func exit_game() -> void:
 	get_tree().quit(0)

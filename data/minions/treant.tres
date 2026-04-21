@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"treant"
+display_name = "Treant"
+faction = 2
+hp = 80
+damage = 10
+speed = 2.0
+cost = 12
+aggro_radius = 8.0
+attack_range = 2.0
+attack_cooldown = 1.8
+color = Color(0.2, 0.6, 0.2, 1)
+trait_tag = &""

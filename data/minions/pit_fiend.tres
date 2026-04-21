@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"pit_fiend"
+display_name = "Pit Fiend"
+faction = 1
+hp = 100
+damage = 30
+speed = 2.5
+cost = 25
+aggro_radius = 8.0
+attack_range = 2.2
+attack_cooldown = 2.0
+color = Color(1.0, 0.1, 0.0, 1)
+trait_tag = &""

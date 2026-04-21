@@ -3,12 +3,12 @@ extends Control
 @onready var winner_label: Label = $VBoxContainer/WinnerLabel
 @onready var return_button: Button = $VBoxContainer/ReturnButton
 
-func _ready():
+func _ready() -> void:
 	visible = false
 	GameState.game_won.connect(_on_game_won)
 	return_button.pressed.connect(_on_return_pressed)
 
-func _on_game_won(peer_id: int):
+func _on_game_won(peer_id: int) -> void:
 	visible = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
@@ -17,5 +17,5 @@ func _on_game_won(peer_id: int):
 	else:
 		winner_label.text = "Player %d corrupted the gem.\nDEFEAT." % peer_id
 
-func _on_return_pressed():
+func _on_return_pressed() -> void:
 	NetworkManager.disconnect_from_game()
