@@ -123,11 +123,13 @@
 - [ ] **Territory paint** — Debug tool to mark areas as corrupted
 - [x] **Boss health/debuff display** — Boss stats visible in F3 debug overlay
 
-### Core (impl complete — ready to test)
+### Core (tested)
 - [x] **Minion spawning** — Summoning Circle interaction in tower. Spend resources. MinionManager handles sync.
 - [x] **Per-tower spawn + rally markers** — Each tower owns a `MinionSpawnPoint` (summons appear there). `MinionRallyPoint`s live under `World/Markers` and are paired with towers by child order. Rally is only visible to, and only movable by, the owning overlord.
 - [x] **Basic minion AI** — State machine: idle, move_to (NavigationAgent3D with direct-steer fallback), jump (JumpableLink traversal), attack, die
-- [x] **Minion commands** — War Table: top-down map view, click to set waypoints for all minions (also relocates the sender's rally)
+
+### Core (impl complete — ready to test)
+- [x] **Minion commands** — War Table: top-down map view, click to set waypoints for all minions (also relocates the sender's rally). Clicks now route through `KnowledgeManager.issue_move_command`; with `INSTANT_COMMANDS=true` the behavior is identical to the old direct path. See `docs/systems/war-table.md` for the information-warfare layer (`WorldModel`, diorama rendering, courier plans).
 - [x] **Territory system** — Grid-based corruption spreads from minion presence, decays without them
 - [x] **Influence tracking** — GameState tracks per-peer influence, displayed in debug overlay
 - [x] **Minor gem sites** — GemSite interactible: minions clear, Avatar confirms capture, grants passive influence
@@ -203,11 +205,11 @@ Scripts are implemented but these nodes/scenes need to be created or wired up in
 - [ ] `TerritoryManager` (Node) — already added, script `scripts/territory_manager.gd` attached
 
 **tower.tscn — inside each tower:**
-- [ ] `WarTable` — Create as interactable.tscn inherited scene or Area3D. Attach `scripts/interactibles/war_table.gd`. Add CollisionShape3D child. Set `map_camera` export to a top-down Camera3D looking straight down at the world (create one per tower or share one)
+- [x] `WarTable` — Already placed in `tower.tscn`. Contains `MapViewPoint`, `StandPoint`, and `Map` (WarTableMap) children. Inside each tower scene also sits a `WarTableRange` (@tool MeshInstance3D) wired to `WarTable/Map` that draws a semi-transparent BoxMesh over the effective map region. Tune `Map World Center` / `Map World Size` per tower once per-overlord AOs are designed.
 - [ ] `GemSite` (x2-3 in world) — Create as Area3D with CollisionShape3D (sphere, radius ~4). Attach `scripts/interactibles/gem_site.gd`. Place in `World/Interactables/`. Set `site_name` export
 
 **tower_scene.tscn — World/GuardianBoss:**
-- [ ] Instance `zombie_actor.tscn`, rename to `GuardianBoss`. Override script with `scripts/guardian_boss.gd`. Place near Capitol/gem area
+- [ ] Instance `scenes/actors/enemy/guardian/guardian_boss.tscn`, rename to `GuardianBoss`. Place near Capitol/gem area. (Phase-2 boss `corrupted_seraph.tscn` is an inherited scene — no script override needed.)
 
 **tower_scene.tscn — CanvasLayer:**
 - [ ] `AstralProjection` (Control) — Attach `scripts/astral_projection.gd`. Needs SubViewportContainer child with SubViewport containing a Camera3D
@@ -215,14 +217,14 @@ Scripts are implemented but these nodes/scenes need to be created or wired up in
 ### Tier 4
 
 **tower_scene.tscn — root level:**
-- [ ] `BossManager` (Node) — Attach `scripts/boss_manager.gd`
+- [ ] `BossManager` (Node) — Attach `scripts/boss_manager.gd`. Set `initial_boss` export to the world's `GuardianBoss` node. Optionally set `seraph_spawn_point` (defaults to the initial boss's position) and override `seraph_scene` (defaults to `corrupted_seraph.tscn`).
 - [ ] `DivineIntervention` (Node) — Attach `scripts/divine_intervention.gd`
 
 **tower.tscn — inside each tower:**
-- [ ] `UpgradeAltar` — Create as Area3D with CollisionShape3D. Attach `scripts/interactibles/upgrade_altar.gd`. Place near other tower interactibles. Needs a visual mesh (greybox cube/pedestal)
+- [ ] `UpgradeAltar` — Create as Area3D with CollisionShape3D. Attach `scripts/interactibles/upgrade_altar.gd`. Place near other tower interactibles. Needs a visual mesh (greybox cube/pedestal). Upgrade catalog is authored as `UpgradeData` resources under `res://data/upgrades/` (`minion_vitality.tres`, `minion_ferocity.tres`, `dark_tithe.tres`, `avatar_fortitude.tres`, `avatar_might.tres`).
 
 **World/Interactables/ (place 2-3 in the world):**
-- [ ] `RitualSite` — Create as Area3D with CollisionShape3D (sphere, radius ~3). Attach `scripts/interactibles/ritual_site.gd`. Set `ritual_type` export to one of: `domination_mastery`, `corruption_surge`, `eldritch_vision`. Needs a visual mesh (greybox cylinder/rune circle). Place away from Capitol — these should be risky detours
+- [ ] `RitualSite` — Create as Area3D with CollisionShape3D (sphere, radius ~3). Attach `scripts/interactibles/ritual_site.gd`. Set the `ritual` export to one of `res://data/rituals/*.tres` (`domination_mastery.tres`, `corruption_surge.tres`, `eldritch_vision.tres`). Needs a visual mesh (greybox cylinder/rune circle). Place away from Capitol — these should be risky detours
 
 ### Notes
 
@@ -230,4 +232,4 @@ Scripts are implemented but these nodes/scenes need to be created or wired up in
 - Interactibles no longer use Label3D — prompts route through the InteractionUI autoload to the HUD RichTextLabel
 - The `InteractionPrompt` RichTextLabel in CanvasLayer is already set up in tower_scene.tscn
 - `InteractionUI` autoload is registered in project.godot
-- War Table needs a Camera3D pointed straight down (e.g., position `(0, 80, 0)`, rotation `-90` on X) — this can be a shared node or per-tower
+- War Table uses the overlord's own camera — tweened to `MapViewPoint` during takeover. No separate Camera3D required. The `Map` child renders WorldModel belief as chess-piece markers; `WarTableRange` visualizes the effective map region in-editor and in-game.

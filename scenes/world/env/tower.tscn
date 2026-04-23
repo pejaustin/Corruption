@@ -4,7 +4,9 @@
 [ext_resource type="Script" uid="uid://bos2fmmk4jaaw" path="res://scenes/world/env/tower.gd" id="1_ewiun"]
 [ext_resource type="PackedScene" uid="uid://8mbjo354k5p" path="res://assets/world/env/mod-castle/Walls/Railing&Fences/Railing_Corner_1.fbx" id="2_1p88i"]
 [ext_resource type="PackedScene" uid="uid://byks2n5lgat5u" path="res://assets/world/env/mod-castle/Walls/Railing&Fences/Railing_x1.fbx" id="3_2mnic"]
+[ext_resource type="Script" uid="uid://cii5qfapbe5tc" path="res://scripts/interactibles/war_table_range.gd" id="4_wtrange"]
 [ext_resource type="PackedScene" uid="uid://rwydltwig77s" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x2.fbx" id="4_xd411"]
+[ext_resource type="PackedScene" uid="uid://btwart0000001" path="res://scenes/interactibles/war_table.tscn" id="4_yjlt3"]
 [ext_resource type="PackedScene" uid="uid://m8hq7ma6lnc2" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Corner_Full.fbx" id="5_r4tnh"]
 [ext_resource type="PackedScene" uid="uid://dxk4j5sckqia8" path="res://assets/world/env/mod-castle/Walls/Walls_Short/Wall_Short_x1.fbx" id="6_5dhyi"]
 [ext_resource type="PackedScene" uid="uid://bpu5gh4vbgaep" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Large_Gate.fbx" id="7_3o7cy"]
@@ -39,6 +41,15 @@ size = Vector3(18.3266, 0.997826, 4.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_k0irn"]
 size = Vector3(0.5, 5, 9.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n8gnn"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.95, 0.75, 0.2, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sernp"]
+size = Vector3(150, 20, 150)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pal"]
 radius = 2.0
@@ -96,6 +107,17 @@ shape = ExtResource("26_6guij")
 [node name="Table" parent="." unique_id=1695499807 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, -1.82887)
 
+[node name="WarTable" parent="." unique_id=2096886964 instance=ExtResource("4_yjlt3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7241616, 39.88513, -5.3953505)
+
+[node name="WarTableRange" type="MeshInstance3D" parent="." unique_id=1099551217 node_paths=PackedStringArray("map")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+material_override = SubResource("StandardMaterial3D_n8gnn")
+mesh = SubResource("BoxMesh_sernp")
+script = ExtResource("4_wtrange")
+map = NodePath("../WarTable/Map")
+color = Color(0.95, 0.75, 0.2, 0.08)
+
 [node name="AvatarClaim" parent="." unique_id=1313280762 instance=ExtResource("16_7wf5u")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5264935, 39.29396, 0.83745)
 
@@ -113,6 +135,9 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 47.
 
 [node name="SummoningCircle" parent="." unique_id=492818308 instance=ExtResource("21_mbbxa")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4.3884926, 39.058678, 11.0065155)
+
+[node name="SpawnPoint" type="Marker3D" parent="." unique_id=400429933]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 41.371777, 0)
 
 [node name="Palantir" parent="." unique_id=1536666789 instance=ExtResource("27_k0irn")]
 transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 47.79111, 0.52224493)
@@ -1198,7 +1223,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, -1, -10)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.001, -1, -9.01)
 
 [node name="JumpPoint" type="NavigationLink3D" parent="NavigationRegion3D" unique_id=746042638]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.608818, 39.612682, 5.0161624)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.609, 40, 5.016)
 bidirectional = false
 end_position = Vector3(-5, -40, 0)
 script = ExtResource("33_7a0l1")

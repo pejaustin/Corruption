@@ -346,11 +346,52 @@ When making changes:
 - `docs/technical/build-phases.md` — **MVP tier tracker with current progress** (start here for what to build next)
 - `docs/Corruption_GDD_v0.1.md` — Original GDD (reference, superseded by modular docs)
 
-### Current State (Tiers 0-2 Complete, Tier 3 Scripts Ready)
+### Current State (Tiers 0-3 Complete, Tier 4 Scripts Ready)
 
-Tiers 0-2 are fully playable. Tier 3 scripts are implemented but need editor setup.
+Tiers 0-3 are playable. Tier 4 scripts are implemented (boss sequence, upgrade altars, rituals, abilities) but need editor setup.
 
-#### What's built
+### Resource-driven data (Tier 4 refactor)
+
+Gameplay data lives in `.tres` files under `res://data/`, authored as custom `Resource` subclasses. Code references them via `@export` — never by string path or metadata. Dictionaries of magic strings were replaced with typed fields during the Tier 4 refactor; prefer that pattern for new systems.
+
+| Resource class | Script | Directory | Purpose |
+|---|---|---|---|
+| `AbilityData` | `scripts/ability_data.gd` | `data/abilities/` | Avatar ability stats + effect scene |
+| `UpgradeData` | `scripts/upgrade_data.gd` | `data/upgrades/` | Upgrade altar catalog (5 entries) |
+| `RitualData` | `scripts/ritual_data.gd` | `data/rituals/` | Ritual site effects (3 entries) |
+| `MinionType` | `scripts/minion_type.gd` | `data/minions/` | Minion/enemy stats (incl. bosses) |
+
+### Ability architecture
+
+Each avatar ability is an `AbilityEffect` subclass (scripts/abilities/<id>_effect.gd) attached to a scene (`scenes/abilities/<id>.tscn`). `AvatarAbilities` instances the scene, calls `activate()`, and aggregates combat queries (damage multiplier, lifesteal, invisibility, channel state) across the `Array[AbilityEffect] _active`. To end an ability early, call `abilities.cancel(&"ability_id")`.
+
+### Boss sequence
+
+`BossManager` (scripts/boss_manager.gd) exports `initial_boss: GuardianBoss`, `seraph_scene: PackedScene` (defaults to `corrupted_seraph.tscn`), and `seraph_spawn_point: Node3D`. Phase 2's `CorruptedSeraph` is an inherited scene of `guardian_boss.tscn` with a different `MinionType` — no runtime `set_script()` tricks.
+
+### Information-warfare layer (`KnowledgeManager` autoload)
+
+The War Table renders an overlord's **belief**, not truth. Each peer has a `WorldModel` (per-peer dict of believed minion sightings, timestamped) maintained by the `KnowledgeManager` autoload at `scripts/knowledge/`. War Table clicks route through `KnowledgeManager.issue_move_command(peer_id, pos)`; minion deaths fan out via `KnowledgeManager.notify_minion_removed(id)`.
+
+Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration:
+- `INFINITE_BROADCAST_RANGE: bool = true` — every minion updates every model every tick (belief ≈ truth). Flip off to tune broadcast range.
+- `INSTANT_COMMANDS: bool = true` — commands apply immediately via `MinionManager`. Flip off when couriers are built (step 7 in `docs/systems/war-table.md`).
+
+`WarTableMap` (script on the `Map` child of `WarTable`) owns the table↔world mapping (`map_world_center`, `map_world_size`, `table_surface_size`) and the piece spawner. `WarTableRange` is a `@tool` MeshInstance3D that draws a semi-transparent BoxMesh at the map's effective region so designers can see it in both editor and play.
+
+Isolated iteration harness: `scenes/test/war_table_test.tscn` — wandering fake minions, a mock controller writing sightings directly into `KnowledgeManager.get_model(9999)`, hotkeys `1`–`4` + click for visual tests. MinionManager is absent, so the autoload's ingest loop no-ops and the controller is the sole writer.
+
+Full design: `docs/systems/war-table.md`.
+
+### Per-peer game state APIs (`GameState`)
+
+- `GameState.get_faction(peer_id)` — authoritative lookup (checks overrides, then player_factions, falls back to round-robin). Use this instead of any per-manager faction resolution.
+- `GameState.set_faction_override(peer_id, faction)` / `clear_faction_override(peer_id)` — for debug swap.
+- `GameState.get_upgrade_level(peer_id, kind)` / `add_upgrade(peer_id, kind)` — upgrade state lives on GameState, not on nodes' metadata.
+- `GameState.grant_eldritch_vision(peer_id, duration)` / `has_eldritch_vision(peer_id)` — ritual-granted temp buff with a ticking timer on GameState.
+
+### What's built (Tiers 0-3)
+
 - P2P lobby with faction selection (4 factions)
 - Avatar claim/recall, 3rd-person combat, death → transfer cycle
 - Neutral enemies with AI (patrol, aggro, attack)

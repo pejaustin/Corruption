@@ -20,6 +20,13 @@ var watcher_positions: Dictionary[int, Vector3] = {}
 var influence: Dictionary[int, float] = {}
 # peer_id -> faction id (GameConstants.Faction). Populated by lobby at match start.
 var player_factions: Dictionary[int, int] = {}
+# peer_id -> faction id. Overrides player_factions (debug faction swap, etc).
+var faction_overrides: Dictionary[int, int] = {}
+# peer_id -> { upgrade_kind_int -> level_int } (see UpgradeData.Kind)
+var upgrade_levels: Dictionary[int, Dictionary] = {}
+# Eldritch Vision ritual effect — timed broadcast buff.
+var eldritch_vision_peer: int = -1
+var eldritch_vision_timer: float = 0.0
 
 func is_avatar(peer_id: int) -> bool:
 	return avatar_peer_id == peer_id
@@ -202,7 +209,57 @@ func get_highest_influence_peer() -> int:
 	return best_peer
 
 func get_peer_faction(peer_id: int) -> int:
-	return player_factions.get(peer_id, GameConstants.Faction.NEUTRAL)
+	return get_faction(peer_id)
+
+func get_faction(peer_id: int) -> int:
+	## Authoritative faction lookup. Respects debug overrides, falls back to
+	## lobby-assigned factions, then to a round-robin if the lobby never synced
+	## (e.g. scene booted directly without a lobby).
+	if peer_id in faction_overrides:
+		return faction_overrides[peer_id]
+	if peer_id in player_factions:
+		return player_factions[peer_id]
+	var peers := multiplayer.get_peers().duplicate()
+	if multiplayer.get_unique_id() not in peers:
+		peers.append(multiplayer.get_unique_id())
+	peers.sort()
+	var idx := peers.find(peer_id)
+	if idx >= 0:
+		return GameConstants.PLAYABLE_FACTIONS[idx % GameConstants.PLAYABLE_FACTIONS.size()]
+	return GameConstants.PLAYABLE_FACTIONS[0]
+
+func set_faction_override(peer_id: int, faction: int) -> void:
+	faction_overrides[peer_id] = faction
+
+func clear_faction_override(peer_id: int) -> void:
+	faction_overrides.erase(peer_id)
+
+# --- Upgrades ---
+
+func get_upgrade_level(peer_id: int, kind: int) -> int:
+	if peer_id not in upgrade_levels:
+		return 0
+	return upgrade_levels[peer_id].get(kind, 0)
+
+func add_upgrade(peer_id: int, kind: int) -> void:
+	if peer_id not in upgrade_levels:
+		upgrade_levels[peer_id] = {}
+	upgrade_levels[peer_id][kind] = upgrade_levels[peer_id].get(kind, 0) + 1
+
+# --- Eldritch Vision ritual effect ---
+
+func grant_eldritch_vision(peer_id: int, duration: float) -> void:
+	eldritch_vision_peer = peer_id
+	eldritch_vision_timer = duration
+
+func has_eldritch_vision(peer_id: int) -> bool:
+	return eldritch_vision_peer == peer_id and eldritch_vision_timer > 0.0
+
+func _process(delta: float) -> void:
+	if eldritch_vision_timer > 0.0:
+		eldritch_vision_timer = max(0.0, eldritch_vision_timer - delta)
+		if eldritch_vision_timer <= 0.0:
+			eldritch_vision_peer = -1
 
 @rpc("authority", "call_local", "reliable")
 func sync_player_factions(factions: Dictionary) -> void:
@@ -217,3 +274,7 @@ func reset() -> void:
 	watcher_positions.clear()
 	influence.clear()
 	player_factions.clear()
+	faction_overrides.clear()
+	upgrade_levels.clear()
+	eldritch_vision_peer = -1
+	eldritch_vision_timer = 0.0

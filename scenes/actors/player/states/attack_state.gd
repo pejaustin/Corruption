@@ -3,50 +3,54 @@ extends PlayerState
 ## Commitment-based melee attack. Cannot be cancelled once started.
 ## Hitbox window is driven by animation progress (ratio of total length),
 ## so it stays in sync even if animation speed changes.
+##
+## Uses the AttackHitbox component — named profiles let an attack swap shapes
+## mid-swing (Windup/Impact/Recovery). For single-shape setups, leave
+## hitbox_profile empty and the one CollisionShape3D child is used.
 
 ## Hitbox activates at this fraction of the attack animation
 @export var hitbox_start_ratio: float = 0.25
 ## Hitbox deactivates at this fraction
 @export var hitbox_end_ratio: float = 0.6
+## Profile name to activate on this attack. Empty = first shape child.
+@export var hitbox_profile: StringName = &""
 
 const LIFESTEAL_RATIO: float = 0.3
 
 var _hitbox_active: bool = false
-var _hit_targets: Array[Node3D] = []
 var _attack_finished: bool = false
 
 func enter(previous_state: RewindableState, tick: int) -> void:
 	_hitbox_active = false
 	_attack_finished = false
-	_hit_targets.clear()
-	_set_hitbox_enabled(false)
+	_get_hitbox().disable()
 	# Attacking breaks camouflage
 	if actor.abilities and actor.abilities.is_camouflaged():
-		actor.abilities._deactivate_effect("camouflage")
-		actor.abilities._active_effects.erase("camouflage")
+		actor.abilities.cancel(&"camouflage")
 	# Listen for animation end
 	if actor._animation_player:
 		if not actor._animation_player.animation_finished.is_connected(_on_animation_finished):
 			actor._animation_player.animation_finished.connect(_on_animation_finished)
 
 func exit(next_state: RewindableState, tick: int) -> void:
-	_set_hitbox_enabled(false)
+	_get_hitbox().disable()
 	_hitbox_active = false
 	if actor._animation_player and actor._animation_player.animation_finished.is_connected(_on_animation_finished):
 		actor._animation_player.animation_finished.disconnect(_on_animation_finished)
 
 func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	var progress := _get_animation_progress()
+	var hitbox := _get_hitbox()
 
 	if progress >= hitbox_start_ratio and progress < hitbox_end_ratio and not _hitbox_active:
 		_hitbox_active = true
-		_set_hitbox_enabled(true)
+		hitbox.enable(hitbox_profile)
 	elif progress >= hitbox_end_ratio and _hitbox_active:
 		_hitbox_active = false
-		_set_hitbox_enabled(false)
+		hitbox.disable()
 
 	if _hitbox_active and actor.multiplayer.is_server():
-		_check_hits()
+		_check_hits(hitbox)
 
 	actor.velocity.x = 0
 	actor.velocity.z = 0
@@ -69,14 +73,13 @@ func _get_animation_progress() -> float:
 		return 1.0
 	return clampf(actor._animation_player.current_animation_position / anim_length, 0.0, 1.0)
 
-func _set_hitbox_enabled(enabled: bool) -> void:
-	var hitbox: Area3D = actor.get_node_or_null("AttackHitbox")
-	if hitbox:
-		hitbox.get_node("CollisionShape3D").disabled = not enabled
+func _get_hitbox() -> AttackHitbox:
+	# Located via unique_name_in_owner so subtypes can parent it wherever they
+	# want (e.g. under a BoneAttachment3D so it tracks the sword).
+	return actor.get_node_or_null(^"%AttackHitbox") as AttackHitbox
 
-func _check_hits() -> void:
-	var hitbox: Area3D = actor.get_node_or_null("AttackHitbox")
-	if not hitbox:
+func _check_hits(hitbox: AttackHitbox) -> void:
+	if hitbox == null:
 		return
 	var base_damage := actor.get_attack_damage()
 	var damage_mult := 1.0
@@ -84,14 +87,11 @@ func _check_hits() -> void:
 	if actor.abilities:
 		damage_mult = actor.abilities.get_damage_multiplier()
 		lifesteal = actor.abilities.should_lifesteal()
-	var final_damage := int(base_damage * damage_mult)
-	for body in hitbox.get_overlapping_bodies():
+	var final_damage := int(base_damage * damage_mult * hitbox.get_damage_multiplier())
+	for body in hitbox.get_new_hits():
 		if body == actor:
 			continue
-		if body in _hit_targets:
-			continue
 		if body.has_method("take_damage"):
-			_hit_targets.append(body)
 			body.take_damage(final_damage)
 			if lifesteal:
 				var heal := int(final_damage * LIFESTEAL_RATIO)

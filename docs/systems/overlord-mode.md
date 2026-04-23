@@ -66,6 +66,8 @@ When you're not the Avatar, you're in your tower — a first-person 3D space whe
 ### Upgrade Altar
 - Spend resources on tower upgrades and Avatar ability preparation.
 - Invest in your next Avatar turn so you're stronger when control comes.
+- Catalog is authored as `UpgradeData` resources (`scripts/upgrade_data.gd`) under `res://data/upgrades/`: `minion_vitality`, `minion_ferocity`, `dark_tithe`, `avatar_fortitude`, `avatar_might`.
+- Upgrade level state lives on `GameState.upgrade_levels`; read via `GameState.get_upgrade_level(peer_id, kind)`.
 
 ## Faction Overlord Differences
 

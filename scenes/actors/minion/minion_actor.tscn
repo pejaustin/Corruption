@@ -6,6 +6,10 @@
 [ext_resource type="Script" uid="uid://bf5luvbrh418g" path="res://scenes/actors/minion/states/idle_state.gd" id="4_m8qn8"]
 [ext_resource type="Script" uid="uid://bwxume2kqi83t" path="res://scenes/actors/minion/states/chase_state.gd" id="5_r2q84"]
 [ext_resource type="Script" uid="uid://mc37sb6ml8ea" path="res://scenes/actors/minion/states/jump_state.gd" id="6_m8qn8"]
+[ext_resource type="Script" path="res://scripts/combat/attack_hitbox.gd" id="7_hitbox"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_attack"]
+radius = 1.0
 
 [node name="MinionActor" unique_id=336466554 instance=ExtResource("1_e3vac")]
 collision_layer = 128
@@ -33,3 +37,16 @@ animation_name = "large-male/Jump"
 metadata/_custom_type_script = "uid://usyufdtn83hc"
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." index="2" unique_id=990365429]
+
+[node name="AttackHitbox" type="Area3D" parent="." index="3" unique_id=1618167499]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.34678698)
+collision_layer = 0
+collision_mask = 12
+monitorable = false
+script = ExtResource("7_hitbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox" index="0" unique_id=1816002871]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
+shape = SubResource("SphereShape3D_attack")
+disabled = true

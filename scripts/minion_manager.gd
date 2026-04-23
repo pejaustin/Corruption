@@ -25,6 +25,8 @@ var resources: Dictionary[int, float] = {}
 # slot_index -> MinionSpawnPoint / MinionRallyPoint, populated by bind_tower_markers
 var _spawn_points: Dictionary[int, MinionSpawnPoint] = {}
 var _rally_points: Dictionary[int, MinionRallyPoint] = {}
+# peer_id -> multiplier (<1.0 = discount). Granted by the Domination Mastery ritual.
+var domination_discounts: Dictionary[int, float] = {}
 
 func _ready() -> void:
 	_minions_node = Node3D.new()
@@ -35,7 +37,34 @@ func _setup_minions_node() -> void:
 	var world = get_tree().current_scene.get_node_or_null("World")
 	if world:
 		world.add_child(_minions_node)
+	_adopt_preplaced_minions()
 	bind_tower_markers()
+
+func _adopt_preplaced_minions() -> void:
+	## Moves any MinionActor authored into the scene (e.g. World/Enemies/Guard1)
+	## into _minions_node with a numeric name so manager sync/lookup works.
+	## All peers do this so the numeric IDs align for sync RPCs.
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var enemies_node = scene.get_node_or_null("World/Enemies")
+	if enemies_node == null:
+		return
+	for child in enemies_node.get_children():
+		if not (child is MinionActor):
+			continue
+		var minion: MinionActor = child
+		var pos := minion.global_position
+		var id := _next_minion_id
+		_next_minion_id += 1
+		minion.get_parent().remove_child(minion)
+		minion.name = str(id)
+		minion.owner_peer_id = -1
+		minion.faction = GameConstants.Faction.NEUTRAL
+		_minions_node.add_child(minion)
+		minion.global_position = pos
+		minion.waypoint = pos
+		minion_spawned.emit(minion)
 
 func _mp_manager() -> MultiplayerManager:
 	return get_tree().current_scene.get_node_or_null("MultiplayerManager") as MultiplayerManager
@@ -223,6 +252,18 @@ func _resolve_minion_type(faction: int, type_id: StringName) -> MinionType:
 		return mtype
 	return FactionData.get_default_minion(faction)
 
+# --- Neutral spawns (world enemies like zombies, guardian boss) ---
+
+func spawn_neutral_minion(pos: Vector3, type_id: StringName = &"neutral_zombie", waypoint: Vector3 = Vector3.INF) -> void:
+	## Host-only. Spawns a neutral NPC (owner_peer_id = -1, faction = NEUTRAL).
+	## Bypasses resource cost and per-player minion caps.
+	if not multiplayer.is_server():
+		return
+	var id := _next_minion_id
+	_next_minion_id += 1
+	var wp := waypoint if waypoint != Vector3.INF else pos
+	_spawn_minion_rpc.rpc(id, -1, GameConstants.Faction.NEUTRAL, pos, String(type_id), wp)
+
 # --- Raise Dead (Undeath trait) ---
 
 func raise_dead_at(owner_peer_id: int, faction: int, pos: Vector3) -> void:
@@ -324,10 +365,8 @@ func request_dominate_minion(minion_id: int, new_owner_id: int) -> void:
 	if not minion.can_take_damage():
 		return
 	var cost := DOMINATE_COST
-	if has_meta("domination_discount"):
-		var discounts = get_meta("domination_discount")
-		if sender in discounts:
-			cost = int(DOMINATE_COST * discounts[sender])
+	if sender in domination_discounts:
+		cost = int(DOMINATE_COST * domination_discounts[sender])
 	if get_resources(sender) < cost:
 		return
 	if get_minion_count(sender) >= MAX_MINIONS_PER_PLAYER:
@@ -375,7 +414,9 @@ func notify_minion_died(minion: MinionActor) -> void:
 	if not multiplayer.is_server():
 		return
 	minion_died.emit(minion)
-	_remove_minion.rpc(minion.name.to_int())
+	var id := minion.name.to_int()
+	KnowledgeManager.notify_minion_removed(id)
+	_remove_minion.rpc(id)
 
 @rpc("authority", "call_local", "reliable")
 func _remove_minion(id: int) -> void:
@@ -385,18 +426,8 @@ func _remove_minion(id: int) -> void:
 			minion.queue_free()
 
 func _get_player_faction(peer_id: int) -> int:
-	if has_meta("faction_overrides"):
-		var overrides = get_meta("faction_overrides")
-		if peer_id in overrides:
-			return overrides[peer_id]
-	if peer_id in GameState.player_factions:
-		return GameState.player_factions[peer_id]
-	# Fallback: round-robin if lobby didn't sync (e.g., direct scene boot).
-	var peers = multiplayer.get_peers().duplicate()
-	if multiplayer.get_unique_id() not in peers:
-		peers.append(multiplayer.get_unique_id())
-	peers.sort()
-	var idx = peers.find(peer_id)
-	if idx >= 0:
-		return GameConstants.PLAYABLE_FACTIONS[idx % GameConstants.PLAYABLE_FACTIONS.size()]
-	return GameConstants.PLAYABLE_FACTIONS[0]
+	return GameState.get_faction(peer_id)
+
+func set_domination_discount(peer_id: int, multiplier: float) -> void:
+	## Granted by the Domination Mastery ritual. Persists for the match.
+	domination_discounts[peer_id] = multiplier

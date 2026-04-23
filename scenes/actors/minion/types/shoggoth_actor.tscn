@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bs3htwdrfuowu"]
+[gd_scene format=3 uid="uid://bdxg7rfisg4g"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
 [ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
@@ -10,8 +10,8 @@ height = 3.002
 [node name="Shoggoth" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
 
-[node name="Zombie" parent="." index="0" unique_id=397539025 instance=ExtResource("2_model")]
-
-[node name="CollisionShape3D" parent="." index="1" unique_id=2017831966]
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 shape = SubResource("CapsuleShape3D_shoggoth")
+
+[node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]

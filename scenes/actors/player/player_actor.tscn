@@ -16,9 +16,6 @@
 radius = 0.4
 height = 3.0
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
-radius = 1.5
-
 [node name="PlayerActor" unique_id=2142461512 instance=ExtResource("1_base")]
 script = ExtResource("2_player")
 
@@ -26,41 +23,11 @@ script = ExtResource("2_player")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 shape = SubResource("CapsuleShape3D_player")
 
-[node name="IdleState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2" unique_id=1173378999]
-script = ExtResource("8_idle")
-animation_name = "large-male/Idle"
-
-[node name="MoveState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=655784458]
-script = ExtResource("9_move")
-animation_name = "large-male/Walk"
-
-[node name="JumpState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4" unique_id=87081217]
-script = ExtResource("10_jump")
-animation_name = "large-male/Jump"
-
-[node name="FallState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5" unique_id=1876940063]
-script = ExtResource("11_fall")
-
-[node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
-script = ExtResource("12_attack")
-animation_name = "large-male/Attack"
-
 [node name="AvatarCamera" parent="." index="2" unique_id=108768714 instance=ExtResource("4_camera")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
 [node name="AvatarInput" type="Node" parent="." index="3" unique_id=597958932]
 script = ExtResource("5_input")
-
-[node name="AttackHitbox" type="Area3D" parent="." index="4" unique_id=1546805926]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -1.5)
-collision_layer = 0
-collision_mask = 4
-monitorable = false
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox" index="0" unique_id=1540985233]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.752328, 1.99899)
-shape = SubResource("SphereShape3D_hitbox")
-disabled = true
 
 [node name="WatcherLabel" type="Label3D" parent="." index="5" unique_id=957424953]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
@@ -80,3 +47,22 @@ input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_inp
 script = ExtResource("7_tick")
 root = NodePath("..")
 properties = Array[String]([":transform", "Model:transform"])
+
+[node name="IdleState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2" unique_id=1173378999]
+script = ExtResource("8_idle")
+animation_name = "large-male/Idle"
+
+[node name="MoveState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=655784458]
+script = ExtResource("9_move")
+animation_name = "large-male/Walk"
+
+[node name="JumpState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4" unique_id=87081217]
+script = ExtResource("10_jump")
+animation_name = "large-male/Jump"
+
+[node name="FallState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5" unique_id=1876940063]
+script = ExtResource("11_fall")
+
+[node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
+script = ExtResource("12_attack")
+animation_name = "large-male/Attack"

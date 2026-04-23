@@ -65,11 +65,13 @@ func _process(delta: float) -> void:
 	else:
 		lines.append("  Avatar Entity: [color=#ff4444]NOT FOUND[/color]")
 
-	# Enemy count
-	var enemies_node = get_tree().current_scene.get_node_or_null("World/Enemies")
+	# Neutral minion count (formerly "enemies")
+	var mm_dbg = get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
 	var enemy_count := 0
-	if enemies_node:
-		enemy_count = enemies_node.get_child_count()
+	if mm_dbg:
+		for m in mm_dbg.get_all_minions():
+			if m.owner_peer_id == -1:
+				enemy_count += 1
 	lines.append("  Enemies alive: %d" % enemy_count)
 	lines.append("")
 

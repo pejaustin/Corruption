@@ -4,7 +4,7 @@ extends Node
 # IMPORTANT:
 # Variables like is_hosting_game must be reset upon exiting to main menu after a game has been played.
 
-const GAME_SCENE: String = "res://scenes/tower_scene.tscn"
+const GAME_SCENE: String = "res://scenes/world/world.tscn"
 const MAIN_MENU_SCENE: String = "res://scenes/menus/main_menu.tscn"
 const LOCALHOST: String = "127.0.0.1"
 const DEDICATED_SERVER_FEATURE_NAME: String = "dedicated_server"

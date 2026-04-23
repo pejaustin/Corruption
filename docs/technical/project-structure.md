@@ -17,6 +17,11 @@ corruption/
 │   ├── characters/          # Player models, skins
 │   ├── ui/                  # Fonts, icons, menu assets
 │   └── world/env/           # Environment models, textures
+├── data/
+│   ├── abilities/           # AbilityData .tres (per Avatar ability)
+│   ├── minions/             # MinionType .tres (skeleton, imp, guardian, corrupted_seraph, ...)
+│   ├── rituals/             # RitualData .tres (domination_mastery, corruption_surge, eldritch_vision)
+│   └── upgrades/            # UpgradeData .tres (minion_vitality, minion_ferocity, dark_tithe, avatar_fortitude, avatar_might)
 ├── docs/
 │   ├── one-pager.md         # Game overview
 │   ├── systems/             # System design pages
@@ -30,17 +35,31 @@ corruption/
 │   │   │   ├── states/                     # idle / chase / attack / jump
 │   │   │   └── types/                      # skeleton_actor.tscn, imp_actor.tscn, ...
 │   │   └── enemy/                          # Neutral enemy actors
+│   │       ├── guardian/                   # guardian_boss.tscn (Phase 1 boss)
+│   │       └── seraph/                     # corrupted_seraph.tscn (inherits guardian_boss.tscn)
+│   ├── abilities/                          # Ability effect scenes (one per ability)
+│   ├── interactibles/                         # war_table.tscn (with Map child)
 │   ├── menus/               # Main menu, lobby, enet menu, player panel
 │   ├── network/             # Multiplayer manager, enet/noray network
 │   ├── player/              # Player, camera, perspective manager
+│   ├── test/                                  # Isolated test harnesses (war_table_test, fake_minion)
 │   └── world/env/
 │       ├── tower.gd / .tscn                # Tower — pairs its spawn point w/ a rally at runtime
 │       ├── jumpable_link.gd                # NavigationLink3D subclass minions traverse by jumping
 │       └── ...                             # Other env scenes (rocks, foliage)
 ├── scripts/
+│   ├── abilities/           # AbilityEffect base + per-ability effect scripts
+│   ├── interactibles/       # WarTable + WarTableMap + WarTableRange, GemSite, UpgradeAltar, RitualSite
+│   ├── knowledge/           # KnowledgeManager autoload + WorldModel (per-peer battlefield belief)
 │   ├── menus/               # Menu logic
 │   ├── network/             # Network manager, connection configs
 │   ├── states/movement/     # Player movement state machine
+│   ├── test/                # FakeMinion + WarTableTestController (harness-only scripts)
+│   ├── ability_data.gd      # AbilityData Resource class
+│   ├── upgrade_data.gd      # UpgradeData Resource class
+│   ├── ritual_data.gd       # RitualData Resource class
+│   ├── minion_type.gd       # MinionType Resource class
+│   ├── boss_manager.gd      # Two-phase boss sequencer
 │   ├── game_constants.gd    # Factions, max players
 │   ├── debug_overlay.gd     # F3 debug panel
 │   ├── player.gd            # Player controller
@@ -65,6 +84,10 @@ corruption/
 | NetworkRollback | netfox | Rollback networking |
 | NetworkEvents | netfox | Network event bus |
 | NetworkPerformance | netfox | Performance monitoring |
+| GameState | `scripts/game_state.gd` | Per-peer faction, upgrades, ritual buffs |
+| DebugManager | `scripts/debug_manager.gd` | F2–F8 debug keys |
+| InteractionUI | `scripts/interaction_ui.gd` | HUD prompt routing for Interactables |
+| KnowledgeManager | `scripts/knowledge/knowledge_manager.gd` | Per-peer WorldModel; War Table reads belief from here. `INFINITE_BROADCAST_RANGE` / `INSTANT_COMMANDS` flags |
 
 ## Key Scenes
 

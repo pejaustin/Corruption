@@ -108,12 +108,12 @@ func _spawn_enemy_at_camera() -> void:
 	# Spawn 5 meters in front of the camera, on the ground
 	var spawn_pos = camera.global_position + (-camera.global_basis.z * 5.0)
 	spawn_pos.y = 0  # ground level
-	var em = _get_enemy_manager()
-	if em:
-		em.spawn_enemy(spawn_pos)
-		print("[Debug] Spawned enemy at (%.1f, %.1f, %.1f)" % [spawn_pos.x, spawn_pos.y, spawn_pos.z])
+	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
+	if mm:
+		mm.spawn_neutral_minion(spawn_pos)
+		print("[Debug] Spawned neutral minion at (%.1f, %.1f, %.1f)" % [spawn_pos.x, spawn_pos.y, spawn_pos.z])
 	else:
-		print("[Debug] EnemyManager not found")
+		print("[Debug] MinionManager not found")
 
 func _get_avatar() -> PlayerActor:
 	var scene = get_tree().current_scene
@@ -162,11 +162,7 @@ func _cycle_faction() -> void:
 	var playable = GameConstants.PLAYABLE_FACTIONS
 	var cur_idx = playable.find(current)
 	var next_faction = playable[(cur_idx + 1) % playable.size()] if cur_idx >= 0 else playable[0]
-	# Override the faction lookup by storing an override
-	if not mm.has_meta("faction_overrides"):
-		mm.set_meta("faction_overrides", {})
-	var overrides = mm.get_meta("faction_overrides")
-	overrides[my_id] = next_faction
+	GameState.set_faction_override(my_id, next_faction)
 	var name = GameConstants.faction_names.get(next_faction, "Unknown")
 	print("[Debug] Faction swapped to %s (%d)" % [name, next_faction])
 
@@ -194,10 +190,4 @@ func _get_multiplayer_manager() -> MultiplayerManager:
 	var scene = get_tree().current_scene
 	if scene:
 		return scene.get_node_or_null("MultiplayerManager") as MultiplayerManager
-	return null
-
-func _get_enemy_manager() -> EnemyManager:
-	var scene = get_tree().current_scene
-	if scene:
-		return scene.get_node_or_null("EnemyManager") as EnemyManager
 	return null

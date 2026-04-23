@@ -10,8 +10,8 @@ height = 3.002
 [node name="Hellhound" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
 
-[node name="Model" parent="." index="0" unique_id=397539025 instance=ExtResource("2_model")]
-
-[node name="CollisionShape3D" parent="." index="1" unique_id=2017831966]
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 shape = SubResource("CapsuleShape3D_hellhound")
+
+[node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]

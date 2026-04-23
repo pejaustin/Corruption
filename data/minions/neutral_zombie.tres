@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MinionType" format=3 uid="uid://30ny6we1uflk"]
+
+[ext_resource type="Script" uid="uid://b2bon8dni7iqa" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"neutral_zombie"
+display_name = "Zombie"
+faction = 0
+hp = 60
+damage = 15
+speed = 3.0
+cost = 0
+aggro_radius = 8.0
+attack_range = 2.0
+attack_cooldown = 1.2
+color = Color(0.5, 0.5, 0.4, 1)

@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://btwfkminion001"]
+
+[ext_resource type="Script" path="res://scripts/test/fake_minion.gd" id="1_script"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_body"]
+radius = 0.3
+height = 0.6
+
+[node name="FakeMinion" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_body")

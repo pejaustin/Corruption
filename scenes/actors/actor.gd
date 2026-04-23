@@ -2,7 +2,7 @@ class_name Actor extends CharacterBody3D
 
 ## Base class for all combat entities (players and enemies).
 ## Provides HP, damage, stagger, death, gravity, and animation hookup.
-## Subtypes: PlayerActor, EnemyActor.
+## Subtypes: PlayerActor, MinionActor.
 
 signal hp_changed(new_hp: int)
 signal died
@@ -19,9 +19,9 @@ var _animation_player: AnimationPlayer
 func _ready() -> void:
 	add_to_group(&"actors")
 	_state_machine = $RewindableStateMachine
-	_model = get_node_or_null("Model")
+	_model = _find_model_node()
 	if _model:
-		_animation_player = _model.get_node_or_null("AnimationPlayer")
+		_animation_player = _model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	hp = get_max_hp()
 	_state_machine.on_display_state_changed.connect(_on_display_state_changed)
 	_state_machine.state = &"IdleState"
@@ -93,7 +93,7 @@ func _on_display_state_changed(_old_state: RewindableState, new_state: Rewindabl
 
 # --- Rollback ---
 # Called by RollbackSynchronizer for PlayerActor.
-# EnemyActor applies gravity in _physics_process instead.
+# MinionActor applies gravity in _physics_process instead.
 
 func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	if incoming_damage > 0:
@@ -102,3 +102,10 @@ func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	force_update_is_on_floor()
 	if not is_on_floor():
 		apply_gravity(delta)
+
+# --- Model slot resolution ---
+
+## Returns the "Model" container from actor.tscn. Subclass scenes must drop
+## their visual (e.g. an imported GLB instance) as a child of this node.
+func _find_model_node() -> Node3D:
+	return get_node_or_null(^"Model") as Node3D

@@ -1,6 +1,12 @@
 # Boss Mechanics
 
-**Build status:** Not started
+**Build status:** Tier 3 (Guardian) done; Tier 4 (BossManager + Seraph) scripts ready, needs editor setup.
+
+## Implementation
+
+- **Phase 1 — Capitol Guardian:** `scenes/actors/enemy/guardian/guardian_boss.tscn` (script `scripts/guardian_boss.gd`, stats from `data/minions/guardian_boss.tres`). Pre-placed in the world.
+- **Phase 2 — Corrupted Seraph:** `scenes/actors/enemy/seraph/corrupted_seraph.tscn` is an **inherited scene** of `guardian_boss.tscn` with `minion_type = corrupted_seraph.tres` and `boss_name = "Corrupted Seraph"`. No runtime script override — just scene inheritance.
+- **Sequencer:** `scripts/boss_manager.gd` (BossManager Node in `tower_scene.tscn`). Exports `initial_boss`, `seraph_scene`, `seraph_spawn_point`. Listens for `boss_defeated`, runs 3s intermission, instantiates the Seraph scene, then announces win on phase-2 defeat.
 
 ---
 

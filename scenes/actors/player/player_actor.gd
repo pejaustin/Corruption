@@ -107,15 +107,16 @@ func activate(peer_id: int) -> void:
 	avatar_camera.activate(peer_id)
 	rollback_synchronizer.process_settings()
 	_set_dormant_visual(false)
-	# Set up faction abilities from the MinionManager's faction lookup
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	if mm and abilities:
-		var faction = mm._get_player_faction(peer_id)
+	# Inherit the controlling peer's faction so hostility checks work
+	# (e.g. MinionState.find_hostile_target treats NEUTRAL-vs-NEUTRAL as ALLIED).
+	faction = GameState.get_faction(peer_id)
+	if abilities:
 		abilities.setup(self, faction)
 
 func deactivate() -> void:
 	controlling_peer_id = -1
 	is_dormant = true
+	faction = GameConstants.Faction.NEUTRAL
 	avatar_input.set_controller(-1)
 	avatar_camera.deactivate()
 	rollback_synchronizer.process_settings()

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RitualData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ritual_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"domination_mastery"
+display_name = "Domination Mastery"
+description = "Halve the cost of dominating enemy minions for the rest of the match."
+effect = 0
+channel_time = 5.0
+domination_discount = 0.5
+duration = 0.0

@@ -6,6 +6,9 @@ class_name MinionActor extends Actor
 
 const COLLISION_LAYER_MINION: int = 8
 const COLLISION_MASK_WORLD: int = 1
+## World + other minions — so bodies block each other and can't occupy the same
+## space while chasing/attacking the same target.
+const COLLISION_MASK_MOVEMENT: int = COLLISION_MASK_WORLD | COLLISION_LAYER_MINION
 const DEATH_CLEANUP_TIME: float = 1.5
 const INTERPOLATION_SPEED: float = 10.0
 
@@ -15,6 +18,11 @@ signal minion_died(minion: MinionActor)
 ## are auto-applied on _ready(). Left null for generic scenes that get their
 ## type assigned at runtime via apply_type().
 @export var minion_type: MinionType
+
+## When true, the minion cannot take damage while in StaggerState (bosses, etc.).
+## Placeholder: will eventually be driven by model-scene animation triggers that
+## toggle hitbox/invulnerability windows frame-by-frame.
+@export var stagger_invulnerable: bool = false
 
 var owner_peer_id: int = -1
 var minion_type_id: StringName = &""
@@ -48,7 +56,7 @@ func _ready() -> void:
 	_target_pos = global_position
 	_target_rot = rotation.y
 	collision_layer = COLLISION_LAYER_MINION
-	collision_mask = COLLISION_MASK_WORLD
+	collision_mask = COLLISION_MASK_MOVEMENT
 	_minion_manager = get_tree().current_scene.get_node_or_null("MinionManager")
 	if nav_agent:
 		nav_agent.link_reached.connect(_on_link_reached)
@@ -88,6 +96,8 @@ func get_stagger_duration() -> float:
 
 func can_take_damage() -> bool:
 	if _state_machine.state == &"DeathState":
+		return false
+	if stagger_invulnerable and _state_machine.state == &"StaggerState":
 		return false
 	return hp > 0
 

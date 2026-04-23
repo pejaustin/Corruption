@@ -8,6 +8,10 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"JumpState")
 		return
 	var target := find_hostile_target()
+	# Only chase hostiles inside aggro range; distant hostiles must be ignored
+	# so a minion heading to rally doesn't divert across the map to a target.
+	if target and distance_to(target) > minion.aggro_radius:
+		target = null
 	var destination: Vector3
 	if target:
 		destination = target.global_position

@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://btwttest00001"]
+
+[ext_resource type="Script" uid="uid://cqr8t6qcvcrsc" path="res://scripts/test/war_table_test_controller.gd" id="1_ctrl"]
+[ext_resource type="Script" uid="uid://ybui2et26j0o" path="res://scripts/interactibles/war_table_map.gd" id="2_map"]
+[ext_resource type="PackedScene" uid="uid://dn38xro8c1m53" path="res://scenes/test/fake_minion.tscn" id="3_minion"]
+[ext_resource type="Script" uid="uid://cii5qfapbe5tc" path="res://scripts/interactibles/war_table_range.gd" id="4_range"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(60, 60)
+
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_color = Color(0.18, 0.2, 0.18, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_table"]
+size = Vector3(3, 0.2, 2)
+
+[sub_resource type="StandardMaterial3D" id="Material_table"]
+albedo_color = Color(0.35, 0.22, 0.14, 1)
+roughness = 0.8
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_mapsurface"]
+size = Vector2(2.8, 1.9)
+
+[sub_resource type="StandardMaterial3D" id="Material_mapsurface"]
+albedo_color = Color(0.9, 0.85, 0.7, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e3w8q"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.95, 0.75, 0.2, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_84itg"]
+size = Vector3(30, 20, 30)
+
+[node name="WarTableTest" type="Node3D" unique_id=1068357648 node_paths=PackedStringArray("war_table_map", "fake_minions_root", "debug_markers_root", "camera", "status_label")]
+script = ExtResource("1_ctrl")
+war_table_map = NodePath("Table/Map")
+fake_minions_root = NodePath("FakeMinions")
+debug_markers_root = NodePath("DebugMarkers")
+camera = NodePath("Camera3D")
+status_label = NodePath("Hud/Label")
+fake_minion_scene = ExtResource("3_minion")
+
+[node name="Floor" type="MeshInstance3D" parent="." unique_id=1654625506]
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("Material_floor")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1923197726]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 20, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=426678375]
+transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 10, 25, 25)
+current = true
+
+[node name="FakeMinions" type="Node3D" parent="." unique_id=1964482081]
+
+[node name="DebugMarkers" type="Node3D" parent="." unique_id=1270071181]
+
+[node name="Table" type="Node3D" parent="." unique_id=654252761]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+
+[node name="TableTop" type="MeshInstance3D" parent="Table" unique_id=247835142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("BoxMesh_table")
+surface_material_override/0 = SubResource("Material_table")
+
+[node name="Map" type="Node3D" parent="Table" unique_id=2046296138]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+script = ExtResource("2_map")
+table_surface_size = Vector2(2.8, 1.9)
+
+[node name="Paper" type="MeshInstance3D" parent="Table/Map" unique_id=1642598667]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.002, 0)
+mesh = SubResource("PlaneMesh_mapsurface")
+surface_material_override/0 = SubResource("Material_mapsurface")
+
+[node name="RangeIndicator" type="MeshInstance3D" parent="." unique_id=833275462 node_paths=PackedStringArray("map")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+material_override = SubResource("StandardMaterial3D_e3w8q")
+mesh = SubResource("BoxMesh_84itg")
+script = ExtResource("4_range")
+map = NodePath("../Table/Map")
+
+[node name="Hud" type="CanvasLayer" parent="." unique_id=1071024582]
+
+[node name="Label" type="Label" parent="Hud" unique_id=1359703805]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 640.0
+offset_bottom = 260.0
+text = "War Table Test Scene"

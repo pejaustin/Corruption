@@ -12,12 +12,7 @@ var _player_slot_order: Array[int] = [] # Tracks join order for tower assignment
 # Tower spawn positions as offsets from PlayerSpawnPoint (72, 41, 1)
 # Each tower's floor is at local Y=40, so spawn Y = tower_global_Y + 40 + 1 (standing height)
 # Offset = tower_spawn_global - PlayerSpawnPoint_global
-const TOWER_SPAWNS: Array[Vector3] = [
-	Vector3(3, 0, -1.5),       # Tower 1: global (75, 41, -0.5)
-	Vector3(-72.5, 0, 67),     # Tower 2: global (-0.5, 41, 68)
-	Vector3(-142, 0, -1),      # Tower 3: global (-70, 41, 0)
-	Vector3(-72.5, 0, -63.5),  # Tower 4: global (-0.5, 41, -62.5)
-]
+@onready var TOWER_SPAWNS: Array[Vector3] = _get_tower_spawns()
 
 func _ready() -> void:
 	print("MultiplayerManager ready!")
@@ -114,3 +109,11 @@ func _peer_connected(network_id: int) -> void:
 func _peer_disconnected(network_id: int) -> void:
 	print("Peer disconnected: %s" % network_id)
 	_remove_player_from_game(network_id)
+
+func _get_tower_spawns() -> Array[Vector3]:
+	var towers_arr : Array[Vector3] = []
+	for tower in %Towers.get_children():
+		var tower_spawn : Marker3D = tower.get_node("SpawnPoint")
+		towers_arr.append(_player_spawn_point.to_local(tower_spawn.global_position))
+		
+	return towers_arr

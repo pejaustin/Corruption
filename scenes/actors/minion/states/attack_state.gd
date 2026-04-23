@@ -2,25 +2,26 @@ extends MinionState
 
 ## Minion attack with animation-driven hitbox window.
 ## Applies damage via Actor.incoming_damage so it flows through the standard pipeline.
+## Uses the AttackHitbox component — see scripts/combat/attack_hitbox.gd.
 
 @export var hitbox_start_ratio: float = 0.25
 @export var hitbox_end_ratio: float = 0.6
+## Profile name to activate on this attack. Empty = first shape child.
+@export var hitbox_profile: StringName = &""
 
 var _hitbox_active: bool = false
-var _hit_targets: Array[Node3D] = []
 var _attack_finished: bool = false
 
 func enter(_previous_state: RewindableState, _tick: int) -> void:
 	_hitbox_active = false
 	_attack_finished = false
-	_hit_targets.clear()
-	_set_hitbox_enabled(false)
+	_get_hitbox().disable()
 	if actor._animation_player:
 		if not actor._animation_player.animation_finished.is_connected(_on_animation_finished):
 			actor._animation_player.animation_finished.connect(_on_animation_finished)
 
 func exit(_next_state: RewindableState, _tick: int) -> void:
-	_set_hitbox_enabled(false)
+	_get_hitbox().disable()
 	_hitbox_active = false
 	if actor._animation_player and actor._animation_player.animation_finished.is_connected(_on_animation_finished):
 		actor._animation_player.animation_finished.disconnect(_on_animation_finished)
@@ -34,16 +35,17 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 			face_direction(dir.normalized())
 
 	var progress := _get_animation_progress()
+	var hitbox := _get_hitbox()
 
 	if progress >= hitbox_start_ratio and progress < hitbox_end_ratio and not _hitbox_active:
 		_hitbox_active = true
-		_set_hitbox_enabled(true)
+		hitbox.enable(hitbox_profile)
 	elif progress >= hitbox_end_ratio and _hitbox_active:
 		_hitbox_active = false
-		_set_hitbox_enabled(false)
+		hitbox.disable()
 
 	if _hitbox_active:
-		_check_hits()
+		_check_hits(hitbox)
 
 	actor.velocity.x = 0
 	actor.velocity.z = 0
@@ -53,8 +55,7 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 		if target and distance_to(target) < minion.attack_range:
 			_hitbox_active = false
 			_attack_finished = false
-			_hit_targets.clear()
-			_set_hitbox_enabled(false)
+			hitbox.disable()
 			if actor._animation_player:
 				actor._animation_player.seek(0.0)
 				actor._animation_player.play(animation_name)
@@ -74,34 +75,34 @@ func _get_animation_progress() -> float:
 		return 1.0
 	return clampf(actor._animation_player.current_animation_position / anim_length, 0.0, 1.0)
 
-func _set_hitbox_enabled(enabled: bool) -> void:
-	var hitbox: Area3D = actor.get_node_or_null("AttackHitbox")
-	if hitbox:
-		var shape := hitbox.get_node_or_null("CollisionShape3D") as CollisionShape3D
-		if shape:
-			shape.disabled = not enabled
+func _get_hitbox() -> AttackHitbox:
+	# Located via unique_name_in_owner so per-type scenes can parent it under a
+	# BoneAttachment3D without touching this script.
+	return actor.get_node_or_null(^"%AttackHitbox") as AttackHitbox
 
-func _check_hits() -> void:
-	var hitbox: Area3D = actor.get_node_or_null("AttackHitbox")
-	if not hitbox:
+func _check_hits(hitbox: AttackHitbox) -> void:
+	if hitbox == null:
 		return
-	var dmg := minion.attack_damage
-	for body in hitbox.get_overlapping_bodies():
-		if body == actor or body in _hit_targets:
+	var dmg := int(minion.attack_damage * hitbox.get_damage_multiplier())
+	for body in hitbox.get_new_hits():
+		if body == actor:
 			continue
 		var other := body as Actor
 		if other == null or not minion.is_hostile_to(other):
 			continue
-		_hit_targets.append(body)
 		if other is PlayerActor:
 			other.incoming_damage += dmg
 			other.last_damage_source_peer = minion.owner_peer_id
 			if other.controlling_peer_id > 0 and other.controlling_peer_id != multiplayer.get_unique_id():
 				other.apply_incoming_damage.rpc_id(other.controlling_peer_id, dmg, minion.owner_peer_id)
 		else:
-			other.incoming_damage += dmg
-			# Raise-dead: if we just put this victim to 0, flag for skeleton raise
-			if minion.minion_trait == &"raise_dead" and other.hp - dmg <= 0:
+			# Minions don't have a RollbackSynchronizer draining incoming_damage,
+			# so apply the hit directly on the host. HP is broadcast to clients
+			# via MinionManager._sync_minion_actor.
+			var killed := other.hp - dmg <= 0
+			other.take_damage(dmg)
+			# Raise-dead: if this hit killed the victim, flag for skeleton raise
+			if minion.minion_trait == &"raise_dead" and killed:
 				var mm := actor.get_tree().current_scene.get_node_or_null("MinionManager")
 				if mm and mm.has_method("raise_dead_at"):
 					mm.raise_dead_at(minion.owner_peer_id, minion.faction, other.global_position)

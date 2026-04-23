@@ -33,11 +33,40 @@ rollback_synchronizer = NodePath("../RollbackSynchronizer")
 
 [node name="Model" parent="." unique_id=1859756760 instance=ExtResource("4_fvytd")]
 
+[node name="Skeleton3D" parent="Model/RootNode/Lich-applying/Armature" index="0"]
+bones/0/position = Vector3(0, -0.35575807, 0)
+bones/5/rotation = Quaternion(0.09735403, -3.9412367e-08, 3.8553094e-09, 0.99524987)
+bones/7/rotation = Quaternion(-0.31865603, -0.5914902, -0.13568541, 0.72813964)
+bones/8/rotation = Quaternion(4.1781018e-07, 5.911758e-07, -0.27045047, 0.962734)
+bones/9/rotation = Quaternion(-0.06474346, 0.55461305, -0.17410834, 0.8111097)
+bones/14/rotation = Quaternion(-0.38658008, 0.5433715, 0.11339153, 0.7365092)
+bones/15/rotation = Quaternion(3.912313e-07, -6.8369036e-07, 0.37900922, 0.925393)
+bones/16/rotation = Quaternion(-0.031126905, -0.5778667, 0.009146792, 0.81548613)
+bones/20/rotation = Quaternion(-4.8506408e-08, 0.660648, 0.7506959, 3.495421e-08)
+bones/21/rotation = Quaternion(-0.31792554, 7.823778e-08, 4.3220975e-08, 0.9481157)
+bones/22/rotation = Quaternion(0.5267876, -7.1874254e-08, 1.1298163e-07, 0.849997)
+bones/23/rotation = Quaternion(4.8159713e-08, 0.076869436, 0.9970412, 7.51389e-08)
+bones/24/rotation = Quaternion(-0.37364972, 2.1626211e-07, 5.661597e-08, 0.9275699)
+bones/25/rotation = Quaternion(0.77190596, -8.8939146e-08, 1.796099e-07, 0.6357369)
+bones/26/position = Vector3(-0.3451754, -1.0243516, 0.018495541)
+bones/26/rotation = Quaternion(0.22722426, -0.015890509, 0.030629728, 0.97323096)
+bones/27/rotation = Quaternion(-6.481935e-08, -0.7071068, 0.7071068, -1.3767878e-07)
+bones/28/position = Vector3(-0.0925207, -0.40557387, 0.35644436)
+bones/28/rotation = Quaternion(0.66991436, 6.0449423e-12, 1.0114757e-07, 0.7424384)
+bones/30/position = Vector3(0.2999026, -1.022915, -0.0049721207)
+bones/30/rotation = Quaternion(0.18110168, 0.030564537, -0.12670147, 0.9747896)
+bones/31/rotation = Quaternion(-6.481935e-08, -0.7071068, 0.7071068, -1.3767878e-07)
+bones/32/position = Vector3(0.0925207, -0.4752239, -0.42199734)
+bones/32/rotation = Quaternion(0.34944057, 3.1521452e-12, 5.2755613e-08, 0.93695855)
+
 [node name="Body" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="0"]
 layers = 2
 
 [node name="Head_001" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="1"]
 layers = 2
+
+[node name="hand" parent="Model/RootNode/Lich-applying/Armature/Skeleton3D" index="2" unique_id=980061578]
+transform = Transform3D(-0.99761856, 0.066841215, 0.017010897, -0.052398115, -0.8948623, 0.4432567, 0.04485047, 0.44131124, 0.8962339, 0.34517753, 0.66858935, 0.018496104)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1950139549]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.08165e-12, 1.41129, 2.08165e-12)

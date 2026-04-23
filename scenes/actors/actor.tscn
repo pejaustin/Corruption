@@ -16,6 +16,8 @@ script = ExtResource("1_actor")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("CapsuleShape3D_actor")
 
+[node name="Model" type="Node3D" parent="."]
+
 [node name="RewindableStateMachine" type="Node" parent="." unique_id=734603798]
 script = ExtResource("2_sm")
 

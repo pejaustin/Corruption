@@ -8,17 +8,65 @@ extends Interactable
 ##   Nature/Fey: See enemy minion positions on the map
 ##   Demonic: Shift+click to command a single nearest minion
 
-@export var map_camera: Camera3D
+## Marker3D (or any Node3D) whose global_transform defines the top-down view
+## target. The overlord's camera is tweened to this transform while the table
+## is active. Position it straight above the area of interest, rotated -90° on X.
+@export var map_view_point: Node3D
+
+## Marker3D (or any Node3D) where the overlord stands while using the table.
+## The player is tweened here so their rig (and thus the first-person hands)
+## ends up at a consistent pose. Face the marker toward the table.
+@export var stand_point: Node3D
+
+## Diorama surface that renders WorldModel belief and maps table clicks to
+## world coordinates. Child Node3D with WarTableMap script.
+@export var map: WarTableMap
+
+const TAKEOVER_DURATION: float = 0.6
+const RELEASE_DURATION: float = 0.4
 
 var _war_table_active: bool = false
 var _active_peer_id: int = -1
 var _active_faction: int = -1
+var _player_tween: Tween
+var _player_return_transform: Transform3D = Transform3D.IDENTITY
 
 func _interactable_ready() -> void:
-	if map_camera:
-		map_camera.current = false
+	pass
+
+func _process(delta: float) -> void:
+	super(delta)
+	if not map:
+		return
+	# Render the local peer's belief whenever they're near or using this table.
+	# A proper "any tower shows its owning overlord's belief" pass comes once
+	# tower↔overlord bindings are threaded through — for now the table is tied
+	# to whoever is standing next to it.
+	var peer_id := _active_peer_id if _war_table_active else get_overlord_peer_id()
+	if peer_id == -1:
+		return
+	map.render_from_model(KnowledgeManager.get_model(peer_id))
+
+func _check_focus() -> bool:
+	# While the table is driving the camera, keep focus sticky so the exit
+	# prompt stays up and the E key still routes here.
+	if _war_table_active and _player_in_range and _is_local_player(_player_in_range):
+		return true
+	return super()
+
+func _on_body_exited(body: Node3D) -> void:
+	# While the war table is active we tween the player to a stand point that
+	# lies outside the Area3D — physics then reports an exit we want to ignore.
+	# Keep the player reference intact so the exit prompt and _refresh_prompt
+	# still have something to work with. A real exit only happens via E input
+	# (_on_interact → _exit_war_table).
+	if _war_table_active and body is Player and body == _player_in_range:
+		return
+	super(body)
 
 func _on_player_exited() -> void:
+	# Only reachable when the player leaves without being tweened out (normal
+	# walk-away). _on_body_exited above filters the tween-induced case.
 	if _war_table_active:
 		_exit_war_table()
 
@@ -75,11 +123,12 @@ func _unhandled_input(event: InputEvent) -> void:
 func _enter_war_table(peer_id: int) -> void:
 	_war_table_active = true
 	_active_peer_id = peer_id
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	if mm:
-		_active_faction = mm._get_player_faction(peer_id)
-	if map_camera:
-		map_camera.current = true
+	_active_faction = GameState.get_faction(peer_id)
+	_set_overlord_input_enabled(false)
+	_tween_player_to_stand()
+	var ci := _get_overlord_camera_input()
+	if ci and map_view_point:
+		ci.take_over(map_view_point.global_transform, TAKEOVER_DURATION)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	_refresh_prompt()
 
@@ -87,34 +136,83 @@ func _exit_war_table() -> void:
 	_war_table_active = false
 	_active_peer_id = -1
 	_active_faction = -1
-	if map_camera:
-		map_camera.current = false
+	var ci := _get_overlord_camera_input()
+	if ci:
+		ci.release(RELEASE_DURATION)
+	_tween_player_back()
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	if _player_in_range:
-		var ci = _player_in_range.get_node_or_null("CameraInput") as CameraInput
-		if ci and ci.camera_3d:
-			ci.camera_3d.current = true
+	_set_overlord_input_enabled(true)
 	_refresh_prompt()
 
+func _tween_player_to_stand() -> void:
+	if not _player_in_range or not stand_point:
+		return
+	if _player_tween and _player_tween.is_valid():
+		_player_tween.kill()
+	_player_return_transform = _player_in_range.global_transform
+	# Zero velocity so physics doesn't fight the tween.
+	_player_in_range.velocity = Vector3.ZERO
+	_player_in_range.set_physics_process(false)
+	var start_xform := _player_in_range.global_transform
+	var end_xform := stand_point.global_transform
+	_player_tween = create_tween()
+	_player_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_player_tween.tween_method(
+		func(t: float) -> void: _set_player_global(start_xform.interpolate_with(end_xform, t)),
+		0.0, 1.0, TAKEOVER_DURATION
+	)
+
+func _tween_player_back() -> void:
+	if not _player_in_range:
+		return
+	if _player_tween and _player_tween.is_valid():
+		_player_tween.kill()
+	var start_xform := _player_in_range.global_transform
+	var end_xform := _player_return_transform
+	_player_tween = create_tween()
+	_player_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_player_tween.tween_method(
+		func(t: float) -> void: _set_player_global(start_xform.interpolate_with(end_xform, t)),
+		0.0, 1.0, RELEASE_DURATION
+	)
+	_player_tween.tween_callback(_finish_player_tween_back)
+
+func _set_player_global(xform: Transform3D) -> void:
+	if _player_in_range:
+		_player_in_range.global_transform = xform
+
+func _finish_player_tween_back() -> void:
+	if _player_in_range:
+		_player_in_range.set_physics_process(true)
+
+func _get_overlord_camera_input() -> CameraInput:
+	if not _player_in_range:
+		return null
+	return _player_in_range.get_node_or_null("CameraInput") as CameraInput
+
+func _set_overlord_input_enabled(enabled: bool) -> void:
+	if not _player_in_range:
+		return
+	var pi := _player_in_range.get_node_or_null("PlayerInput") as PlayerInput
+	if pi:
+		pi.input_enabled = enabled
+
 func _screen_to_world(screen_pos: Vector2) -> Vector3:
-	if not map_camera:
+	## Raycast the overlord camera against the diorama plane and convert the
+	## hit point into world-space battlefield coordinates via the map.
+	var ci := _get_overlord_camera_input()
+	if not ci or not ci.camera_3d or not map:
 		return Vector3.ZERO
-	var from = map_camera.project_ray_origin(screen_pos)
-	var dir = map_camera.project_ray_normal(screen_pos)
-	if abs(dir.y) < 0.001:
+	var world_pos: Vector3 = map.camera_ray_to_world(ci.camera_3d, screen_pos)
+	if world_pos == Vector3.INF:
 		return Vector3.ZERO
-	var t = -from.y / dir.y
-	if t < 0:
-		return Vector3.ZERO
-	return from + dir * t
+	return world_pos
 
 func _command_move_to_click(screen_pos: Vector2) -> void:
 	var world_pos = _screen_to_world(screen_pos)
 	if world_pos == Vector3.ZERO:
 		return
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	if mm:
-		mm.command_minions_move(world_pos)
+	KnowledgeManager.issue_move_command(_active_peer_id, world_pos)
 
 func _command_nearest_minion(screen_pos: Vector2) -> void:
 	## Demonic faction: Shift+click commands only the nearest minion to the click.

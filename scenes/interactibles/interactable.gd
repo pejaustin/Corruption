@@ -130,3 +130,8 @@ func get_overlord_peer_id() -> int:
 	if _player_in_range:
 		return _player_in_range.name.to_int()
 	return -1
+
+## Returns the "Model" container from interactable.tscn. Subclass scenes must
+## drop their visual (mesh, GLB instance, etc.) as a child of this node.
+func get_model() -> Node3D:
+	return get_node_or_null(^"Model") as Node3D

@@ -18,6 +18,9 @@ const SYNC_INTERVAL: float = 1.0  # Seconds between full sync broadcasts
 var _cells: Dictionary = {}
 var _sync_timer: float = 0.0
 var _minion_manager: Node
+# Corruption Surge ritual effect — doubles spread under the peer's minions.
+var corruption_surge_peer: int = -1
+var corruption_surge_timer: float = 0.0
 
 func _ready() -> void:
 	_minion_manager = get_tree().current_scene.get_node_or_null("MinionManager")
@@ -58,12 +61,22 @@ func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
 		return
 
+	if corruption_surge_timer > 0.0:
+		corruption_surge_timer = max(0.0, corruption_surge_timer - delta)
+		if corruption_surge_timer <= 0.0:
+			corruption_surge_peer = -1
+
 	_tick_corruption(delta)
 
 	_sync_timer += delta
 	if _sync_timer >= SYNC_INTERVAL:
 		_sync_timer = 0.0
 		_broadcast_corruption()
+
+func grant_corruption_surge(peer_id: int, duration: float) -> void:
+	## Granted by the Corruption Surge ritual; doubles spread for this peer's minions.
+	corruption_surge_peer = peer_id
+	corruption_surge_timer = duration
 
 func _tick_corruption(delta: float) -> void:
 	# Gather minion positions by faction

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"minion_ferocity"
+kind = 1
+display_name = "Minion Ferocity"
+description = "+20% minion damage per level"
+cost = 15
+max_level = 3
+per_level_bonus = 0.2

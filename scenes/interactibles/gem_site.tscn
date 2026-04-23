@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://btgemsite0001"]
+
+[ext_resource type="Script" uid="uid://x4dcj8y4o82i" path="res://scripts/interactibles/gem_site.gd" id="1_script"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_area"]
+radius = 4.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+top_radius = 1.0
+bottom_radius = 1.2
+height = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_base"]
+albedo_color = Color(0.35, 0.35, 0.38, 1)
+roughness = 0.9
+
+[sub_resource type="PrismMesh" id="PrismMesh_gem"]
+size = Vector3(1.2, 2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gem"]
+albedo_color = Color(0.4, 0.85, 1, 1)
+metallic = 0.4
+roughness = 0.1
+emission_enabled = true
+emission = Color(0.2, 0.5, 0.9, 1)
+emission_energy_multiplier = 0.6
+
+[node name="GemSite" type="Area3D" unique_id=709845163]
+collision_layer = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=95967694]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("SphereShape3D_area")
+
+[node name="Base" type="MeshInstance3D" parent="." unique_id=474608076]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("CylinderMesh_base")
+surface_material_override/0 = SubResource("StandardMaterial3D_base")
+
+[node name="Crystal" type="MeshInstance3D" parent="." unique_id=320225806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+mesh = SubResource("PrismMesh_gem")
+surface_material_override/0 = SubResource("StandardMaterial3D_gem")
+
+[node name="CrystalGlow" type="OmniLight3D" parent="." unique_id=1632251107]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+light_color = Color(0.5, 0.75, 1, 1)
+light_energy = 1.2

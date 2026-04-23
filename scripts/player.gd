@@ -16,6 +16,11 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _animation_player: AnimationPlayer
 var _overlord_active := true
 
+## Public accessor for the player's visual model. Use this instead of
+## get_node("Model") so consumers don't depend on child naming.
+func get_model() -> Node3D:
+	return _player_model
+
 func _enter_tree() -> void:
 	_player_input.set_multiplayer_authority(str(name).to_int())
 	_camera_input.set_multiplayer_authority(str(name).to_int())
@@ -23,7 +28,10 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	# Default state
 	_state_machine.state = &"IdleState"
-	_animation_player = _player_model.get_node("AnimationPlayer")
+	# The AnimationPlayer lives inside the imported GLB, not directly under
+	# Model, so recursive find_child is required (and keeps this resilient
+	# if the model is reshuffled or swapped).
+	_animation_player = _player_model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 
 	_state_machine.on_display_state_changed.connect(_on_display_state_changed)
 

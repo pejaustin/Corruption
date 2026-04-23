@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"avatar_fortitude"
+kind = 3
+display_name = "Avatar Fortitude"
+description = "+25% Avatar HP when you control it, per level"
+cost = 25
+max_level = 2
+per_level_bonus = 0.25

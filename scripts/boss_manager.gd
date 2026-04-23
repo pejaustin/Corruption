@@ -1,35 +1,37 @@
 class_name BossManager extends Node
 
 ## Manages the two-boss endgame sequence.
-## Phase 1: Capitol Guardian (500 HP base, corruption-debuffed)
-## Phase 2: Corrupted Seraph (750 HP base, corruption-debuffed, stronger attacks)
-## Defeating both in sequence wins the game.
+## Phase 1: Capitol Guardian (stats from guardian_boss.tres)
+## Phase 2: Corrupted Seraph (stats from corrupted_seraph.tres)
+## Defeating both wins the game.
+##
+## Wire the first boss and the seraph scene via the inspector; no string paths.
 
 signal phase_changed(phase: int)
 signal boss_spawned(boss: GuardianBoss)
 
 enum Phase { WAITING, BOSS_1, INTERMISSION, BOSS_2, COMPLETE }
 
-const INTERMISSION_TIME: float = 3.0  # Seconds between bosses
-const BOSS_2_HP: int = 750
-const BOSS_2_DAMAGE: int = 45
-const BOSS_SPAWN_POS: Vector3 = Vector3(0, 0, 0)  # Capitol center
+const INTERMISSION_TIME: float = 3.0
+
+## Pre-placed Capitol Guardian in the world. Set in the inspector.
+@export var initial_boss: GuardianBoss
+## Scene for phase-2 boss. Defaults to CorruptedSeraph; override for custom.
+@export var seraph_scene: PackedScene = preload("res://scenes/actors/enemy/seraph/corrupted_seraph.tscn")
+## Where the seraph spawns. If unset, uses the initial boss's position.
+@export var seraph_spawn_point: Node3D
 
 var current_phase: Phase = Phase.WAITING
 var current_boss: GuardianBoss = null
 var _intermission_timer: float = 0.0
 
 func _ready() -> void:
-	# Listen for the first boss being defeated
-	_find_and_connect_boss()
-
-func _find_and_connect_boss() -> void:
-	# Look for an existing GuardianBoss in the scene
-	var boss = get_tree().current_scene.get_node_or_null("World/GuardianBoss")
-	if boss and boss is GuardianBoss:
-		current_boss = boss
+	if initial_boss:
+		current_boss = initial_boss
 		current_phase = Phase.BOSS_1
-		boss.boss_defeated.connect(_on_boss_1_defeated)
+		initial_boss.boss_defeated.connect(_on_boss_1_defeated)
+	else:
+		push_warning("[BossManager] initial_boss is not set — phase 1 will not start.")
 
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
@@ -50,36 +52,40 @@ func _on_boss_1_defeated() -> void:
 func _spawn_boss_2() -> void:
 	current_phase = Phase.BOSS_2
 	_set_phase.rpc(Phase.BOSS_2)
-	# Spawn second boss via RPC
 	_spawn_seraph.rpc()
 
 @rpc("authority", "call_local", "reliable")
 func _spawn_seraph() -> void:
-	var boss_scene = preload("res://scenes/actors/enemy/zombie/zombie_actor.tscn")
-	var boss = boss_scene.instantiate()
-	# Re-class as GuardianBoss by adding the script
-	boss.set_script(preload("res://scripts/guardian_boss.gd"))
-	boss.name = "CorruptedSeraph"
-	boss.boss_name = "Corrupted Seraph"
-	var world = get_tree().current_scene.get_node_or_null("World")
-	if world:
-		world.add_child(boss)
-		boss.global_position = BOSS_SPAWN_POS
-		# Override stats for phase 2
-		boss.hp = BOSS_2_HP
-		boss.max_hp_effective = BOSS_2_HP
-		boss.boss_hp_changed.emit(boss.hp, boss.max_hp_effective)
-		current_boss = boss
-		boss.boss_defeated.connect(_on_boss_2_defeated)
-		boss_spawned.emit(boss)
-		print("[BossManager] Corrupted Seraph spawned")
+	if seraph_scene == null:
+		push_warning("[BossManager] seraph_scene is not set")
+		return
+	var boss := seraph_scene.instantiate() as GuardianBoss
+	if boss == null:
+		push_warning("[BossManager] seraph_scene root is not a GuardianBoss")
+		return
+	var world := get_tree().current_scene.get_node_or_null("World")
+	if world == null:
+		return
+	world.add_child(boss)
+	var spawn_pos := _get_seraph_spawn_position()
+	boss.global_position = spawn_pos
+	current_boss = boss
+	boss.boss_defeated.connect(_on_boss_2_defeated)
+	boss_spawned.emit(boss)
+	print("[BossManager] %s spawned at %s" % [boss.boss_name, spawn_pos])
+
+func _get_seraph_spawn_position() -> Vector3:
+	if seraph_spawn_point:
+		return seraph_spawn_point.global_position
+	if initial_boss:
+		return initial_boss.global_position
+	return Vector3.ZERO
 
 func _on_boss_2_defeated() -> void:
 	if not multiplayer.is_server():
 		return
 	current_phase = Phase.COMPLETE
 	_set_phase.rpc(Phase.COMPLETE)
-	# NOW the game is actually won
 	if GameState.has_avatar():
 		GameState._announce_win.rpc(GameState.avatar_peer_id)
 	print("[BossManager] Both bosses defeated — game won!")

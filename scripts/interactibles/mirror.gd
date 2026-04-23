@@ -242,7 +242,7 @@ func _capture_pose_sample() -> void:
 	_record_anims.append(_get_current_anim_name(_player_in_range))
 
 func _get_player_model(player: Player) -> Node3D:
-	return player.get_node_or_null("Model") as Node3D
+	return player.get_model()
 
 func _get_current_anim_name(player: Player) -> String:
 	if not player or not player._state_machine:
