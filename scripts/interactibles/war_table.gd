@@ -1,4 +1,4 @@
-extends Interactable
+class_name WarTable extends Interactable
 
 ## War Table interactible in each tower.
 ## Overlord interacts to enter a top-down map view.
@@ -22,6 +22,22 @@ extends Interactable
 ## world coordinates. Child Node3D with WarTableMap script.
 @export var map: WarTableMap
 
+## Mapping config. Authored here on the interactable rather than on the Map
+## child so per-tower regions live next to the rest of the table's setup.
+## Setters tunnel through to `map` when it's assigned; values are re-applied
+## once in `_interactable_ready` to cover the scene-load case where `map`
+## hadn't been resolved yet when these setters first ran.
+@export var map_world_size: Vector2 = Vector2(30.0, 30.0):
+	set(value):
+		map_world_size = value
+		if map:
+			map.map_world_size = value
+@export var map_world_center: Vector3 = Vector3.ZERO:
+	set(value):
+		map_world_center = value
+		if map:
+			map.map_world_center = value
+
 const TAKEOVER_DURATION: float = 0.6
 const RELEASE_DURATION: float = 0.4
 
@@ -32,7 +48,9 @@ var _player_tween: Tween
 var _player_return_transform: Transform3D = Transform3D.IDENTITY
 
 func _interactable_ready() -> void:
-	pass
+	if map:
+		map.map_world_size = map_world_size
+		map.map_world_center = map_world_center
 
 func _process(delta: float) -> void:
 	super(delta)
@@ -60,7 +78,7 @@ func _on_body_exited(body: Node3D) -> void:
 	# Keep the player reference intact so the exit prompt and _refresh_prompt
 	# still have something to work with. A real exit only happens via E input
 	# (_on_interact → _exit_war_table).
-	if _war_table_active and body is Player and body == _player_in_range:
+	if _war_table_active and body is OverlordActor and body == _player_in_range:
 		return
 	super(body)
 

@@ -3,7 +3,7 @@ class_name Interactable extends Area3D
 ## Base class for all interactible objects.
 ##
 ## Handles:
-## - Body enter/exit tracking (Player for Overlord mode, PlayerActor for Avatar mode)
+## - Body enter/exit tracking (OverlordActor for Overlord mode, AvatarActor for Avatar mode)
 ## - Prompt text routing to the HUD via InteractionUI singleton
 ## - Aim-based focus: Overlord must look at the interactible to see the prompt
 ## - Subclasses override get_prompt_text(), get_prompt_color(), and _on_interact()
@@ -13,8 +13,8 @@ class_name Interactable extends Area3D
 ## the aim check to kick in.
 @export var aim_angle_threshold: float = 30.0  # degrees
 
-var _player_in_range: Player = null
-var _avatar_in_range: PlayerActor = null
+var _player_in_range: OverlordActor = null
+var _avatar_in_range: AvatarActor = null
 var _is_focused: bool = false
 
 func _ready() -> void:
@@ -27,19 +27,19 @@ func _interactable_ready() -> void:
 	pass
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
+	if body is OverlordActor:
 		_player_in_range = body
-	elif body is PlayerActor:
+	elif body is AvatarActor:
 		_avatar_in_range = body
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player and body == _player_in_range:
+	if body is OverlordActor and body == _player_in_range:
 		_player_in_range = null
 		if _is_focused:
 			_is_focused = false
 			InteractionUI.clear_prompt(self)
 		_on_player_exited()
-	elif body is PlayerActor and body == _avatar_in_range:
+	elif body is AvatarActor and body == _avatar_in_range:
 		_avatar_in_range = null
 		if _is_focused:
 			_is_focused = false
@@ -77,20 +77,29 @@ func _check_focus() -> bool:
 			return true
 	return false
 
-func _is_local_player(player: Player) -> bool:
+func _is_local_player(player: OverlordActor) -> bool:
 	return multiplayer.get_unique_id() == player.name.to_int()
 
-func _is_player_aiming_at_us(player: Player) -> bool:
+func _is_player_aiming_at_us(player: OverlordActor) -> bool:
 	var cam_input: CameraInput = player.get_node_or_null("CameraInput")
 	if not cam_input or not cam_input.camera_3d:
 		return false
 	var cam: Camera3D = cam_input.camera_3d
-	# Direction from camera to interactable
-	var to_target = (global_position - cam.global_position).normalized()
-	# Camera forward direction
+	# Aim against the collision shape's center (which is where the visual lives),
+	# not the Area3D root — for interactables whose visual sits well above the
+	# root (e.g. the mirror at +1.5m) the root-based check would fail when the
+	# player looks straight at the visual.
+	var target_pos := _get_aim_target_position()
+	var to_target = (target_pos - cam.global_position).normalized()
 	var cam_forward = -cam.global_basis.z
 	var angle = rad_to_deg(cam_forward.angle_to(to_target))
 	return angle < aim_angle_threshold
+
+func _get_aim_target_position() -> Vector3:
+	var shape := get_node_or_null(^"CollisionShape3D") as CollisionShape3D
+	if shape:
+		return shape.global_position
+	return global_position
 
 func _update_ui_prompt() -> void:
 	var text = get_prompt_text()
@@ -100,7 +109,7 @@ func _update_ui_prompt() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _is_focused:
 		return
-	if event.is_action_pressed("player_action_1"):
+	if event.is_action_pressed("interaction"):
 		_on_interact()
 
 ## Override in subclass: return the prompt text for the current state.

@@ -5,11 +5,12 @@
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="3_mxkvs"]
 [ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_m114p"]
 [ext_resource type="PackedScene" uid="uid://bssmtoaigx5kj" path="res://scenes/interactibles/gem.tscn" id="5_71ii3"]
-[ext_resource type="PackedScene" uid="uid://dwg2fjh1jdh28" path="res://scenes/actors/enemy/zombie/zombie_actor.tscn" id="5_umvgx"]
+[ext_resource type="PackedScene" uid="uid://bt4ygfe5wcduv" path="res://scenes/actors/minion/types/holy_knight.tscn" id="5_umvgx"]
 [ext_resource type="PackedScene" uid="uid://bblv3fe3c2a5k" path="res://scenes/actors/minion/minion_rally_point.tscn" id="6_bt7bg"]
+[ext_resource type="PackedScene" uid="uid://c7jx3mdfg6m53" path="res://scenes/actors/enemy/guardian/guardian_boss.tscn" id="6_mxkvs"]
 [ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="9_t634p"]
 [ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="10_6hctx"]
-[ext_resource type="Shader" uid="uid://bvl4kfacs2hfw" path="res://shaders/ps1+postprocess.gdshader" id="11_ues17"]
+[ext_resource type="Shader" uid="uid://bmai62r5iaiaf" path="res://shaders/ps1_pixelated_postprocess.gdshader" id="11_mxkvs"]
 [ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="12_xq18t"]
 [ext_resource type="Script" uid="uid://ci4j3ujeesv1f" path="res://scripts/territory_manager.gd" id="13_x0nq1"]
 [ext_resource type="Terrain3DMaterial" uid="uid://cvb0ubklss7kv" path="res://assets/world/terrain/terrain_material.tres" id="14_mxkvs"]
@@ -40,12 +41,14 @@ polygons = [PackedInt32Array(2, 1, 0), PackedInt32Array(4, 3, 2), PackedInt32Arr
 geometry_collision_mask = 4294967291
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
-shader = ExtResource("11_ues17")
+shader = ExtResource("11_mxkvs")
+shader_parameter/pixel_size = 4.0
+shader_parameter/color_steps = 16
 
 [node name="GameWorld" type="Node3D" unique_id=129504398]
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=913043429]
-_spawnable_scenes = PackedStringArray("uid://xjygpllvas2q")
+_spawnable_scenes = PackedStringArray("uid://cqo6h5ijp2vpo")
 spawn_path = NodePath("../World/PlayerSpawnPoint")
 
 [node name="MultiplayerManager" parent="." unique_id=2073742876 node_paths=PackedStringArray("_player_spawn_point") instance=ExtResource("1_srmg5")]
@@ -85,22 +88,22 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.521
 [node name="PlayerSpawnPoint" type="Node3D" parent="World" unique_id=975852457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.9944, 40.9769, 1.018)
 
-[node name="Avatar" parent="World" unique_id=1609271671 instance=ExtResource("4_m114p")]
+[node name="Avatar" parent="World" unique_id=1811865404 instance=ExtResource("4_m114p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.90986, 1.0304627, -0.06253815)
 
 [node name="Enemies" type="Node3D" parent="World" unique_id=1090501750]
 
-[node name="Guard" parent="World/Enemies" unique_id=1961765480 instance=ExtResource("5_umvgx")]
-transform = Transform3D(0.0032987099, 0, -0.9999946, 0, 1, 0, 0.9999946, 0, 0.0032987099, -3.5332646, 0.8810868, 0)
+[node name="HolyKnight" parent="World/Enemies" unique_id=336466554 instance=ExtResource("5_umvgx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2452855, 3.5608592)
 
-[node name="Guard2" parent="World/Enemies" unique_id=334520536 instance=ExtResource("5_umvgx")]
-transform = Transform3D(-0.99856484, 0, 0.05355593, 0, 1, 0, -0.05355593, 0, -0.99856484, -0.36127663, 0.8810868, -4.855173)
+[node name="HolyKnight2" parent="World/Enemies" unique_id=834541711 instance=ExtResource("5_umvgx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.689358, 1.2452855, 1.1745405)
 
-[node name="Guard3" parent="World/Enemies" unique_id=1480321770 instance=ExtResource("5_umvgx")]
-transform = Transform3D(0.112838954, 0, 0.9936133, 0, 1, 0, -0.9936133, 0, 0.112838954, 4.5390453, 0.8810868, 0.07259226)
+[node name="HolyKnight3" parent="World/Enemies" unique_id=1874871507 instance=ExtResource("5_umvgx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2547507, 1.2452855, 1.1745405)
 
-[node name="Guard4" parent="World/Enemies" unique_id=1948108124 instance=ExtResource("5_umvgx")]
-transform = Transform3D(0.9993731, 0, -0.035405196, 0, 1, 0, 0.035405196, 0, 0.9993731, -0.34033012, 1.8810868, 5.1388903)
+[node name="GuardianBoss" parent="World/Enemies" unique_id=895488463 instance=ExtResource("6_mxkvs")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1.4137335, -7.108248)
 
 [node name="Interactables" type="Node3D" parent="World" unique_id=2028170528]
 
@@ -134,28 +137,6 @@ metadata/_edit_lock_ = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1495107198]
 
-[node name="DebugOverlay" parent="CanvasLayer" unique_id=1436136412 instance=ExtResource("9_t634p")]
-
-[node name="WinScreen" parent="CanvasLayer" unique_id=401192825 instance=ExtResource("10_6hctx")]
-visible = false
-
-[node name="InteractionPrompt" type="RichTextLabel" parent="CanvasLayer" unique_id=501318203]
-visible = false
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -300.0
-offset_top = -80.0
-offset_right = 300.0
-offset_bottom = -40.0
-grow_horizontal = 2
-grow_vertical = 0
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
-
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=1565447642]
 visible = false
 material = SubResource("ShaderMaterial_5nagr")
@@ -164,6 +145,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+
+[node name="DebugOverlay" parent="CanvasLayer" unique_id=1436136412 instance=ExtResource("9_t634p")]
+
+[node name="WinScreen" parent="CanvasLayer" unique_id=401192825 instance=ExtResource("10_6hctx")]
+visible = false
 
 [node name="MinionManager" type="Node" parent="." unique_id=172942630]
 script = ExtResource("12_xq18t")

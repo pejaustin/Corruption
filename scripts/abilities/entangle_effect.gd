@@ -14,4 +14,4 @@ func _on_activate() -> void:
 		if m.owner_peer_id != -1 or m.hp <= 0:
 			continue
 		if caster.global_position.distance_to(m.global_position) < RADIUS:
-			m._state_machine.transition(&"StaggerState")
+			m.try_stagger()

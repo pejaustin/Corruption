@@ -15,6 +15,14 @@ const SYNC_INTERVAL: float = 0.1
 ## Undeath raise-dead has its own cost/limit
 const RAISE_DEAD_COST: int = 3
 const DOMINATE_COST: int = 10
+## Distance between adjacent slots in the move-command formation. Big enough
+## that NavigationAgent3D RVO (radius 0.5) doesn't see neighbors as blockers
+## once minions are settled.
+const FORMATION_SPACING: float = 1.6
+## Phalanx width — minions fill one rank left-to-right, then start a new
+## rank behind. Front rank sits at the click point; trailing ranks fall
+## back toward the squad's centroid.
+const FORMATION_WIDTH: int = 4
 
 var _next_minion_id: int = 1
 var _minions_node: Node3D
@@ -226,6 +234,11 @@ func request_summon_minion(type_id: String = "", override_pos: Vector3 = Vector3
 	var id := _next_minion_id
 	_next_minion_id += 1
 	_spawn_minion_rpc.rpc(id, sender, faction, spawn_pos, String(mtype.id), initial_waypoint)
+	# Slot the full squad around the rally so summons spread out instead of
+	# orbiting one shared waypoint — IdleState re-enters Chase past 1.5m,
+	# so N minions sharing a point never settle.
+	if rally:
+		_assign_formation_waypoints(get_minions_for_player(sender), rally.global_position)
 
 @rpc("authority", "call_local", "reliable")
 func _spawn_minion_rpc(id: int, owner_id: int, faction: int, pos: Vector3, type_id: String, initial_waypoint: Vector3 = Vector3.INF) -> void:
@@ -318,13 +331,38 @@ func command_minions_move(target_pos: Vector3) -> void:
 	var sender = multiplayer.get_remote_sender_id()
 	if sender == 0:
 		sender = 1
-	for minion in get_minions_for_player(sender):
-		minion.waypoint = target_pos
+	_assign_formation_waypoints(get_minions_for_player(sender), target_pos)
 	# War Table clicks also relocate the sender's rally so future summons
 	# muster at the latest command point.
 	var rally := get_rally_point_for(sender)
 	if rally and rally.owning_peer_id == sender:
 		_apply_rally_move.rpc(rally.slot_index, target_pos)
+
+func _assign_formation_waypoints(minions: Array[MinionActor], target: Vector3) -> void:
+	## Phalanx slot assignment. Each minion gets its own waypoint inside a
+	## grid centered on `target`, oriented so the front rank faces away from
+	## the squad's current centroid (the formation "arrives" pointing forward
+	## from where it came). Closest minion to target → front-center, then fan
+	## out — minimizes total travel and avoids paths crossing.
+	if minions.is_empty():
+		return
+	var centroid := Vector3.ZERO
+	for m in minions:
+		centroid += m.global_position
+	centroid /= float(minions.size())
+	var to_target := target - centroid
+	to_target.y = 0
+	var forward: Vector3 = to_target.normalized() if to_target.length() > 0.01 else Vector3.FORWARD
+	var right: Vector3 = forward.cross(Vector3.UP).normalized()
+	var ordered: Array[MinionActor] = minions.duplicate()
+	ordered.sort_custom(func(a: MinionActor, b: MinionActor) -> bool:
+		return a.global_position.distance_squared_to(target) < b.global_position.distance_squared_to(target))
+	for i in ordered.size():
+		var col: int = i % FORMATION_WIDTH
+		var row: int = i / FORMATION_WIDTH
+		var col_offset: float = (float(col) - (FORMATION_WIDTH - 1) * 0.5) * FORMATION_SPACING
+		var row_offset: float = -float(row) * FORMATION_SPACING
+		ordered[i].waypoint = target + right * col_offset + forward * row_offset
 
 @rpc("any_peer", "call_local", "reliable")
 func command_minion_move(minion_id: int, target_pos: Vector3) -> void:

@@ -34,7 +34,7 @@ func _process(delta: float) -> void:
 		return
 
 	# Update spectate camera to follow the Avatar
-	if _avatar and _avatar is PlayerActor and not _avatar.is_dormant and _spectate_camera:
+	if _avatar and _avatar is AvatarActor and not _avatar.is_dormant and _spectate_camera:
 		var target: Vector3 = _avatar.global_position + SPECTATE_CAMERA_OFFSET
 		_spectate_camera.global_position = _spectate_camera.global_position.lerp(target, SPECTATE_CAMERA_LERP_SPEED * delta)
 		_spectate_camera.look_at(_avatar.global_position + SPECTATE_CAMERA_LOOK_OFFSET)
@@ -59,7 +59,7 @@ func _check_boss_fight() -> void:
 	if not _boss_node or not _boss_node is GuardianBoss:
 		return
 
-	if not _avatar or not _avatar is PlayerActor or _avatar.is_dormant:
+	if not _avatar or not _avatar is AvatarActor or _avatar.is_dormant:
 		return
 
 	# Check if Avatar is close to the boss (fight has started)

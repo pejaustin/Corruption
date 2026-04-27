@@ -1,11 +1,19 @@
 [gd_scene format=3 uid="uid://gmbybkqmn7oc"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
-[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/ZombieModel.tscn" id="2_model"]
 [ext_resource type="Resource" path="res://data/minions/pit_fiend.tres" id="2_type"]
+[ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
+[ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pit_fiend"]
 height = 3.002
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pit_fiend_hurt"]
+height = 3.002
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 1.0
 
 [node name="PitFiend" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
@@ -15,3 +23,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 shape = SubResource("CapsuleShape3D_pit_fiend")
 
 [node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]
+
+[node name="AttackHitbox" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.34678698)
+collision_layer = 0
+collision_mask = 12
+monitorable = false
+script = ExtResource("9_hitbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
+shape = SubResource("SphereShape3D_hitbox")
+disabled = true
+
+[node name="Hurtbox" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("10_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("CapsuleShape3D_pit_fiend_hurt")

@@ -1,17 +1,21 @@
 @tool
 class_name WarTableRange extends MeshInstance3D
 
-## Semi-transparent ground marker showing the world region a WarTableMap
-## represents. Self-positions at `map.map_world_center` and self-sizes to
-## `map.map_world_size`. Visible in both editor and runtime so level designers
-## can see what the diorama thinks the battlefield looks like.
+## Semi-transparent ground marker showing the world region a WarTable
+## represents. Self-positions at `war_table.map_world_center` and self-sizes
+## to `war_table.map_world_size`. Reads from the WarTable (not its Map child)
+## because WarTable is the authored source of truth for the region, and
+## WarTable is not @tool — so in the editor the values only exist on the
+## parent, not yet propagated into the child WarTableMap.
+## Visible in both editor and runtime so level designers can see what the
+## diorama thinks the battlefield looks like.
 
-@export var map: WarTableMap:
+@export var war_table: WarTable:
 	set(value):
-		map = value
+		war_table = value
 		_refresh()
 
-@export var color: Color = Color(0.95, 0.75, 0.2, 0.05):
+@export var color: Color = Color(0.95, 0.75, 0.2, 0.02):
 	set(value):
 		color = value
 		_refresh()
@@ -48,17 +52,17 @@ func _process(_delta: float) -> void:
 		_refresh()
 
 func _refresh() -> void:
-	if map == null:
+	if war_table == null:
 		mesh = null
 		return
 	var bm := BoxMesh.new()
-	bm.size = Vector3(map.map_world_size.x, height, map.map_world_size.y)
+	bm.size = Vector3(war_table.map_world_size.x, height, war_table.map_world_size.y)
 	mesh = bm
 	# Setters fire during scene deserialization before the node is in the
 	# tree; skip the transform write in that window to avoid the
 	# `!is_inside_tree()` error. `_ready` calls `_refresh` once in-tree.
 	if is_inside_tree():
-		global_position = map.map_world_center + Vector3.UP * (height * 0.5)
+		global_position = war_table.map_world_center + Vector3.UP * (height * 0.5)
 	material_override = _build_material()
 
 func _build_material() -> StandardMaterial3D:

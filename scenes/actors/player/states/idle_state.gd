@@ -1,6 +1,8 @@
 extends PlayerState
 
 func tick(delta: float, tick: int, is_fresh: bool) -> void:
+	if try_enter_channel():
+		return
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 	rotate_player_model(delta)

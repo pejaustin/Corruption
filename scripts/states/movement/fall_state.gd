@@ -5,7 +5,7 @@ func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	move_player(delta)
 
 	force_update_is_on_floor()
-	if parent.is_on_floor():
+	if overlord.is_on_floor():
 		if get_movement_input() == Vector2.ZERO:
 			state_machine.transition(&"IdleState")
 		elif get_movement_input() != Vector2.ZERO:

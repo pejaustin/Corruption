@@ -23,7 +23,15 @@ class_name WarTableMap extends Node3D
 @export var piece_height: float = 0.08
 @export var piece_radius: float = 0.06
 
+## How quickly pieces interpolate toward their target table-local position.
+## Higher = snappier; lower = floatier. The lerp factor each tick is
+## `clamp(piece_lerp_speed * delta, 0, 1)`, so 12.0 reaches ~half in one
+## frame at 60 Hz and ~98% in 0.3s — fast enough to feel reactive while
+## hiding the per-frame teleporting that came from snapping.
+@export var piece_lerp_speed: float = 12.0
+
 var _pieces: Dictionary[int, MeshInstance3D] = {}
+var _piece_targets: Dictionary[int, Vector3] = {}
 var _pieces_root: Node3D
 var _materials: Dictionary[int, StandardMaterial3D] = {}
 
@@ -31,6 +39,17 @@ func _ready() -> void:
 	_pieces_root = Node3D.new()
 	_pieces_root.name = "Pieces"
 	add_child(_pieces_root)
+
+func _process(delta: float) -> void:
+	if _pieces.is_empty():
+		return
+	var t: float = clampf(piece_lerp_speed * delta, 0.0, 1.0)
+	for id in _pieces:
+		var piece: MeshInstance3D = _pieces[id]
+		if not is_instance_valid(piece):
+			continue
+		var target: Vector3 = _piece_targets.get(id, piece.position)
+		piece.position = piece.position.lerp(target, t)
 
 # --- Mapping ---
 
@@ -88,19 +107,29 @@ func render_from_model(model: WorldModel) -> void:
 		if is_instance_valid(piece):
 			piece.queue_free()
 		_pieces.erase(id)
+		_piece_targets.erase(id)
 
 func clear_pieces() -> void:
 	for piece in _pieces.values():
 		if is_instance_valid(piece):
 			piece.queue_free()
 	_pieces.clear()
+	_piece_targets.clear()
 
 func _render_bucket(bucket: Dictionary, seen: Dictionary[int, bool]) -> void:
 	for id in bucket.keys():
 		var entry: Dictionary = bucket[id]
 		seen[id] = true
-		var piece := _get_or_create_piece(id, int(entry.get("faction", GameConstants.Faction.NEUTRAL)))
-		piece.position = world_to_table_local(entry.get("pos", Vector3.ZERO))
+		var faction: int = int(entry.get("faction", GameConstants.Faction.NEUTRAL))
+		var target: Vector3 = world_to_table_local(entry.get("pos", Vector3.ZERO))
+		var existed: bool = id in _pieces
+		var piece := _get_or_create_piece(id, faction)
+		# Snap brand-new pieces to their target so they don't swoop in from
+		# the origin. Existing pieces just update the lerp target and the
+		# _process pass eases them over.
+		if not existed:
+			piece.position = target
+		_piece_targets[id] = target
 
 func _get_or_create_piece(id: int, faction: int) -> MeshInstance3D:
 	var piece: MeshInstance3D = _pieces.get(id)

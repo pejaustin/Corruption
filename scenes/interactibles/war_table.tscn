@@ -1,8 +1,9 @@
-[gd_scene format=3 uid="uid://btwart0000001"]
+[gd_scene load_steps=10 format=3 uid="uid://btwart0000001"]
 
-[ext_resource type="Script" uid="uid://b1sy7r7uyt2am" path="res://scripts/interactibles/war_table.gd" id="1_script"]
-[ext_resource type="Script" uid="uid://ybui2et26j0o" path="res://scripts/interactibles/war_table_map.gd" id="2_map"]
-[ext_resource type="Material" path="res://assets/materials/Paper006_2K-JPG/Paper006_2K-JPG.tres" id="3_d8xn4"]
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://b1sy7r7uyt2am" path="res://scripts/interactibles/war_table.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://ybui2et26j0o" path="res://scripts/interactibles/war_table_map.gd" id="3_map"]
+[ext_resource type="Material" path="res://assets/materials/Paper006_2K-JPG/Paper006_2K-JPG.tres" id="4_d8xn4"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_area"]
 size = Vector3(3.5, 2, 2.5)
@@ -21,57 +22,56 @@ size = Vector3(0.15, 1, 0.15)
 albedo_color = Color(0.22, 0.14, 0.08, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_e6tu6"]
-material = ExtResource("3_d8xn4")
+material = ExtResource("4_d8xn4")
 size = Vector2(1.75, 1.75)
 
-[node name="WarTable" type="Area3D" unique_id=2096886964 node_paths=PackedStringArray("map_view_point", "stand_point", "map")]
-collision_layer = 0
-script = ExtResource("1_script")
+[node name="WarTable" node_paths=PackedStringArray("map_view_point", "stand_point", "map") instance=ExtResource("1_base")]
+script = ExtResource("2_script")
 map_view_point = NodePath("MapViewPoint")
 stand_point = NodePath("StandPoint")
 map = NodePath("Map")
+map_world_size = Vector2(150, 150)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=990234834]
+[node name="CollisionShape3D" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("BoxShape3D_area")
 
-[node name="TableTop" type="MeshInstance3D" parent="." unique_id=808767758]
+[node name="TableTop" type="MeshInstance3D" parent="Model" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
 mesh = SubResource("BoxMesh_table")
 surface_material_override/0 = SubResource("StandardMaterial3D_table")
 
-[node name="LegFL" type="MeshInstance3D" parent="." unique_id=350771189]
+[node name="LegFL" type="MeshInstance3D" parent="Model" index="1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0.5, -0.9)
 mesh = SubResource("BoxMesh_leg")
 surface_material_override/0 = SubResource("StandardMaterial3D_leg")
 
-[node name="LegFR" type="MeshInstance3D" parent="." unique_id=139691897]
+[node name="LegFR" type="MeshInstance3D" parent="Model" index="2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.5, -0.9)
 mesh = SubResource("BoxMesh_leg")
 surface_material_override/0 = SubResource("StandardMaterial3D_leg")
 
-[node name="LegBL" type="MeshInstance3D" parent="." unique_id=270172428]
+[node name="LegBL" type="MeshInstance3D" parent="Model" index="3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0.5, 0.9)
 mesh = SubResource("BoxMesh_leg")
 surface_material_override/0 = SubResource("StandardMaterial3D_leg")
 
-[node name="LegBR" type="MeshInstance3D" parent="." unique_id=223893964]
+[node name="LegBR" type="MeshInstance3D" parent="Model" index="4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.5, 0.9)
 mesh = SubResource("BoxMesh_leg")
 surface_material_override/0 = SubResource("StandardMaterial3D_leg")
 
-[node name="MapViewPoint" type="Marker3D" parent="." unique_id=1830847985]
+[node name="MapViewPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2.807373, 0)
 
-[node name="StandPoint" type="Marker3D" parent="." unique_id=776634011]
+[node name="StandPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
 
-[node name="Map" type="Node3D" parent="." unique_id=1234567001]
+[node name="Map" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
-script = ExtResource("2_map")
-map_world_size = Vector2(150, 150)
+script = ExtResource("3_map")
 table_surface_size = Vector2(1.75, 1.75)
 
-[node name="Paper" type="MeshInstance3D" parent="Map" unique_id=414904237]
+[node name="Paper" type="MeshInstance3D" parent="Map"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0022970438, 0)
 mesh = SubResource("PlaneMesh_e6tu6")

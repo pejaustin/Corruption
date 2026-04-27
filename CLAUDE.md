@@ -23,14 +23,21 @@ This file gives Claude Code the context it needs to make informed changes to a G
 TBD
 
 
-### Debug Keys
-- **F2** — Spawn dummy player (fills next tower slot, up to 4)
+### Debug Access
 - **F3** — Toggle debug overlay (network, players, factions, FPS, influence, minions, territory, boss)
-- **F4** — Toggle god mode for Avatar
-- **F5** — Force-kill Avatar (test death transfer)
-- **F6** — Spawn enemy at camera target
-- **F7** — Spawn minion at camera target
-- **F8** — Add 10 influence to self
+- **Esc** — Open in-game pause menu. All debug actions live in the Debug panel on the right:
+  - Add Dummy Player (host)
+  - Toggle God Mode
+  - Kill Avatar (host)
+  - Spawn Enemy at Camera (host) — spawns at wherever the crosshair pointed when you paused
+  - Spawn Minion at Camera (host) — same
+  - +10 Influence (host)
+  - Cycle Faction (host)
+  - Boost Corruption near origin (host)
+  - Toggle Aggro Rings (shows each minion's aggro radius, faction-colored)
+
+  One-shot buttons auto-close the menu. Toggles (god mode, aggro rings) keep it open.
+  Host-only buttons are disabled for clients.
 
 ---
 
@@ -63,7 +70,7 @@ res://
 ## 4. Architecture
 
 - **Networking:** Godot ENet P2P with host authority, using netfox addon for rollback
-- **Player scene:** `scenes/player/player.tscn` — CharacterBody3D with movement state machine, rollback sync, PerspectiveManager
+- **Player scenes:** `scenes/actors/player/overlord/overlord_actor.tscn` (first-person tower body, spawned per-peer) and `scenes/actors/player/avatar/avatar_actor.tscn` (shared 3rd-person body). Both inherit `scenes/actors/player/player_actor.tscn`, which extends `Actor` (CharacterBody3D + state machine + rollback sync).
 - **Player authority:** Set via node name matching peer ID
 - **Netfox rollback:** State properties synced via RollbackSynchronizer, input gathered in `before_tick_loop`
 
@@ -201,9 +208,17 @@ The `.tscn` file format is text-based but **fragile**. A misplaced subresource I
 2. **If you must create a `.tscn` programmatically**, do it via a build script (`scripts/build/build_<name>.gd`) that runs in the editor or headless and uses `PackedScene.pack()`. The build script is the source of truth; the `.tscn` is compiled output. Never hand-edit `.tscn` line by line.
 3. **Never reorder or renumber** `[ext_resource]` / `[sub_resource]` IDs in an existing `.tscn`.
 4. When adding a node to an existing scene via text edit, copy an existing node block as a template and change only the necessary fields.
-5. After any `.tscn` change, run `godot --headless --check-only` to verify it loads.
+5. After any `.tscn` edit, hand off to the user for in-editor verification — do not invoke the Godot CLI.
 
 Same rules apply to `.tres` (Resource) files.
+
+### 6.1 Imported 3D assets — never reference raw `.glb`/`.fbx` from gameplay scenes
+
+For any animated character or configurable mesh, create a sibling inherited `.tscn` next to the import (**Scene → New Inherited Scene**) and reference that from gameplay. Skins/variants get their own inherited scene from the base model. Actor-specific gameplay (hurtbox, weapon bone attachments, state machine) lives on the actor scene, **not** on the model scene.
+
+Animation libraries live in external `.res`/`.tres` files, referenced by the model scene's `AnimationPlayer`. Call clips as `<library>/<clip>` (e.g. `large-male/Attack`, `male_animation_lib/idle`).
+
+Full procedure, layer responsibilities, and current actor audit: `docs/technical/3d-asset-pipeline.md`.
 
 ---
 
@@ -331,7 +346,7 @@ When making changes:
 1. **Read before writing.** Look at the existing scene and any sibling scripts to match conventions before adding new code.
 2. **Match the surrounding style** even if it differs slightly from this guide. Consistency within a file beats global purity.
 3. **Make the smallest change that solves the problem.** Don't refactor adjacent code unless asked.
-4. **Run validation** (`godot --headless --check-only`, `gdlint`) before saying you're done.
+4. **Don't invoke the Godot CLI** (no `godot --headless --check-only` or similar). Hand off to the user for in-editor verification after non-trivial changes.
 5. **For scene changes, prefer instructing the user** to make them in the editor over hand-editing `.tscn`. If you do edit `.tscn`, explain what you did so the user can verify in the editor.
 6. **Surface architectural decisions** — if a request requires a new autoload, a new signal between distant systems, or changing the scene tree shape, propose the change and wait for confirmation before implementing.
 7. **Never silently install plugins** into `addons/`. Ask first.
@@ -373,13 +388,15 @@ Each avatar ability is an `AbilityEffect` subclass (scripts/abilities/<id>_effec
 
 The War Table renders an overlord's **belief**, not truth. Each peer has a `WorldModel` (per-peer dict of believed minion sightings, timestamped) maintained by the `KnowledgeManager` autoload at `scripts/knowledge/`. War Table clicks route through `KnowledgeManager.issue_move_command(peer_id, pos)`; minion deaths fan out via `KnowledgeManager.notify_minion_removed(id)`.
 
-Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration:
+Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration. Both are `static var` (runtime-mutable, e.g. test harnesses can A/B-toggle without restarting):
 - `INFINITE_BROADCAST_RANGE: bool = true` — every minion updates every model every tick (belief ≈ truth). Flip off to tune broadcast range.
-- `INSTANT_COMMANDS: bool = true` — commands apply immediately via `MinionManager`. Flip off when couriers are built (step 7 in `docs/systems/war-table.md`).
+- `INSTANT_COMMANDS: bool = true` — commands apply immediately via `MinionManager.command_minions_move`, which assigns each minion a slot in a phalanx grid centered on the click point. Flip off when couriers are built (step 7 in `docs/systems/war-table.md`).
 
-`WarTableMap` (script on the `Map` child of `WarTable`) owns the table↔world mapping (`map_world_center`, `map_world_size`, `table_surface_size`) and the piece spawner. `WarTableRange` is a `@tool` MeshInstance3D that draws a semi-transparent BoxMesh at the map's effective region so designers can see it in both editor and play.
+`WarTable` (script `scripts/interactibles/war_table.gd`, `class_name WarTable`) exports `map_world_size: Vector2` and `map_world_center: Vector3` directly on the interactable; the setters tunnel to the `Map` child's `WarTableMap` so per-tower regions are configured next to the rest of the table's setup. `WarTableMap` still owns `table_surface_size` and the piece spawner. `WarTableRange` is a `@tool` MeshInstance3D that draws a semi-transparent BoxMesh at the map's effective region so designers can see it in both editor and play.
 
-Isolated iteration harness: `scenes/test/war_table_test.tscn` — wandering fake minions, a mock controller writing sightings directly into `KnowledgeManager.get_model(9999)`, hotkeys `1`–`4` + click for visual tests. MinionManager is absent, so the autoload's ingest loop no-ops and the controller is the sole writer.
+Isolated iteration harness: `scenes/test/war_table_test.tscn` — runs the **real** `OverlordActor`, `WarTable.tscn`, `MinionManager`, and `MinionActor`s, single-peer via `OfflineMultiplayerPeer`. Edits to `war_table.tscn` propagate. Starter minions are authored as `StartingMinionSpec` Marker3D children under `World/StartingMinions` — set `type_id`/`faction`/`owner_peer_id` in the inspector and the controller spawns one real `MinionActor` per spec on `_ready`. Hotkeys `1`–`4` spawn factioned minions, `F` cycles your faction, `K`/`R` kill/reset, `T`/`B` toggle the flags above, `Esc` releases mouse, `Shift+Esc` quits.
+
+Minion-vs-minion physical collision is intentionally OFF (`minion_actor.gd:COLLISION_MASK_MOVEMENT = COLLISION_MASK_WORLD`); the `NavigationAgent3D`'s RVO avoidance handles spacing instead. This sidesteps the cluster-stop bug where the first minion to reach a shared waypoint would park and physically block late arrivers from finishing their nav path.
 
 Full design: `docs/systems/war-table.md`.
 

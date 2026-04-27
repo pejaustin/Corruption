@@ -4,27 +4,27 @@ extends MinionState
 ## Applies damage via Actor.incoming_damage so it flows through the standard pipeline.
 ## Uses the AttackHitbox component — see scripts/combat/attack_hitbox.gd.
 
+## Animation-progress window that enables the hitbox. Ignored when
+## use_animation_keys is true.
 @export var hitbox_start_ratio: float = 0.25
 @export var hitbox_end_ratio: float = 0.6
 ## Profile name to activate on this attack. Empty = first shape child.
 @export var hitbox_profile: StringName = &""
-
-var _hitbox_active: bool = false
-var _attack_finished: bool = false
+## When true, the script never toggles the hitbox — only animation method
+## track keys (enable/disable calls on %AttackHitbox) do. Hit-detection still
+## polls while the hitbox is active. Prevents double-firing when both paths
+## run on the same animation.
+@export var use_animation_keys: bool = false
 
 func enter(_previous_state: RewindableState, _tick: int) -> void:
-	_hitbox_active = false
-	_attack_finished = false
-	_get_hitbox().disable()
-	if actor._animation_player:
-		if not actor._animation_player.animation_finished.is_connected(_on_animation_finished):
-			actor._animation_player.animation_finished.connect(_on_animation_finished)
+	var hitbox := _get_hitbox()
+	if hitbox:
+		hitbox.disable()
 
 func exit(_next_state: RewindableState, _tick: int) -> void:
-	_get_hitbox().disable()
-	_hitbox_active = false
-	if actor._animation_player and actor._animation_player.animation_finished.is_connected(_on_animation_finished):
-		actor._animation_player.animation_finished.disconnect(_on_animation_finished)
+	var hitbox := _get_hitbox()
+	if hitbox:
+		hitbox.disable()
 
 func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 	var target := find_hostile_target()
@@ -37,25 +37,25 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 	var progress := _get_animation_progress()
 	var hitbox := _get_hitbox()
 
-	if progress >= hitbox_start_ratio and progress < hitbox_end_ratio and not _hitbox_active:
-		_hitbox_active = true
-		hitbox.enable(hitbox_profile)
-	elif progress >= hitbox_end_ratio and _hitbox_active:
-		_hitbox_active = false
-		hitbox.disable()
+	# Script-driven path. Types without a hitbox silently skip.
+	if not use_animation_keys and hitbox:
+		if progress >= hitbox_start_ratio and progress < hitbox_end_ratio and not hitbox.is_active():
+			hitbox.enable(hitbox_profile)
+		elif progress >= hitbox_end_ratio and hitbox.is_active():
+			hitbox.disable()
 
-	if _hitbox_active:
+	# Poll overlaps while the hitbox is active, regardless of who toggled it.
+	if hitbox and hitbox.is_active():
 		_check_hits(hitbox)
 
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 	physics_move()
 
-	if _attack_finished or progress >= 1.0:
+	if progress >= 1.0:
 		if target and distance_to(target) < minion.attack_range:
-			_hitbox_active = false
-			_attack_finished = false
-			hitbox.disable()
+			if hitbox:
+				hitbox.disable()
 			if actor._animation_player:
 				actor._animation_player.seek(0.0)
 				actor._animation_player.play(animation_name)
@@ -63,9 +63,6 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 			state_machine.transition(&"ChaseState")
 		else:
 			state_machine.transition(&"IdleState")
-
-func _on_animation_finished(_anim_name: StringName) -> void:
-	_attack_finished = true
 
 func _get_animation_progress() -> float:
 	if not actor._animation_player:
@@ -83,14 +80,15 @@ func _get_hitbox() -> AttackHitbox:
 func _check_hits(hitbox: AttackHitbox) -> void:
 	if hitbox == null:
 		return
-	var dmg := int(minion.attack_damage * hitbox.get_damage_multiplier())
-	for body in hitbox.get_new_hits():
-		if body == actor:
+	var base_dmg := minion.attack_damage * hitbox.get_damage_multiplier()
+	for hurtbox in hitbox.get_new_hits():
+		var other := hurtbox.get_actor()
+		if other == null or other == actor:
 			continue
-		var other := body as Actor
-		if other == null or not minion.is_hostile_to(other):
+		if not minion.is_hostile_to(other):
 			continue
-		if other is PlayerActor:
+		var dmg := int(base_dmg * hurtbox.get_damage_multiplier())
+		if other is AvatarActor:
 			other.incoming_damage += dmg
 			other.last_damage_source_peer = minion.owner_peer_id
 			if other.controlling_peer_id > 0 and other.controlling_peer_id != multiplayer.get_unique_id():

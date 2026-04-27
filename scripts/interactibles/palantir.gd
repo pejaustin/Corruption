@@ -45,7 +45,7 @@ func _on_interact() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_scrying:
 		# Q to exit scrying
-		if event.is_action_pressed("avatar_recall"):
+		if event.is_action_pressed("cancel"):
 			_stop_scrying()
 			get_viewport().set_input_as_handled()
 			return
@@ -61,7 +61,7 @@ func _process(delta: float) -> void:
 	super(delta)
 	if _is_scrying and _scry_pivot:
 		var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-		if avatar and avatar is PlayerActor:
+		if avatar and avatar is AvatarActor:
 			_scry_pivot.global_position = avatar.global_position + Vector3(0, 1.5, 0)
 
 		# Joystick camera
@@ -82,7 +82,7 @@ func _rotate_scry_camera(move: Vector2) -> void:
 
 func _start_scrying() -> void:
 	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if not avatar or not avatar is PlayerActor:
+	if not avatar or not avatar is AvatarActor:
 		return
 
 	_is_scrying = true

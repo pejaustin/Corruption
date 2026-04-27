@@ -2,7 +2,7 @@ class_name GemSite extends Interactable
 
 ## A minor gem site that can be captured for influence.
 ## Step 1: Overlord's minions clear the area (minion presence in range).
-## Step 2: Avatar walks up and presses E to confirm capture.
+## Step 2: Avatar walks up and holds E to channel a capture.
 ## Captured sites grant passive influence to the controlling Overlord.
 
 enum SiteState { NEUTRAL, CLEARED, CAPTURED }
@@ -11,19 +11,27 @@ enum SiteState { NEUTRAL, CLEARED, CAPTURED }
 @export var influence_per_second: float = 0.5
 @export var minion_clear_radius: float = 8.0
 
+@onready var _channel: CaptureChannel = $CaptureChannel
+
 var state: SiteState = SiteState.NEUTRAL
 var controlling_faction: int = -1
 var controlling_peer_id: int = -1
 var _influence_timer: float = 0.0
 
+func _interactable_ready() -> void:
+	if _channel:
+		_channel.channel_completed.connect(_on_channel_completed)
+
 func get_prompt_text() -> String:
+	if _channel and _channel.is_active() and _channel.get_peer_id() == get_local_peer_id():
+		return "Capturing %s... (E to cancel)" % site_name
 	match state:
 		SiteState.NEUTRAL:
 			return "%s (send minions to clear)" % site_name
 		SiteState.CLEARED:
 			var faction_name = GameConstants.faction_names.get(controlling_faction, "Unknown")
 			if is_avatar_in_range():
-				return "Press E to capture for %s" % faction_name
+				return "Hold E to capture for %s" % faction_name
 			return "%s cleared by %s (Avatar must confirm)" % [site_name, faction_name]
 		SiteState.CAPTURED:
 			var faction_name = GameConstants.faction_names.get(controlling_faction, "Unknown")
@@ -45,9 +53,15 @@ func get_prompt_color() -> Color:
 func _on_interact() -> void:
 	if not is_avatar_in_range():
 		return
+	# Second E-press during our own channel cancels it.
+	if _channel and _channel.is_active() and _channel.get_peer_id() == get_local_peer_id():
+		_channel.request_cancel()
+		return
 	if state != SiteState.CLEARED:
 		return
-	_request_capture.rpc_id(1)
+	if _channel and _channel.is_active():
+		return  # Someone else is already channeling.
+	_channel.try_start(_avatar_in_range, get_local_peer_id(), _avatar_in_range.faction)
 
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
@@ -71,13 +85,12 @@ func _check_minion_clear() -> void:
 			_set_cleared.rpc(minion.faction, minion.owner_peer_id)
 			return
 
-@rpc("any_peer", "call_local", "reliable")
-func _request_capture() -> void:
+func _on_channel_completed(peer_id: int, faction: int) -> void:
 	if not multiplayer.is_server():
 		return
 	if state != SiteState.CLEARED:
 		return
-	_set_captured.rpc(controlling_faction, controlling_peer_id)
+	_set_captured.rpc(faction, peer_id)
 
 @rpc("authority", "call_local", "reliable")
 func _set_cleared(faction: int, peer_id: int) -> void:

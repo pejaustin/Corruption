@@ -18,4 +18,4 @@ func _on_activate() -> void:
 		var to_target := (m.global_position - caster.global_position).normalized()
 		var angle := rad_to_deg(forward.angle_to(to_target))
 		if angle < CONE_ANGLE_DEG and caster.global_position.distance_to(m.global_position) < RANGE:
-			m._state_machine.transition(&"StaggerState")
+			m.try_stagger()

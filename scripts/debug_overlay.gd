@@ -6,8 +6,8 @@ var _update_timer := 0.0
 const UPDATE_INTERVAL: float = 0.5
 
 func _ready() -> void:
-	# Toggle with F3
-	visible = true
+	# Toggle with F3. Host sees it by default; clients must opt in.
+	visible = multiplayer.is_server()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F3:
@@ -54,7 +54,7 @@ func _process(delta: float) -> void:
 
 	# Avatar entity info
 	var avatar_node = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if avatar_node and avatar_node is PlayerActor:
+	if avatar_node and avatar_node is AvatarActor:
 		var apos = avatar_node.global_position
 		lines.append("  Avatar Pos: (%.1f, %.1f, %.1f)" % [apos.x, apos.y, apos.z])
 		lines.append("  Avatar Dormant: %s" % str(avatar_node.is_dormant))
@@ -163,8 +163,7 @@ func _process(delta: float) -> void:
 	lines.append("  E = interact/claim | Q = recall | LMB = attack")
 	lines.append("")
 	lines.append("[b]Debug[/b]")
-	lines.append("  F2 = add dummy | F4 = god mode | F5 = kill avatar | F6 = spawn enemy")
-	lines.append("  F7 = spawn minion | F8 = +10 influence | F9 = swap faction | F10 = boost corruption")
+	lines.append("  F3 = toggle this overlay | Esc = open pause menu (debug buttons)")
 	lines.append("  Dummy players: %d (slots open: %d)" % [DebugManager.get_dummy_count(), DebugManager.get_max_dummy_players()])
 	lines.append("")
 

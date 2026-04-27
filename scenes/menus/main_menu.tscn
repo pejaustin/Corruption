@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://ffncciksi1tw"]
+[gd_scene format=3 uid="uid://ffncciksi1tw"]
 
 [ext_resource type="Script" uid="uid://bt0iwan0og3gn" path="res://scripts/menus/main_menu.gd" id="1_1dabp"]
 [ext_resource type="Theme" uid="uid://giidcej8oij7" path="res://assets/ui/menu_theme.tres" id="2_b784e"]
@@ -60,13 +60,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -259.5
-offset_top = -336.0
-offset_right = 259.5
-offset_bottom = -239.0
+offset_left = -255.0
+offset_top = -121.0
+offset_right = 264.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 100
+theme_override_font_sizes/font_size = 50
 text = "Host Game"
 flat = true
 
@@ -77,13 +77,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -245.0
-offset_top = -211.0
-offset_right = 245.0
-offset_bottom = -114.0
+offset_left = -235.0
+offset_top = -48.0
+offset_right = 255.0
+offset_bottom = 49.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 100
+theme_override_font_sizes/font_size = 50
 text = "Join Game"
 flat = true
 
@@ -94,17 +94,17 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -99.5
-offset_top = -98.0
-offset_right = 99.5
-offset_bottom = -1.0
+offset_left = -88.0
+offset_top = 29.0
+offset_right = 111.0
+offset_bottom = 126.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 100
+theme_override_font_sizes/font_size = 50
 text = "Exit"
 flat = true
 
-[node name="JoinPanel" type="Panel" parent="."]
+[node name="JoinPanel" type="Panel" parent="." unique_id=1382078076]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -113,71 +113,70 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="OptionLabel" type="RichTextLabel" parent="JoinPanel"]
+[node name="OptionLabel" type="RichTextLabel" parent="JoinPanel" unique_id=798520261]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -139.5
-offset_top = -134.0
-offset_right = 140.5
-offset_bottom = -86.0
+offset_left = -137.0
+offset_top = -92.0
+offset_right = 143.0
+offset_bottom = -44.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/normal_font_size = 22
 text = "Connect to Host's Game"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="JoinPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="JoinPanel" unique_id=1067361783]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -170.0
-offset_top = -66.0
-offset_right = 171.0
-offset_bottom = 114.0
+offset_left = -166.0
+offset_top = -33.0
+offset_right = 175.0
+offset_bottom = 147.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 
-[node name="HostIP" type="LineEdit" parent="JoinPanel/VBoxContainer"]
+[node name="HostIP" type="LineEdit" parent="JoinPanel/VBoxContainer" unique_id=291877501]
 layout_mode = 2
-theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_colors/font_color = Color(0.631373, 0.556863, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_font_sizes/font_size = 32
 text = "127.0.0.1"
 placeholder_text = "Enter Host's IP"
 
-[node name="Port" type="LineEdit" parent="JoinPanel/VBoxContainer"]
+[node name="Port" type="LineEdit" parent="JoinPanel/VBoxContainer" unique_id=1649149758]
 layout_mode = 2
-theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_colors/font_color = Color(0.631373, 0.556863, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.631373, 0.556863, 0, 1)
 theme_override_font_sizes/font_size = 32
 text = "8080"
 placeholder_text = "Enter Host's Port"
 
-[node name="BoxContainer" type="BoxContainer" parent="JoinPanel/VBoxContainer"]
+[node name="BoxContainer" type="BoxContainer" parent="JoinPanel/VBoxContainer" unique_id=449670492]
 layout_mode = 2
 
-[node name="Back" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer"]
+[node name="Back" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer" unique_id=1188861255]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "Back"
 flat = true
 
-[node name="Go" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer"]
+[node name="Go" type="Button" parent="JoinPanel/VBoxContainer/BoxContainer" unique_id=2130485018]
 layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0, 0.819608, 0, 1)
 text = "Go!"
 flat = true
 
-[node name="LobbyPanel" type="Panel" parent="."]
-visible = false
+[node name="LobbyPanel" type="Panel" parent="." unique_id=941301798]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -185,7 +184,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="LobbyPanel"]
+[node name="Label" type="Label" parent="LobbyPanel" unique_id=111212777]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -193,15 +192,16 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -138.0
-offset_top = -196.0
+offset_top = -83.0
 offset_right = 139.0
-offset_bottom = -107.0
+offset_bottom = 6.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 101
+theme_override_font_sizes/font_size = 50
 text = "Lobby"
+horizontal_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="LobbyPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="LobbyPanel" unique_id=169837947]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -209,33 +209,26 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -110.0
-offset_top = -86.0
+offset_top = -17.0
 offset_right = 110.0
-offset_bottom = 40.0
+offset_bottom = 109.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 12
 
-[node name="PlayerPanel" parent="LobbyPanel/VBoxContainer" instance=ExtResource("4_lobby_player_panel")]
+[node name="PlayerPanel" parent="LobbyPanel/VBoxContainer" unique_id=1271342640 instance=ExtResource("4_lobby_player_panel")]
 layout_mode = 2
 
-[node name="Start" type="Button" parent="LobbyPanel"]
+[node name="Start" type="Button" parent="LobbyPanel/VBoxContainer" unique_id=1899997480]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
-offset_left = 610.0
-offset_top = 412.0
-offset_right = 670.0
-offset_bottom = 427.0
 size_flags_horizontal = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_start")
 text = "START"
 
-[node name="Back" type="Button" parent="LobbyPanel"]
+[node name="Back" type="Button" parent="LobbyPanel/VBoxContainer" unique_id=337983440]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
-offset_left = 610.0
-offset_top = 440.0
-offset_right = 670.0
-offset_bottom = 455.0
 size_flags_horizontal = 4
 text = "BACK"
 
@@ -244,5 +237,5 @@ text = "BACK"
 [connection signal="pressed" from="Menu/Exit" to="." method="exit_game"]
 [connection signal="pressed" from="JoinPanel/VBoxContainer/BoxContainer/Back" to="." method="_on_join_back_pressed"]
 [connection signal="pressed" from="JoinPanel/VBoxContainer/BoxContainer/Go" to="." method="_on_join_go_pressed"]
-[connection signal="pressed" from="LobbyPanel/Start" to="." method="_on_lobby_start_pressed"]
-[connection signal="pressed" from="LobbyPanel/Back" to="." method="_on_lobby_back_pressed"]
+[connection signal="pressed" from="LobbyPanel/VBoxContainer/Start" to="." method="_on_lobby_start_pressed"]
+[connection signal="pressed" from="LobbyPanel/VBoxContainer/Back" to="." method="_on_lobby_back_pressed"]

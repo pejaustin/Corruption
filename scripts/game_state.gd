@@ -9,6 +9,9 @@ signal game_lost
 signal watcher_count_changed(count: int)
 signal watcher_positions_changed()
 signal influence_changed(peer_id: int, new_value: float)
+## Fired on every peer when a gem capture starts (CaptureChannel.broadcast=true).
+## Listen here for global reactions (storm cue, HUD banner, audio sting).
+signal capture_broadcast(peer_id: int, faction: int, duration: float)
 
 # -1 means no Avatar is active
 var avatar_peer_id: int = -1

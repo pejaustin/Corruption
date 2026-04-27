@@ -16,6 +16,6 @@ func makes_invisible() -> bool:
 	return true
 
 func _set_model_visible(visible: bool) -> void:
-	var actor := caster as PlayerActor
+	var actor := caster as AvatarActor
 	if actor and actor._model:
 		actor._model.visible = visible

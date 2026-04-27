@@ -71,7 +71,97 @@ layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Copy"
 
+[node name="DebugPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -200.0
+offset_right = -10.0
+offset_bottom = 200.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="DebugPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="DebugPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="DebugPanel/Margin/VBox"]
+layout_mode = 2
+text = "Debug"
+horizontal_alignment = 1
+
+[node name="BtnSpawnDummy" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Add Dummy Player"
+
+[node name="BtnGodMode" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Toggle God Mode"
+
+[node name="BtnKillAvatar" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Kill Avatar"
+
+[node name="BtnSpawnEnemy" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Spawn Enemy at Camera"
+
+[node name="BtnSpawnMinion" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Spawn Minion at Camera"
+
+[node name="BtnAddInfluence" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "+10 Influence"
+
+[node name="BtnCycleFaction" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Cycle Faction"
+
+[node name="BtnBoostCorruption" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Boost Corruption"
+
+[node name="BtnAggroRings" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Toggle Aggro Rings"
+
+[node name="BtnCombatBoxes" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Toggle Combat Boxes"
+
 [connection signal="pressed" from="GridContainer/Resume" to="." method="_on_resume_pressed"]
 [connection signal="pressed" from="GridContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="GridContainer/Quit" to="." method="_on_quit_pressed"]
 [connection signal="pressed" from="ConnectionInfoPanel/GridContainer/IpPanel/CopyIp" to="." method="_on_copy_ip_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnDummy" to="." method="_on_spawn_dummy_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnGodMode" to="." method="_on_god_mode_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnKillAvatar" to="." method="_on_kill_avatar_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnEnemy" to="." method="_on_spawn_enemy_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnMinion" to="." method="_on_spawn_minion_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAddInfluence" to="." method="_on_add_influence_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCycleFaction" to="." method="_on_cycle_faction_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnBoostCorruption" to="." method="_on_boost_corruption_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAggroRings" to="." method="_on_aggro_rings_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCombatBoxes" to="." method="_on_combat_boxes_pressed"]

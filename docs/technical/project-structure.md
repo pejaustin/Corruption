@@ -42,7 +42,7 @@ corruption/
 │   ├── menus/               # Main menu, lobby, enet menu, player panel
 │   ├── network/             # Multiplayer manager, enet/noray network
 │   ├── player/              # Player, camera, perspective manager
-│   ├── test/                                  # Isolated test harnesses (war_table_test, fake_minion)
+│   ├── test/                                  # Isolated test harnesses (war_table_test — runs real OverlordActor + WarTable + MinionManager via OfflineMultiplayerPeer)
 │   └── world/env/
 │       ├── tower.gd / .tscn                # Tower — pairs its spawn point w/ a rally at runtime
 │       ├── jumpable_link.gd                # NavigationLink3D subclass minions traverse by jumping
@@ -54,7 +54,7 @@ corruption/
 │   ├── menus/               # Menu logic
 │   ├── network/             # Network manager, connection configs
 │   ├── states/movement/     # Player movement state machine
-│   ├── test/                # FakeMinion + WarTableTestController (harness-only scripts)
+│   ├── test/                # WarTableTestController + StartingMinionSpec (harness-only scripts)
 │   ├── ability_data.gd      # AbilityData Resource class
 │   ├── upgrade_data.gd      # UpgradeData Resource class
 │   ├── ritual_data.gd       # RitualData Resource class
@@ -87,7 +87,7 @@ corruption/
 | GameState | `scripts/game_state.gd` | Per-peer faction, upgrades, ritual buffs |
 | DebugManager | `scripts/debug_manager.gd` | F2–F8 debug keys |
 | InteractionUI | `scripts/interaction_ui.gd` | HUD prompt routing for Interactables |
-| KnowledgeManager | `scripts/knowledge/knowledge_manager.gd` | Per-peer WorldModel; War Table reads belief from here. `INFINITE_BROADCAST_RANGE` / `INSTANT_COMMANDS` flags |
+| KnowledgeManager | `scripts/knowledge/knowledge_manager.gd` | Per-peer WorldModel; War Table reads belief from here. `INFINITE_BROADCAST_RANGE` / `INSTANT_COMMANDS` are `static var` flags (runtime-mutable for test harnesses) |
 
 ## Key Scenes
 

@@ -131,10 +131,10 @@ func _apply_ritual_bonus(peer_id: int) -> void:
 		RitualData.Effect.ELDRITCH_VISION:
 			GameState.grant_eldritch_vision(peer_id, ritual.duration)
 
-func _get_avatar() -> PlayerActor:
-	return get_tree().current_scene.get_node_or_null("World/Avatar")
+func _get_avatar() -> AvatarActor:
+	return get_tree().current_scene.get_node_or_null("World/Avatar") as AvatarActor
 
-func _is_eldritch_avatar(avatar: PlayerActor) -> bool:
+func _is_eldritch_avatar(avatar: AvatarActor) -> bool:
 	if avatar.controlling_peer_id <= 0:
 		return false
 	return GameState.get_faction(avatar.controlling_peer_id) == GameConstants.Faction.ELDRITCH

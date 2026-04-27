@@ -1,12 +1,58 @@
-[gd_scene load_steps=4 format=3 uid="uid://btguardboss001"]
+[gd_scene format=3 uid="uid://c7jx3mdfg6m53"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://etxm5dhu2snq" path="res://scripts/guardian_boss.gd" id="2_script"]
-[ext_resource type="Resource" uid="uid://dgbossminmtype01" path="res://data/minions/guardian_boss.tres" id="3_mtype"]
+[ext_resource type="Resource" uid="uid://bav51ljje7d6k" path="res://data/minions/guardian_boss.tres" id="3_mtype"]
+[ext_resource type="PackedScene" uid="uid://bgv06y072bsn4" path="res://assets/characters/enemies/guardian_model.tscn" id="4_w4rpr"]
+[ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="6_w4rpr"]
+[ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="7_hurt"]
 
-[node name="GuardianBoss" instance=ExtResource("1_base")]
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_068ta"]
+height = 7.065796
+radius = 1.5424805
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_w4rpr"]
+radius = 3.387207
+
+[node name="GuardianBoss" unique_id=895488463 instance=ExtResource("1_base")]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 script = ExtResource("2_script")
+boss_name = "Capitol Guardian"
 minion_type = ExtResource("3_mtype")
 stagger_invulnerable = true
-boss_name = "Capitol Guardian"
+
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2335205, 0)
+
+[node name="Model" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.30126333, 0)
+
+[node name="GuardianModel" parent="Model" index="0" unique_id=397539025 instance=ExtResource("4_w4rpr")]
+transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 0, 0, 0)
+
+[node name="Hurtbox" type="Area3D" parent="Model/GuardianModel" index="2" unique_id=209929641]
+unique_name_in_owner = true
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0.6, 0)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("7_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/GuardianModel/Hurtbox" index="0" unique_id=963524664]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7147827, 0)
+shape = SubResource("CylinderShape3D_068ta")
+
+[node name="AttackHitbox" type="Area3D" parent="Model/GuardianModel" index="3" unique_id=1618167499]
+unique_name_in_owner = true
+transform = Transform3D(0.39999998, 0, 0, 0, 0.39999998, 0, 0, 0, 0.39999998, 0, 0.39999998, 0.13871478)
+collision_layer = 0
+collision_mask = 12
+monitorable = false
+script = ExtResource("6_w4rpr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/GuardianModel/AttackHitbox" index="0" unique_id=1816002871]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592164)
+shape = SubResource("CylinderShape3D_w4rpr")
+disabled = true
+
+[editable path="Model/GuardianModel"]

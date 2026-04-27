@@ -11,13 +11,14 @@ extends Node
 
 ## When true, every friendly and enemy minion continuously updates every
 ## overlord's WorldModel regardless of distance from the owning tower. Flip
-## off once broadcast-range tuning is ready (build order step 5).
-const INFINITE_BROADCAST_RANGE: bool = true
+## off once broadcast-range tuning is ready (build order step 5). Runtime-
+## mutable so test harnesses can A/B the two modes without restarting.
+static var INFINITE_BROADCAST_RANGE: bool = true
 
 ## When true, War Table clicks are executed immediately via MinionManager.
 ## When false, clicks record an intent and an Advisor dispatches a courier
-## (build order step 7).
-const INSTANT_COMMANDS: bool = true
+## (build order step 7). Runtime-mutable; see above.
+static var INSTANT_COMMANDS: bool = true
 
 ## Radius around a friendly minion (or its tower) within which activity leaks
 ## into the owner's WorldModel. Unused while INFINITE_BROADCAST_RANGE is true.

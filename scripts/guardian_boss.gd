@@ -85,6 +85,6 @@ func take_damage(amount: int) -> void:
 	else:
 		# Boss doesn't stagger from normal hits — only at HP thresholds.
 		if hp < max_hp_effective * 0.5 and hp + amount >= max_hp_effective * 0.5:
-			_state_machine.transition(&"StaggerState")
+			try_stagger()
 		elif hp < max_hp_effective * 0.25 and hp + amount >= max_hp_effective * 0.25:
-			_state_machine.transition(&"StaggerState")
+			try_stagger()

@@ -10,14 +10,15 @@ class_name AvatarAbilities extends Node
 
 signal ability_activated(ability_id: StringName)
 signal ability_ready(ability_id: StringName)
+signal abilities_initialized
 
 var _abilities: Array[AvatarAbility] = []
 var _cooldowns: Dictionary[StringName, float] = {}
 var _active: Array[AbilityEffect] = []
 var _faction: int = -1
-var _actor: PlayerActor
+var _actor: AvatarActor
 
-func setup(actor: PlayerActor, faction: int) -> void:
+func setup(actor: AvatarActor, faction: int) -> void:
 	_actor = actor
 	_faction = faction
 	_abilities = FactionData.get_avatar_abilities(faction)
@@ -25,6 +26,7 @@ func setup(actor: PlayerActor, faction: int) -> void:
 	_clear_active()
 	for ability in _abilities:
 		_cooldowns[ability.id] = 0.0
+	abilities_initialized.emit()
 
 func get_abilities() -> Array[AvatarAbility]:
 	return _abilities

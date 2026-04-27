@@ -1,17 +1,17 @@
 [gd_scene format=3 uid="uid://bmhorpo2bdnbf"]
 
-[ext_resource type="Script" uid="uid://e2apbn3oog5j" path="res://scripts/interactibles/summoning_circle.gd" id="1_b2idc"]
-[ext_resource type="PackedScene" uid="uid://dqenbqq12tohd" path="res://assets/world/env/table.glb" id="2_ttk50"]
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://e2apbn3oog5j" path="res://scripts/interactibles/summoning_circle.gd" id="2_circle"]
+[ext_resource type="PackedScene" uid="uid://dqenbqq12tohd" path="res://assets/world/env/table.glb" id="3_table"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ttk50"]
-size = Vector3(3.5803223, 1.9464111, 4.8031616)
+size = Vector3(4.0577393, 2.2612915, 5.5260925)
 
-[node name="SummoningCircle" type="Area3D" unique_id=492818308]
-collision_layer = 0
-script = ExtResource("1_b2idc")
+[node name="SummoningCircle" unique_id=352341713 instance=ExtResource("1_base")]
+script = ExtResource("2_circle")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=262620247]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26428223, 1.0054932, -0.29330444)
+[node name="CollisionShape3D" parent="." index="0" unique_id=2111479269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02557373, 1.1629333, 0.06816101)
 shape = SubResource("BoxShape3D_ttk50")
 
-[node name="table" parent="." unique_id=1634434427 instance=ExtResource("2_ttk50")]
+[node name="table" parent="Model" parent_id_path=PackedInt32Array(1560310609) index="0" unique_id=1902748539 instance=ExtResource("3_table")]

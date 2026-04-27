@@ -5,7 +5,7 @@ extends Node
 
 @export var _player_spawn_point: Node3D
 
-var _multiplayer_scene: PackedScene = preload("res://scenes/player/player.tscn")
+var _multiplayer_scene: PackedScene = preload("res://scenes/actors/player/overlord/overlord_actor.tscn")
 var _players_in_game: Dictionary = {}
 var _player_slot_order: Array[int] = [] # Tracks join order for tower assignment
 
@@ -52,7 +52,7 @@ func _remove_player_from_game(network_id: int) -> void:
 				_players_in_game.erase(network_id)
 			_player_slot_order.erase(network_id)
 
-func _ready_player(player: Player, network_id: int) -> void:
+func _ready_player(player: OverlordActor, network_id: int) -> void:
 	if is_multiplayer_authority():
 		# Assign to next available tower slot
 		_player_slot_order.append(network_id)
@@ -79,14 +79,14 @@ func get_player_slot(network_id: int) -> int:
 func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
 	# Transfer control to/from the shared Avatar entity
 	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if not avatar or not avatar is PlayerActor:
+	if not avatar or not avatar is AvatarActor:
 		push_warning("Avatar node not found in scene tree at World/Avatar")
 		return
 
 	# Release previous controller's Overlord
 	if old_peer_id > 0 and _player_spawn_point:
 		for child in _player_spawn_point.get_children():
-			if child is Player and child.name.to_int() == old_peer_id:
+			if child is OverlordActor and child.name.to_int() == old_peer_id:
 				child.set_overlord_active(true)
 
 	if new_peer_id > 0:
@@ -95,7 +95,7 @@ func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
 		# Disable the controller's Overlord input/camera
 		if _player_spawn_point:
 			for child in _player_spawn_point.get_children():
-				if child is Player and child.name.to_int() == new_peer_id:
+				if child is OverlordActor and child.name.to_int() == new_peer_id:
 					child.set_overlord_active(false)
 	else:
 		# No one controls it — go dormant

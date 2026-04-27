@@ -8,62 +8,59 @@ extends PlayerState
 ## mid-swing (Windup/Impact/Recovery). For single-shape setups, leave
 ## hitbox_profile empty and the one CollisionShape3D child is used.
 
-## Hitbox activates at this fraction of the attack animation
+## Hitbox activates at this fraction of the attack animation. Ignored when
+## use_animation_keys is true.
 @export var hitbox_start_ratio: float = 0.25
-## Hitbox deactivates at this fraction
+## Hitbox deactivates at this fraction. Ignored when use_animation_keys is true.
 @export var hitbox_end_ratio: float = 0.6
 ## Profile name to activate on this attack. Empty = first shape child.
 @export var hitbox_profile: StringName = &""
+## When true, the script never toggles the hitbox — only animation method
+## track keys on %AttackHitbox do. Hit-detection still polls while the hitbox
+## is active. Prevents double-firing when both paths run on the same animation.
+@export var use_animation_keys: bool = false
 
 const LIFESTEAL_RATIO: float = 0.3
 
-var _hitbox_active: bool = false
-var _attack_finished: bool = false
-
-func enter(previous_state: RewindableState, tick: int) -> void:
-	_hitbox_active = false
-	_attack_finished = false
-	_get_hitbox().disable()
+func enter(_previous_state: RewindableState, _tick: int) -> void:
+	var hitbox := _get_hitbox()
+	if hitbox:
+		hitbox.disable()
 	# Attacking breaks camouflage
 	if actor.abilities and actor.abilities.is_camouflaged():
 		actor.abilities.cancel(&"camouflage")
-	# Listen for animation end
-	if actor._animation_player:
-		if not actor._animation_player.animation_finished.is_connected(_on_animation_finished):
-			actor._animation_player.animation_finished.connect(_on_animation_finished)
 
-func exit(next_state: RewindableState, tick: int) -> void:
-	_get_hitbox().disable()
-	_hitbox_active = false
-	if actor._animation_player and actor._animation_player.animation_finished.is_connected(_on_animation_finished):
-		actor._animation_player.animation_finished.disconnect(_on_animation_finished)
+func exit(_next_state: RewindableState, _tick: int) -> void:
+	var hitbox := _get_hitbox()
+	if hitbox:
+		hitbox.disable()
 
-func tick(delta: float, tick: int, is_fresh: bool) -> void:
+func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
+	# Termination is driven purely by animation progress (deterministic across
+	# peers given the same state-entry tick). The animation_finished signal
+	# path was removed because its wall-clock timing desynced remote peers
+	# and caused rollback rubberband.
 	var progress := _get_animation_progress()
 	var hitbox := _get_hitbox()
 
-	if progress >= hitbox_start_ratio and progress < hitbox_end_ratio and not _hitbox_active:
-		_hitbox_active = true
-		hitbox.enable(hitbox_profile)
-	elif progress >= hitbox_end_ratio and _hitbox_active:
-		_hitbox_active = false
-		hitbox.disable()
+	if not use_animation_keys and hitbox:
+		if progress >= hitbox_start_ratio and progress < hitbox_end_ratio and not hitbox.is_active():
+			hitbox.enable(hitbox_profile)
+		elif progress >= hitbox_end_ratio and hitbox.is_active():
+			hitbox.disable()
 
-	if _hitbox_active and actor.multiplayer.is_server():
+	if hitbox and hitbox.is_active() and actor.multiplayer.is_server():
 		_check_hits(hitbox)
 
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 	physics_move()
 
-	if _attack_finished or progress >= 1.0:
+	if progress >= 1.0:
 		if actor.is_on_floor():
 			state_machine.transition(&"IdleState")
 		else:
 			state_machine.transition(&"FallState")
-
-func _on_animation_finished(_anim_name: StringName) -> void:
-	_attack_finished = true
 
 func _get_animation_progress() -> float:
 	if not actor._animation_player:
@@ -87,13 +84,14 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 	if actor.abilities:
 		damage_mult = actor.abilities.get_damage_multiplier()
 		lifesteal = actor.abilities.should_lifesteal()
-	var final_damage := int(base_damage * damage_mult * hitbox.get_damage_multiplier())
-	for body in hitbox.get_new_hits():
-		if body == actor:
+	var base_final := base_damage * damage_mult * hitbox.get_damage_multiplier()
+	for hurtbox in hitbox.get_new_hits():
+		var target := hurtbox.get_actor()
+		if target == null or target == actor:
 			continue
-		if body.has_method("take_damage"):
-			body.take_damage(final_damage)
-			if lifesteal:
-				var heal := int(final_damage * LIFESTEAL_RATIO)
-				actor.hp = min(actor.hp + heal, actor.get_max_hp())
-				actor.hp_changed.emit(actor.hp)
+		var final_damage := int(base_final * hurtbox.get_damage_multiplier())
+		target.take_damage(final_damage)
+		if lifesteal:
+			var heal := int(final_damage * LIFESTEAL_RATIO)
+			actor.hp = min(actor.hp + heal, actor.get_max_hp())
+			actor.hp_changed.emit(actor.hp)

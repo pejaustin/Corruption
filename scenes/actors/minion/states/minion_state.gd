@@ -14,7 +14,7 @@ func find_hostile_target() -> Actor:
 			continue
 		if not candidate.can_take_damage():
 			continue
-		if candidate is PlayerActor and (candidate as PlayerActor).is_dormant:
+		if candidate is AvatarActor and (candidate as AvatarActor).is_dormant:
 			continue
 		if not minion.is_hostile_to(candidate):
 			continue

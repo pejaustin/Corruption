@@ -1,6 +1,8 @@
-[gd_scene format=3 uid="uid://btgemsite0001"]
+[gd_scene load_steps=8 format=3 uid="uid://btgemsite0001"]
 
-[ext_resource type="Script" uid="uid://x4dcj8y4o82i" path="res://scripts/interactibles/gem_site.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://x4dcj8y4o82i" path="res://scripts/interactibles/gem_site.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/interactibles/capture_channel.gd" id="3_channel"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_area"]
 radius = 4.0
@@ -25,25 +27,29 @@ emission_enabled = true
 emission = Color(0.2, 0.5, 0.9, 1)
 emission_energy_multiplier = 0.6
 
-[node name="GemSite" type="Area3D" unique_id=709845163]
-collision_layer = 0
-script = ExtResource("1_script")
+[node name="GemSite" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=95967694]
+[node name="CollisionShape3D" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("SphereShape3D_area")
 
-[node name="Base" type="MeshInstance3D" parent="." unique_id=474608076]
+[node name="Base" type="MeshInstance3D" parent="Model" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 mesh = SubResource("CylinderMesh_base")
 surface_material_override/0 = SubResource("StandardMaterial3D_base")
 
-[node name="Crystal" type="MeshInstance3D" parent="." unique_id=320225806]
+[node name="Crystal" type="MeshInstance3D" parent="Model" index="1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 mesh = SubResource("PrismMesh_gem")
 surface_material_override/0 = SubResource("StandardMaterial3D_gem")
 
-[node name="CrystalGlow" type="OmniLight3D" parent="." unique_id=1632251107]
+[node name="CrystalGlow" type="OmniLight3D" parent="Model" index="2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 light_color = Color(0.5, 0.75, 1, 1)
 light_energy = 1.2
+
+[node name="CaptureChannel" type="Node" parent="."]
+script = ExtResource("3_channel")
+channel_duration = 3.0
+broadcast = false

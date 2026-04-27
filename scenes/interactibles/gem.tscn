@@ -1,6 +1,8 @@
-[gd_scene format=3 uid="uid://bssmtoaigx5kj"]
+[gd_scene load_steps=7 format=3 uid="uid://bssmtoaigx5kj"]
 
-[ext_resource type="Script" uid="uid://d0a40la02r6jl" path="res://scripts/interactibles/gem.gd" id="1_gem"]
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://d0a40la02r6jl" path="res://scripts/interactibles/gem.gd" id="2_gem"]
+[ext_resource type="Script" path="res://scripts/interactibles/capture_channel.gd" id="3_channel"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_area"]
 height = 3.0266113
@@ -14,15 +16,19 @@ emission_enabled = true
 emission = Color(0.6, 0, 0.8, 1)
 emission_energy_multiplier = 2.0
 
-[node name="Gem" type="Area3D" unique_id=1823737258]
-collision_layer = 0
-script = ExtResource("1_gem")
+[node name="Gem" instance=ExtResource("1_base")]
+script = ExtResource("2_gem")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=657277597]
+[node name="CollisionShape3D" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4405518, 0)
 shape = SubResource("CylinderShape3D_area")
 
-[node name="GemMesh" type="MeshInstance3D" parent="." unique_id=176767704]
+[node name="GemMesh" type="MeshInstance3D" parent="Model" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 mesh = SubResource("SphereMesh_gem")
 surface_material_override/0 = SubResource("StandardMaterial3D_gem")
+
+[node name="CaptureChannel" type="Node" parent="."]
+script = ExtResource("3_channel")
+channel_duration = 5.0
+broadcast = true

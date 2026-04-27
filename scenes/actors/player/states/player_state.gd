@@ -8,8 +8,8 @@ const RUN_MODIFIER: float = 2.0
 const ROTATION_INTERPOLATE_SPEED: float = 10.0
 const JUMP_VELOCITY: float = 6.5
 
-var player: PlayerActor:
-	get: return actor as PlayerActor
+var player: AvatarActor:
+	get: return actor as AvatarActor
 
 func get_movement_input() -> Vector2:
 	return player.avatar_input.input_dir
@@ -43,6 +43,16 @@ func move_horizontal(delta: float, speed: float = WALK_SPEED) -> void:
 	else:
 		actor.velocity.x = move_toward(actor.velocity.x, 0, speed)
 		actor.velocity.z = move_toward(actor.velocity.z, 0, speed)
+
+## Transition into ChannelState if a capture channel just started. Call at the
+## top of tick() in any state that should yield to channeling (IdleState,
+## MoveState, JumpState, FallState). AttackState intentionally skips this —
+## attacks are commitment-based and finish before the channel takes over.
+func try_enter_channel() -> bool:
+	if player.active_channel != null and player.active_channel.is_active():
+		state_machine.transition(&"ChannelState")
+		return true
+	return false
 
 func move_air(delta: float) -> void:
 	var input_dir := get_movement_input()

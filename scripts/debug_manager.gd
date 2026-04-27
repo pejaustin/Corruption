@@ -1,40 +1,37 @@
 extends Node
 
-## Debug manager for solo testing.
-## F2: Add a dummy player (fills remaining tower slots).
-## Dummy players spawn as idle Overlords with no input authority.
-## Leaves room for real players joining via Godot's multi-instance debug.
+## Debug helpers invoked from the in-game pause menu's Debug section.
+## Dummy players spawn as idle Overlords with no input authority, leaving room
+## for real players joining via Godot's multi-instance debug.
 
 const DUMMY_BASE_ID: int = 9001
 
-var _dummy_count := 0
-var _player_scene: PackedScene = preload("res://scenes/player/player.tscn")
+signal aggro_rings_toggled(visible: bool)
+signal combat_boxes_toggled(visible: bool)
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed:
-		return
-	match event.keycode:
-		KEY_F2:
-			if not multiplayer.is_server():
-				print("[Debug] Only the host can spawn dummy players")
-				return
-			add_dummy_player()
-		KEY_F4:
-			_toggle_god_mode()
-		KEY_F5:
-			_kill_avatar()
-		KEY_F6:
-			_spawn_enemy_at_camera()
-		KEY_F7:
-			_spawn_minion_at_camera()
-		KEY_F8:
-			_add_influence_to_self()
-		KEY_F9:
-			_cycle_faction()
-		KEY_F10:
-			_boost_corruption()
+var _dummy_count := 0
+var _player_scene: PackedScene = preload("res://scenes/actors/player/overlord/overlord_actor.tscn")
+## Global toggle for minion aggro-radius debug rings. Local-only (each peer
+## can choose independently). MinionActor subscribes to aggro_rings_toggled.
+var show_aggro_rings: bool = false
+## Global toggle for AttackHitbox / Hurtbox visualization. Local-only. Each
+## component subscribes to combat_boxes_toggled.
+var show_combat_boxes: bool = false
+
+func toggle_aggro_rings() -> void:
+	show_aggro_rings = not show_aggro_rings
+	aggro_rings_toggled.emit(show_aggro_rings)
+	print("[Debug] Minion aggro rings: %s" % ("ON" if show_aggro_rings else "OFF"))
+
+func toggle_combat_boxes() -> void:
+	show_combat_boxes = not show_combat_boxes
+	combat_boxes_toggled.emit(show_combat_boxes)
+	print("[Debug] Combat boxes: %s" % ("ON" if show_combat_boxes else "OFF"))
 
 func add_dummy_player() -> void:
+	if not multiplayer.is_server():
+		print("[Debug] Only the host can spawn dummy players")
+		return
 	var mm = _get_multiplayer_manager()
 	if not mm:
 		print("[Debug] MultiplayerManager not found — are you in a game scene?")
@@ -57,7 +54,6 @@ func add_dummy_player() -> void:
 	var dummy = _player_scene.instantiate()
 	dummy.name = str(dummy_id)
 
-	# Register in the manager's slot order and position at the correct tower
 	mm._player_slot_order.append(dummy_id)
 	var slot = mm._player_slot_order.find(dummy_id)
 	dummy.position = mm.TOWER_SPAWNS[slot]
@@ -78,7 +74,7 @@ func get_max_dummy_players() -> int:
 func is_dummy(peer_id: int) -> bool:
 	return peer_id >= DUMMY_BASE_ID and peer_id < DUMMY_BASE_ID + 100
 
-func _toggle_god_mode() -> void:
+func toggle_god_mode() -> void:
 	var avatar = _get_avatar()
 	if avatar:
 		avatar.god_mode = !avatar.god_mode
@@ -86,7 +82,7 @@ func _toggle_god_mode() -> void:
 	else:
 		print("[Debug] Avatar not found")
 
-func _kill_avatar() -> void:
+func kill_avatar() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can kill the Avatar")
 		return
@@ -97,7 +93,7 @@ func _kill_avatar() -> void:
 	else:
 		print("[Debug] Avatar not active")
 
-func _spawn_enemy_at_camera() -> void:
+func spawn_enemy_at_camera() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can spawn enemies")
 		return
@@ -105,9 +101,8 @@ func _spawn_enemy_at_camera() -> void:
 	if not camera:
 		print("[Debug] No active camera")
 		return
-	# Spawn 5 meters in front of the camera, on the ground
 	var spawn_pos = camera.global_position + (-camera.global_basis.z * 5.0)
-	spawn_pos.y = 0  # ground level
+	spawn_pos.y = 0
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
 	if mm:
 		mm.spawn_neutral_minion(spawn_pos)
@@ -115,13 +110,13 @@ func _spawn_enemy_at_camera() -> void:
 	else:
 		print("[Debug] MinionManager not found")
 
-func _get_avatar() -> PlayerActor:
+func _get_avatar() -> AvatarActor:
 	var scene = get_tree().current_scene
 	if scene:
-		return scene.get_node_or_null("World/Avatar") as PlayerActor
+		return scene.get_node_or_null("World/Avatar") as AvatarActor
 	return null
 
-func _spawn_minion_at_camera() -> void:
+func spawn_minion_at_camera() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can spawn minions")
 		return
@@ -133,7 +128,6 @@ func _spawn_minion_at_camera() -> void:
 	spawn_pos.y = 0
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
 	if mm:
-		# Give resources first so spawn succeeds
 		var my_id = multiplayer.get_unique_id()
 		mm.resources[my_id] = mm.resources.get(my_id, 0.0) + 25
 		mm.request_summon_minion("", spawn_pos)
@@ -141,7 +135,7 @@ func _spawn_minion_at_camera() -> void:
 	else:
 		print("[Debug] MinionManager not found")
 
-func _add_influence_to_self() -> void:
+func add_influence_to_self() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can set influence")
 		return
@@ -149,7 +143,7 @@ func _add_influence_to_self() -> void:
 	GameState.add_influence(my_id, 10.0)
 	print("[Debug] Added 10 influence to peer %d (total: %.1f)" % [my_id, GameState.get_influence(my_id)])
 
-func _cycle_faction() -> void:
+func cycle_faction() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can swap factions")
 		return
@@ -166,7 +160,7 @@ func _cycle_faction() -> void:
 	var name = GameConstants.faction_names.get(next_faction, "Unknown")
 	print("[Debug] Faction swapped to %s (%d)" % [name, next_faction])
 
-func _boost_corruption() -> void:
+func boost_corruption() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can boost corruption")
 		return
@@ -179,7 +173,6 @@ func _boost_corruption() -> void:
 	var faction = 0
 	if mm:
 		faction = mm._get_player_faction(my_id)
-	# Add corruption in a 3x3 grid around origin
 	for x in range(-1, 2):
 		for z in range(-1, 2):
 			var cell = Vector2i(x, z)

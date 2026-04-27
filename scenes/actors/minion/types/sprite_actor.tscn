@@ -1,17 +1,56 @@
 [gd_scene format=3 uid="uid://b1gmg0avnsjoi"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
-[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/ZombieModel.tscn" id="2_model"]
 [ext_resource type="Resource" path="res://data/minions/sprite.tres" id="2_type"]
+[ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
+[ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sprite"]
 height = 3.002
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sprite_hurt"]
+height = 3.002
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 1.0
+
 [node name="Sprite" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
 
-[node name="Zombie" parent="." index="0" unique_id=397539025 instance=ExtResource("2_model")]
-
-[node name="CollisionShape3D" parent="." index="1" unique_id=2017831966]
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 shape = SubResource("CapsuleShape3D_sprite")
+
+[node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]
+
+[node name="RightHand" type="BoneAttachment3D" parent="Model/Zombie/Root/Skeleton3D" parent_id_path=PackedInt32Array(397539025, 1757755038) index="1" unique_id=1650886095]
+transform = Transform3D(0.07913625, -0.16213454, -0.9835906, -0.25083435, -0.9581768, 0.13776435, -0.9647895, 0.23581621, -0.1164954, -0.50239813, 1.3065487, 0.0516539)
+bone_name = "RightHand"
+bone_idx = 40
+
+[node name="AttackHitbox" type="Area3D" parent="Model/Zombie/Root/Skeleton3D/RightHand" index="0" unique_id=688538832]
+unique_name_in_owner = true
+transform = Transform3D(0.07913614, -0.25083458, -0.9647903, -0.16213469, -0.95817715, 0.23581621, -0.98358995, 0.1377641, -0.116495475, -0.12335524, 0.36170328, 0.06594771)
+collision_layer = 0
+collision_mask = 12
+monitorable = false
+script = ExtResource("9_hitbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Zombie/Root/Skeleton3D/RightHand/AttackHitbox" index="0" unique_id=1036840865]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
+shape = SubResource("SphereShape3D_hitbox")
+disabled = true
+
+[node name="Hurtbox" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("10_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("CapsuleShape3D_sprite_hurt")
+
+[editable path="Model/Zombie"]

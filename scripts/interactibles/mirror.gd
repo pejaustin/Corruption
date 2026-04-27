@@ -59,11 +59,11 @@ func _interactable_ready() -> void:
 	call_deferred("_setup_mirror3d")
 
 func _setup_mirror3d() -> void:
-	var parent := get_parent()
-	if parent:
-		_mirror3d = parent.get_node_or_null("Mirror3D")
+	var model := get_model()
+	if model:
+		_mirror3d = model.get_node_or_null("Mirror3D")
 	if not _mirror3d:
-		push_warning("Mirror: Mirror3D sibling not found under parent %s" % parent)
+		push_warning("Mirror: Mirror3D child not found under Model on %s" % get_path())
 		return
 	print("Mirror: Mirror3D resolved at %s" % _mirror3d.get_path())
 
@@ -165,7 +165,7 @@ func _input(event: InputEvent) -> void:
 	if not _is_local_player(_player_in_range):
 		return
 	# Q cancels in preview/selecting
-	if event.is_action_pressed("avatar_recall"):
+	if event.is_action_pressed("cancel"):
 		if _state == State.PREVIEW:
 			_recorded_message = null
 			_state = State.IDLE
@@ -241,10 +241,10 @@ func _capture_pose_sample() -> void:
 	_record_xforms.append(stage_local)
 	_record_anims.append(_get_current_anim_name(_player_in_range))
 
-func _get_player_model(player: Player) -> Node3D:
+func _get_player_model(player: OverlordActor) -> Node3D:
 	return player.get_model()
 
-func _get_current_anim_name(player: Player) -> String:
+func _get_current_anim_name(player: OverlordActor) -> String:
 	if not player or not player._state_machine:
 		return ""
 	var state_name: StringName = player._state_machine.state

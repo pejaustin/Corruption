@@ -1,13 +1,13 @@
 extends MovementState
 
 func tick(delta: float, tick: int, is_fresh: bool) -> void:
-	parent.velocity.x = 0
-	parent.velocity.z = 0
+	overlord.velocity.x = 0
+	overlord.velocity.z = 0
 	rotate_player_model(delta)
 	move_player(delta)
-	
+
 	force_update_is_on_floor()
-	if parent.is_on_floor():
+	if overlord.is_on_floor():
 		if get_movement_input() != Vector2.ZERO:
 			state_machine.transition(&"MoveState")
 		elif get_jump():

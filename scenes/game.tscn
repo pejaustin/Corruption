@@ -56,7 +56,7 @@ data = PackedVector3Array(15, 0, 15, -15, 0, 15, 15, 0, -15, -15, 0, 15, -15, 0,
 [node name="Game" type="Node3D"]
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("uid://xjygpllvas2q")
+_spawnable_scenes = PackedStringArray("uid://cqo6h5ijp2vpo")
 spawn_path = NodePath("../World/PlayerSpawnPoint")
 
 [node name="MultiplayerManager" parent="." node_paths=PackedStringArray("_player_spawn_point") instance=ExtResource("1_sg3yj")]

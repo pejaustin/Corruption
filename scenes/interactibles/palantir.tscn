@@ -1,14 +1,17 @@
 [gd_scene format=3 uid="uid://c8uteh2tyq2lx"]
 
-[ext_resource type="Script" uid="uid://d3vcxowqhu38p" path="res://scripts/interactibles/palantir.gd" id="1_pal"]
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://d3vcxowqhu38p" path="res://scripts/interactibles/palantir.gd" id="2_pal"]
+[ext_resource type="PackedScene" uid="uid://ceng30ab4o4y8" path="res://assets/world/env/mod-castle/crystal-ball.glb" id="3_ball"]
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_pal"]
-height = 4.0
+[sub_resource type="SphereShape3D" id="SphereShape3D_pal"]
 radius = 2.0
 
-[node name="Palantir" type="Area3D" unique_id=427676171]
-collision_layer = 0
-script = ExtResource("1_pal")
+[node name="Palantir" unique_id=1582239008 instance=ExtResource("1_base")]
+script = ExtResource("2_pal")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1723876682]
-shape = SubResource("CylinderShape3D_pal")
+[node name="CollisionShape3D" parent="." index="0" unique_id=2111479269]
+shape = SubResource("SphereShape3D_pal")
+
+[node name="crystal-ball" parent="Model" parent_id_path=PackedInt32Array(1560310609) index="0" unique_id=1939142717 instance=ExtResource("3_ball")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)

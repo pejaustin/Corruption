@@ -9,6 +9,9 @@ var jump_input := false
 var run_input := false
 var attack_input := false
 
+## When false, all input is zeroed (pause menu open).
+var input_enabled: bool = true
+
 ## The peer ID currently controlling the Avatar. -1 = dormant/no one.
 var controlling_peer_id: int = -1
 
@@ -16,11 +19,11 @@ func _ready() -> void:
 	NetworkTime.before_tick_loop.connect(_gather)
 
 func _gather() -> void:
-	if controlling_peer_id == multiplayer.get_unique_id():
+	if input_enabled and controlling_peer_id == multiplayer.get_unique_id():
 		input_dir = Input.get_vector("left", "right", "forward", "backward")
 		jump_input = Input.is_action_pressed("jump")
 		run_input = Input.is_action_pressed("run")
-		attack_input = Input.is_action_pressed("attack")
+		attack_input = Input.is_action_pressed("primary_ability")
 	else:
 		input_dir = Vector2.ZERO
 		jump_input = false

@@ -4,9 +4,17 @@
 [ext_resource type="Resource" path="res://data/minions/ghoul.tres" id="2_type"]
 [ext_resource type="PackedScene" uid="uid://twkv4hspfoay" path="res://assets/characters/large-male/large_male.tscn" id="3_gybpn"]
 [ext_resource type="Material" uid="uid://c7kfdc1ak7rwg" path="res://assets/characters/skins/robot_skin_material.tres" id="4_f3fhf"]
+[ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ghoul"]
 height = 3.002
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ghoul_hurt"]
+height = 3.002
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 1.0
 
 [node name="Ghoul" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
@@ -19,5 +27,29 @@ surface_material_override/0 = ExtResource("4_f3fhf")
 [node name="CollisionShape3D" parent="." index="1" unique_id=2017831966]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 shape = SubResource("CapsuleShape3D_ghoul")
+
+[node name="AttackHitbox" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.34678698)
+collision_layer = 0
+collision_mask = 12
+monitorable = false
+script = ExtResource("9_hitbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
+shape = SubResource("SphereShape3D_hitbox")
+disabled = true
+
+[node name="Hurtbox" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("10_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("CapsuleShape3D_ghoul_hurt")
 
 [editable path="Model"]
