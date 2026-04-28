@@ -23,6 +23,9 @@ func get_jump() -> bool:
 func get_attack() -> bool:
 	return player.avatar_input.attack_input
 
+func get_roll() -> bool:
+	return player.avatar_input.roll_input
+
 func rotate_player_model(delta: float) -> void:
 	var cam_basis: Basis = player.avatar_camera.camera_basis
 	var player_lookat_target = cam_basis.z
@@ -53,6 +56,23 @@ func try_enter_channel() -> bool:
 		state_machine.transition(&"ChannelState")
 		return true
 	return false
+
+## Transition into RollState if the roll input is held OR was buffered within
+## the input-queue window. Routes via Actor.try_transition so action_locked
+## states can still be Roll-cancelled when RollState is in their
+## cancel_whitelist. Returns true if the roll went through.
+func try_roll() -> bool:
+	if not (get_roll() or player.avatar_input.consume_if_buffered(&"roll")):
+		return false
+	return actor.try_transition(&"RollState")
+
+## Transition into AttackState if the attack input is held OR was buffered.
+## Used by IdleState/MoveState — call at the top of tick() so a press queued
+## during a locked attack fires the next swing immediately on recovery.
+func try_attack() -> bool:
+	if not (get_attack() or player.avatar_input.consume_if_buffered(&"primary_ability")):
+		return false
+	return actor.try_transition(&"AttackState")
 
 func move_air(delta: float) -> void:
 	var input_dir := get_movement_input()

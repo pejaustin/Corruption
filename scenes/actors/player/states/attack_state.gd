@@ -29,6 +29,10 @@ func enter(_previous_state: RewindableState, _tick: int) -> void:
 	# Attacking breaks camouflage
 	if actor.abilities and actor.abilities.is_camouflaged():
 		actor.abilities.cancel(&"camouflage")
+	# Placeholder commitment: lock the entire attack so cancel_whitelist gates
+	# external transitions. Replace with per-frame method-track keys
+	# (lock_action / unlock_action) once authored — see action-gating.md.
+	# action_locked = true
 
 func exit(_next_state: RewindableState, _tick: int) -> void:
 	var hitbox := _get_hitbox()
@@ -36,6 +40,10 @@ func exit(_next_state: RewindableState, _tick: int) -> void:
 		hitbox.disable()
 
 func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
+	# Roll is the only authored cancel out of an attack — try_roll routes
+	# through actor.try_transition, which respects this state's cancel_whitelist.
+	if try_roll():
+		return
 	# Termination is driven purely by animation progress (deterministic across
 	# peers given the same state-entry tick). The animation_finished signal
 	# path was removed because its wall-clock timing desynced remote peers

@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://dyl7bol73bpei"]
+
+[ext_resource type="Script" uid="uid://bjcxhwmmf3dm0" path="res://scenes/ui/avatar_hud.gd" id="1_gya8g"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widgets/ability_cross.tscn" id="2_cross"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widgets/crosshair.tscn" id="3_crosshair"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widgets/damage_vignette.tscn" id="4_vignette"]
+[ext_resource type="PackedScene" uid="uid://b6captprogress0" path="res://scenes/ui/widgets/capture_progress.tscn" id="5_capture"]
+
+[node name="AvatarHUD" type="CanvasLayer" unique_id=128906444]
+script = ExtResource("1_gya8g")
+
+[node name="DamageVignette" parent="." instance=ExtResource("4_vignette")]
+unique_name_in_owner = true
+
+[node name="InteractionPrompt" type="RichTextLabel" parent="." unique_id=800793720]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -80.0
+offset_right = 300.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="HealthBar" type="ProgressBar" parent="." unique_id=485105947]
+unique_name_in_owner = true
+anchors_preset = 3
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -56.0
+offset_right = 280.0
+offset_bottom = -24.0
+grow_vertical = 0
+value = 100.0
+show_percentage = false
+
+[node name="Crosshair" parent="." instance=ExtResource("3_crosshair")]
+unique_name_in_owner = true
+
+[node name="AbilityCross" parent="." instance=ExtResource("2_cross")]
+unique_name_in_owner = true
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -280.0
+offset_right = -40.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="CaptureProgress" parent="." instance=ExtResource("5_capture")]
+unique_name_in_owner = true

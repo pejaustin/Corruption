@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://twkv4hspfoay"]
 
 [ext_resource type="PackedScene" uid="uid://d3vcd8cw2fmye" path="res://assets/characters/large-male/large-male.glb" id="1_87fgh"]
-[ext_resource type="AnimationLibrary" uid="uid://dthg1xv3or7gs" path="res://assets/characters/large-male/large-male.res" id="2_pufye"]
+[ext_resource type="AnimationLibrary" uid="uid://dthg1xv3or7gs" path="res://assets/characters/avatar/large-male.res" id="2_pufye"]
 
 [sub_resource type="Animation" id="Animation_pufye"]
 length = 0.001

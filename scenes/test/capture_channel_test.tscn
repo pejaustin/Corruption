@@ -1,0 +1,100 @@
+[gd_scene format=3 uid="uid://bfq2mbfs01p5m"]
+
+[ext_resource type="Script" uid="uid://mwps1pjjrptq" path="res://scripts/test/capture_channel_test_controller.gd" id="1_ctrl"]
+[ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="2_mm"]
+[ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="3_avatar"]
+[ext_resource type="PackedScene" uid="uid://bssmtoaigx5kj" path="res://scenes/interactibles/gem.tscn" id="4_gem"]
+[ext_resource type="PackedScene" uid="uid://btgemsite0001" path="res://scenes/interactibles/gem_site.tscn" id="5_site"]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_proc"]
+sky_horizon_color = Color(0.55, 0.6, 0.75, 1)
+ground_bottom_color = Color(0.12, 0.12, 0.14, 1)
+ground_horizon_color = Color(0.3, 0.3, 0.35, 1)
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("Sky_proc")
+
+[sub_resource type="Environment" id="Env_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 3
+ambient_light_color = Color(0.7, 0.75, 0.85, 1)
+ambient_light_sky_contribution = 0.6
+ambient_light_energy = 0.4
+
+[sub_resource type="BoxShape3D" id="BoxShape_floor"]
+size = Vector3(60, 0.5, 60)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(60, 60)
+
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_color = Color(0.28, 0.3, 0.26, 1)
+roughness = 0.95
+
+[sub_resource type="NavigationMesh" id="NavMesh_main"]
+vertices = PackedVector3Array(-29.5, 0.505, -29.5, -29.5, 0.505, 29.5, 29.5, 0.505, 29.5, 29.5, 0.505, -29.5)
+polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
+agent_radius = 0.4
+agent_max_climb = 0.3
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_navsource"]
+size = Vector2(60, 60)
+
+[node name="CaptureChannelTest" type="Node3D" unique_id=1127187917 node_paths=PackedStringArray("avatar", "gem", "gem_site", "minion_manager", "status_label")]
+script = ExtResource("1_ctrl")
+avatar = NodePath("Avatar")
+gem = NodePath("World/Gem")
+gem_site = NodePath("World/GemSite")
+minion_manager = NodePath("MinionManager")
+status_label = NodePath("Hud/Label")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1118630632]
+environment = SubResource("Env_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2106279372]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 20, 0)
+shadow_enabled = true
+
+[node name="World" type="Node3D" parent="." unique_id=475040354]
+
+[node name="Ground" type="StaticBody3D" parent="World" unique_id=721627801]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Ground" unique_id=926144615]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+shape = SubResource("BoxShape_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="World/Ground" unique_id=1098223581]
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("Material_floor")
+
+[node name="Nav" type="NavigationRegion3D" parent="World" unique_id=271891766]
+navigation_mesh = SubResource("NavMesh_main")
+
+[node name="NavGeometry" type="MeshInstance3D" parent="World/Nav" unique_id=1258148633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+mesh = SubResource("PlaneMesh_navsource")
+
+[node name="Gem" parent="World" unique_id=1557702081 instance=ExtResource("4_gem")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
+
+[node name="GemSite" parent="World" unique_id=799133122 instance=ExtResource("5_site")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
+site_name = "Gem Site"
+influence_per_second = 0.5
+minion_clear_radius = 8.0
+
+[node name="MinionManager" type="Node" parent="." unique_id=1574021431]
+script = ExtResource("2_mm")
+
+[node name="Avatar" parent="." unique_id=1553478453 instance=ExtResource("3_avatar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 3)
+
+[node name="Hud" type="CanvasLayer" parent="." unique_id=695319199]
+
+[node name="Label" type="Label" parent="Hud" unique_id=488956442]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 900.0
+offset_bottom = 520.0
+text = "Capture Channel Test (initializing...)"

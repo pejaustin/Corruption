@@ -5,6 +5,11 @@ extends Control
 @export var lobby_panel: Control
 @export var host_ip_input: LineEdit
 @export var host_port_input: LineEdit
+## Optional. If a Label named "HostIPLabel" lives anywhere under lobby_panel,
+## it'll get filled with the host's public IP when UPnP succeeds (or an error
+## message when it doesn't). Lookup is by node name so the label can sit
+## wherever the lobby layout wants.
+@export var host_ip_label: Label
 
 func _ready() -> void:
 	print("Main menu ready...")
@@ -34,6 +39,19 @@ func host_game() -> void:
 	print("Host game pressed")
 	NetworkManager.host_game(NetworkConnectionConfigs.new(NetworkManager.LOCALHOST))
 	_show_lobby_panel()
+	_set_host_ip_label("Opening UPnP…")
+	if NetworkManager.active_network_node and NetworkManager.active_network_node.has_signal("upnp_finished"):
+		NetworkManager.active_network_node.upnp_finished.connect(_on_upnp_finished)
+
+func _on_upnp_finished(success: bool, public_ip: String, message: String) -> void:
+	if success:
+		_set_host_ip_label("Share with friends: %s:%d" % [public_ip, 8080])
+	else:
+		_set_host_ip_label(message)
+
+func _set_host_ip_label(text: String) -> void:
+	if host_ip_label:
+		host_ip_label.text = text
 
 func join_game() -> void:
 	_show_join_panel()

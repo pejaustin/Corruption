@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://dsnyn2e8y152j"]
 
 [ext_resource type="PackedScene" uid="uid://bq0mxc1lqy3ta" path="res://scenes/actors/player/player_actor.tscn" id="1_base"]
-[ext_resource type="PackedScene" uid="uid://twkv4hspfoay" path="res://assets/characters/large-male/large_male.tscn" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://bv1qhiv4lk5ls" path="res://assets/characters/avatar/avatar.tscn" id="3_afwa1"]
 [ext_resource type="PackedScene" uid="uid://d1f2d2crfxy8x" path="res://assets/characters/accessories/sword.fbx" id="4_7i2nu"]
-[ext_resource type="Material" uid="uid://dpeqwus4g3i2v" path="res://assets/characters/skins/fantasy_male_skin_material.tres" id="4_s1nch"]
 [ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="5_hitbox"]
 [ext_resource type="Script" uid="uid://d0aehpnqgu5yc" path="res://scenes/actors/player/avatar/avatar_actor.gd" id="6_avatar"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar_camera.tscn" id="7_camera"]
@@ -11,6 +10,7 @@
 [ext_resource type="Script" uid="uid://cxpclo6q7yoem" path="res://scenes/actors/player/states/attack_state.gd" id="9_attack"]
 [ext_resource type="Script" uid="uid://54xejhc45eci" path="res://scenes/actors/player/states/channel_state.gd" id="10_channel"]
 [ext_resource type="PackedScene" uid="uid://dyl7bol73bpei" path="res://scenes/ui/avatar_hud.tscn" id="11_hud"]
+[ext_resource type="Script" uid="uid://du8oa62cayfhx" path="res://scenes/actors/player/states/roll_state.gd" id="12_f2kxo"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
@@ -25,79 +25,32 @@ height = 3.0
 collision_layer = 5
 script = ExtResource("6_avatar")
 
-[node name="Model" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]
+[node name="Avatar" parent="Model" index="0" unique_id=1068379943 instance=ExtResource("3_afwa1")]
 
-[node name="Skeleton3D" parent="Model/Model/Root" parent_id_path=PackedInt32Array(397539025, 888430599) index="0" unique_id=1590710455]
-bones/0/position = Vector3(0.20420879, 0.19320482, -0.14880997)
-bones/0/rotation = Quaternion(-0.60583276, 6.177425e-08, 0.79559207, -4.106114e-08)
-bones/1/rotation = Quaternion(-0.50751287, 0.5082272, -0.4919074, -0.49210063)
-bones/2/rotation = Quaternion(0.01573586, -0.0020790698, 0.99462473, -0.10232179)
-bones/3/rotation = Quaternion(0.94612885, -0.021870835, 0.075502574, -0.314104)
-bones/9/position = Vector3(-0.20752048, 0.1932048, 0.0304607)
-bones/9/rotation = Quaternion(-0.7461758, 4.6378982e-08, 0.665749, -4.4836593e-08)
-bones/10/rotation = Quaternion(-0.50768626, 0.50790143, -0.49172845, -0.4924368)
-bones/12/rotation = Quaternion(0.94811195, 0.011444969, -0.044093143, -0.31465644)
-bones/16/position = Vector3(-0.57952744, -0.5297877, -0.19018777)
-bones/18/position = Vector3(-4.9915747e-05, 1.4820565, 0.10399981)
-bones/18/rotation = Quaternion(9.301512e-05, -3.619722e-08, 0.99999905, -0.001443072)
-bones/19/rotation = Quaternion(5.290119e-05, -0.027772395, 0.9996133, 0.0014450961)
-bones/20/rotation = Quaternion(-0.0043664654, -1.022809e-08, -1.0999047e-08, 0.9999905)
-bones/21/rotation = Quaternion(0.06234841, -0.04485285, -0.0028048104, 0.9970421)
-bones/22/rotation = Quaternion(0.09409423, -2.6478637e-09, 4.5304852e-10, 0.9955634)
-bones/23/rotation = Quaternion(0.07661573, 2.892656e-09, 3.3542186e-10, 0.9970607)
-bones/26/rotation = Quaternion(0.5976561, 0.3955079, 0.5656468, -0.40795133)
-bones/27/rotation = Quaternion(-0.35961437, 0.6730296, -0.24033874, 0.599955)
-bones/28/rotation = Quaternion(0.35121483, -0.073059335, -0.07076998, 0.9307535)
+[node name="Skeleton3D" parent="Model/Avatar/Root" parent_id_path=PackedInt32Array(1068379943, 888430599) index="0" unique_id=1590710455]
 bones/29/rotation = Quaternion(-0.015085455, 0.7243594, -0.031580053, 0.6885336)
-bones/31/rotation = Quaternion(0.77166736, 0.0466405, 0.00196556, 0.6343109)
-bones/32/rotation = Quaternion(0.4109354, -0.027859326, 0.012505378, 0.91115296)
-bones/34/rotation = Quaternion(-0.21306121, 0.6950392, 0.35843107, 0.58570707)
-bones/35/rotation = Quaternion(0.6606484, -0.0754557, 0.119352, 0.737296)
-bones/37/rotation = Quaternion(0.6781865, -0.48571008, 0.46352893, 0.29881403)
-bones/38/rotation = Quaternion(0.04730487, 0.90625167, 0.401218, -0.12447604)
-bones/39/rotation = Quaternion(-0.06782556, -0.021080064, 0.3517954, 0.9333785)
-bones/40/rotation = Quaternion(-0.0108134635, 0.1092944, -0.03328561, 0.9933931)
-bones/41/rotation = Quaternion(-0.016250009, -0.077578336, -4.2549334e-05, 0.9968538)
-bones/42/rotation = Quaternion(-0.74740034, 0.042206734, 0.0076555274, 0.6629877)
-bones/43/rotation = Quaternion(-0.4109373, -0.027858166, -0.012504931, 0.91115206)
-bones/45/rotation = Quaternion(-0.2310197, 0.802493, -0.3471273, -0.4267759)
-bones/46/rotation = Quaternion(-0.5951428, 0.045921843, 0.31065425, 0.73972315)
-bones/48/rotation = Quaternion(0.9965793, 0.06920034, -0.0027325936, 0.04509591)
-bones/48/scale = Vector3(1.0000511, 1.0000012, 1.0000038)
-bones/49/rotation = Quaternion(0.34591004, 0.030500809, 0.12914085, 0.92883724)
-bones/50/rotation = Quaternion(-0.66056395, -0.15921266, -0.15747982, 0.71659386)
-bones/50/scale = Vector3(1.000015, 0.9999837, 1.0000005)
-bones/53/rotation = Quaternion(0.9727361, -0.054311555, -0.15230583, 0.16624609)
-bones/54/rotation = Quaternion(0.39144805, 0.010536991, -0.16670462, 0.90491265)
-bones/55/rotation = Quaternion(-0.6176251, 0.21859336, 0.17198175, 0.7356484)
-bones/56/rotation = Quaternion(0.028260697, 0.95394117, -0.29757366, -0.025447702)
 
-[node name="characterLargeMale" parent="Model/Model/Root/Skeleton3D" index="0" unique_id=371188151]
-surface_material_override/0 = ExtResource("4_s1nch")
+[node name="LeftHand" parent="Model/Avatar/Root/Skeleton3D" index="1" unique_id=2050844362]
+transform = Transform3D(0.07474194, 0.14349152, -0.98682487, -0.2270763, -0.9611454, -0.15695614, -0.97100425, 0.2358158, -0.039254427, 0.5139298, 1.3410388, 0.17227304)
 
-[node name="BoneAttachment" type="BoneAttachment3D" parent="Model/Model/Root/Skeleton3D" index="1" unique_id=140958576]
-transform = Transform3D(0.07913625, -0.16213454, -0.9835906, -0.25083435, -0.9581768, 0.13776435, -0.9647895, 0.23581621, -0.1164954, -0.50239813, 1.3065487, 0.0516539)
-bone_name = "RightHand"
-bone_idx = 40
+[node name="Sword" parent="Model/Avatar/Root/Skeleton3D/RightHand" parent_id_path=PackedInt32Array(1068379943, 1832019117) index="0" unique_id=1582312483 instance=ExtResource("4_7i2nu")]
+transform = Transform3D(-0.12098205, -0.6371934, 0.043004073, 0.61728454, -0.10544567, 0.17419198, -0.16378348, 0.07326108, 0.62474734, -0.075951755, 0.14564335, -0.08455777)
 
-[node name="Sword" parent="Model/Model/Root/Skeleton3D/BoneAttachment" index="0" unique_id=1582312483 instance=ExtResource("4_7i2nu")]
-transform = Transform3D(0.046725236, -0.642669, -0.0854091, 0.48436958, -0.022312626, 0.43288562, -0.43093413, -0.094763614, 0.4773014, -0.05645913, 0.10236454, -0.060500085)
-
-[node name="AttackHitbox" type="Area3D" parent="Model/Model/Root/Skeleton3D/BoneAttachment" index="1" unique_id=1546805926]
+[node name="AttackHitbox" type="Area3D" parent="Model/Avatar/Root/Skeleton3D/RightHand" parent_id_path=PackedInt32Array(1068379943, 1832019117) index="1" unique_id=1546805926]
 unique_name_in_owner = true
-transform = Transform3D(1.0000001, 0, 7.450581e-09, 0, 1.0000001, -5.5879354e-09, 0, -9.313226e-09, 1, -0.68473226, 0.16736364, -0.08267951)
+transform = Transform3D(0.07913626, -0.16213454, -0.9835906, -0.25083438, -0.9581769, 0.13776435, -0.9647896, 0.23581624, -0.11649541, -0.5023979, 1.3065488, 0.76137525)
 collision_layer = 0
 collision_mask = 8
 monitorable = false
 script = ExtResource("5_hitbox")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Model/Root/Skeleton3D/BoneAttachment/AttackHitbox" index="0" unique_id=1540985233]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Root/Skeleton3D/RightHand/AttackHitbox" index="0" unique_id=1540985233]
 transform = Transform3D(0.07188435, -0.9887191, -0.1313981, 0.7451763, -0.034327775, 0.6659759, -0.66297275, -0.14578909, 0.7343094, 0.037100017, -0.010813117, -0.065440595)
 shape = SubResource("CapsuleShape3D_yy7ks")
 disabled = true
 debug_color = Color(0.7019608, 0.23529412, 0.25882354, 0.59607846)
 
-[node name="Hurtbox" type="Area3D" parent="Model/Model/Root" parent_id_path=PackedInt32Array(397539025, 888430599) index="1" unique_id=2097877870]
+[node name="Hurtbox" type="Area3D" parent="Model/Avatar/Root" parent_id_path=PackedInt32Array(1068379943, 888430599) index="1" unique_id=2097877870]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 collision_layer = 4
@@ -105,7 +58,7 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("12_hurt")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Model/Root/Hurtbox" index="0" unique_id=82270526]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Root/Hurtbox" index="0" unique_id=82270526]
 shape = SubResource("CapsuleShape3D_avatar_hurt")
 
 [node name="AvatarCamera" parent="." index="2" unique_id=108768714 instance=ExtResource("7_camera")]
@@ -123,6 +76,10 @@ animation_name = "large-male/Attack"
 script = ExtResource("10_channel")
 animation_name = "large-male/Channeling"
 
+[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8" unique_id=1033644063]
+script = ExtResource("12_f2kxo")
+animation_name = "large-male/Crouch"
+
 [node name="WatcherLabel" type="Label3D" parent="." index="5" unique_id=957424953]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 visible = false
@@ -132,8 +89,8 @@ font_size = 24
 outline_size = 8
 
 [node name="RollbackSynchronizer" parent="." index="6" unique_id=734396145]
-input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis"])
+input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input"])
 
 [node name="AvatarHUD" parent="." index="8" unique_id=1564158435 instance=ExtResource("11_hud")]
 
-[editable path="Model/Model"]
+[editable path="Model/Avatar"]

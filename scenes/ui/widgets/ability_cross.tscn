@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://b6abilitycros0"]
+
+[ext_resource type="Script" path="res://scenes/ui/widgets/ability_cross.gd" id="1_cross"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widgets/ability_slot.tscn" id="2_slot"]
+
+[node name="AbilityCross" type="Control"]
+custom_minimum_size = Vector2(240, 240)
+anchors_preset = 0
+offset_right = 240.0
+offset_bottom = 240.0
+mouse_filter = 2
+script = ExtResource("1_cross")
+
+[node name="SlotTop" parent="." instance=ExtResource("2_slot")]
+unique_name_in_owner = true
+offset_left = 88.0
+offset_top = 0.0
+offset_right = 152.0
+offset_bottom = 64.0
+
+[node name="SlotRight" parent="." instance=ExtResource("2_slot")]
+unique_name_in_owner = true
+offset_left = 176.0
+offset_top = 88.0
+offset_right = 240.0
+offset_bottom = 152.0
+
+[node name="SlotBottom" parent="." instance=ExtResource("2_slot")]
+unique_name_in_owner = true
+offset_left = 88.0
+offset_top = 176.0
+offset_right = 152.0
+offset_bottom = 240.0
+
+[node name="SlotLeft" parent="." instance=ExtResource("2_slot")]
+unique_name_in_owner = true
+offset_left = 0.0
+offset_top = 88.0
+offset_right = 64.0
+offset_bottom = 152.0

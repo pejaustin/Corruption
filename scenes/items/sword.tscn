@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://c51y53mmx0s6x"]
+
+[ext_resource type="PackedScene" uid="uid://d1f2d2crfxy8x" path="res://assets/characters/accessories/sword.fbx" id="1_76q7b"]
+
+[node name="sword" unique_id=1582312483 instance=ExtResource("1_76q7b")]

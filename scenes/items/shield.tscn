@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cs1dsegy2odgs"]
+
+[ext_resource type="PackedScene" uid="uid://dgix6mftq858j" path="res://assets/characters/accessories/shield.fbx" id="1_56g47"]
+
+[node name="shield" unique_id=1936602786 instance=ExtResource("1_56g47")]
