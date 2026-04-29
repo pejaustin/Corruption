@@ -1,6 +1,6 @@
 # Advisor & Command System
 
-**Build status:** Not started — design stub.
+**Build status:** First-pass MVP shipped (handoff intake + courier dispatch only). Stats at `data/minions/advisor.tres`. Actor scene `scenes/actors/minion/types/advisor_actor.tscn` runs two custom states — `advisor_idle_state.gd` and `advisor_follow_state.gd` (mounted as overrides on the inherited IdleState / ChaseState nodes; both find the owner overlord via the `actors` group and the `owner_peer_id`-named OverlordActor). The Advisor follows its owner with a 2.0m / 3.5m hysteresis. A `HandoffArea` Area3D child runs `scripts/interactibles/advisor_handoff.gd`: when the owning overlord enters and presses E, the Advisor pops `KnowledgeManager._pending_commands[peer_id]` and dispatches one Courier per command (see `war-table.md` build-order step 7). What's still TODO: paper-item handoff (`held-items.md`), spoken/balcony intake mode, multi-command-type parsing (currently movement only), faction courier caps, dominate/impersonate hooks, and combat-survivability tuning (currently hp 40, no aggro, no defenses).
 
 ---
 

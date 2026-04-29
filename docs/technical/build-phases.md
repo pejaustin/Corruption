@@ -242,6 +242,88 @@ Systems whose implementation is complete but haven't been confirmed working in a
 - [ ] Releasing the table returns camera to overlord position
 - [ ] With `INFINITE_BROADCAST_RANGE = true` and `INSTANT_COMMANDS = true` (defaults), behavior matches the pre-KnowledgeManager direct path
 
+#### War Table information-warfare layer (Advisor + Courier + reality overlay)
+
+Test harness: `scenes/test/war_table_test.tscn`. Place an Advisor `StartingMinionSpec` (`type_id = "advisor"`, `owner_peer_id = 1`, `faction = UNDEATH`) under `World/StartingMinions` first. Then in-game press **T** to flip `INSTANT_COMMANDS = false` to engage this whole flow.
+
+**Advisor follow behavior**
+- [ ] Advisor stays idle while the owner's overlord is within ~3.5m
+- [ ] Advisor walks toward the owner's overlord when distance > 3.5m (uses `NavigationAgent3D` RVO)
+- [ ] Advisor settles back to idle within ~2.0m on arrival (no orbiting / jitter)
+- [ ] Advisor never engages combat (no aggro, no attack, even if attacked)
+- [ ] Advisor's Hurtbox is live — `K` (kill nearest) can kill the Advisor
+
+**Advisor handoff prompt**
+- [ ] Owner's overlord in HandoffArea sees "E to confer with Advisor" with 0 drafts
+- [ ] Same prompt updates to "E to hand orders (N)" while drafts exist
+- [ ] A non-owner overlord sees "Another overlord's Advisor" and pressing E does nothing
+- [ ] Out of range: no prompt
+
+**Drafts (red arrows)**
+- [ ] With `INSTANT_COMMANDS = true`, war-table clicks behave as before (immediate minion move, no arrows)
+- [ ] With `INSTANT_COMMANDS = false`, each war-table click draws a **red** arrow from the owner's tower spawn marker to the click point
+- [ ] Drafts have NO midpoint pawn (red arrow only)
+- [ ] Multiple clicks stack multiple red arrows on the same table
+- [ ] Red arrows persist after exiting the table — they don't vanish until handoff or courier despawn
+- [ ] Drafts are per-peer; another peer's table does not show your red arrows
+
+**Handoff transition (red → black, dispatch)**
+- [ ] Pressing E on the owner's Advisor with N drafts spawns N couriers, one at the tower spawn marker per draft
+- [ ] Each red arrow flips to **black** in place at handoff (same arrow node, color swap, no flicker)
+- [ ] Each dispatched arrow gains a **courier-color (light blue) midpoint pawn**
+- [ ] Each courier walks to its target via `NavigationAgent3D`; on arrival, the owner's squad receives a formation move (`MinionManager._assign_formation_waypoints`)
+- [ ] On courier despawn (delivery), its black arrow + midpoint pawn evaporate
+- [ ] Killing a courier mid-flight (K) also clears its arrow + pawn cleanly
+- [ ] Pressing E on the Advisor with 0 drafts is a no-op (just the prompt; no spurious dispatches)
+
+**Reality overlay (debug, M)**
+- [ ] Press **M** in the test harness to flip `WarTableMap.SHOW_REALITY`
+- [ ] When ON: a small **yellow sphere** appears at every live courier's actual table-local position, regardless of belief or ownership
+- [ ] Yellow markers track couriers in real-time as they move along their path
+- [ ] When OFF: yellow markers vanish; red/black belief layer remains untouched
+- [ ] Yellow + red are unambiguously distinct on the table
+- [ ] Yellow + black are unambiguously distinct on the table
+
+**Suppression / non-double-render**
+- [ ] Your own couriers do NOT show as cylindrical pawns at their real position in the regular minion bucket — they exist purely as the midpoint-pawn-on-arrow visual
+- [ ] Rival couriers DO show as cylindrical pawns at their real position (regular minion sighting), since you don't see rival intent
+
+**Broadcast-range truthing (war-table.md step 5)**
+- [ ] With `INFINITE_BROADCAST_RANGE = true` (default), every minion contributes sightings every tick → table is a transparent god-view
+- [ ] Press **B** in the test harness to flip `INFINITE_BROADCAST_RANGE = false`
+- [ ] Once off, only enemies within `BROADCAST_RANGE` (30m default) of one of YOUR friendly minions appear in your WorldModel — distant battlefield activity is dark
+- [ ] Move a friendly minion next to a distant enemy: the enemy enters your model only after the friendly closes the gap (`KnowledgeManager._observable_by` gate)
+- [ ] Move that friendly away again: the enemy stays in your model with its last-known position (sightings don't *delete* on out-of-range; staleness is recorded via `last_updated_tick`)
+- [ ] **[Polish, not yet implemented]** Stale entries should fade visually on the diorama; right now they render at full alpha until removed via `notify_minion_removed`
+
+**Forced retreat + return-to-tower update (war-table.md step 6)**
+
+Setup: pick a combat minion type to test with, edit its `.tres` to set `can_retreat = true` (e.g. flip the flag on `data/minions/skeleton.tres` for the test). Place a `MinionSpawnPoint` near peer 1's tower in the harness scene (or rely on the existing tower binding).
+
+- [ ] Spawn a retreat-capable minion via the harness; let it engage hostile minions and take damage
+- [ ] When HP drops below `retreat_hp_threshold * max_hp`, the minion breaks combat at the start of the next Idle/Chase/Attack tick (no waiting for animation completion)
+- [ ] Minion enters `RetreatState`; navigates back to its owner's `MinionSpawnPoint` via `NavigationAgent3D` (no aggro check during retreat)
+- [ ] On arrival within `ARRIVAL_DISTANCE = 1.5m` of the spawn point, the actor's `_field_log` flushes into the owner's WorldModel via `KnowledgeManager.flush_observations`
+- [ ] The flushed sightings appear on the war table as believed-enemy entries (cylinder pieces) with `source = &"return"` (visualization differentiation is a polish-pass TODO; data is correct)
+- [ ] Minion partial-heals to 50% HP on arrival (so it doesn't immediately re-trigger retreat) and transitions to IdleState
+- [ ] If the owner has no spawn point bound, retreat falls back to IdleState (no log lost — stays in `_field_log` for next attempt)
+- [ ] Toggling `can_retreat = false` on a minion type makes it fight to the death as before (no behavioral change to existing combat units)
+- [ ] `_observe()` does NOT log friendlies (your own minions don't need to be reported home)
+
+**Info-courier — scheduled scout-and-return (war-table.md step 8)**
+
+The `I` hotkey in `war_table_test.tscn` dispatches one info-courier from your spawn to a random playspace point. Default `OBSERVE_DURATION = 4.0s`.
+
+- [ ] Press **I** → an info-courier minion (purple-pink cylinder via `info_courier.tres`) spawns at your tower marker with waypoint = target
+- [ ] Courier travels to target via inherited ChaseState (no combat — `aggro_radius = 0`)
+- [ ] On arrival within `ARRIVAL_DISTANCE = 2m`, courier enters `InfoCourierObserveState` and stands still
+- [ ] While observing, `MinionActor._observe()` continues populating `_field_log` (any hostile minion within `OBSERVE_RADIUS = 12m` ends up logged)
+- [ ] After `OBSERVE_DURATION` seconds, courier transitions to `RetreatState` automatically
+- [ ] Courier walks home via NavigationAgent3D and on arrival flushes the log via `KnowledgeManager.flush_observations`
+- [ ] Flushed sightings appear on the war table; rivals' minions in the observed area become visible on YOUR table after the courier returns even if `INFINITE_BROADCAST_RANGE = false`
+- [ ] Killing the info-courier mid-flight (any HP loss past `retreat_hp_threshold * max_hp = 0.4 * 18 ≈ 7`) triggers premature retreat (the courier is `can_retreat = true`)
+- [ ] Reality overlay (M) shows the info-courier as a yellow sphere — same as command-couriers — at its actual position; intent-vs-reality continues to work for both courier kinds
+
 #### Territory system
 - [ ] Minions present near a grid cell increase corruption over time
 - [ ] Cells decay corruption when no minion is nearby

@@ -27,6 +27,8 @@ func exit(_next_state: RewindableState, _tick: int) -> void:
 		hitbox.disable()
 
 func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
+	if check_retreat():
+		return
 	var target := find_hostile_target()
 	if target:
 		var dir := (target.global_position - actor.global_position)

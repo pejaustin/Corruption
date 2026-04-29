@@ -29,6 +29,18 @@ class_name MinionType extends Resource
 ## Trait-tag consumed by minion AI and MinionManager (raise_dead, stealth, dominate, ...).
 @export var trait_tag: StringName
 
+@export_group("Retreat")
+## When true, this minion's combat states yield to RetreatState once HP drops
+## below retreat_hp_threshold. Opt-in — most fighters fight to the death; only
+## minions whose role includes "carry intel home" (some scouts, info-couriers,
+## retreat-trained warband units) flip this on. Couriers / advisors / bosses
+## leave it false because their state machines own their own retreat semantics
+## or aren't retreat-shaped at all.
+@export var can_retreat: bool = false
+## Fraction of max HP at or below which a retreat-capable minion breaks off
+## and heads home. 0.3 = retreat at 30% HP. Ignored when can_retreat is false.
+@export var retreat_hp_threshold: float = 0.3
+
 func duplicate_for_match() -> MinionType:
 	## Return a match-local copy safe to mutate (upgrades, buffs, domination).
 	return duplicate(true) as MinionType

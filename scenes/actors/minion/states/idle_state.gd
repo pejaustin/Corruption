@@ -1,6 +1,9 @@
 extends MinionState
 
 func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
+	if check_retreat():
+		return
+
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 

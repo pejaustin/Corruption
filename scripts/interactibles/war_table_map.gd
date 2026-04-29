@@ -30,15 +30,51 @@ class_name WarTableMap extends Node3D
 ## hiding the per-frame teleporting that came from snapping.
 @export var piece_lerp_speed: float = 12.0
 
+## Debug overlay: when true, the war table additionally renders a small red
+## marker at every live courier's actual world position regardless of belief.
+## The belief layer (intent arrows + midpoint pawns) keeps drawing underneath.
+## Runtime-mutable so test harnesses can flip it without restarting.
+static var SHOW_REALITY: bool = false
+
+## Belief layer (intent): courier color, used for the midpoint pawn that
+## appears once a courier has been dispatched.
+const COURIER_INTENT_COLOR: Color = Color(0.6, 0.8, 1.0)
+## Dispatched arrow — black "ink on the map," signalling a courier is on the
+## road carrying this order.
+const COURIER_ARROW_COLOR: Color = Color(0.05, 0.05, 0.05)
+## Draft arrow — red, drawn while the order is still a plan in the overlord's
+## hands (post-table-click, pre-Advisor-handoff). Flips to COURIER_ARROW_COLOR
+## in place when the Advisor takes the order.
+const DRAFT_ARROW_COLOR: Color = Color(0.85, 0.25, 0.25)
+## Reality overlay marker color — yellow so it doesn't clash with the red
+## draft arrows (debug-distinct, unambiguous).
+const REALITY_MARKER_COLOR: Color = Color(1.0, 0.85, 0.15)
+
 var _pieces: Dictionary[int, MeshInstance3D] = {}
 var _piece_targets: Dictionary[int, Vector3] = {}
 var _pieces_root: Node3D
 var _materials: Dictionary[int, StandardMaterial3D] = {}
+## cmd_id -> { "arrow": MeshInstance3D, "pawn": MeshInstance3D }
+var _command_visuals: Dictionary[int, Dictionary] = {}
+var _commands_root: Node3D
+## courier minion id -> small marker MeshInstance3D
+var _reality_pieces: Dictionary[int, MeshInstance3D] = {}
+var _reality_root: Node3D
+var _arrow_material: StandardMaterial3D
+var _draft_arrow_material: StandardMaterial3D
+var _intent_material: StandardMaterial3D
+var _reality_material: StandardMaterial3D
 
 func _ready() -> void:
 	_pieces_root = Node3D.new()
 	_pieces_root.name = "Pieces"
 	add_child(_pieces_root)
+	_commands_root = Node3D.new()
+	_commands_root.name = "Commands"
+	add_child(_commands_root)
+	_reality_root = Node3D.new()
+	_reality_root.name = "Reality"
+	add_child(_reality_root)
 
 func _process(delta: float) -> void:
 	if _pieces.is_empty():
@@ -108,6 +144,8 @@ func render_from_model(model: WorldModel) -> void:
 			piece.queue_free()
 		_pieces.erase(id)
 		_piece_targets.erase(id)
+	_render_pending_commands(model)
+	_render_reality_couriers()
 
 func clear_pieces() -> void:
 	for piece in _pieces.values():
@@ -156,3 +194,180 @@ func _material_for_faction(faction: int) -> StandardMaterial3D:
 	mat.roughness = 0.5
 	_materials[faction] = mat
 	return mat
+
+# --- Pending commands (belief layer: intent arrows + midpoint pawns) ---
+
+func _render_pending_commands(model: WorldModel) -> void:
+	## Each entry in model.pending_commands renders by stage:
+	##   "draft"      → red arrow only (plan, not yet dispatched)
+	##   "dispatched" → black arrow + courier-colored midpoint pawn
+	## When the Advisor handoff promotes draft → dispatched, the SAME arrow
+	## flips color in place; the midpoint pawn appears at handoff. To see the
+	## courier's actual position rather than the symbolic midpoint, flip
+	## SHOW_REALITY (debug overlay).
+	var seen: Dictionary[int, bool] = {}
+	for cmd_id in model.pending_commands.keys():
+		seen[cmd_id] = true
+		var entry: Dictionary = model.pending_commands[cmd_id]
+		var stage: StringName = entry.get("stage", &"dispatched")
+		var start_world: Vector3 = entry.get("start_pos", Vector3.ZERO)
+		var target_world: Vector3 = entry.get("target_pos", Vector3.ZERO)
+		var start_local: Vector3 = world_to_table_local(start_world)
+		var target_local: Vector3 = world_to_table_local(target_world)
+		var visuals: Dictionary = _command_visuals.get(cmd_id, {})
+		var arrow: MeshInstance3D = visuals.get("arrow")
+		if arrow == null or not is_instance_valid(arrow):
+			arrow = _make_arrow_mesh()
+			_commands_root.add_child(arrow)
+		_orient_arrow(arrow, start_local, target_local)
+		arrow.material_override = _get_arrow_material_for_stage(stage)
+		visuals["arrow"] = arrow
+		# Midpoint pawn lives only on dispatched entries — drafts are pure
+		# plan, no courier on the road yet.
+		var pawn: MeshInstance3D = visuals.get("pawn")
+		if stage == &"dispatched":
+			if pawn == null or not is_instance_valid(pawn):
+				pawn = _make_intent_pawn_mesh()
+				_commands_root.add_child(pawn)
+			pawn.position = (start_local + target_local) * 0.5
+			visuals["pawn"] = pawn
+		else:
+			if pawn != null and is_instance_valid(pawn):
+				pawn.queue_free()
+			visuals.erase("pawn")
+		_command_visuals[cmd_id] = visuals
+	# Drop visuals for commands that have completed (courier despawned, or a
+	# draft that was abandoned).
+	var dead: Array[int] = []
+	for cmd_id in _command_visuals.keys():
+		if cmd_id not in seen:
+			dead.append(cmd_id)
+	for cmd_id in dead:
+		var v: Dictionary = _command_visuals[cmd_id]
+		var arrow := v.get("arrow") as MeshInstance3D
+		var pawn := v.get("pawn") as MeshInstance3D
+		if is_instance_valid(arrow):
+			arrow.queue_free()
+		if is_instance_valid(pawn):
+			pawn.queue_free()
+		_command_visuals.erase(cmd_id)
+
+func _get_arrow_material_for_stage(stage: StringName) -> StandardMaterial3D:
+	if stage == &"draft":
+		return _get_draft_arrow_material()
+	return _get_arrow_material()
+
+func _make_arrow_mesh() -> MeshInstance3D:
+	var inst := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(0.012, 0.004, 1.0)
+	inst.mesh = mesh
+	inst.material_override = _get_arrow_material()
+	return inst
+
+func _make_intent_pawn_mesh() -> MeshInstance3D:
+	## Intent pawn: a small box, distinct from the cylinder used for live
+	## sightings, so the eye can tell "in transit (belief)" from "spotted".
+	var inst := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(piece_radius * 1.4, piece_radius * 1.6, piece_radius * 0.6)
+	inst.mesh = mesh
+	inst.material_override = _get_intent_material()
+	return inst
+
+func _orient_arrow(arrow: MeshInstance3D, start_local: Vector3, target_local: Vector3) -> void:
+	var diff := target_local - start_local
+	var length: float = diff.length()
+	if length < 0.001:
+		arrow.visible = false
+		return
+	arrow.visible = true
+	var midpoint: Vector3 = (start_local + target_local) * 0.5
+	# BoxMesh's z extent is 1.0 (we set size.z = 1.0 above), so a uniform-Z
+	# scale of `length` makes the box span exactly start→target along its
+	# local Z axis. Orient via looking_at (Z = -forward in Godot, so we
+	# negate the direction).
+	var dir: Vector3 = diff / length
+	var basis := Basis.looking_at(-dir, Vector3.UP)
+	var t := Transform3D(basis, midpoint)
+	t = t.scaled_local(Vector3(1.0, 1.0, length))
+	arrow.transform = t
+
+func _get_arrow_material() -> StandardMaterial3D:
+	if _arrow_material == null:
+		_arrow_material = StandardMaterial3D.new()
+		_arrow_material.albedo_color = COURIER_ARROW_COLOR
+		_arrow_material.roughness = 0.7
+	return _arrow_material
+
+func _get_draft_arrow_material() -> StandardMaterial3D:
+	if _draft_arrow_material == null:
+		_draft_arrow_material = StandardMaterial3D.new()
+		_draft_arrow_material.albedo_color = DRAFT_ARROW_COLOR
+		_draft_arrow_material.roughness = 0.7
+	return _draft_arrow_material
+
+func _get_intent_material() -> StandardMaterial3D:
+	if _intent_material == null:
+		_intent_material = StandardMaterial3D.new()
+		_intent_material.albedo_color = COURIER_INTENT_COLOR
+		_intent_material.roughness = 0.5
+	return _intent_material
+
+# --- Reality overlay (debug: actual courier positions) ---
+
+func _render_reality_couriers() -> void:
+	## Reality is read straight from MinionManager — bypasses every WorldModel
+	## and renders ground truth. Cleared whenever SHOW_REALITY is off.
+	if not SHOW_REALITY:
+		_clear_reality_pieces()
+		return
+	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
+	if mm == null:
+		_clear_reality_pieces()
+		return
+	var seen: Dictionary[int, bool] = {}
+	for m in mm.get_all_minions():
+		if not is_instance_valid(m):
+			continue
+		if m.minion_trait != &"courier":
+			continue
+		var id: int = m.name.to_int()
+		seen[id] = true
+		var piece: MeshInstance3D = _reality_pieces.get(id)
+		if piece == null or not is_instance_valid(piece):
+			piece = _make_reality_marker_mesh()
+			_reality_root.add_child(piece)
+			_reality_pieces[id] = piece
+		piece.position = world_to_table_local(m.global_position) + Vector3(0, piece_radius * 0.2, 0)
+	var dead: Array[int] = []
+	for id in _reality_pieces.keys():
+		if id not in seen:
+			dead.append(id)
+	for id in dead:
+		var p := _reality_pieces[id]
+		if is_instance_valid(p):
+			p.queue_free()
+		_reality_pieces.erase(id)
+
+func _clear_reality_pieces() -> void:
+	for p in _reality_pieces.values():
+		if is_instance_valid(p):
+			p.queue_free()
+	_reality_pieces.clear()
+
+func _make_reality_marker_mesh() -> MeshInstance3D:
+	var inst := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = piece_radius * 0.4
+	mesh.height = piece_radius * 0.8
+	inst.mesh = mesh
+	inst.material_override = _get_reality_material()
+	return inst
+
+func _get_reality_material() -> StandardMaterial3D:
+	if _reality_material == null:
+		_reality_material = StandardMaterial3D.new()
+		_reality_material.albedo_color = REALITY_MARKER_COLOR
+		_reality_material.roughness = 0.4
+	return _reality_material

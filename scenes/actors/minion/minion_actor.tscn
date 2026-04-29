@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://bf5luvbrh418g" path="res://scenes/actors/minion/states/idle_state.gd" id="4_m8qn8"]
 [ext_resource type="Script" uid="uid://bwxume2kqi83t" path="res://scenes/actors/minion/states/chase_state.gd" id="5_r2q84"]
 [ext_resource type="Script" uid="uid://mc37sb6ml8ea" path="res://scenes/actors/minion/states/jump_state.gd" id="6_m8qn8"]
+[ext_resource type="Script" path="res://scenes/actors/minion/states/retreat_state.gd" id="7_retreat"]
 
 [node name="MinionActor" unique_id=336466554 instance=ExtResource("1_e3vac")]
 collision_layer = 128
@@ -40,3 +41,7 @@ metadata/_custom_type_script = "uid://usyufdtn83hc"
 script = ExtResource("6_m8qn8")
 animation_name = "large-male/Jump"
 metadata/_custom_type_script = "uid://usyufdtn83hc"
+
+[node name="RetreatState" type="Node" parent="RewindableStateMachine"]
+script = ExtResource("7_retreat")
+animation_name = "large-male/Run"

@@ -2,6 +2,8 @@
 
 **Build status:** Steps 1–4 in. `KnowledgeManager` autoload + per-peer `WorldModel`, diorama rendering via `WarTableMap`, table↔world click mapping, and the isolated `war_table_test.tscn` harness are all live. The harness now uses real `OverlordActor` + `MinionActor` + `MinionManager` (single-peer via `OfflineMultiplayerPeer`) instead of stand-in fakes — full command-loop is testable without booting the lobby. `INFINITE_BROADCAST_RANGE` and `INSTANT_COMMANDS` still default to `true` so the rest of the game plays unchanged, but they're now runtime-mutable (`static var`) so tests can toggle them without restarting. Steps 5–9 (range truthing, retreat reporting, courier commands/info, falsification) are pending.
 
+`MinionType` data for the three info-warfare roles exists at `data/minions/advisor.tres`, `data/minions/courier.tres`, and `data/minions/scout.tres` (NEUTRAL faction, role-not-faction; per-faction visual flavor is layered on at the actor scene). Actor `.tscn` scenes and behavioral state machines are not yet authored — the `.tres` files are stats-only prerequisites for steps 7 and 11.
+
 ---
 
 ## Design goal
@@ -148,10 +150,35 @@ These are design hooks — not in scope for the first build.
 ## Visual design of the table
 
 - Table surface is a **diorama**, always rendered in world space. Any player walking past any tower can glance at any table and see that overlord's current belief.
-- Minion pieces are chess-piece-style miniatures, parented to the table, colored by faction.
+- Minion pieces are chess-piece-style miniatures (cylinder), parented to the table, colored by faction.
 - Gems, towers, and the Capitol are drawn/labeled icons, placed statically at the start of the match.
 - A stylized map texture (hand-drawn feel) covers the table surface to provide regional context independent of world sculpting state.
 - Staleness is shown visually — recent data is crisp, old data is faded, very old data is replaced with a "?" token.
+
+### Order lifecycle on the table
+
+A move command on the table goes through **two stages** that are visually distinct, both stored in `WorldModel.pending_commands` per command_id:
+
+| Stage | Trigger | Visual on table |
+|---|---|---|
+| `draft` | Overlord clicks the map (any number of clicks → multiple drafts) | **Red** arrow from owner's tower spawn point to target. No midpoint pawn — no courier exists yet. |
+| `dispatched` | Overlord walks to the Advisor and presses E (`KnowledgeManager.dispatch_drafts`) | The same arrow flips to **black** in place, and a courier-color **midpoint pawn** appears. Courier minion spawns at the start point and walks to the target. |
+
+The arrow does NOT disappear-and-reappear at handoff — the same `command_id` entry stays put and only the `stage` field flips, so the visual reads as "color change, same arrow." When the courier despawns (delivered, killed, anything in `KnowledgeManager.notify_minion_removed`), the entry is removed and the visual evaporates.
+
+Your own couriers are *suppressed* from the regular minion-sighting buckets so they don't double-render. **Rival couriers** are not — to a rival you don't see *intent*, just a minion you happen to spot, so a rival's courier shows up the same way any other rival minion does (regular pawn at its sighted position).
+
+> Why intent-only by default? The war table is *the Advisor's drawing*, not a satellite feed. The Advisor knows what was ordered and where; how far the courier has actually got is a question the Advisor can't answer until the courier comes back. The midpoint pawn is the "I sent a runner, they're somewhere on the road" abstraction. The red→black flip is the moment the order leaves the player's hands.
+
+### Held-item flavor (deferred)
+
+The current MVP does NOT yet show the player physically *carrying* the plan-paper between the table and the Advisor — the drafts persist in `WorldModel.pending_commands` invisibly until handoff. The diegetic paper item (rolled scroll in the overlord's hand, faction-flavored, see `held-items.md`) is still TODO. Once it lands, "leaving the table with confirmed orders" will pick up a held item; "handing it to the Advisor" will consume the held item; the lifecycle on the table doesn't change.
+
+### Reality overlay (debug)
+
+`WarTableMap.SHOW_REALITY` (default `false`) is a debug toggle. When `true`, the war table additionally draws a small **yellow sphere marker** at every live courier's actual world position, sourced directly from `MinionManager` (truth, not belief). Rendered on top of the belief layer — both visible simultaneously. Yellow is chosen specifically to stay distinct from red (drafts) and black (dispatched arrows).
+
+Use it to verify dispatch correctness, courier pathing, and intent-vs-reality drift. In the war-table test harness, press **M** to flip the toggle.
 
 ---
 
@@ -202,16 +229,59 @@ Because the harness runs the real `MinionManager`, the autoload's ingest loop po
 
 ---
 
+## Scout & Scry
+
+Scouts (`data/minions/scout.tres`) are the cheap, fast, low-HP eyes of the army. They are a specialized minion type, not an upgrade tier — there is no "promoted" form. Two functions on the same body:
+
+- **Passive WorldModel feed** — like any friendly minion, a Scout in broadcast range pushes sightings into its owner's `WorldModel`. Their job description is "be in the field at the broadcast-range edge," so they tend to be the WorldModel's primary out-there source.
+- **Scry target (cross-player)** — Scouts are *publicly scryable*. Any player — owner, ally, or rival — can park a third-person scry camera on a Scout, just as the existing Palantir already does for the shared Paladin (the Avatar; see `scripts/interactibles/palantir.gd`). The Scout becomes a window that other towers can look through. The scout knows it is being watched the same way the Paladin does (the watcher position is broadcast and rendered as a visible ghost cube near the target — see `palantir.gd:_start_scrying`). Multiple watchers on the same Scout produce multiple ghost cubes — no aggregation.
+
+The Paladin (the Avatar) remains a scryable target as today, just opened up so every peer's Palantir can hold a feed on it concurrently rather than only the tower whose Palantir is currently bound to the Avatar slot.
+
+> Terminology: **Paladin** = the in-flavor name for the shared Avatar entity. **Holy Knight** = a separate neutral-faction minion type (`data/minions/holy_knight.tres`) used as gemsite guards / boss texture. They are not the same thing.
+
+### Palantir target selection
+
+Each tower has one Palantir. On interact, it presents a target picker over **all currently active scryable targets** in the match — the Paladin (when one exists) plus every living Scout owned by any peer. The overlord chooses one target, the orb begins streaming that feed (third-person orbit, mouse/joystick to rotate around the target), Q exits as today. Switching targets is the same flow: stop the current scry, re-open the picker, choose another. There is no per-Scout interactable elsewhere — the Palantir is the single entry point and always lists the full live roster.
+
+> Implementation tracking lives in `docs/technical/ui-rework.md` § "Palantir — multi-target scry picker". The current `palantir.gd` is single-target on the Paladin and will be reworked when Scouts ship.
+
+### Why public visibility
+
+This is an intentional asymmetry against the WorldModel. The WorldModel is *private and lossy* (you only see what your own minions report). The Scout-scry network is *public and live* (anyone with a Palantir can look through any Scout in real-time). Consequences:
+
+- An overlord who deploys a Scout is offering free intel to their rivals as well as themselves. Killing your own scouts is a legitimate counter-intel move.
+- An ally can spot for you by deploying a Scout near a contested gem; you scry through their Scout from your tower.
+- A rival who finds your Scout deep in their territory can scry through it back at *your* army. Protect or kill on sight.
+
+### Bandwidth cap
+
+Each scryable target has a max-concurrent-watchers cap, exposed as an export on the target's actor scene:
+
+```gdscript
+@export var max_concurrent_watchers: int = 4
+```
+
+Default is **4** for every target type (Scout, Paladin, anything added later). The export lets specific scenes or instances tune it without touching code — e.g. a story boss could be capped at 1, a free-for-all "town square" Scout could be raised to 8.
+
+When a target is at cap, the Palantir picker shows it as **full** and prevents selection. If a watcher disconnects (Q exits, watcher's tower destroyed, target dies), a freed slot opens immediately for the next picker request — no queue.
+
+### Open questions
+
+- **Alliance gating** later: in a future version, scry access could be alliance-gated rather than fully public. First build keeps it fully public to make the asymmetry sharp.
+
+---
+
 ## Build order
 
 1. ✅ **`WorldModel` + `KnowledgeManager` stub** — autoload at `scripts/knowledge/`, per-peer dicts, `INFINITE_BROADCAST_RANGE` and `INSTANT_COMMANDS` flags defaulting to `true`. `MinionManager.notify_minion_died` forwards to `KnowledgeManager.notify_minion_removed`.
 2. ✅ **War Table reads from WorldModel** — `WarTableMap` spawns a colored cylinder piece per believed minion. Table `_process` calls `map.render_from_model(KnowledgeManager.get_model(peer_id))` each frame.
 3. ✅ **Table-space ↔ world-space mapping + click handling** — `WarTableMap` exports `map_world_center`, `map_world_size`, `table_surface_size`. `camera_ray_to_world()` projects table clicks onto the map plane and converts to battlefield coords. `WarTableRange` (tool script) draws a semi-transparent BoxMesh covering the effective region so designers can see it in-editor and in-game.
 4. ✅ **Test scene** — `scenes/test/war_table_test.tscn` runs the real `WarTable` + `OverlordActor` + `MinionManager` via `OfflineMultiplayerPeer`. Starter minions are authored as `StartingMinionSpec` Marker3D children. Full command loop is exercised end-to-end.
-5. **Broadcast-range truthing** — flip `INFINITE_BROADCAST_RANGE` off, tune range, validate staleness visuals.
-6. **Forced retreat + return-to-tower update** — a retreating minion's arrival flushes its sightings log.
-7. **Courier for commands** — ghost flags, courier animation, courier success/failure. `KnowledgeManager.issue_move_command` already routes through a flag-gated path.
-8. **Courier for information** — scheduled reports back from the field.
+5. ✅ **Broadcast-range truthing** — flip `INFINITE_BROADCAST_RANGE` off, tune range, validate staleness visuals. **Implemented**: `KnowledgeManager._observable_by` already gates sightings to within `BROADCAST_RANGE` (30m, tunable const) of any of the peer's friendly minions when the flag is `false`. Test harness `B` hotkey toggles the flag at runtime. Staleness *fade visuals* are still pending (open under "Visual / diorama polish") — currently a sighting goes from "fresh" to "stale" in the model but the diorama doesn't fade the cylinder yet.
+6. ✅ **Forced retreat + return-to-tower update** — a retreating minion's arrival flushes its sightings log. **First-pass MVP shipped.** Opt-in per `MinionType` via `can_retreat` (default `false`) and `retreat_hp_threshold` (default 0.3). On the host, `MinionActor._observe()` runs every 0.25s while in the field and stamps nearby hostiles into `_field_log`. `MinionState.check_retreat()` fires from Idle/Chase/Attack at top of `tick()` and routes into `RetreatState`, which navigates to the owner's tower spawn marker and on arrival calls `KnowledgeManager.flush_observations(peer_id, log)` then transitions back to IdleState (with a partial heal so the trigger doesn't immediately re-fire). No retreat animation set yet (uses Run); no panic state; no faction tunables. See `docs/systems/minion-ai.md` for the architecture this'll migrate into.
+7. **Courier for commands** — ghost flags, courier animation, courier success/failure. `KnowledgeManager.issue_move_command` already routes through a flag-gated path. **First-pass MVP shipped**: when `INSTANT_COMMANDS=false`, war-table clicks queue into `KnowledgeManager._pending_commands[peer_id]`. The Advisor (`advisor_actor.tscn` + `scripts/interactibles/advisor_handoff.gd`) shows a "hand orders (N)" prompt; on E it pops the queue and calls `KnowledgeManager.dispatch_courier` per command, which spawns a real Courier minion at the owner's tower spawn with `waypoint = target`. The Courier travels via inherited ChaseState; on arrival, `courier_arrival_state.gd` calls `MinionManager._assign_formation_waypoints` for the owner's squad and despawns. No ghost-flag UI, no Stay/Leave modes, no per-faction cap yet.
+8. ✅ **Courier for information** — scheduled reports back from the field. **First-pass MVP shipped.** New `info_courier` minion type (`data/minions/info_courier.tres`) and actor scene; `KnowledgeManager.dispatch_info_courier(peer_id, target_pos)` host-spawns one at the owner's tower spawn with `waypoint = target`. Lifecycle: travel via inherited ChaseState → `InfoCourierObserveState` (loiter `OBSERVE_DURATION = 4s`) → `RetreatState` → flush `_field_log` → IdleState/despawn. Bypasses the draft / Advisor handoff loop — info-missions are reactive, not order-batched. No dispatch UI yet (test harness `I` hotkey is the only entry point); composition surface lands with step 9.
 9. **Command composition UI** — cursor-based minion/group select, destination click, painted path arrow, up-to-5-command stack with undo/confirm. Replaces the current click-to-move on confirm; `INSTANT_COMMANDS=true` still bypasses to the direct path for playtesting.
 10. **Paper held item** — confirming at the table exits camera and places a plan-paper in the overlord's held-item slot (faction-flavored). *Blocked on the held-items system — see `held-items.md`.*
 11. **Advisor handoff** — hand the paper to the Advisor minion in the tower; Advisor parses and queues plans. *Blocked on the Advisor command system — see `advisor.md`.*

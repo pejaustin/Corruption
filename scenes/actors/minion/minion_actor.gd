@@ -40,6 +40,16 @@ var attack_cooldown: float = 1.5
 var attack_range: float = 1.8
 var aggro_radius: float = 8.0
 var max_hp_value: int = 40
+## Resolved from MinionType — read by states (MinionState._check_retreat) and
+## RetreatState. Defaults keep legacy minions retreat-immune.
+var can_retreat: bool = false
+var retreat_hp_threshold: float = 0.3
+## Field log — host-only. Each entry: { id, pos, faction, owner_peer_id,
+## observed_tick }. Populated by _observe() while we're in the field. Flushed
+## into the owner's WorldModel on arrival home (RetreatState) and cleared.
+## Keyed by minion id so a single observed enemy only contributes one entry —
+## later sightings of the same target overwrite the earlier one.
+var _field_log: Dictionary[int, Dictionary] = {}
 
 var attack_timer: float = 0.0
 var _death_timer: float = 0.0
@@ -57,6 +67,14 @@ var _target_rot: float
 
 var _minion_manager: Node
 var _aggro_ring: MeshInstance3D
+## Throttle for the host-side observation sweep — runs every OBSERVE_INTERVAL
+## seconds rather than every physics tick to keep the actor loop cheap.
+const OBSERVE_INTERVAL: float = 0.25
+## Range within which an actor counts as "observed" by this minion. Smaller
+## than aggro_radius — the minion only sees what's near, even if it can't
+## fight everything within its sight.
+const OBSERVE_RADIUS: float = 12.0
+var _observe_timer: float = 0.0
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
 
 func _ready() -> void:
@@ -133,6 +151,8 @@ func apply_type(mtype: MinionType) -> void:
 	attack_range = mtype.attack_range
 	aggro_radius = mtype.aggro_radius
 	minion_trait = mtype.trait_tag
+	can_retreat = mtype.can_retreat
+	retreat_hp_threshold = mtype.retreat_hp_threshold
 	_refresh_aggro_ring()
 
 func get_max_hp() -> int:
@@ -170,6 +190,14 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		apply_gravity(delta)
 
+	# Only retreat-capable minions accumulate a field log — non-retreaters
+	# never make the trip home, so the log would be wasted CPU.
+	if can_retreat:
+		_observe_timer += delta
+		if _observe_timer >= OBSERVE_INTERVAL:
+			_observe_timer = 0.0
+			_observe()
+
 	_state_machine._rollback_tick(delta, 0, true)
 
 	if _state_machine.state == &"DeathState":
@@ -183,6 +211,42 @@ func _physics_process(delta: float) -> void:
 func _interpolate_client(delta: float) -> void:
 	global_position = global_position.lerp(_target_pos, INTERPOLATION_SPEED * delta)
 	rotation.y = lerp_angle(rotation.y, _target_rot, INTERPOLATION_SPEED * delta)
+
+func _observe() -> void:
+	## Host-only. Sweep nearby actors and stash a sighting per hostile into
+	## _field_log so RetreatState can flush it to the owner's WorldModel on
+	## arrival home. Friendlies are intentionally not logged — the WorldModel's
+	## live broadcast path already covers your own units when in range.
+	if owner_peer_id < 0:
+		return  # neutral / world enemies have nothing to report
+	var observed_tick: int = KnowledgeManager.current_tick()
+	for node in get_tree().get_nodes_in_group(&"actors"):
+		var other := node as Node3D
+		if other == null or other == self:
+			continue
+		if global_position.distance_to(other.global_position) > OBSERVE_RADIUS:
+			continue
+		var observed_id: int = -1
+		var observed_owner: int = -1
+		var observed_faction: int = GameConstants.Faction.NEUTRAL
+		if other is MinionActor:
+			var mo: MinionActor = other
+			if mo.owner_peer_id == owner_peer_id:
+				continue  # ignore friendlies
+			observed_id = mo.name.to_int()
+			observed_owner = mo.owner_peer_id
+			observed_faction = mo.faction
+		else:
+			# Avatar / other non-minion actors aren't logged to _field_log
+			# yet; the WorldModel's avatar slot is a separate concern.
+			continue
+		_field_log[observed_id] = {
+			"id": observed_id,
+			"pos": other.global_position,
+			"owner_peer_id": observed_owner,
+			"faction": observed_faction,
+			"observed_tick": observed_tick,
+		}
 
 func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
 	_target_pos = pos

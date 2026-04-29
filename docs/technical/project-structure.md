@@ -19,6 +19,8 @@ corruption/
 │   └── world/env/           # Environment models, textures
 ├── data/
 │   ├── abilities/           # AbilityData .tres (per Avatar ability)
+│   ├── csv/                 # Balance CSVs (round-trip via scripts/build/balance_csv.gd — see docs/technical/balance-csv.md)
+│   ├── factions/            # FactionProfile .tres (undeath, demonic, nature_fey, eldritch)
 │   ├── minions/             # MinionType .tres (skeleton, imp, guardian, corrupted_seraph, ...)
 │   ├── rituals/             # RitualData .tres (domination_mastery, corruption_surge, eldritch_vision)
 │   └── upgrades/            # UpgradeData .tres (minion_vitality, minion_ferocity, dark_tithe, avatar_fortitude, avatar_might)
@@ -49,6 +51,7 @@ corruption/
 │       └── ...                             # Other env scenes (rocks, foliage)
 ├── scripts/
 │   ├── abilities/           # AbilityEffect base + per-ability effect scripts
+│   ├── build/               # EditorScripts (balance_csv.gd — Resource ↔ CSV round-trip)
 │   ├── interactibles/       # WarTable + WarTableMap + WarTableRange, GemSite, UpgradeAltar, RitualSite
 │   ├── knowledge/           # KnowledgeManager autoload + WorldModel (per-peer battlefield belief)
 │   ├── menus/               # Menu logic

@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://btwart0000001" path="res://scenes/interactibles/war_table.tscn" id="4_wt"]
 [ext_resource type="PackedScene" uid="uid://cqo6h5ijp2vpo" path="res://scenes/actors/player/overlord/overlord_actor.tscn" id="5_ov"]
 [ext_resource type="Script" uid="uid://cii5qfapbe5tc" path="res://scripts/interactibles/war_table_range.gd" id="6_range"]
+[ext_resource type="Script" uid="uid://fuot1gu7uob" path="res://scenes/actors/minion/minion_spawn_point.gd" id="7_spawn"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_proc"]
 sky_horizon_color = Color(0.6, 0.7, 0.8, 1)
@@ -51,13 +52,13 @@ cull_mode = 2
 shading_mode = 0
 albedo_color = Color(0.95, 0.85, 0.4, 0.18)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e2tg4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u83fa"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
 albedo_color = Color(0.95, 0.75, 0.2, 0.02)
 
-[sub_resource type="BoxMesh" id="BoxMesh_u83fa"]
+[sub_resource type="BoxMesh" id="BoxMesh_3o13u"]
 size = Vector3(30, 20, 30)
 
 [node name="WarTableTest" type="Node3D" unique_id=900000001 node_paths=PackedStringArray("war_table", "overlord", "minion_manager", "starting_minions_root", "debug_markers_root", "status_label")]
@@ -137,20 +138,31 @@ type_id = &"neutral_zombie"
 faction = 4
 owner_peer_id = -1
 
+[node name="Advisor" type="Marker3D" parent="World/StartingMinions" unique_id=900000057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 1.5)
+script = ExtResource("2_spec")
+type_id = &"advisor"
+faction = 4
+
+[node name="PlayerSpawnPoint" type="Marker3D" parent="World" unique_id=900000058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.5, -12)
+script = ExtResource("7_spawn")
+
 [node name="MinionManager" type="Node" parent="." unique_id=900000060]
 script = ExtResource("3_mm")
 
 [node name="WarTable" parent="." unique_id=900000070 instance=ExtResource("4_wt")]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 22, 0, 0)
 map_world_size = Vector2(30, 30)
+map_world_center = Vector3(0, 0, 0)
 
 [node name="1" parent="." unique_id=900000080 instance=ExtResource("5_ov")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27, 0.1, 0)
 
 [node name="RangeIndicator" type="MeshInstance3D" parent="." unique_id=900000090 node_paths=PackedStringArray("war_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
-material_override = SubResource("StandardMaterial3D_e2tg4")
-mesh = SubResource("BoxMesh_u83fa")
+material_override = SubResource("StandardMaterial3D_u83fa")
+mesh = SubResource("BoxMesh_3o13u")
 script = ExtResource("6_range")
 war_table = NodePath("../WarTable")
 

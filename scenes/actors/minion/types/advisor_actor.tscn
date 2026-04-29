@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://71btovk3inad"]
+
+[ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/ZombieModel.tscn" id="2_model"]
+[ext_resource type="Resource" path="res://data/minions/advisor.tres" id="2_type"]
+[ext_resource type="Texture2D" uid="uid://v3001qns3ks7" path="res://assets/characters/large-male/skins/zombieA.png" id="4_v3ndx"]
+[ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
+[ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
+[ext_resource type="Script" uid="uid://bb43ky7d67nie" path="res://scenes/actors/minion/states/advisor_idle_state.gd" id="11_idle"]
+[ext_resource type="Script" uid="uid://bym5iaspfdqwb" path="res://scenes/actors/minion/states/advisor_follow_state.gd" id="12_follow"]
+[ext_resource type="Script" uid="uid://dflu6cq52wl5u" path="res://scripts/interactibles/advisor_handoff.gd" id="13_handoff"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_advisor"]
+height = 3.002
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8qs8f"]
+shading_mode = 0
+albedo_color = Color(0, 1, 0.027865171, 1)
+albedo_texture = ExtResource("4_v3ndx")
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 1.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_advisor_hurt"]
+height = 3.002
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_handoff"]
+size = Vector3(6, 4, 6)
+
+[node name="Advisor" unique_id=336466554 instance=ExtResource("1_base")]
+minion_type = ExtResource("2_type")
+
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
+shape = SubResource("CapsuleShape3D_advisor")
+
+[node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]
+
+[node name="characterLargeMale" parent="Model/Zombie/Root/Skeleton3D" parent_id_path=PackedInt32Array(397539025, 1590710455) index="0" unique_id=371188151]
+material_override = SubResource("StandardMaterial3D_8qs8f")
+
+[node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=1500154886]
+script = ExtResource("11_idle")
+
+[node name="ChaseState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4" unique_id=585518695]
+script = ExtResource("12_follow")
+
+[node name="AttackHitbox" type="Area3D" parent="." index="4" unique_id=1451551186]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.34678698)
+collision_layer = 0
+collision_mask = 12
+monitorable = false
+script = ExtResource("9_hitbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox" index="0" unique_id=1430903671]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
+shape = SubResource("SphereShape3D_hitbox")
+disabled = true
+
+[node name="Hurtbox" type="Area3D" parent="." index="5" unique_id=482836699]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("10_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox" index="0" unique_id=1309615123]
+shape = SubResource("CapsuleShape3D_advisor_hurt")
+
+[node name="HandoffArea" type="Area3D" parent="." index="6" unique_id=533498638]
+collision_layer = 0
+script = ExtResource("13_handoff")
+aim_angle_threshold = 75.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HandoffArea" index="0" unique_id=497836904]
+shape = SubResource("BoxShape3D_handoff")
+
+[editable path="Model/Zombie"]

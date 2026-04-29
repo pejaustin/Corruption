@@ -20,6 +20,8 @@ func enter(_previous_state: RewindableState, _tick: int) -> void:
 func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	if minion == null:
 		return
+	if check_retreat():
+		return
 	# Hand off to JumpState if the agent flagged a jumpable link this tick.
 	if minion.jump_target != Vector3.INF:
 		state_machine.transition(&"JumpState")

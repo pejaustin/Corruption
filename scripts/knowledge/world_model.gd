@@ -19,7 +19,13 @@ var believed_avatar_positions: Dictionary[int, Dictionary] = {}
 ## gem_id -> { capture_progress: float, owner: int, last_updated_tick: int }
 var believed_gem_states: Dictionary[StringName, Dictionary] = {}
 
-## command_id -> { target_pos: Vector3, issued_tick: int, courier_id: int }
+## command_id -> {
+##   stage: StringName,        # &"draft" before handoff, &"dispatched" after
+##   start_pos: Vector3,        # where the courier will / does spawn from
+##   target_pos: Vector3,       # where the order points
+##   courier_id: int,           # -1 while a draft, real minion id once dispatched
+##   issued_tick: int,
+## }
 var pending_commands: Dictionary[int, Dictionary] = {}
 
 func update_minion_sighting(

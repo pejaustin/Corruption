@@ -25,6 +25,8 @@ extends Node3D
 ##   R — reset: despawn all minions, respawn from StartingMinionSpec children
 ##   T — toggle KnowledgeManager.INSTANT_COMMANDS
 ##   B — toggle KnowledgeManager.INFINITE_BROADCAST_RANGE
+##   M — toggle WarTableMap.SHOW_REALITY (debug overlay of actual courier positions)
+##   I — dispatch an info-courier to a random playspace point (fires KnowledgeManager.dispatch_info_courier)
 ##
 ## While the war table is active (E to enter, mouse visible):
 ##   Left click       → command your minions to move (real game behavior)
@@ -79,6 +81,15 @@ func _ready() -> void:
 	# its Minions container under World. Wait one frame so the container
 	# exists before we spawn into it.
 	await get_tree().process_frame
+	# This harness has no Tower / MultiplayerManager infrastructure, so we
+	# bind the local peer's spawn point directly. KnowledgeManager.dispatch_*
+	# uses this to know where to spawn couriers from. Without it, drafts and
+	# info-courier dispatches silently no-op (push_warning to console).
+	var spawn_point := get_node_or_null("World/PlayerSpawnPoint") as MinionSpawnPoint
+	if spawn_point != null:
+		minion_manager.bind_peer_spawn_point(LOCAL_PEER_ID, spawn_point)
+	else:
+		push_warning("[WarTableTest] World/PlayerSpawnPoint missing — courier dispatch will silently no-op until added")
 	_spawn_starting_state()
 	_refresh_status()
 
@@ -104,6 +115,13 @@ func _random_playspace_point() -> Vector3:
 		randf_range(-playspace_extent.y, playspace_extent.y),
 	)
 
+func _dispatch_info_courier_to_random_point() -> void:
+	## Drives war-table.md step 8 (courier-for-information). The harness fakes
+	## a player decision to send eyes — in the real game this dispatch would
+	## eventually route through a war-table composition surface.
+	var target := _random_playspace_point()
+	KnowledgeManager.dispatch_info_courier(LOCAL_PEER_ID, target)
+
 # --- Input ---
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -128,6 +146,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				KnowledgeManager.INSTANT_COMMANDS = not KnowledgeManager.INSTANT_COMMANDS
 			KEY_B:
 				KnowledgeManager.INFINITE_BROADCAST_RANGE = not KnowledgeManager.INFINITE_BROADCAST_RANGE
+			KEY_M:
+				WarTableMap.SHOW_REALITY = not WarTableMap.SHOW_REALITY
+			KEY_I:
+				_dispatch_info_courier_to_random_point()
 			_:
 				handled = false
 		if handled:
@@ -230,10 +252,11 @@ func _refresh_status() -> void:
 		count_str += "%s:%d  " % [GameConstants.faction_names.get(f, "?"), counts[f]]
 	if count_str == "":
 		count_str = "(none)"
-	status_label.text = "War Table Test — real systems\nYou are peer %d, faction: %s\nMinions: %s\n\n[Esc] release/recapture mouse  [Shift+Esc] quit\n[1] spawn Skeleton (yours)\n[2] spawn Imp (Demonic, neutral owner)\n[3] spawn Sprite (Nature/Fey)\n[4] spawn Cultist (Eldritch)\n[F] cycle your faction\n[K] kill nearest minion to you\n[R] reset to authored starting state\n[T] INSTANT_COMMANDS: %s\n[B] INFINITE_BROADCAST_RANGE: %s\n\nWalk to the War Table, press E to use it.\nLeft-click → command minions. Right-click / Shift-click use faction features.\nCtrl+Left-click on the table → yellow debug marker (click→world projection).\n" % [
+	status_label.text = "War Table Test — real systems\nYou are peer %d, faction: %s\nMinions: %s\n\n[Esc] release/recapture mouse  [Shift+Esc] quit\n[1] spawn Skeleton (yours)\n[2] spawn Imp (Demonic, neutral owner)\n[3] spawn Sprite (Nature/Fey)\n[4] spawn Cultist (Eldritch)\n[F] cycle your faction\n[K] kill nearest minion to you\n[R] reset to authored starting state\n[I] dispatch info-courier to a random point\n[T] INSTANT_COMMANDS: %s\n[B] INFINITE_BROADCAST_RANGE: %s\n[M] SHOW_REALITY (war table debug overlay): %s\n\nWalk to the War Table, press E to use it.\nLeft-click → command minions. Right-click / Shift-click use faction features.\nCtrl+Left-click on the table → yellow debug marker (click→world projection).\n" % [
 		LOCAL_PEER_ID,
 		my_faction_name,
 		count_str,
 		"ON" if KnowledgeManager.INSTANT_COMMANDS else "OFF",
 		"ON" if KnowledgeManager.INFINITE_BROADCAST_RANGE else "OFF",
+		"ON" if WarTableMap.SHOW_REALITY else "OFF",
 	]

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"info_courier"
+display_name = "Info Courier"
+faction = 0
+hp = 18
+damage = 0
+speed = 6.5
+cost = 4
+aggro_radius = 0.0
+attack_range = 0.0
+attack_cooldown = 0.0
+color = Color(0.85, 0.65, 0.95, 1)
+trait_tag = &"info_courier"
+can_retreat = true
+retreat_hp_threshold = 0.4

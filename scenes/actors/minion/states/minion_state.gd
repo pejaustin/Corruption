@@ -36,3 +36,19 @@ func face_direction(dir: Vector3) -> void:
 		return
 	var target := actor.global_position - dir
 	actor.look_at(target, Vector3.UP)
+
+func check_retreat() -> bool:
+	## Combat states call this at the top of tick(). When the minion is opt-in
+	## retreat-capable and HP has dipped past the threshold, transitions into
+	## RetreatState and returns true so the caller can early-out for this tick.
+	## Host-only — clients receive the resulting state via sync.
+	if not multiplayer.is_server():
+		return false
+	if not minion.can_retreat:
+		return false
+	if minion.hp > int(minion.max_hp_value * minion.retreat_hp_threshold):
+		return false
+	if state_machine.state == &"RetreatState" or state_machine.state == &"DeathState":
+		return false
+	state_machine.transition(&"RetreatState")
+	return true

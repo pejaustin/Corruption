@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MinionType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"scout"
+display_name = "Scout"
+faction = 0
+hp = 15
+damage = 4
+speed = 7.0
+cost = 3
+aggro_radius = 0.0
+attack_range = 1.5
+attack_cooldown = 2.0
+color = Color(0.55, 0.75, 0.45, 1)
+trait_tag = &"scout"

@@ -33,6 +33,11 @@ var resources: Dictionary[int, float] = {}
 # slot_index -> MinionSpawnPoint / MinionRallyPoint, populated by bind_tower_markers
 var _spawn_points: Dictionary[int, MinionSpawnPoint] = {}
 var _rally_points: Dictionary[int, MinionRallyPoint] = {}
+## Per-peer override map. When a test harness or other minimal scene doesn't
+## have the full Tower / MultiplayerManager / slot infrastructure, callers can
+## bind a peer directly to a MinionSpawnPoint via bind_peer_spawn_point().
+## Checked first by get_spawn_point_for; falls through to the slot-based map.
+var _peer_spawn_overrides: Dictionary[int, MinionSpawnPoint] = {}
 # peer_id -> multiplier (<1.0 = discount). Granted by the Domination Mastery ritual.
 var domination_discounts: Dictionary[int, float] = {}
 
@@ -147,10 +152,21 @@ func _request_rally_bindings() -> void:
 		_bind_rally_rpc.rpc_id(requester, slot, pid, _get_player_faction(pid))
 
 func get_spawn_point_for(peer_id: int) -> MinionSpawnPoint:
+	if peer_id in _peer_spawn_overrides:
+		return _peer_spawn_overrides[peer_id]
 	var mm := _mp_manager()
 	if mm == null:
 		return null
 	return _spawn_points.get(mm.get_player_slot(peer_id))
+
+func bind_peer_spawn_point(peer_id: int, spawn: MinionSpawnPoint) -> void:
+	## Direct peer→spawn binding for environments without a MultiplayerManager
+	## (e.g. test harnesses). Production code uses bind_tower_markers via the
+	## tower/MP slot table; this is the harness shortcut.
+	if spawn == null:
+		_peer_spawn_overrides.erase(peer_id)
+		return
+	_peer_spawn_overrides[peer_id] = spawn
 
 func get_rally_point_for(peer_id: int) -> MinionRallyPoint:
 	var mm := _mp_manager()
@@ -276,6 +292,20 @@ func spawn_neutral_minion(pos: Vector3, type_id: StringName = &"neutral_zombie",
 	_next_minion_id += 1
 	var wp := waypoint if waypoint != Vector3.INF else pos
 	_spawn_minion_rpc.rpc(id, -1, GameConstants.Faction.NEUTRAL, pos, String(type_id), wp)
+
+func spawn_named_minion_for_peer(peer_id: int, type_id: StringName, pos: Vector3, waypoint: Vector3 = Vector3.INF) -> int:
+	## Host-only. Spawns a specific minion type for a specific owner — used by
+	## Advisor-mediated dispatch (couriers) and other system-driven spawns that
+	## bypass resource cost and the MAX_MINIONS_PER_PLAYER cap.
+	## Returns the new minion id, or -1 if not the host.
+	if not multiplayer.is_server():
+		return -1
+	var faction: int = _get_player_faction(peer_id)
+	var id := _next_minion_id
+	_next_minion_id += 1
+	var wp := waypoint if waypoint != Vector3.INF else pos
+	_spawn_minion_rpc.rpc(id, peer_id, faction, pos, String(type_id), wp)
+	return id
 
 # --- Raise Dead (Undeath trait) ---
 
