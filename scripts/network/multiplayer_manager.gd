@@ -5,7 +5,9 @@ extends Node
 
 @export var _player_spawn_point: Node3D
 
-var _multiplayer_scene: PackedScene = preload("res://scenes/actors/player/overlord/overlord_actor.tscn")
+# Loaded lazily inside _add_player_to_game to avoid the stale-preload-reference
+# issue that bites during long editor sessions with frequent script reloads.
+const _PLAYER_SCENE_PATH: String = "res://scenes/actors/player/overlord/overlord_actor.tscn"
 var _players_in_game: Dictionary = {}
 var _player_slot_order: Array[int] = [] # Tracks join order for tower assignment
 
@@ -27,13 +29,23 @@ func _ready() -> void:
 		if NetworkManager.is_hosting_game && not OS.has_feature(NetworkManager.DEDICATED_SERVER_FEATURE_NAME):
 			print("Adding Host player to game...")
 			_add_player_to_game(1)
+			# Pick up real clients that were already connected during the lobby —
+			# their peer_connected signal fired before this scene existed.
+			for pid in multiplayer.get_peers():
+				_add_player_to_game(pid)
+			# Spawn lobby-allocated CPU seats now that real seats are placed.
+			DebugManager.spawn_pending_cpus()
 
 func _add_player_to_game(network_id: int) -> void:
 	if is_multiplayer_authority():
 		print("Adding player to game: %s" % network_id)
 
 		if _players_in_game.get(network_id) == null:
-			var player_to_add = _multiplayer_scene.instantiate()
+			var scene: PackedScene = load(_PLAYER_SCENE_PATH)
+			var player_to_add = scene.instantiate()
+			if player_to_add == null:
+				push_error("MultiplayerManager: instantiate() returned null for peer %d — %s failed to load" % [network_id, _PLAYER_SCENE_PATH])
+				return
 			player_to_add.name = str(network_id)
 			_ready_player(player_to_add, network_id)
 

@@ -5,6 +5,7 @@ extends Node
 # Variables like is_hosting_game must be reset upon exiting to main menu after a game has been played.
 
 const GAME_SCENE: String = "res://scenes/world/world.tscn"
+const LOBBY_SCENE: String = "res://scenes/menus/lobby.tscn"
 const MAIN_MENU_SCENE: String = "res://scenes/menus/main_menu.tscn"
 const LOCALHOST: String = "127.0.0.1"
 const DEDICATED_SERVER_FEATURE_NAME: String = "dedicated_server"
@@ -48,6 +49,9 @@ func join_game(network_connection_configs: NetworkConnectionConfigs) -> void:
 func load_game_scene() -> void:
 	_load_game_scene()
 
+func load_lobby_scene() -> void:
+	get_tree().change_scene_to_file(LOBBY_SCENE)
+
 # Use this to kill the network connection and clean up for return to main menu
 func disconnect_from_game() -> void:
 	_load_main_menu_scene()
@@ -62,6 +66,7 @@ func disconnect_from_game() -> void:
 
 	# Reset properties
 	GameState.reset()
+	DebugManager.reset()
 	reset_network_properties()
 
 	# Make sure player has mouse access to select menu options
@@ -80,7 +85,14 @@ func reset_network_properties() -> void:
 
 func _load_game_scene() -> void:
 	print("NetworkManager: Loading game scene...")
-	get_tree().call_deferred(&"change_scene_to_packed", preload(GAME_SCENE))
+	# Runtime load (not preload) so a missing/broken world.tscn at export time
+	# fails here with a clear error, instead of nil-ing the whole autoload at
+	# parse time.
+	var scene: PackedScene = load(GAME_SCENE)
+	if scene == null:
+		push_error("NetworkManager: failed to load %s — check addon export filters" % GAME_SCENE)
+		return
+	get_tree().call_deferred(&"change_scene_to_packed", scene)
 
 func _load_main_menu_scene() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE)

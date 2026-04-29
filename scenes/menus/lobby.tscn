@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://7uhm6a7ftygd"]
 
-[ext_resource type="Script" uid="uid://cb1yr08h7xsov" path="res://lobby.gd" id="1_1gv48"]
+[ext_resource type="Script" uid="uid://cb1yr08h7xsov" path="res://scripts/menus/lobby.gd" id="1_1gv48"]
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -18,10 +18,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -250.0
-offset_right = 200.0
-offset_bottom = 250.0
+offset_left = -260.0
+offset_top = -260.0
+offset_right = 260.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
@@ -29,10 +29,19 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
-text = "CORRUPTION"
+text = "LOBBY"
+horizontal_alignment = 1
+
+[node name="HostIPLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Opening UPnP…"
 horizontal_alignment = 1
 
 [node name="PlayerCount" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "0 / 4 Players"
@@ -42,24 +51,41 @@ horizontal_alignment = 1
 layout_mode = 2
 
 [node name="PlayerList" type="VBoxContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 4
+theme_override_constants/separation = 6
 
 [node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="FactionLabel" type="Label" parent="VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Choose Faction:"
+theme_override_font_sizes/font_size = 18
+text = "Waiting for players…"
+horizontal_alignment = 1
 
-[node name="FactionSelector" type="OptionButton" parent="VBoxContainer"]
+[node name="ButtonRow" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="StartButton" type="Button" parent="VBoxContainer"]
+[node name="BackButton" type="Button" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "BACK"
+
+[node name="AddCpuButton" type="Button" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "ADD CPU"
+
+[node name="StartButton" type="Button" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 disabled = true
 text = "START GAME"
-
-[connection signal="item_selected" from="VBoxContainer/FactionSelector" to="." method="_on_faction_selected"]
-[connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_game_pressed"]

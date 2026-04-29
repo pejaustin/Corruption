@@ -31,6 +31,7 @@
 [ext_resource type="PackedScene" uid="uid://b1xr8wv4w0t0f" path="res://assets/world/env/mod-castle/Ceilings&Roofs/Roofs/Roof_Cube_2x4.fbx" id="24_3o7cy"]
 [ext_resource type="Shape3D" uid="uid://b3p7215rpyj7p" path="res://scenes/world/env/BOUNDRY.tres" id="26_6guij"]
 [ext_resource type="PackedScene" uid="uid://c8uteh2tyq2lx" path="res://scenes/interactibles/palantir.tscn" id="27_k0irn"]
+[ext_resource type="PackedScene" uid="uid://bupaltar00001" path="res://scenes/interactibles/upgrade_altar.tscn" id="28_upalt"]
 [ext_resource type="PackedScene" uid="uid://d24db7jslh5tl" path="res://scenes/actors/minion/minion_spawn_point.tscn" id="31_8uuiu"]
 [ext_resource type="Script" uid="uid://hthsj34lyade" path="res://scenes/world/env/jumpable_link.gd" id="33_7a0l1"]
 
@@ -132,6 +133,9 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 47.
 
 [node name="SummoningCircle" parent="." unique_id=492818308 instance=ExtResource("21_mbbxa")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4.3884926, 39.058678, 11.0065155)
+
+[node name="UpgradeAltar" parent="." unique_id=1928374650 instance=ExtResource("28_upalt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.0, 39.75, 11.0)
 
 [node name="SpawnPoint" type="Marker3D" parent="." unique_id=400429933]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 41.371777, 0)

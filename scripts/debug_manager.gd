@@ -11,6 +11,9 @@ signal combat_boxes_toggled(visible: bool)
 
 var _dummy_count := 0
 var _player_scene: PackedScene = preload("res://scenes/actors/player/overlord/overlord_actor.tscn")
+## Set by the lobby before the world scene loads. MultiplayerManager._ready
+## consumes this list on the host after registering the host + connected peers.
+var pending_cpu_ids: Array[int] = []
 ## Global toggle for minion aggro-radius debug rings. Local-only (each peer
 ## can choose independently). MinionActor subscribes to aggro_rings_toggled.
 var show_aggro_rings: bool = false
@@ -62,8 +65,59 @@ func add_dummy_player() -> void:
 	spawn_point.add_child(dummy)
 	print("[Debug] Spawned dummy player %d at Tower %d" % [dummy_id, slot + 1])
 
+func spawn_pending_cpus() -> void:
+	## Drains pending_cpu_ids, spawning one dummy per id. Called by
+	## MultiplayerManager._ready on the host after host + peers are seated.
+	if pending_cpu_ids.is_empty():
+		return
+	var ids := pending_cpu_ids.duplicate()
+	pending_cpu_ids.clear()
+	spawn_lobby_cpus(ids)
+
+func spawn_lobby_cpus(cpu_ids: Array) -> void:
+	## Spawns one dummy player per pre-allocated CPU id from the lobby.
+	## Unlike add_dummy_player(), the caller chooses the peer ids so the
+	## lobby's faction / name dicts (already synced into GameState) line up.
+	if not multiplayer.is_server():
+		return
+	var mm := _get_multiplayer_manager()
+	if not mm:
+		print("[Debug] MultiplayerManager not found — CPU slots not spawned")
+		return
+	var spawn_point: Node3D = mm._player_spawn_point
+	if not spawn_point:
+		print("[Debug] No PlayerSpawnPoint found")
+		return
+	for raw_id in cpu_ids:
+		var cpu_id: int = int(raw_id)
+		if mm._players_in_game.has(cpu_id):
+			continue
+		var dummy: Node = _player_scene.instantiate()
+		if dummy == null:
+			push_error("[Debug] _player_scene.instantiate() returned null — overlord_actor.tscn may be broken")
+			return
+		dummy.name = str(cpu_id)
+		mm._player_slot_order.append(cpu_id)
+		var slot: int = mm._player_slot_order.find(cpu_id)
+		if slot < mm.TOWER_SPAWNS.size():
+			dummy.position = mm.TOWER_SPAWNS[slot]
+		else:
+			dummy.position = mm.TOWER_SPAWNS[0]
+		mm._players_in_game[cpu_id] = dummy
+		spawn_point.add_child(dummy)
+		# Keep _dummy_count past lobby ids so a later F2 doesn't reuse them.
+		var offset: int = cpu_id - DUMMY_BASE_ID + 1
+		if offset > _dummy_count:
+			_dummy_count = offset
+		print("[Debug] Spawned lobby CPU %d at Tower %d" % [cpu_id, slot + 1])
+
 func get_dummy_count() -> int:
 	return _dummy_count
+
+func reset() -> void:
+	## Called when returning to main menu so a new session starts clean.
+	_dummy_count = 0
+	pending_cpu_ids.clear()
 
 func get_max_dummy_players() -> int:
 	var mm = _get_multiplayer_manager()

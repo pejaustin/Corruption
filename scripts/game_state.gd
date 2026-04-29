@@ -23,6 +23,8 @@ var watcher_positions: Dictionary[int, Vector3] = {}
 var influence: Dictionary[int, float] = {}
 # peer_id -> faction id (GameConstants.Faction). Populated by lobby at match start.
 var player_factions: Dictionary[int, int] = {}
+# peer_id -> display name. Populated by lobby at match start. Falls back to "Player <id>".
+var player_names: Dictionary[int, String] = {}
 # peer_id -> faction id. Overrides player_factions (debug faction swap, etc).
 var faction_overrides: Dictionary[int, int] = {}
 # peer_id -> { upgrade_kind_int -> level_int } (see UpgradeData.Kind)
@@ -270,6 +272,15 @@ func sync_player_factions(factions: Dictionary) -> void:
 	for pid in factions:
 		player_factions[int(pid)] = int(factions[pid])
 
+@rpc("authority", "call_local", "reliable")
+func sync_player_names(names: Dictionary) -> void:
+	player_names.clear()
+	for pid in names:
+		player_names[int(pid)] = String(names[pid])
+
+func get_player_name(peer_id: int) -> String:
+	return player_names.get(peer_id, "Player %d" % peer_id)
+
 func reset() -> void:
 	## Called when returning to menu to clear game state.
 	avatar_peer_id = -1
@@ -277,6 +288,7 @@ func reset() -> void:
 	watcher_positions.clear()
 	influence.clear()
 	player_factions.clear()
+	player_names.clear()
 	faction_overrides.clear()
 	upgrade_levels.clear()
 	eldritch_vision_peer = -1

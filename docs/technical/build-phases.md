@@ -221,10 +221,125 @@ Scripts are implemented but these nodes/scenes need to be created or wired up in
 - [ ] `DivineIntervention` (Node) — Attach `scripts/divine_intervention.gd`
 
 **tower.tscn — inside each tower:**
-- [ ] `UpgradeAltar` — Create as Area3D with CollisionShape3D. Attach `scripts/interactibles/upgrade_altar.gd`. Place near other tower interactibles. Needs a visual mesh (greybox cube/pedestal). Upgrade catalog is authored as `UpgradeData` resources under `res://data/upgrades/` (`minion_vitality.tres`, `minion_ferocity.tres`, `dark_tithe.tres`, `avatar_fortitude.tres`, `avatar_might.tres`).
+- [x] `UpgradeAltar` — Placed in `tower.tscn` at `(-8, 39.75, 11)` (lower floor, opposite SummoningCircle). Inherits `interactable.tscn`, uses `scripts/interactibles/upgrade_altar.gd`, greybox dark-stone base + glowing purple pillar. Catalog reads from `res://data/upgrades/` (5 entries). Reposition in-editor to taste.
 
 **World/Interactables/ (place 2-3 in the world):**
 - [ ] `RitualSite` — Create as Area3D with CollisionShape3D (sphere, radius ~3). Attach `scripts/interactibles/ritual_site.gd`. Set the `ritual` export to one of `res://data/rituals/*.tres` (`domination_mastery.tres`, `corruption_surge.tres`, `eldritch_vision.tres`). Needs a visual mesh (greybox cylinder/rune circle). Place away from Capitol — these should be risky detours
+
+---
+
+## Testing TODO — Verify In-Game
+
+Systems whose implementation is complete but haven't been confirmed working in a live session. Items marked **[blocked]** depend on Editor TODO entries above; test them once those scene placements are done.
+
+### Tier 3 — The Dark Lords Scheme
+
+#### Minion commands (War Table)
+- [ ] Interact with War Table → camera tweens to `MapViewPoint`
+- [ ] Click on map → all owned minions move toward the click point in a phalanx grid (slots assigned by `MinionManager.command_minions_move`)
+- [ ] Click also relocates the sender's `MinionRallyPoint`
+- [ ] Other peers' minions ignore your clicks
+- [ ] Releasing the table returns camera to overlord position
+- [ ] With `INFINITE_BROADCAST_RANGE = true` and `INSTANT_COMMANDS = true` (defaults), behavior matches the pre-KnowledgeManager direct path
+
+#### Territory system
+- [ ] Minions present near a grid cell increase corruption over time
+- [ ] Cells decay corruption when no minion is nearby
+- [ ] Faction-tagging on cells reflects who controls the area
+- [ ] Total corruption is reflected in the F3 debug overlay
+- [ ] GuardianBoss debuff scales with total corruption (cross-check with boss panel)
+
+#### Influence tracking
+- [ ] Killing enemies/minions awards influence to the owner peer
+- [ ] All peers' influence visible in F3 panel
+- [ ] F8 (+10 influence) bumps the local peer's score live in the overlay
+- [ ] Influence persists across Avatar transfers within a match
+
+#### Minor gem sites — **[blocked: GemSite not yet placed in `World/Interactables/`]**
+- [ ] Minions clear neutral enemies on the site
+- [ ] Avatar can interact to channel a capture
+- [ ] Channel completion grants passive influence to the capturing peer
+- [ ] Capture state syncs to all peers
+
+#### Hostile takeover
+- [ ] Minion (with kill credit) damaging Avatar to 0 HP triggers takeover
+- [ ] That minion's owner becomes Avatar; previous Avatar peer returns to Overlord
+- [ ] Camera/input swap completes cleanly on both peers
+- [ ] Works distinctly from neutral-kill case (does NOT fall through to influence fallback)
+
+#### Influence fallback
+- [ ] Avatar dies to a neutral enemy (no owned minion in kill credit)
+- [ ] Highest-influence peer takes over as Avatar
+- [ ] Tiebreak between equal-influence peers is deterministic
+- [ ] Mode swap mirrors the hostile-takeover transfer
+
+#### Guardian boss — **[blocked: GuardianBoss not yet instanced near Capitol]**
+- [ ] Boss spawns at the placed location
+- [ ] HP/damage scaled by total corruption (debuff visible in F3 boss panel)
+- [ ] Avatar attacks land; boss attacks reduce Avatar HP
+- [ ] Boss death triggers Tier 3 win condition
+
+#### Astral projection — **[blocked: AstralProjection not yet wired into CanvasLayer]**
+- [ ] SubViewport overlay auto-activates when the boss engages
+- [ ] Spectator camera follows the active Avatar for non-Avatar peers
+- [ ] Overlay clears on boss death / match end
+
+### Tier 4 — Corruption Has a Face
+
+#### Faction-specific minion rosters
+- [ ] All 4 factions load distinct rosters from `FactionData`
+- [ ] Costs / stats / traits differ per faction (spot-check Eldritch vs Demonic vs Nature/Fey vs Undeath)
+- [ ] Summoning Circle UI shows the active faction's roster
+
+#### Faction-specific Avatar abilities
+- [ ] Each faction's Avatar has its own ability set (cooldowns, damage mults, lifesteal, camouflage)
+- [ ] Activation triggers the right `AbilityEffect` scene under `scenes/abilities/`
+- [ ] Combat queries on `AvatarAbilities` aggregate correctly across `_active` (damage mult, lifesteal, invisibility, channel)
+- [ ] `abilities.cancel(&"id")` ends an effect early
+
+#### Faction-specific Overlord tools
+- [ ] Eldritch: domination via Summoning Circle (cost respects discount if granted by ritual)
+- [ ] Demonic: single-minion direct command works
+- [ ] Nature/Fey: information advantage visible in War Table / map
+- [ ] Tools gated correctly — only the matching faction's overlord can use them
+
+#### Eldritch ritual mechanic — **[blocked: RitualSite not yet placed]**
+- [ ] Avatar interaction starts the channel; channel duration matches `RitualData`
+- [ ] Successful completion applies the ritual's bonus
+- [ ] Each of the three rituals tested: `domination_mastery`, `corruption_surge`, `eldritch_vision`
+- [ ] `GameState.has_eldritch_vision(peer)` ticks down and clears when timer expires
+
+#### Undeath raise-dead mechanic
+- [ ] Minion with the Ghoul trait kills an enemy → skeleton spawns under the killer's owner
+- [ ] Skeleton inherits faction and behaves like a normal Undeath minion
+- [ ] No skeleton spawns from non-Ghoul kills
+
+#### Two-boss endgame (BossManager) — **[blocked: BossManager not yet placed]**
+- [ ] BossManager's `initial_boss` resolves to the world's GuardianBoss
+- [ ] Defeating phase 1 spawns `CorruptedSeraph` at `seraph_spawn_point` (or boss's death position)
+- [ ] Defeating phase 2 triggers match win
+- [ ] No script-swap shenanigans (Seraph is an inherited scene with its own `MinionType`)
+
+#### Divine intervention — **[blocked: DivineIntervention not yet placed]**
+- [ ] 60s loss timer counts down when total corruption < threshold
+- [ ] Timer resets when corruption rises back above threshold
+- [ ] Timer expiry triggers match loss screen for all peers
+- [ ] F10 (+corruption near origin) can cancel an active countdown
+
+#### Upgrade Altar
+- [ ] **Prompt visibility** — Walk up as Overlord, see "Press E to open Upgrade Altar" in the prompt color (light purple)
+- [ ] **Open/close** — E opens the menu listing 5 upgrades with cost + level; Q closes
+- [ ] **Selection** — 1–5 keys move the `>>` marker to each row
+- [ ] **Purchase (host)** — With ≥cost resources, E on a row deducts resources and bumps the level by 1
+- [ ] **Purchase (client)** — Same flow on a non-host peer; host validates and applies via `_request_upgrade.rpc_id(1, kind)` → `_apply_upgrade.rpc(...)` → `GameState.add_upgrade`
+- [ ] **Insufficient funds** — E with <cost is silently rejected (no level change, no resource deduction)
+- [ ] **Max level** — At `max_level`, row shows `[MAX]` and further purchases are rejected
+- [ ] **Resource sync** — Spending updates the resource counter for *only* the purchasing peer (per-peer `MinionManager.resources`)
+- [ ] **Effect: minion HP / damage** — Upgrade levels feed `get_upgrade_multiplier(peer, kind)` into spawned minions
+- [ ] **Effect: resource rate** — `RESOURCE_RATE` upgrade increases the buying peer's resource regen
+- [ ] **Effect: avatar HP / damage** — `AVATAR_HP` / `AVATAR_DAMAGE` apply when the upgrading peer is in Avatar mode
+- [ ] **Per-tower** — Each of the 4 towers has its own altar instance (via shared `tower.tscn`); each peer only operates their own
+- [ ] **Other peer interaction** — A non-owner Overlord standing near another tower's altar cannot open it (early-out in `_on_interact`)
 
 ### Notes
 

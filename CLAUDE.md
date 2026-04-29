@@ -74,6 +74,8 @@ res://
 - **Player authority:** Set via node name matching peer ID
 - **Netfox rollback:** State properties synced via RollbackSynchronizer, input gathered in `before_tick_loop`
 
+> **Networking changes — read first:** `docs/technical/netfox-reference.md` is the project-specific cheat sheet for `RollbackSynchronizer`, `RewindableState(Machine)`, `NetworkTime.*`, `_rollback_tick`, authority transfer, damage/HP sync, and the vanilla Godot 4 RPC footguns. Read it BEFORE editing any of those — it'll save re-explaining the same pitfalls. Skip when the change is unrelated to networking.
+
 ---
 
 ## 5. GDScript style — hard rules
@@ -201,16 +203,27 @@ GDScript looks like Python but isn't. These are the substitutions LLMs most ofte
 
 ## 6. Scenes (`.tscn` files) — handle with care
 
-The `.tscn` file format is text-based but **fragile**. A misplaced subresource ID or stale `ext_resource` reference will silently corrupt the scene.
+The `.tscn` file format is text-based but **fragile in specific ways**: renumbering subresource IDs, restructuring an existing node tree, or touching large auto-generated blobs (animation tracks, navmesh data) can silently corrupt the scene. *Appending* new instances or new built-in nodes following an existing pattern is safe.
 
-**Rules for Claude:**
-1. **Prefer creating/modifying scenes through the Godot editor when possible.** If the user is editing in-editor, just write the script and tell them what nodes to add.
-2. **If you must create a `.tscn` programmatically**, do it via a build script (`scripts/build/build_<name>.gd`) that runs in the editor or headless and uses `PackedScene.pack()`. The build script is the source of truth; the `.tscn` is compiled output. Never hand-edit `.tscn` line by line.
-3. **Never reorder or renumber** `[ext_resource]` / `[sub_resource]` IDs in an existing `.tscn`.
-4. When adding a node to an existing scene via text edit, copy an existing node block as a template and change only the necessary fields.
-5. After any `.tscn` edit, hand off to the user for in-editor verification — do not invoke the Godot CLI.
+**Default to editing `.tscn` directly when the change is:**
+- Instancing a scene as a child of a parent scene (one new `[ext_resource]` + one `[node ... instance=ExtResource(...)]` block, optionally with a transform)
+- Adding a new built-in node (MeshInstance3D, Area3D, CollisionShape3D, …) as a child, including new `[sub_resource]` blocks Claude introduces for it
+- Setting or changing an exported property on an existing node (`speed = 200.0`, `material_override = SubResource(...)`)
+- Adjusting an existing node's transform
+- Creating a brand-new small inherited scene that mirrors an existing pattern (greybox interactibles, simple props)
 
-Same rules apply to `.tres` (Resource) files.
+**Hand off to the user for in-editor work when the change involves:**
+- Reordering or renumbering existing `[ext_resource]` / `[sub_resource]` IDs
+- Restructuring an existing node hierarchy (re-parenting, deleting nodes that other nodes reference)
+- `AnimationPlayer` tracks, NavigationMesh polygon arrays, baked lighting, GridMap cell data, or other large auto-generated blobs
+- Anything where you're uncertain about the on-disk format
+
+**Always:**
+- After any `.tscn` edit, ask the user to verify in-editor (don't invoke the Godot CLI yourself).
+- When adding a node block, copy an existing block of the same kind as a template and change only what differs.
+- Pick a fresh `unique_id` and a fresh `[ext_resource]` `id` (keep the local `<num>_<short>` suffix style of the surrounding file).
+
+Same rules apply to `.tres` files. For scenes that need to be *generated from scratch* with many computed subresources (procedural maps, generated decks), use a build script (`scripts/build/build_<name>.gd`) that calls `PackedScene.pack()` rather than emitting tscn text by hand.
 
 ### 6.1 Imported 3D assets — never reference raw `.glb`/`.fbx` from gameplay scenes
 
@@ -347,7 +360,7 @@ When making changes:
 2. **Match the surrounding style** even if it differs slightly from this guide. Consistency within a file beats global purity.
 3. **Make the smallest change that solves the problem.** Don't refactor adjacent code unless asked.
 4. **Don't invoke the Godot CLI** (no `godot --headless --check-only` or similar). Hand off to the user for in-editor verification after non-trivial changes.
-5. **For scene changes, prefer instructing the user** to make them in the editor over hand-editing `.tscn`. If you do edit `.tscn`, explain what you did so the user can verify in the editor.
+5. **For scene changes, do the safe edits yourself** (instancing, new built-in nodes, property/transform tweaks — see Section 6). Hand off to the editor only for the unsafe categories listed there. Whichever path you take, summarize the change so the user can verify in-editor.
 6. **Surface architectural decisions** — if a request requires a new autoload, a new signal between distant systems, or changing the scene tree shape, propose the change and wait for confirmation before implementing.
 7. **Never silently install plugins** into `addons/`. Ask first.
 
@@ -359,6 +372,7 @@ When making changes:
 - `docs/one-pager.md` — Visual summary of the entire game
 - `docs/systems/` — One page per major system (combat, overlord mode, factions, territory, bosses, multiplayer, progression)
 - `docs/technical/build-phases.md` — **MVP tier tracker with current progress** (start here for what to build next)
+- `docs/technical/netfox-reference.md` — Project-specific netfox + RPC cheat sheet. Read before any networking change (see § 4).
 - `docs/Corruption_GDD_v0.1.md` — Original GDD (reference, superseded by modular docs)
 
 ### Current State (Tiers 0-3 Complete, Tier 4 Scripts Ready)
