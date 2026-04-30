@@ -13,7 +13,16 @@ const BUFFER_WINDOW: int = 12
 var input_dir: Vector2 = Vector2.ZERO
 var jump_input := false
 var run_input := false
-var attack_input := false
+## Held flag for the light-attack button. Tier D split — formerly
+## `attack_input` (`primary_ability` action). Renamed alongside the action
+## itself; remaining references to "attack" (e.g. `try_attack`) are routed
+## through the light-attack path by default.
+var light_attack_input := false
+## Held flag for the heavy-attack button. Tier D — new in this tier. Tap-or-
+## hold detection lives in the consuming states (HeavyAttackState transitions
+## to ChargeWindupState if the button is still held past
+## `CHARGE_HOLD_THRESHOLD_TICKS`).
+var heavy_attack_input := false
 var roll_input := false
 ## Held flag for the block button. BlockState reads it each tick to decide
 ## whether to stay in block or release. Edge-press is also tracked through
@@ -37,12 +46,15 @@ func _gather() -> void:
 		input_dir = Input.get_vector("left", "right", "forward", "backward")
 		jump_input = Input.is_action_pressed("jump")
 		run_input = Input.is_action_pressed("run")
-		attack_input = Input.is_action_pressed("primary_ability")
+		light_attack_input = Input.is_action_pressed("light_attack")
+		heavy_attack_input = Input.is_action_pressed("heavy_attack")
 		roll_input = Input.is_action_pressed("roll")
 		block_input = Input.is_action_pressed("block")
 		var t: int = NetworkTime.tick
-		if Input.is_action_just_pressed("primary_ability"):
-			_press_tick[&"primary_ability"] = t
+		if Input.is_action_just_pressed("light_attack"):
+			_press_tick[&"light_attack"] = t
+		if Input.is_action_just_pressed("heavy_attack"):
+			_press_tick[&"heavy_attack"] = t
 		if Input.is_action_just_pressed("roll"):
 			_press_tick[&"roll"] = t
 		if Input.is_action_just_pressed("block"):
@@ -51,7 +63,8 @@ func _gather() -> void:
 		input_dir = Vector2.ZERO
 		jump_input = false
 		run_input = false
-		attack_input = false
+		light_attack_input = false
+		heavy_attack_input = false
 		roll_input = false
 		block_input = false
 		_press_tick.clear()

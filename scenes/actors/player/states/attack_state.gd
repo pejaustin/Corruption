@@ -1,12 +1,18 @@
 extends PlayerState
 
-## Commitment-based melee attack. Cannot be cancelled once started.
-## Hitbox window is driven by animation progress (ratio of total length),
-## so it stays in sync even if animation speed changes.
+## DEPRECATED — Tier D split this into `light_attack_state.gd`,
+## `heavy_attack_state.gd`, `charge_windup_state.gd`, `charge_release_state.gd`,
+## `sprint_attack_state.gd`, `jump_attack_state.gd`, and the riposte pair.
 ##
-## Uses the AttackHitbox component — named profiles let an attack swap shapes
-## mid-swing (Windup/Impact/Recovery). For single-shape setups, leave
-## hitbox_profile empty and the one CollisionShape3D child is used.
+## This file is kept for backwards-compatibility with scenes that still wire
+## a single AttackState node (the avatar_actor.tscn references an `AttackState`
+## script-only node that may not be re-pointed yet). New work should use
+## LightAttackState / HeavyAttackState etc. via the `data/attacks/*.tres`
+## resources. See docs/technical/tier-d-implementation.md for the full
+## migration story.
+##
+## Behavior unchanged: commitment-based melee attack, ratio-driven hitbox
+## window. AttackHitbox profile names let it swap shapes mid-swing.
 
 ## Hitbox activates at this fraction of the attack animation. Ignored when
 ## use_animation_keys is true.

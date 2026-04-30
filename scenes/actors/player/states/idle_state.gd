@@ -16,7 +16,12 @@ func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	physics_move()
 
 	if actor.is_on_floor():
-		if try_attack():
+		# Heavy press takes priority over light — Souls grammar: light follows
+		# light, heavy interrupts. The riposte check inside try_heavy_attack
+		# also fires here, so a heavy near a posture-broken target executes.
+		if try_heavy_attack():
+			return
+		if try_light_attack():
 			return
 		if get_movement_input() != Vector2.ZERO:
 			state_machine.transition(&"MoveState")

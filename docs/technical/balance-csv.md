@@ -47,6 +47,16 @@ Current Project*) so the editor picks up new files.
 
 - `MinionCatalog` (`data/minion_catalog.tres`) — single-row scene
   registry, manage in editor.
+- `AttackData` (`data/attacks/*.tres`, Tier D) — not yet wired into
+  `TARGETS`. The resource shape is CSV-friendly (no nested resources,
+  all primitives + StringNames + one enum-like StringName for damage
+  type) so adding an entry to `balance_csv.gd:TARGETS` is a one-liner:
+  ```gdscript
+  {"name": "attacks", "dir": "res://data/attacks/", "script": "res://scripts/combat/attack_data.gd"},
+  ```
+  Hold off until designers actually want to spreadsheet-tune
+  per-attack frame data; until then editing the .tres files in the
+  inspector is fine for the 8 starter attacks.
 - Anything outside the five target dirs — add to `TARGETS` if you want
   a new resource class round-tripped.
 

@@ -14,6 +14,22 @@
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
 [ext_resource type="Script" path="res://scripts/combat/targeting.gd" id="13_target"]
 [ext_resource type="PackedScene" uid="uid://btblockonreticle" path="res://scenes/ui/lock_on_reticle.tscn" id="14_reticle"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/light_attack_state.gd" id="20_lightatk"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/heavy_attack_state.gd" id="21_heavyatk"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/charge_windup_state.gd" id="22_chgwind"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/charge_release_state.gd" id="23_chgrel"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/sprint_attack_state.gd" id="24_sprintatk"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/jump_attack_state.gd" id="25_jumpatk"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/riposte_attacker_state.gd" id="26_riposteatk"]
+[ext_resource type="Script" path="res://scenes/actors/states/riposte_victim_state.gd" id="27_ripostevic"]
+[ext_resource type="Resource" path="res://data/attacks/light_1.tres" id="30_a_light1"]
+[ext_resource type="Resource" path="res://data/attacks/light_2.tres" id="31_a_light2"]
+[ext_resource type="Resource" path="res://data/attacks/light_3.tres" id="32_a_light3"]
+[ext_resource type="Resource" path="res://data/attacks/heavy_1.tres" id="33_a_heavy1"]
+[ext_resource type="Resource" path="res://data/attacks/charge_release.tres" id="34_a_chgrel"]
+[ext_resource type="Resource" path="res://data/attacks/sprint_attack.tres" id="35_a_sprint"]
+[ext_resource type="Resource" path="res://data/attacks/jump_attack.tres" id="36_a_jump"]
+[ext_resource type="Resource" path="res://data/attacks/riposte.tres" id="37_a_riposte"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
 radius = 0.2
@@ -89,6 +105,63 @@ animation_name = "large-male/Channeling"
 script = ExtResource("12_f2kxo")
 animation_name = "large-male/Crouch"
 
+[node name="LightAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="13" unique_id=1700000001]
+script = ExtResource("20_lightatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("30_a_light1")
+combo_step = 1
+use_animation_keys = false
+
+[node name="LightAttackState2" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="14" unique_id=1700000002]
+script = ExtResource("20_lightatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("31_a_light2")
+combo_step = 2
+use_animation_keys = false
+
+[node name="LightAttackState3" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="15" unique_id=1700000003]
+script = ExtResource("20_lightatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("32_a_light3")
+combo_step = 3
+use_animation_keys = false
+
+[node name="HeavyAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="16" unique_id=1700000004]
+script = ExtResource("21_heavyatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("33_a_heavy1")
+use_animation_keys = false
+
+[node name="ChargeWindupState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="17" unique_id=1700000005]
+script = ExtResource("22_chgwind")
+animation_name = "large-male/Stagger"
+
+[node name="ChargeReleaseState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="18" unique_id=1700000006]
+script = ExtResource("23_chgrel")
+animation_name = "large-male/Attack"
+light_attack_data = ExtResource("33_a_heavy1")
+mid_attack_data = ExtResource("33_a_heavy1")
+full_attack_data = ExtResource("34_a_chgrel")
+
+[node name="SprintAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="19" unique_id=1700000007]
+script = ExtResource("24_sprintatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("35_a_sprint")
+
+[node name="JumpAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="20" unique_id=1700000008]
+script = ExtResource("25_jumpatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("36_a_jump")
+
+[node name="RiposteAttackerState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="21" unique_id=1700000009]
+script = ExtResource("26_riposteatk")
+animation_name = "large-male/Attack"
+attack_data = ExtResource("37_a_riposte")
+
+[node name="RiposteVictimState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="22" unique_id=1700000010]
+script = ExtResource("27_ripostevic")
+animation_name = "large-male/Stagger"
+
 [node name="WatcherLabel" type="Label3D" parent="." index="5" unique_id=957424953]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
 visible = false
@@ -98,7 +171,7 @@ font_size = 24
 outline_size = 8
 
 [node name="RollbackSynchronizer" parent="." index="6" unique_id=734396145]
-input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input", "AvatarInput:block_input"])
+input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:light_attack_input", "AvatarInput:heavy_attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input", "AvatarInput:block_input"])
 
 [node name="AvatarHUD" parent="." index="8" unique_id=1564158435 instance=ExtResource("11_hud")]
 

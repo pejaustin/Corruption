@@ -5,9 +5,9 @@ extends Control
 ## label, and a radial cooldown sweep. Ready-flash pulses briefly when the
 ## cooldown finishes.
 ##
-## For the fixed "primary_ability" slot (the attack), set is_fixed_primary =
-## true; it displays a placeholder icon, never shows a cooldown, and ignores
-## set_ability() / set_cooldown() updates.
+## For the fixed light-attack slot (the attack; was `primary_ability` pre–
+## Tier D), set is_fixed_primary = true; it displays a placeholder icon,
+## never shows a cooldown, and ignores set_ability() / set_cooldown() updates.
 
 @onready var _binding_label: Label = %BindingLabel
 @onready var _icon_rect: TextureRect = %AbilityIcon

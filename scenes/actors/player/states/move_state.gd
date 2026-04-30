@@ -50,7 +50,15 @@ func tick(delta: float, tick: int, is_fresh: bool) -> void:
 	physics_move()
 
 	if actor.is_on_floor():
-		if try_attack():
+		# Sprint-attack override: if running AND attacking, use the dedicated
+		# SprintAttackState so we get the lunge profile + carry-momentum feel.
+		# Otherwise fall through to the neutral light/heavy entry.
+		if get_run() and (get_light_attack() or get_heavy_attack() or player.avatar_input.consume_if_buffered(&"light_attack") or player.avatar_input.consume_if_buffered(&"heavy_attack")):
+			if actor.try_transition(&"SprintAttackState"):
+				return
+		if try_heavy_attack():
+			return
+		if try_light_attack():
 			return
 		if get_movement_input() == Vector2.ZERO:
 			state_machine.transition(&"IdleState")

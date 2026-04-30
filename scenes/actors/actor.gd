@@ -114,6 +114,38 @@ var block_press_tick: int = -1
 ## resim deltas are deterministic from the synced posture/tick pair, and the
 ## fractional drift is invisible to gameplay.
 var _posture_decay_accumulator: float = 0.0
+
+# --- Tier D: Attack depth ---
+
+## Combo string position. 0 = neutral (no combo in progress); 1 = mid-light_1;
+## 2 = mid-light_2; 3 = mid-light_3 (final). Reset on take_damage,
+## StaggerState entry, or COMBO_RESET_GRACE_TICKS of idleness after the
+## last attack. Carried as a `state_property` on PlayerActor so resim
+## reproduces the chain — see `player_actor.tscn:state_properties`.
+var combo_step: int = 0
+## NetworkTime.tick when ChargeWindupState was entered. -1 = no active charge.
+## State_property on PlayerActor; ChargeReleaseState reads this to compute
+## charge_level from `(NetworkTime.tick - charge_start_tick)`.
+var charge_start_tick: int = -1
+## True between `_combo_window_open()` and `_combo_window_close()` animation
+## method-track calls (or the LightAttackState's ratio-based fallback when
+## tracks aren't authored). LightAttackState reads this each tick and chains
+## if the player buffered another light press.
+##
+## Local-only — animation re-runs deterministically on every peer that holds
+## the state, so the flag is the same on both sides at the same tick. NOT in
+## state_properties.
+var combo_window_open: bool = false
+## Number of ticks of post-attack silence before `combo_step` resets to 0.
+## ~2 seconds at 30Hz. Tier D's "combo memory" — quick re-presses chain into
+## the next swing, slow ones restart from light_1.
+const COMBO_RESET_GRACE_TICKS: int = 60
+## NetworkTime.tick when the most recent combo attack exited. -1 = never, or
+## already reset. Local-only (the synced `combo_step` carries the canonical
+## chain state); used purely as a timeout watchdog to drop combo_step to 0
+## after `COMBO_RESET_GRACE_TICKS` of idleness. Resim re-runs the same
+## comparison deterministically because both inputs are deterministic.
+var _last_combo_attack_tick: int = -1
 ## NetworkTime.tick at which the most recent damage was taken. Posture decay
 ## is gated on (now - this) > POSTURE_DECAY_GRACE_TICKS so combat doesn't
 ## drain a victim's poise while the next swing is still landing. -1 = never.
@@ -184,6 +216,13 @@ func take_damage(amount: int, source: Node = null) -> void:
 	# Block / parry resolution — only meaningful when we know where the hit
 	# came from. Without a source we can't run the front-cone check, so we
 	# fall back to plain damage.
+	# Tier D: per-attack posture multiplier passed via meta (set by attack
+	# states before calling take_damage; cleaned up after). Defaults to 1.0
+	# so legacy callers that don't set the meta accumulate normal posture.
+	# Riposte sets this to 0.0 to bypass posture (the victim is already broken).
+	var posture_mult: float = 1.0
+	if has_meta(&"_pending_posture_mult"):
+		posture_mult = float(get_meta(&"_pending_posture_mult"))
 	if source_actor and is_instance_valid(source_actor):
 		if is_blocking_against(source_actor.global_position):
 			# Active BlockState + facing the attacker. Now check parry window.
@@ -206,19 +245,28 @@ func take_damage(amount: int, source: Node = null) -> void:
 				# Held block — reduce damage, accumulate posture faster than
 				# unblocked (blocking trades hp for poise pressure).
 				final_damage = int(round(amount * BLOCK_DAMAGE_REDUCTION))
-				gain_posture(BLOCK_POSTURE_PER_HIT)
+				gain_posture(int(round(BLOCK_POSTURE_PER_HIT * posture_mult)))
 		else:
 			# Unblocked hit — small posture bump (heavy hits feel like they
 			# erode poise more than chip).
-			gain_posture(HIT_POSTURE_PER_HIT)
+			gain_posture(int(round(HIT_POSTURE_PER_HIT * posture_mult)))
 	else:
 		# Source unknown — treat as unblocked, accumulate posture as normal.
-		gain_posture(HIT_POSTURE_PER_HIT)
+		gain_posture(int(round(HIT_POSTURE_PER_HIT * posture_mult)))
 
 	hp = max(0, hp - final_damage)
 	hp_changed.emit(hp)
 	_last_damage_amount = final_damage
 	_last_damage_tick = NetworkTime.tick
+	# Tier D: combo continuity broken when interrupted by damage. Reset both
+	# the combo step (next light attack restarts at light_1) and any pending
+	# charge windup (the charge is lost if you got smacked). Block-reduced and
+	# parried hits don't break the chain — the attacker is the one who got
+	# bounced. Done here (rather than inside StaggerState) so unblockable hits
+	# that fail to stagger (hyper-armor) still reset the chain.
+	if final_damage > 0 and not was_parried:
+		combo_step = 0
+		charge_start_tick = -1
 	# Hitstop is authority-set; on PlayerActor this is a state_property so
 	# rollback resim reproduces it. MinionActor carries it via its own sync
 	# RPC (see scripts/minion_manager.gd). Parries skip hitstop on the victim
@@ -373,6 +421,26 @@ func disable_stagger_immunity() -> void:
 	if s:
 		s.disable_stagger_immunity()
 
+## Tier D — animation method-track forwarders for combo timing. Authoring
+## guidance (per docs/systems/avatar-combat.md "Per-animation method-track
+## checklist"):
+##
+## - Add a `_combo_window_open` Call Method Track at the recovery-mid frame of
+##   light combo clips. LightAttackState reads `combo_window_open` and chains
+##   to the next AttackData when a buffered press lands inside the window.
+## - Add a `_combo_window_close` track at the recovery-end frame so the chain
+##   times out cleanly even if no press arrived.
+##
+## Without method tracks, LightAttackState's ratio-based fallback
+## (`combo_window_start_ratio`/`combo_window_end_ratio` on AttackData) drives
+## the same flag — the methods are an authoring convenience, not a contract.
+## Forwarding through Actor lets AnimationPlayer target a stable path.
+func _combo_window_open() -> void:
+	combo_window_open = true
+
+func _combo_window_close() -> void:
+	combo_window_open = false
+
 # --- Physics helpers ---
 
 func apply_gravity(delta: float) -> void:
@@ -418,6 +486,30 @@ func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		apply_gravity(delta)
 	_apply_hitstop_animation_pause()
 	_decay_posture()
+	_decay_combo()
+
+## Tier D — drops `combo_step` back to 0 after COMBO_RESET_GRACE_TICKS of
+## idleness since the last LightAttackState exit. LightAttackState stamps
+## `_last_combo_attack_tick` on its own exit; this watchdog ensures the chain
+## doesn't carry across long pauses where the player wandered off and came
+## back. State_property `combo_step` is reset host-side; clients see the new
+## value via rollback sync.
+func _decay_combo() -> void:
+	if combo_step <= 0:
+		return
+	if _state_machine == null:
+		return
+	# Don't decay while still mid-attack — LightAttackState stamps the timer
+	# on exit, so we only see >0 between attacks. But guard anyway in case a
+	# follow-up state somehow holds combo_step > 0.
+	var s: StringName = _state_machine.state
+	if s == &"LightAttackState" or s == &"HeavyAttackState" or s == &"ChargeWindupState" or s == &"ChargeReleaseState" or s == &"SprintAttackState" or s == &"JumpAttackState" or s == &"RiposteAttackerState":
+		return
+	if _last_combo_attack_tick < 0:
+		return
+	if NetworkTime.tick - _last_combo_attack_tick >= COMBO_RESET_GRACE_TICKS:
+		combo_step = 0
+		_last_combo_attack_tick = -1
 
 ## Decays posture by `posture_decay_per_tick` per rollback tick when the actor
 ## is "out of combat" (no damage taken in POSTURE_DECAY_GRACE_TICKS) and not
@@ -553,12 +645,28 @@ func _find_model_node() -> Node3D:
 # --- Missing-component warning ---
 # Development aid: a yellow ⚠ floats above any actor subtype that lacks an
 # expected combat component. AttackHitbox is expected iff the state machine
-# has an AttackState; Hurtbox is always expected. The warning disappears
-# the moment the missing component is added to the scene.
+# has any of the attack states (Tier D split: AttackState legacy, plus
+# LightAttackState/HeavyAttackState/etc.); Hurtbox is always expected. The
+# warning disappears the moment the missing component is added to the scene.
+
+const _ATTACK_STATE_NAMES: Array[StringName] = [
+	&"AttackState",
+	&"LightAttackState",
+	&"HeavyAttackState",
+	&"ChargeReleaseState",
+	&"SprintAttackState",
+	&"JumpAttackState",
+	&"RiposteAttackerState",
+]
 
 func _check_combat_components() -> void:
 	var missing: Array[String] = []
-	if _state_machine.has_node(^"AttackState") and get_node_or_null(^"%AttackHitbox") == null:
+	var has_any_attack_state: bool = false
+	for n in _ATTACK_STATE_NAMES:
+		if _state_machine.has_node(NodePath(String(n))):
+			has_any_attack_state = true
+			break
+	if has_any_attack_state and get_node_or_null(^"%AttackHitbox") == null:
 		missing.append("AttackHitbox")
 	if get_node_or_null(^"%Hurtbox") == null:
 		missing.append("Hurtbox")

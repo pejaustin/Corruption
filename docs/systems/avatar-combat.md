@@ -44,10 +44,10 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Animation pipeline | Done | `docs/technical/3d-asset-pipeline.md` |
 | Rollback netcode | Done | `RollbackSynchronizer` on Avatar |
 | Death / takeover transfer | Done | `scenes/actors/player/avatar/avatar_actor.gd` |
-| Light/Heavy split | TBD | — |
-| Combo strings | TBD | — |
-| Charge attack | TBD | — |
-| Sprint attack / jump attack | TBD | — |
+| Light/Heavy split | Done — needs `light_*`, `heavy_*` clips | `scenes/actors/player/states/light_attack_state.gd`, `heavy_attack_state.gd` |
+| Combo strings | Done — needs `light_1/2/3` clips with combo-window method tracks | `scenes/actors/player/states/light_attack_state.gd` (`combo_step` state_property) |
+| Charge attack | Done — needs `heavy_charge_loop` / `heavy_charge_release` clips | `scenes/actors/player/states/charge_windup_state.gd`, `charge_release_state.gd` |
+| Sprint attack / jump attack | Done — needs `sprint_attack` / `jump_attack` clips | `scenes/actors/player/states/sprint_attack_state.gd`, `jump_attack_state.gd` |
 | Block | Done — needs `block_*` clips | `scenes/actors/player/states/block_state.gd` |
 | Parry | Done — needs `parry_flash` / `parry_recoil` clips | `scenes/actors/actor.gd:take_damage` + `scripts/combat/forced_recovery.gd` |
 | Backstep | Done — needs `backstep` clip | `scenes/actors/player/states/backstep_state.gd` |
@@ -64,7 +64,7 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Knockback / launch | TBD | — |
 | Critical / weak-point hits | TBD (hurtbox supports it) | — |
 | Faction-specific movesets | TBD | — |
-| Riposte / execution | TBD | — |
+| Riposte / execution | Done — needs `riposte_attacker` / `riposte_victim` paired clips | `scenes/actors/player/states/riposte_attacker_state.gd`, `scenes/actors/states/riposte_victim_state.gd` |
 | Downed / last-stand | TBD | — |
 
 ---

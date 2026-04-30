@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AttackData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"charge_release"
+display_name = "Charged Release"
+animation_name = "large-male/Attack"
+damage_mult = 2.5
+posture_damage_mult = 3.0
+hyper_armor = true
+damage_type = &"physical"
+hitbox_start_ratio = 0.35
+hitbox_end_ratio = 0.7
+hitbox_profile = &""
+combo_window_start_ratio = 0.75
+combo_window_end_ratio = 0.95
+next_attack_id = &""
+lunge_distance = 0.8

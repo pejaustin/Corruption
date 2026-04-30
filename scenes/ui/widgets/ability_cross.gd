@@ -3,14 +3,15 @@ extends Control
 
 ## Bottom-right diamond of 4 ability slots:
 ##   - Top:    secondary_ability → avatar abilities[0]
-##   - Right:  primary_ability (fixed, represents attack)
+##   - Right:  light_attack (fixed, represents the attack action; renamed from
+##             `primary_ability` in Tier D when the heavy split landed)
 ##   - Bottom: item_1           → avatar abilities[1]
 ##   - Left:   item_2           → avatar abilities[2]
 ##
 ## Binding labels are read from the InputMap so rebinds update the HUD
 ## automatically. Ability icons and cooldowns come from AvatarAbilities.
 
-const ACTION_PRIMARY: StringName = &"primary_ability"
+const ACTION_PRIMARY: StringName = &"light_attack"
 const ACTION_SECONDARY: StringName = &"secondary_ability"
 const ACTION_ITEM_1: StringName = &"item_1"
 const ACTION_ITEM_2: StringName = &"item_2"

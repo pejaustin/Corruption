@@ -32,8 +32,19 @@ func get_run() -> bool:
 func get_jump() -> bool:
 	return player.avatar_input.jump_input
 
+## Held flag — light-attack button. Tier D rename: was `attack_input` /
+## `primary_ability` pre-split. The legacy `get_attack()` accessor is
+## preserved as an alias so older states keep compiling.
+func get_light_attack() -> bool:
+	return player.avatar_input.light_attack_input
+
+## Held flag — heavy-attack button. New in Tier D.
+func get_heavy_attack() -> bool:
+	return player.avatar_input.heavy_attack_input
+
+## Legacy accessor — keep callers compiling. Equivalent to `get_light_attack`.
 func get_attack() -> bool:
-	return player.avatar_input.attack_input
+	return player.avatar_input.light_attack_input
 
 func get_roll() -> bool:
 	return player.avatar_input.roll_input
@@ -87,13 +98,108 @@ func try_roll() -> bool:
 		return actor.try_transition(&"BackstepState")
 	return actor.try_transition(&"RollState")
 
-## Transition into AttackState if the attack input is held OR was buffered.
-## Used by IdleState/MoveState — call at the top of tick() so a press queued
-## during a locked attack fires the next swing immediately on recovery.
-func try_attack() -> bool:
-	if not (get_attack() or player.avatar_input.consume_if_buffered(&"primary_ability")):
+## Transition into LightAttackState if the light-attack input is held OR was
+## buffered. Used by IdleState/MoveState — call at the top of tick() so a press
+## queued during a locked attack fires the next swing immediately on recovery.
+##
+## Tier D rename: was `try_attack` reading `&"primary_ability"`. The legacy
+## `try_attack()` is kept as an alias so any older state still compiles.
+func try_light_attack() -> bool:
+	if not (get_light_attack() or player.avatar_input.consume_if_buffered(&"light_attack")):
 		return false
-	return actor.try_transition(&"AttackState")
+	# Sprint-attack entry: light press while sprinting (run held + grounded
+	# moving). MoveState handles its own override by calling
+	# try_sprint_attack() directly; this path is the neutral fallback.
+	return actor.try_transition(&"LightAttackState")
+
+## Legacy alias — equivalent to `try_light_attack`. Kept so older callers
+## (debug scripts, harnesses) compile.
+func try_attack() -> bool:
+	return try_light_attack()
+
+## Transition into HeavyAttackState (or RiposteAttackerState if a posture-
+## broken target is in range) on a heavy-attack press. Called by IdleState /
+## MoveState alongside `try_light_attack`. Routes via `try_transition` so
+## locked states with `cancel_whitelist` honored.
+func try_heavy_attack() -> bool:
+	if not (get_heavy_attack() or player.avatar_input.consume_if_buffered(&"heavy_attack")):
+		return false
+	# Riposte trigger: posture-broken target in front of us within range.
+	if try_riposte():
+		return true
+	return actor.try_transition(&"HeavyAttackState")
+
+## If the player is locked onto (or facing) a `is_ripostable` target within
+## RIPOSTE_RANGE, transition into RiposteAttackerState. Returns true iff the
+## riposte path took over. Called from `try_heavy_attack`; standalone callers
+## are welcome (e.g. an explicit "execute" key in the future).
+func try_riposte() -> bool:
+	var victim := _find_riposte_target()
+	if victim == null:
+		return false
+	# Stash the victim so RiposteAttackerState can read it on enter() — the
+	# ripostable target isn't in any synced state yet, but the attacker's
+	# state machine transition IS synced, so by the time clients resimulate
+	# this tick the victim's `is_ripostable` flag is also set on their side.
+	player.set_meta(&"_pending_riposte_target", victim)
+	return actor.try_transition(&"RiposteAttackerState")
+
+## Range within which a heavy press promotes to riposte. Generous enough to
+## land on a stunned target without precise spacing.
+const RIPOSTE_RANGE: float = 2.5
+## Front-cone half-angle for riposte facing check, degrees.
+const RIPOSTE_FACING_CONE_DEG: float = 60.0
+
+func _find_riposte_target() -> Actor:
+	# Prefer the locked target when one is held (Tier B).
+	if is_target_locked():
+		var locked: Actor = player.targeting.current_target
+		if _is_ripostable(locked):
+			return locked
+		# Locked but locked target isn't ripostable — fall through to picker.
+	# Otherwise scan all actors in the group for the closest ripostable in front.
+	var nodes := actor.get_tree().get_nodes_in_group(&"actors")
+	var best: Actor = null
+	var best_dist_sq: float = RIPOSTE_RANGE * RIPOSTE_RANGE
+	for n in nodes:
+		var a := n as Actor
+		if not _is_ripostable(a):
+			continue
+		var to: Vector3 = a.global_position - actor.global_position
+		to.y = 0.0
+		var d2: float = to.length_squared()
+		if d2 > best_dist_sq:
+			continue
+		# Facing check — must be in our front cone.
+		if not _is_in_front_cone(to):
+			continue
+		best = a
+		best_dist_sq = d2
+	return best
+
+func _is_ripostable(a: Actor) -> bool:
+	if a == null or a == actor:
+		return false
+	if not is_instance_valid(a):
+		return false
+	if not a.is_ripostable:
+		return false
+	if a.hp <= 0:
+		return false
+	return true
+
+func _is_in_front_cone(to_target: Vector3) -> bool:
+	to_target.y = 0.0
+	if to_target.length_squared() < 0.0001:
+		return true
+	to_target = to_target.normalized()
+	var basis_node: Node3D = actor._model if actor._model else actor
+	var fwd: Vector3 = -basis_node.global_basis.z
+	fwd.y = 0.0
+	if fwd.length_squared() < 0.0001:
+		return false
+	fwd = fwd.normalized()
+	return fwd.dot(to_target) >= cos(deg_to_rad(RIPOSTE_FACING_CONE_DEG))
 
 ## Transition into BlockState if the block input is held. Used by IdleState
 ## and MoveState — call at the top of tick() so the player can guard from
