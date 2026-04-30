@@ -229,6 +229,15 @@ func _play_attack_clip() -> void:
 		clip = attack_data.animation_name
 	if clip != "" and actor._animation_player.has_animation(clip):
 		actor._animation_player.play(clip)
+	# Tier E — apply faction attack-speed multiplier. AvatarActor exposes the
+	# value; non-avatar actors fall through to 1.0. We write speed_scale here
+	# (rather than on enter) because hitstop's restore branch resets to 1.0,
+	# and this clip-replay is the canonical post-hitstop entry point.
+	var mult: float = 1.0
+	if actor.has_method(&"get_attack_speed_mult"):
+		mult = actor.call(&"get_attack_speed_mult")
+	if mult != 1.0:
+		actor._animation_player.speed_scale = mult
 
 func _get_animation_progress() -> float:
 	if not actor._animation_player:

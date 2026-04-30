@@ -12,6 +12,9 @@ signal influence_changed(peer_id: int, new_value: float)
 ## Fired on every peer when a gem capture starts (CaptureChannel.broadcast=true).
 ## Listen here for global reactions (storm cue, HUD banner, audio sting).
 signal capture_broadcast(peer_id: int, faction: int, duration: float)
+## Tier E — fired host-side after corruption_power for `peer_id` changes.
+## HUD listeners (ultimate / cost gauges) subscribe here.
+signal corruption_power_changed(peer_id: int, new_value: int)
 
 # -1 means no Avatar is active
 var avatar_peer_id: int = -1
@@ -32,6 +35,18 @@ var upgrade_levels: Dictionary[int, Dictionary] = {}
 # Eldritch Vision ritual effect — timed broadcast buff.
 var eldritch_vision_peer: int = -1
 var eldritch_vision_timer: float = 0.0
+
+# Tier E — per-peer corruption power. Replenished by kills + gemsite captures
+# (see `add_corruption_power` callsites). Spent by abilities with `cost > 0`
+# (currently DORMANT — no shipped ability has cost > 0). Plumbing exists so
+# designers can A/B test cost gating without code changes.
+var corruption_power: Dictionary[int, int] = {}
+
+## Tier E corruption-power tunables. Authoritative numbers in one place so
+## designers can adjust without combing through call sites.
+const CORRUPTION_POWER_PER_KILL: int = 25
+const CORRUPTION_POWER_PER_CAPTURE: int = 50
+const CORRUPTION_POWER_MAX: int = 1000
 
 func is_avatar(peer_id: int) -> bool:
 	return avatar_peer_id == peer_id
@@ -203,6 +218,28 @@ func _set_influence(peer_id: int, value: float) -> void:
 	influence[peer_id] = value
 	influence_changed.emit(peer_id, value)
 
+# --- Tier E: Corruption Power (resource economy plumbing) ---
+
+func get_corruption_power(peer_id: int) -> int:
+	return corruption_power.get(peer_id, 0)
+
+func add_corruption_power(peer_id: int, amount: int) -> void:
+	## Host-only. Adds (or subtracts, with negative amount) corruption_power for
+	## `peer_id`. Clamped to [0, CORRUPTION_POWER_MAX]. Broadcasts via RPC so
+	## clients receive the change.
+	if not multiplayer.is_server():
+		return
+	var current: int = corruption_power.get(peer_id, 0)
+	var new_value: int = clampi(current + amount, 0, CORRUPTION_POWER_MAX)
+	if new_value == current:
+		return
+	_set_corruption_power.rpc(peer_id, new_value)
+
+@rpc("authority", "call_local", "reliable")
+func _set_corruption_power(peer_id: int, value: int) -> void:
+	corruption_power[peer_id] = value
+	corruption_power_changed.emit(peer_id, value)
+
 func get_highest_influence_peer() -> int:
 	## Returns the peer with the highest influence, or -1 if none.
 	var best_peer := -1
@@ -293,3 +330,4 @@ func reset() -> void:
 	upgrade_levels.clear()
 	eldritch_vision_peer = -1
 	eldritch_vision_timer = 0.0
+	corruption_power.clear()

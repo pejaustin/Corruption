@@ -63,7 +63,10 @@ func rotate_player_model(delta: float) -> void:
 func move_horizontal(delta: float, speed: float = WALK_SPEED) -> void:
 	var input_dir := get_movement_input()
 	var direction := (player.avatar_camera.camera_basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	var target := direction * speed
+	# Tier E — apply Eldritch-style movement slow if active. The multiplier is
+	# 1.0 when no slow is in effect.
+	var slow_mult: float = actor.get_movement_speed_mult() if actor else 1.0
+	var target := direction * speed * slow_mult
 	if get_run():
 		target *= RUN_MODIFIER
 	if target:

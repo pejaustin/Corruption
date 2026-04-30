@@ -63,7 +63,12 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Damage numbers | Done | `scripts/ui/damage_numbers.gd` autoload + `scenes/ui/damage_number.tscn` |
 | Knockback / launch | TBD | — |
 | Critical / weak-point hits | TBD (hurtbox supports it) | — |
-| Faction-specific movesets | TBD | — |
+| Faction-specific movesets | Asset-only (state machine is library-agnostic; see tier-e-implementation.md) | `scripts/faction_profile.gd:animation_library_name` |
+| Faction asymmetry — stats on FactionProfile | Done | `scripts/faction_profile.gd:30-87`, `data/factions/*.tres` |
+| Faction passive resource | Done | `scripts/faction_passive.gd`, `scripts/faction_passive_*.gd`, `data/factions/passives/*.tres` |
+| Slot-4 ultimate (charge-gated) | Done — needs HUD slot + per-faction VFX | `scripts/avatar_abilities.gd:SLOT_ULTIMATE`, `data/abilities/ultimate_*.tres` |
+| `ultimate_charge: int` state_property | Done | `scenes/actors/actor.gd:75`, `scenes/actors/player/player_actor.tscn:30` |
+| Resource economy (`GameState.corruption_power`) | Done — DORMANT (cost=0 on shipped abilities) | `scripts/game_state.gd:36-46`, `scripts/avatar_ability.gd:cost,cost_resource` |
 | Riposte / execution | Done — needs `riposte_attacker` / `riposte_victim` paired clips | `scenes/actors/player/states/riposte_attacker_state.gd`, `scenes/actors/states/riposte_victim_state.gd` |
 | Downed / last-stand | TBD | — |
 

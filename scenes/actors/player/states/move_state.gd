@@ -104,6 +104,8 @@ func _move_target_relative(_delta: float) -> void:
 	var speed: float = WALK_SPEED
 	if get_run():
 		speed *= RUN_MODIFIER
+	# Tier E — Eldritch slow multiplier (1.0 when no slow is active).
+	speed *= actor.get_movement_speed_mult()
 	target_vel *= speed
 	if target_vel.length_squared() > 0.0:
 		actor.velocity.x = target_vel.x

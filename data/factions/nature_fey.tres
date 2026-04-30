@@ -4,10 +4,20 @@
 [ext_resource type="Script" uid="uid://cidrom8q5ad0m" path="res://scripts/faction_profile.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/abilities/camouflage.tres" id="5_camouflage"]
 [ext_resource type="Resource" path="res://data/abilities/entangle.tres" id="6_entangle"]
+[ext_resource type="Resource" path="res://data/abilities/ultimate_fey.tres" id="7_ultimate"]
+[ext_resource type="Resource" path="res://data/factions/passives/fey_passive.tres" id="8_passive"]
 
 [resource]
 script = ExtResource("1_script")
 id = 2
 display_name = "Nature/Fey"
 color = Color(0.1257638, 0.44140625, 0.18987867, 1)
-avatar_abilities = Array[ExtResource("1_neae1")]([ExtResource("5_camouflage"), ExtResource("6_entangle")])
+avatar_abilities = Array[ExtResource("1_neae1")]([ExtResource("5_camouflage"), ExtResource("6_entangle"), null, ExtResource("7_ultimate")])
+avatar_hp = 80
+avatar_base_damage = 22
+attack_speed_mult = 1.20
+roll_distance = 8.0
+roll_iframe_ticks = 16
+max_posture = 90
+passive = ExtResource("8_passive")
+animation_library_name = ""

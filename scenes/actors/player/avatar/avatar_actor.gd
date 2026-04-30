@@ -31,6 +31,16 @@ var _watcher_orbs: Dictionary[int, MeshInstance3D] = {}
 var last_damage_source_peer: int = -1
 # Faction abilities
 var abilities: AvatarAbilities
+# --- Tier E: Faction-driven combat stat overrides ---
+# Resolved on `activate(peer_id)` from `FactionData.get_profile(faction)`.
+# Persist for the lifetime of the claim. State scripts read these to
+# customize per-faction feel.
+var _max_hp_override: int = -1
+var _base_damage_override: int = -1
+var _attack_speed_mult: float = 1.0
+var _roll_distance_override: float = -1.0
+var _roll_iframe_ticks_override: int = -1
+var _animation_library_override: String = ""
 # The CaptureChannel currently locking this avatar (null when not channeling).
 # Read by ChannelState; written by CaptureChannel when the channel starts/ends.
 var active_channel: CaptureChannel = null
@@ -55,6 +65,32 @@ func _on_took_damage(_amount: int, _source: Node) -> void:
 		avatar_camera.shake(HIT_TAKEN_SHAKE_AMPLITUDE, HIT_TAKEN_SHAKE_DURATION)
 
 # --- Combat overrides ---
+
+## Tier E — overrides the Actor base 100. Resolved from FactionProfile.avatar_hp
+## at claim time; falls back to base when no profile is configured.
+func get_max_hp() -> int:
+	if _max_hp_override > 0:
+		return _max_hp_override
+	return super()
+
+## Tier E — overrides the Actor base 25. Resolved from
+## FactionProfile.avatar_base_damage at claim time.
+func get_attack_damage() -> int:
+	if _base_damage_override > 0:
+		return _base_damage_override
+	return super()
+
+## Tier E — exposed for attack states' speed_scale tweak. 1.0 = no change.
+func get_attack_speed_mult() -> float:
+	return _attack_speed_mult
+
+## Tier E — exposed for RollState. Returns -1.0 when unset (use defaults).
+func get_roll_distance_override() -> float:
+	return _roll_distance_override
+
+## Tier E — exposed for RollState. Returns -1 when unset (use defaults).
+func get_roll_iframe_ticks_override() -> int:
+	return _roll_iframe_ticks_override
 
 func can_take_damage() -> bool:
 	if god_mode or is_dormant:
@@ -117,8 +153,6 @@ func _respawn() -> void:
 func activate(peer_id: int) -> void:
 	controlling_peer_id = peer_id
 	is_dormant = false
-	hp = get_max_hp()
-	hp_changed.emit(hp)
 	avatar_input.set_controller(peer_id)
 	avatar_camera.activate(peer_id)
 	rollback_synchronizer.process_settings()
@@ -126,13 +160,51 @@ func activate(peer_id: int) -> void:
 	# Inherit the controlling peer's faction so hostility checks work
 	# (e.g. MinionState.find_hostile_target treats NEUTRAL-vs-NEUTRAL as ALLIED).
 	faction = GameState.get_faction(peer_id)
+	# Tier E — apply faction combat stat overrides BEFORE seeding hp from
+	# get_max_hp(), so the new owner's HP cap reflects their faction.
+	_apply_faction_combat_stats(FactionData.get_profile(faction))
+	hp = get_max_hp()
+	hp_changed.emit(hp)
+	# Reset Tier E meters so the new owner doesn't inherit the previous
+	# claim's ultimate progress.
+	ultimate_charge = 0
 	if abilities:
 		abilities.setup(self, faction)
+
+## Tier E — applies a FactionProfile's combat stats to this avatar. Idempotent;
+## safe to call multiple times. Pass null to clear overrides (deactivate path).
+func _apply_faction_combat_stats(profile: FactionProfile) -> void:
+	if profile == null:
+		_max_hp_override = -1
+		_base_damage_override = -1
+		_attack_speed_mult = 1.0
+		_roll_distance_override = -1.0
+		_roll_iframe_ticks_override = -1
+		_animation_library_override = ""
+		_faction_passive = null
+		max_posture = 100
+		return
+	_max_hp_override = profile.avatar_hp
+	_base_damage_override = profile.avatar_base_damage
+	_attack_speed_mult = profile.attack_speed_mult
+	_roll_distance_override = profile.roll_distance
+	_roll_iframe_ticks_override = profile.roll_iframe_ticks
+	_animation_library_override = profile.animation_library_name
+	# Faction passive — cached on the actor so passive hooks resolve without
+	# round-tripping through FactionData every hit.
+	set_faction_passive(profile.passive)
+	# Tier C posture cap is exported on Actor; faction profile overrides at claim.
+	max_posture = profile.max_posture
 
 func deactivate() -> void:
 	controlling_peer_id = -1
 	is_dormant = true
 	faction = GameConstants.Faction.NEUTRAL
+	# Tier E — clear faction stat overrides so the dormant avatar doesn't
+	# carry the last claimer's tuning into the next claim's pre-activate
+	# window.
+	_apply_faction_combat_stats(null)
+	ultimate_charge = 0
 	avatar_input.set_controller(-1)
 	avatar_camera.deactivate()
 	rollback_synchronizer.process_settings()
@@ -167,6 +239,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			abilities.activate_ability(1)
 		elif event.is_action_pressed("item_2"):
 			abilities.activate_ability(2)
+		elif InputMap.has_action("ultimate") and event.is_action_pressed("ultimate"):
+			# Tier E — slot 4 / ultimate. Charge-gated rather than cooldown-
+			# gated; AvatarAbilities.activate_ability does the
+			# `is_ultimate_ready()` check before firing.
+			abilities.activate_ability(AvatarAbilities.SLOT_ULTIMATE)
 	# Local-only targeting input. These never enter netfox state — see
 	# scripts/combat/targeting.gd for the rationale.
 	if targeting:

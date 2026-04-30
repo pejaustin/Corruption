@@ -4,10 +4,20 @@
 [ext_resource type="Script" uid="uid://cidrom8q5ad0m" path="res://scripts/faction_profile.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/abilities/life_drain.tres" id="5_life_drain"]
 [ext_resource type="Resource" path="res://data/abilities/corpse_explosion.tres" id="6_corpse_explosion"]
+[ext_resource type="Resource" path="res://data/abilities/ultimate_undeath.tres" id="7_ultimate"]
+[ext_resource type="Resource" path="res://data/factions/passives/undeath_passive.tres" id="8_passive"]
 
 [resource]
 script = ExtResource("1_script")
 id = 0
 display_name = "Undeath"
 color = Color(0.43224582, 0.7342073, 0.75390625, 1)
-avatar_abilities = Array[ExtResource("1_e186o")]([ExtResource("5_life_drain"), ExtResource("6_corpse_explosion")])
+avatar_abilities = Array[ExtResource("1_e186o")]([ExtResource("5_life_drain"), ExtResource("6_corpse_explosion"), null, ExtResource("7_ultimate")])
+avatar_hp = 100
+avatar_base_damage = 25
+attack_speed_mult = 1.0
+roll_distance = 6.0
+roll_iframe_ticks = 12
+max_posture = 100
+passive = ExtResource("8_passive")
+animation_library_name = ""

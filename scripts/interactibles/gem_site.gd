@@ -104,6 +104,11 @@ func _set_captured(faction: int, peer_id: int) -> void:
 	controlling_faction = faction
 	controlling_peer_id = peer_id
 	print("[GemSite] %s captured by peer %d (faction %d)" % [site_name, peer_id, faction])
+	# Tier E — gemsite captures replenish the capturing peer's corruption
+	# power. Host-only; the RPC inside add_corruption_power broadcasts the
+	# change so every client's pool stays in sync.
+	if multiplayer.is_server() and peer_id > 0:
+		GameState.add_corruption_power(peer_id, GameState.CORRUPTION_POWER_PER_CAPTURE)
 
 @rpc("authority", "call_local", "reliable")
 func reset_site() -> void:

@@ -154,6 +154,42 @@ var _last_damage_tick: int = -1
 ## the posture meter feeling "leaky" during sustained pressure.
 const POSTURE_DECAY_GRACE_TICKS: int = 60
 
+# --- Tier E: Faction passive + asymmetry ---
+
+## Cached passive resource resolved from the actor's faction. Lookup happens
+## lazily on first read (PlayerActor refreshes via `_apply_faction_combat_stats`
+## on claim; minions inherit from their type via the manager). Null = no
+## passive (NEUTRAL or unconfigured factions).
+var _faction_passive: FactionPassive = null
+## Tier E charge meter for the slot-4 ultimate ability. Increments on damage
+## taken / dealt / kill via `add_ultimate_charge`. Clamped to
+## ULTIMATE_CHARGE_MAX. State_property on PlayerActor (rollback-synced); on
+## minions, stays at 0 (they have no ultimates).
+var ultimate_charge: int = 0
+## Cap for ultimate_charge. Reaching this gates `is_ultimate` ability casts.
+const ULTIMATE_CHARGE_MAX: int = 100
+## Charge gained when the actor takes damage. Tuneable.
+const ULTIMATE_CHARGE_PER_DAMAGE_TAKEN: int = 5
+## Charge gained when the actor lands a hit (final_damage > 0).
+const ULTIMATE_CHARGE_PER_DAMAGE_DEALT: int = 10
+## Charge gained on a kill (a hit that drops victim to 0 HP).
+const ULTIMATE_CHARGE_PER_KILL: int = 25
+
+## Per-actor delayed-damage queue. Each entry is a Dictionary with keys
+## `tick: int`, `amount: int`, `source: Actor` (may be null). Drained in
+## `_rollback_tick` once `NetworkTime.tick >= entry.tick`. Used by Demonic
+## extra-hit and Fey bleed passives. Resimulation-safe: each entry is host-
+## authored and is consumed once per pass. Local; not in state_properties —
+## the queued damage applies via `take_damage` which is itself authoritative.
+var _passive_queued_hits: Array[Dictionary] = []
+
+## NetworkTime.tick at which a movement-slow expires. -1 = no slow. Tier E's
+## Eldritch passive sets this. Movement states multiply walk/run velocity by
+## `get_movement_speed_mult()` which checks this timer.
+var _slow_until_tick: int = -1
+## Multiplier active during the slow window.
+var _slow_multiplier: float = 1.0
+
 var _state_machine: RewindableStateMachine
 var _model: Node3D
 var _animation_player: AnimationPlayer
@@ -258,6 +294,43 @@ func take_damage(amount: int, source: Node = null) -> void:
 	hp_changed.emit(hp)
 	_last_damage_amount = final_damage
 	_last_damage_tick = NetworkTime.tick
+	# Tier E — passive hooks fire after damage is computed and applied so
+	# `final_damage` is meaningful and so killers can read victim.hp == 0
+	# inside on_kill. All run host-side; on clients these calls early-return
+	# inside the passives via the multiplayer.is_server() guard where it
+	# matters (lifesteal directly mutates hp; queued hits use authoritative
+	# `take_damage` paths).
+	var was_killed: bool = hp <= 0 and final_damage > 0
+	if final_damage > 0 and not was_parried:
+		# Charge attribution: attacker gets +damage_dealt charge, victim gets
+		# +damage_taken charge. Local-only on each actor's host pass — the
+		# state_property carries it across rollback.
+		add_ultimate_charge(ULTIMATE_CHARGE_PER_DAMAGE_TAKEN)
+		if source_actor and is_instance_valid(source_actor) and source_actor.has_method(&"add_ultimate_charge"):
+			source_actor.add_ultimate_charge(ULTIMATE_CHARGE_PER_DAMAGE_DEALT)
+		if source_actor and is_instance_valid(source_actor):
+			# Attacker passive hook — runs on the attacker's host pass. We're
+			# inside the victim's take_damage but the attacker's passive is
+			# resolved via their own _faction_passive ref.
+			var atk_passive: FactionPassive = source_actor.get_faction_passive()
+			if atk_passive:
+				atk_passive.on_attack_connect(source_actor, self, final_damage)
+		# Victim passive hook — currently unused by shipped passives but the
+		# wiring is here for future "thorns" / damage-on-hurt designs.
+		if _faction_passive:
+			_faction_passive.on_take_damage(self, final_damage, source)
+	if was_killed and source_actor and is_instance_valid(source_actor):
+		var kill_passive: FactionPassive = source_actor.get_faction_passive()
+		if kill_passive:
+			kill_passive.on_kill(source_actor, self)
+		if source_actor.has_method(&"add_ultimate_charge"):
+			source_actor.add_ultimate_charge(ULTIMATE_CHARGE_PER_KILL)
+		# Tier E — corruption_power fillup on kill. Resolves the killer's
+		# controlling peer (PlayerActor exposes `controlling_peer_id`; minions
+		# carry `owner_peer_id`). Skips if neither resolves.
+		var killer_peer: int = _resolve_owning_peer(source_actor)
+		if killer_peer > 0 and multiplayer.is_server():
+			GameState.add_corruption_power(killer_peer, GameState.CORRUPTION_POWER_PER_KILL)
 	# Tier D: combo continuity broken when interrupted by damage. Reset both
 	# the combo step (next light attack restarts at light_1) and any pending
 	# charge windup (the charge is lost if you got smacked). Block-reduced and
@@ -288,6 +361,106 @@ func take_damage(amount: int, source: Node = null) -> void:
 func _die() -> void:
 	died.emit()
 	_state_machine.transition(&"DeathState")
+
+# --- Tier E: Faction passive + ultimate API ---
+
+## Returns the cached faction passive resource, lazy-resolving from the
+## actor's faction on first call. Subclasses that want to bypass the lookup
+## (e.g. AvatarActor on claim, MinionManager on spawn) can write directly to
+## `_faction_passive` via `set_faction_passive`.
+func get_faction_passive() -> FactionPassive:
+	if _faction_passive == null:
+		# Skip the lookup for NEUTRAL — `FactionData.get_profile` falls back
+		# to UNDEATH for unknown factions, which would erroneously give
+		# dormant avatars / neutral mobs a passive they shouldn't have.
+		if faction == GameConstants.Faction.NEUTRAL:
+			return null
+		var profile: FactionProfile = FactionData.get_profile(faction)
+		if profile and profile.passive:
+			_faction_passive = profile.passive
+	return _faction_passive
+
+## Direct setter — used by AvatarActor on claim to refresh from the controlling
+## peer's faction (which may differ from the actor's `faction` field at the
+## moment of activate()).
+func set_faction_passive(passive: FactionPassive) -> void:
+	_faction_passive = passive
+
+## Resolve the peer-id that "owns" `actor` for resource-attribution purposes.
+## Returns -1 when there is no owning peer (neutral minion, environmental
+## damage source). PlayerActor has `controlling_peer_id`; MinionActor has
+## `owner_peer_id`; everything else returns -1.
+func _resolve_owning_peer(actor: Node) -> int:
+	if actor == null:
+		return -1
+	var pid: Variant = actor.get(&"controlling_peer_id")
+	if pid is int and int(pid) > 0:
+		return int(pid)
+	pid = actor.get(&"owner_peer_id")
+	if pid is int and int(pid) > 0:
+		return int(pid)
+	return -1
+
+## Bumps the ultimate-charge meter, clamped to ULTIMATE_CHARGE_MAX. Called
+## host-side from take_damage paths. State_property `ultimate_charge` carries
+## across to clients via the rollback synchronizer.
+func add_ultimate_charge(amount: int) -> void:
+	if amount <= 0:
+		return
+	ultimate_charge = clampi(ultimate_charge + amount, 0, ULTIMATE_CHARGE_MAX)
+
+## Drain the ultimate charge meter to 0. Called by AvatarAbilities on a
+## successful ultimate cast.
+func drain_ultimate_charge() -> void:
+	ultimate_charge = 0
+
+## True iff the meter is full and an ultimate is castable. AvatarAbilities
+## consults this in `activate_ability` for `is_ultimate` abilities.
+func is_ultimate_ready() -> bool:
+	return ultimate_charge >= ULTIMATE_CHARGE_MAX
+
+## Queue a delayed-damage hit against this actor. Used by faction passives
+## (Demonic extra-hit, Fey bleed). The host applies the queued damage in the
+## actor's `_rollback_tick` once `NetworkTime.tick >= apply_tick`. Source may
+## be null (e.g. ambient bleed). All applications run through the standard
+## `take_damage` path so block/parry/posture/lifesteal interact correctly.
+func queue_delayed_damage(amount: int, source: Actor, delay_ticks: int) -> void:
+	if amount <= 0 or delay_ticks <= 0:
+		return
+	# Host-only — clients receive the damage application via the standard
+	# rollback `hp` / `incoming_damage` channels once it lands.
+	if not multiplayer.is_server():
+		return
+	_passive_queued_hits.append({
+		&"tick": NetworkTime.tick + delay_ticks,
+		&"amount": amount,
+		&"source": source,
+	})
+
+## Apply a movement slow with multiplier (< 1.0 to slow) for `duration_ticks`.
+## Subsequent calls extend / override only when the new (mult, until_tick) is
+## "harsher" — a stronger slow or a longer one wins. Move states read
+## `get_movement_speed_mult()` to apply.
+func apply_movement_slow(multiplier: float, duration_ticks: int) -> void:
+	if duration_ticks <= 0 or multiplier >= 1.0:
+		return
+	var until: int = NetworkTime.tick + duration_ticks
+	if NetworkTime.tick < _slow_until_tick:
+		# Existing slow — keep harsher.
+		_slow_multiplier = minf(_slow_multiplier, multiplier)
+		_slow_until_tick = max(_slow_until_tick, until)
+	else:
+		_slow_multiplier = multiplier
+		_slow_until_tick = until
+
+## Movement velocity multiplier this actor is under right now. 1.0 normally;
+## `_slow_multiplier` while slowed. Move states call this to scale walk/run
+## speeds. Local helper — slow timing is host-driven and resolves
+## deterministically per-tick (NetworkTime.tick is shared).
+func get_movement_speed_mult() -> float:
+	if NetworkTime.tick < _slow_until_tick:
+		return _slow_multiplier
+	return 1.0
 
 # --- Action gating (see docs/systems/action-gating.md) ---
 
@@ -487,6 +660,9 @@ func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	_apply_hitstop_animation_pause()
 	_decay_posture()
 	_decay_combo()
+	_drain_passive_queued_hits()
+	if _faction_passive:
+		_faction_passive.on_tick(self, delta)
 
 ## Tier D — drops `combo_step` back to 0 after COMBO_RESET_GRACE_TICKS of
 ## idleness since the last LightAttackState exit. LightAttackState stamps
@@ -510,6 +686,39 @@ func _decay_combo() -> void:
 	if NetworkTime.tick - _last_combo_attack_tick >= COMBO_RESET_GRACE_TICKS:
 		combo_step = 0
 		_last_combo_attack_tick = -1
+
+## Tier E — drain any passive-queued hits whose tick has arrived. Each entry
+## is a Dictionary with keys tick/amount/source. Re-uses the standard
+## `take_damage` path so block/parry/posture/lifesteal etc. all reconcile.
+## Host-only — clients only see `_passive_queued_hits` accumulate locally
+## when the queue helper is called on them, and the helper guards against it.
+func _drain_passive_queued_hits() -> void:
+	if _passive_queued_hits.is_empty():
+		return
+	if not multiplayer.is_server():
+		return
+	var i: int = 0
+	while i < _passive_queued_hits.size():
+		var entry: Dictionary = _passive_queued_hits[i]
+		if NetworkTime.tick >= int(entry.get(&"tick", 0)):
+			var amount: int = int(entry.get(&"amount", 0))
+			var src: Variant = entry.get(&"source", null)
+			var src_actor: Actor = src as Actor if src else null
+			_passive_queued_hits.remove_at(i)
+			# Apply via the standard take_damage path. Set `_passive_inhibit`
+			# on the attacker for the duration so passive hooks (which would
+			# otherwise re-trigger off this delayed hit and cascade) skip
+			# their proc check. Tier G's StatusEffect system replaces this
+			# with a typed source attribution; this meta path is a temporary
+			# guard.
+			if src_actor and is_instance_valid(src_actor):
+				src_actor.set_meta(&"_passive_inhibit", true)
+			take_damage(amount, src_actor)
+			if src_actor and is_instance_valid(src_actor):
+				src_actor.remove_meta(&"_passive_inhibit")
+			# Don't advance i; the remove shifted the next entry down.
+			continue
+		i += 1
 
 ## Decays posture by `posture_decay_per_tick` per rollback tick when the actor
 ## is "out of combat" (no damage taken in POSTURE_DECAY_GRACE_TICKS) and not
@@ -559,8 +768,12 @@ func _apply_hitstop_animation_pause() -> void:
 	elif _animation_player.speed_scale == 0.0:
 		# Only restore if we're the ones who paused it. Other systems that want
 		# to control speed_scale (slow-mo, charge buildup) should set it to a
-		# non-zero value; this branch deliberately re-asserts 1.0 when leaving
-		# hitstop so a forgotten-to-restore window self-recovers.
+		# non-zero value; this branch deliberately re-asserts the nominal scale
+		# when leaving hitstop so a forgotten-to-restore window self-recovers.
+		# Tier E: nominal scale is faction-tuned during attack states; the
+		# attack states themselves write the multiplier on enter, but we use
+		# 1.0 as the recovery default here to avoid a stale faction value
+		# leaking into idle/move animations.
 		_animation_player.speed_scale = 1.0
 
 # --- Local presentation feedback (hit flash + dust) ---

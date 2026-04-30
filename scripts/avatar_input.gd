@@ -29,6 +29,12 @@ var roll_input := false
 ## the buffer dict for "press to enter Block from action-locked states later",
 ## though Tier C only uses the held flag.
 var block_input := false
+## Tier E — held flag for the ultimate (slot 4) ability. Activation flows
+## through `AvatarActor._unhandled_input` reading `Input.is_action_just_pressed`,
+## same shape as secondary_ability/item_1/item_2; this held-flag is here for
+## symmetry / future hold-to-channel ultimates. Currently unused on the
+## consumer side.
+var ultimate_input := false
 
 ## When false, all input is zeroed (pause menu open).
 var input_enabled: bool = true
@@ -50,6 +56,7 @@ func _gather() -> void:
 		heavy_attack_input = Input.is_action_pressed("heavy_attack")
 		roll_input = Input.is_action_pressed("roll")
 		block_input = Input.is_action_pressed("block")
+		ultimate_input = Input.is_action_pressed("ultimate") if InputMap.has_action("ultimate") else false
 		var t: int = NetworkTime.tick
 		if Input.is_action_just_pressed("light_attack"):
 			_press_tick[&"light_attack"] = t
@@ -67,6 +74,7 @@ func _gather() -> void:
 		heavy_attack_input = false
 		roll_input = false
 		block_input = false
+		ultimate_input = false
 		_press_tick.clear()
 
 ## Returns true if `action` was edge-pressed within BUFFER_WINDOW ticks, and
