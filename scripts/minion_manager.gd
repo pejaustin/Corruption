@@ -463,16 +463,17 @@ func _sync_all_minions() -> void:
 			minion.global_position,
 			minion.rotation.y,
 			minion._state_machine.state,
-			minion.hp
+			minion.hp,
+			minion.hitstop_until_tick,
 		)
 
 @rpc("authority", "call_remote", "unreliable")
-func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
+func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, new_hitstop_until_tick: int = -1) -> void:
 	if not _minions_node:
 		return
 	var minion := _minions_node.get_node_or_null(str(id)) as MinionActor
 	if minion:
-		minion.sync_from_server(pos, rot_y, new_state, new_hp)
+		minion.sync_from_server(pos, rot_y, new_state, new_hp, new_hitstop_until_tick)
 
 @rpc("authority", "call_local", "reliable")
 func _sync_resources(peer_id: int, amount: float) -> void:

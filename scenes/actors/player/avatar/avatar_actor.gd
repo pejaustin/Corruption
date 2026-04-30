@@ -8,6 +8,11 @@ const WATCHER_ORB_DISTANCE: float = 2.5
 const WATCHER_ORB_HEIGHT: float = 2.0
 const DEATH_TRANSFER_DELAY: float = 2.0
 const RESPAWN_POSITION: Vector3 = Vector3(0.1, 0.04, -0.06)
+## Camera-shake feel on hit received. Larger than the hit-dealt punch in
+## attack_state.gd because the victim experience needs more weight; both are
+## clamped at AvatarCamera.SHAKE_AMPLITUDE_CAP.
+const HIT_TAKEN_SHAKE_AMPLITUDE: float = 0.12
+const HIT_TAKEN_SHAKE_DURATION: float = 0.25
 const WATCHER_ORB_SIZE: Vector3 = Vector3(0.3, 0.3, 0.3)
 const WATCHER_ORB_COLOR: Color = Color(0.4, 0.6, 1.0, 0.7)
 const WATCHER_ORB_EMISSION: Color = Color(0.4, 0.6, 1.0)
@@ -38,6 +43,15 @@ func _ready() -> void:
 	abilities = AvatarAbilities.new()
 	abilities.name = "AvatarAbilities"
 	add_child(abilities)
+	# Hit-received camera shake — local feedback for the controlling peer.
+	# Actor.took_damage is already gated against rollback resimulation.
+	took_damage.connect(_on_took_damage)
+
+func _on_took_damage(_amount: int, _source: Node) -> void:
+	if controlling_peer_id != multiplayer.get_unique_id():
+		return
+	if avatar_camera:
+		avatar_camera.shake(HIT_TAKEN_SHAKE_AMPLITUDE, HIT_TAKEN_SHAKE_DURATION)
 
 # --- Combat overrides ---
 
@@ -178,7 +192,9 @@ func _create_watcher_orb() -> MeshInstance3D:
 	add_child(orb)
 	return orb
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	# Run the base actor frame (hit-flash decay etc.) before our watcher logic.
+	super(delta)
 	var positions = GameState.watcher_positions
 	for peer_id in _watcher_orbs.keys():
 		if peer_id not in positions:

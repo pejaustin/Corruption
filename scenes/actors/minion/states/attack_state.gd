@@ -106,3 +106,11 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 				var mm := actor.get_tree().current_scene.get_node_or_null("MinionManager")
 				if mm and mm.has_method("raise_dead_at"):
 					mm.raise_dead_at(minion.owner_peer_id, minion.faction, other.global_position)
+		_spawn_local_hit_feedback(hurtbox, other)
+
+## Local-only hit feedback. HitFx skips itself during rollback resim. Damage
+## itself runs above and is host-authoritative.
+func _spawn_local_hit_feedback(hurtbox: Hurtbox, target: Actor) -> void:
+	if NetworkRollback.is_rollback():
+		return
+	HitFx.spawn(hurtbox.material_kind, hurtbox.global_position, target)

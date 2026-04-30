@@ -40,6 +40,7 @@ NetworkEvents="*uid://bdmobxxptryj0"
 NetworkPerformance="*uid://cqgf7aqmjfoa3"
 InteractionUI="*res://scripts/interaction_ui.gd"
 KnowledgeManager="*res://scripts/knowledge/knowledge_manager.gd"
+DamageNumbers="*res://scripts/ui/damage_numbers.gd"
 
 [display]
 

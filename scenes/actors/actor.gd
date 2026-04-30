@@ -6,11 +6,51 @@ class_name Actor extends CharacterBody3D
 
 signal hp_changed(new_hp: int)
 signal died
+## Fired AFTER take_damage applies the hit and any hitstop has been latched.
+## Local-only consumers (damage numbers, hit-flash, FX) listen here. Gated by
+## _is_resimulating() inside take_damage so resims don't double-fire.
+signal took_damage(amount: int, source: Node)
+
+## Hitstop hold-the-frame duration in physics ticks. ~67ms at netfox 30Hz.
+## Authoritative source sets `hitstop_until_tick = NetworkTime.tick + this`
+## inside take_damage; subclasses with a RollbackSynchronizer carry it as
+## a state_property so resimulation reproduces the freeze deterministically.
+const HITSTOP_TICKS: int = 2
+
+## Damage threshold for picking the heavy hit-react clip in StaggerState.
+## Below this, light reaction. Tuneable per-feel.
+const HEAVY_REACT_THRESHOLD: int = 30
+
+## Hit-flash decay rate (seconds). The flash intensity goes from 1.0 to 0.0
+## over this duration via local _process; never enters rollback state.
+const HIT_FLASH_DURATION: float = 0.15
 
 var hp: int
 var incoming_damage: int = 0
 var faction: int = GameConstants.Faction.NEUTRAL
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+
+## NetworkTime.tick at which hitstop ends. -1 = no hitstop active. Carried as
+## a state_property on PlayerActor (rollback-synced); on MinionActor it's
+## host-authoritative + piggybacked on the existing sync RPC. The state machine
+## reads this in _rollback_tick / _physics_process to pause animation playback
+## while NetworkTime.tick < hitstop_until_tick.
+var hitstop_until_tick: int = -1
+
+## Source actor of the most recent damage. Used by StaggerState to pick a hit-
+## react clip variant (light/heavy) and by attackers for lifesteal-style
+## consequences. Local; not synced.
+var _last_damage_amount: int = 0
+
+## Hit-flash uniform intensity. Walks the model meshes each frame while > 0,
+## decays linearly. Local-only feedback — never gates damage. Shader contract
+## documented in docs/technical/hit-flash-shader.md.
+var _hit_flash_intensity: float = 0.0
+
+## Per-actor map of dust kinds → scenes. Empty by default → _spawn_dust no-ops.
+## Animation method tracks call _spawn_dust(&"footstep") / _spawn_dust(&"roll_dust")
+## etc. Wire scenes per faction in the actor scene's inspector.
+@export var dust_scenes: Dictionary[StringName, PackedScene] = {}
 
 var _state_machine: RewindableStateMachine
 var _model: Node3D
@@ -63,10 +103,20 @@ func take_damage(amount: int) -> void:
 		return
 	hp = max(0, hp - amount)
 	hp_changed.emit(hp)
+	_last_damage_amount = amount
+	# Hitstop is authority-set; on PlayerActor this is a state_property so
+	# rollback resim reproduces it. MinionActor carries it via its own sync
+	# RPC (see scripts/minion_manager.gd).
+	hitstop_until_tick = NetworkTime.tick + HITSTOP_TICKS
 	if hp <= 0:
 		_die()
 	else:
 		try_stagger()
+	# Local-only feedback. Skipped during resim so spark/flash/numbers don't
+	# double-fire. See docs/technical/netfox-reference.md §5.
+	if not _is_resimulating():
+		_hit_flash_intensity = 1.0
+		took_damage.emit(amount, null)
 
 func _die() -> void:
 	died.emit()
@@ -161,6 +211,105 @@ func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	force_update_is_on_floor()
 	if not is_on_floor():
 		apply_gravity(delta)
+	_apply_hitstop_animation_pause()
+
+# --- Rollback helpers ---
+
+## True iff netfox is currently resimulating a rolled-back tick. Use this to
+## gate local-only side effects (spark spawning, camera shake, damage numbers)
+## so resimulation doesn't stack them. The netfox API is is_rollback() — this
+## helper makes the call sites read as intent rather than implementation.
+func _is_resimulating() -> bool:
+	return NetworkRollback.is_rollback()
+
+## Pause animation playback while NetworkTime.tick < hitstop_until_tick by
+## setting the AnimationPlayer's speed_scale. Reset to 1.0 once the freeze
+## window ends. The check runs every rollback tick (PlayerActor) and every
+## physics frame (MinionActor) so resim reproduces the same speed_scale state
+## the host authored. No side effects when the actor has no animation player.
+func _apply_hitstop_animation_pause() -> void:
+	if not _animation_player:
+		return
+	if hitstop_until_tick > 0 and NetworkTime.tick < hitstop_until_tick:
+		_animation_player.speed_scale = 0.0
+	elif _animation_player.speed_scale == 0.0:
+		# Only restore if we're the ones who paused it. Other systems that want
+		# to control speed_scale (slow-mo, charge buildup) should set it to a
+		# non-zero value; this branch deliberately re-asserts 1.0 when leaving
+		# hitstop so a forgotten-to-restore window self-recovers.
+		_animation_player.speed_scale = 1.0
+
+# --- Local presentation feedback (hit flash + dust) ---
+
+func _process(delta: float) -> void:
+	if _hit_flash_intensity <= 0.0:
+		return
+	# Linear decay; the visible flash hits a uniform of the same value on
+	# any ShaderMaterial that opts into the contract. Plain materials no-op.
+	_hit_flash_intensity = max(0.0, _hit_flash_intensity - delta / HIT_FLASH_DURATION)
+	_set_hit_flash_intensity(_hit_flash_intensity)
+
+## Walks the meshes under _model and pokes the `hit_flash_intensity` uniform
+## on any mesh whose material is a ShaderMaterial that exposes the uniform.
+## Plain StandardMaterial3D meshes are skipped silently — opt-in by author.
+##
+## Shader contract:
+##   shader_type spatial;
+##   uniform float hit_flash_intensity = 0.0;
+##   void fragment() { ALBEDO += vec3(hit_flash_intensity); }
+##
+## Full example: docs/technical/hit-flash-shader.md.
+func _set_hit_flash_intensity(value: float) -> void:
+	if _model == null:
+		return
+	for mi in _walk_mesh_instances(_model):
+		_apply_flash_to_mesh_instance(mi, value)
+
+func _apply_flash_to_mesh_instance(mi: MeshInstance3D, value: float) -> void:
+	# Surface-override materials beat the mesh's own material; check both so
+	# the flash works whether the artist drove it from the model or the scene.
+	for i in mi.get_surface_override_material_count():
+		var override_mat := mi.get_surface_override_material(i) as ShaderMaterial
+		if override_mat:
+			override_mat.set_shader_parameter(&"hit_flash_intensity", value)
+	if mi.mesh == null:
+		return
+	for i in mi.mesh.get_surface_count():
+		var surface_mat := mi.mesh.surface_get_material(i) as ShaderMaterial
+		if surface_mat:
+			surface_mat.set_shader_parameter(&"hit_flash_intensity", value)
+
+func _walk_mesh_instances(root: Node) -> Array[MeshInstance3D]:
+	var out: Array[MeshInstance3D] = []
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			out.append(n as MeshInstance3D)
+		for c in n.get_children():
+			stack.append(c)
+	return out
+
+## Animation method-track entrypoint. Animations call _spawn_dust(&"footstep")
+## etc. to spawn the matching scene from `dust_scenes`. Empty dict → silent
+## no-op; fully resimulation-safe (gated by _is_resimulating before spawn).
+func _spawn_dust(kind: StringName) -> void:
+	if _is_resimulating():
+		return
+	if not dust_scenes.has(kind):
+		return
+	var scene: PackedScene = dust_scenes[kind]
+	if scene == null:
+		return
+	var instance := scene.instantiate() as Node3D
+	if instance == null:
+		return
+	var parent := get_tree().current_scene
+	if parent == null:
+		instance.queue_free()
+		return
+	parent.add_child(instance)
+	instance.global_position = global_position
 
 # --- Model slot resolution ---
 

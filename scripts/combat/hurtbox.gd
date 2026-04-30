@@ -21,6 +21,11 @@ class_name Hurtbox extends Area3D
 ## Per-profile incoming-damage multiplier. Missing keys default to 1.0.
 @export var profile_damage: Dictionary[StringName, float] = {}
 
+## Hit-FX kind passed to HitFx.spawn() when this hurtbox eats a hit. Drives
+## which spark scene plays (flesh/armor/shield). Default = flesh; armor/shield
+## hurtboxes opt in by setting it on the .tscn.
+@export var material_kind: StringName = &"flesh"
+
 const DEBUG_COLOR: Color = Color(1.0, 0.85, 0.1, 0.35)
 
 var _actor: Actor

@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3 uid="uid://btahitsparkshield"]
+
+[ext_resource type="Script" path="res://scripts/vfx/hit_spark.gd" id="1_hit_spark"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shield"]
+shading_mode = 0
+albedo_color = Color(0.45, 0.7, 1.0, 1)
+emission_enabled = true
+emission = Color(0.45, 0.7, 1.0, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_shield"]
+material = SubResource("StandardMaterial3D_shield")
+radius = 0.05
+height = 0.1
+radial_segments = 6
+rings = 3
+
+[node name="HitSparkShield" type="Node3D"]
+script = ExtResource("1_hit_spark")
+lifetime = 0.35
+
+[node name="Particles" type="CPUParticles3D" parent="."]
+emitting = false
+amount = 14
+lifetime = 0.3
+one_shot = true
+explosiveness = 0.9
+mesh = SubResource("SphereMesh_shield")
+direction = Vector3(0, 1, 0)
+spread = 50.0
+gravity = Vector3(0, -2, 0)
+initial_velocity_min = 1.5
+initial_velocity_max = 3.0
+scale_amount_min = 0.03
+scale_amount_max = 0.06

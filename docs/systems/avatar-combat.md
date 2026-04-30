@@ -53,10 +53,10 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Stamina meter | TBD | — |
 | Posture meter (Sekiro-style) | TBD | — |
 | Lock-on / target tracking | TBD | — |
-| Camera shake / FOV punch | TBD | — |
-| Hitstop | TBD | — |
-| Hit FX (particles, sound) | TBD | — |
-| Damage numbers | TBD | — |
+| Camera shake / FOV punch | Done | `scripts/avatar_camera.gd:shake()` + attack/avatar hookups |
+| Hitstop | Done | `Actor.hitstop_until_tick` state-prop; freezes `AnimationPlayer.speed_scale` per tick |
+| Hit FX (particles, sound) | Partial — code only, asset wiring pending | `scripts/combat/hit_fx.gd` + `scenes/vfx/hit_spark_*.tscn`; sound deferred |
+| Damage numbers | Done | `scripts/ui/damage_numbers.gd` autoload + `scenes/ui/damage_number.tscn` |
 | Knockback / launch | TBD | — |
 | Critical / weak-point hits | TBD (hurtbox supports it) | — |
 | Faction-specific movesets | TBD | — |
