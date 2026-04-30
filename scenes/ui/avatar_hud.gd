@@ -14,6 +14,7 @@ extends CanvasLayer
 @onready var _ability_cross: AbilityCross = %AbilityCross
 @onready var _damage_vignette: DamageVignette = %DamageVignette
 @onready var _capture_progress: CaptureProgress = %CaptureProgress
+@onready var _posture_bar: PostureBar = %PostureBar
 
 var _actor: AvatarActor = null
 var _ability_cross_initialized: bool = false
@@ -28,6 +29,10 @@ func _ready() -> void:
 	_health_bar.value = _actor.hp
 	_damage_vignette.bind(_actor)
 	_capture_progress.bind(_actor)
+	# Posture bar binds explicitly here so it doesn't have to walk the parent
+	# chain looking for an Actor — saves one process tick of "no target".
+	if _posture_bar:
+		_posture_bar.target_actor = _actor
 	GameState.avatar_changed.connect(_on_avatar_changed)
 	_try_init_ability_cross()
 	_refresh()

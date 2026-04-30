@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AvatarAbility" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/avatar_ability.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/abilities/ultimate_fey.tscn" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ultimate_fey"
+display_name = "Verdant Veil"
+cooldown = 1.0
+description = "Vanish for 3 seconds."
+effect_scene = ExtResource("2_effect")
+cost = 0
+cost_resource = &""
+is_ultimate = true

@@ -1,12 +1,18 @@
 extends PlayerState
 
-## Commitment-based melee attack. Cannot be cancelled once started.
-## Hitbox window is driven by animation progress (ratio of total length),
-## so it stays in sync even if animation speed changes.
+## DEPRECATED — Tier D split this into `light_attack_state.gd`,
+## `heavy_attack_state.gd`, `charge_windup_state.gd`, `charge_release_state.gd`,
+## `sprint_attack_state.gd`, `jump_attack_state.gd`, and the riposte pair.
 ##
-## Uses the AttackHitbox component — named profiles let an attack swap shapes
-## mid-swing (Windup/Impact/Recovery). For single-shape setups, leave
-## hitbox_profile empty and the one CollisionShape3D child is used.
+## This file is kept for backwards-compatibility with scenes that still wire
+## a single AttackState node (the avatar_actor.tscn references an `AttackState`
+## script-only node that may not be re-pointed yet). New work should use
+## LightAttackState / HeavyAttackState etc. via the `data/attacks/*.tres`
+## resources. See docs/technical/tier-d-implementation.md for the full
+## migration story.
+##
+## Behavior unchanged: commitment-based melee attack, ratio-driven hitbox
+## window. AttackHitbox profile names let it swap shapes mid-swing.
 
 ## Hitbox activates at this fraction of the attack animation. Ignored when
 ## use_animation_keys is true.
@@ -21,6 +27,10 @@ extends PlayerState
 @export var use_animation_keys: bool = false
 
 const LIFESTEAL_RATIO: float = 0.3
+
+## Camera-shake feel knobs. Local-only — never enters rollback state.
+const HIT_DEALT_SHAKE_AMPLITUDE: float = 0.06
+const HIT_DEALT_SHAKE_DURATION: float = 0.12
 
 func enter(_previous_state: RewindableState, _tick: int) -> void:
 	var hitbox := _get_hitbox()
@@ -57,8 +67,13 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 		elif progress >= hitbox_end_ratio and hitbox.is_active():
 			hitbox.disable()
 
-	if hitbox and hitbox.is_active() and actor.multiplayer.is_server():
-		_check_hits(hitbox)
+	if hitbox and hitbox.is_active():
+		# Host applies damage; every peer collects hits for local FX. The hitbox
+		# tracks "reported" hurtboxes per activation so a peer running the loop
+		# twice (e.g. host) doesn't fire FX twice. Order of operations: drain
+		# the hits once, fan out FX always, only host applies damage / lifesteal.
+		var hits := hitbox.get_new_hits()
+		_handle_hits(hits)
 
 	actor.velocity.x = 0
 	actor.velocity.z = 0
@@ -83,9 +98,14 @@ func _get_hitbox() -> AttackHitbox:
 	# want (e.g. under a BoneAttachment3D so it tracks the sword).
 	return actor.get_node_or_null(^"%AttackHitbox") as AttackHitbox
 
-func _check_hits(hitbox: AttackHitbox) -> void:
-	if hitbox == null:
+## Per-tick hit handler. Runs on every peer so attacker-local FX (sparks +
+## camera shake) play for whoever is actually swinging. Host additionally
+## applies damage + lifesteal.
+func _handle_hits(hurtboxes: Array[Hurtbox]) -> void:
+	var hitbox := _get_hitbox()
+	if hitbox == null or hurtboxes.is_empty():
 		return
+	var is_host := actor.multiplayer.is_server()
 	var base_damage := actor.get_attack_damage()
 	var damage_mult := 1.0
 	var lifesteal := false
@@ -93,13 +113,32 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 		damage_mult = actor.abilities.get_damage_multiplier()
 		lifesteal = actor.abilities.should_lifesteal()
 	var base_final := base_damage * damage_mult * hitbox.get_damage_multiplier()
-	for hurtbox in hitbox.get_new_hits():
+	for hurtbox in hurtboxes:
 		var target := hurtbox.get_actor()
 		if target == null or target == actor:
 			continue
 		var final_damage := int(base_final * hurtbox.get_damage_multiplier())
-		target.take_damage(final_damage)
-		if lifesteal:
-			var heal := int(final_damage * LIFESTEAL_RATIO)
-			actor.hp = min(actor.hp + heal, actor.get_max_hp())
-			actor.hp_changed.emit(actor.hp)
+		if is_host:
+			target.take_damage(final_damage, actor)
+			if lifesteal:
+				var heal := int(final_damage * LIFESTEAL_RATIO)
+				actor.hp = min(actor.hp + heal, actor.get_max_hp())
+				actor.hp_changed.emit(actor.hp)
+		_spawn_local_hit_feedback(hurtbox, target)
+
+## Local-only feedback when this attack lands a hit. HitFx and camera shake
+## both gate themselves against resimulation — see hit_fx.gd and the comment
+## in avatar_camera.shake. Hit-flash is owned by the victim Actor's
+## took_damage emission, so it's not double-driven from here. Only fires on
+## the controlling peer's screen — clients shouldn't see other players' hit
+## sparks twice (once from their own attack, once from the host's resim).
+func _spawn_local_hit_feedback(hurtbox: Hurtbox, target: Actor) -> void:
+	if NetworkRollback.is_rollback():
+		return
+	if player.controlling_peer_id != multiplayer.get_unique_id():
+		return
+	var contact_point: Vector3 = hurtbox.global_position
+	HitFx.spawn(hurtbox.material_kind, contact_point, target)
+	var camera := player.avatar_camera as AvatarCamera
+	if camera:
+		camera.shake(HIT_DEALT_SHAKE_AMPLITUDE, HIT_DEALT_SHAKE_DURATION)

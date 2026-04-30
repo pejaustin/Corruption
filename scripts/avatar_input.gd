@@ -13,8 +13,28 @@ const BUFFER_WINDOW: int = 12
 var input_dir: Vector2 = Vector2.ZERO
 var jump_input := false
 var run_input := false
-var attack_input := false
+## Held flag for the light-attack button. Tier D split — formerly
+## `attack_input` (`primary_ability` action). Renamed alongside the action
+## itself; remaining references to "attack" (e.g. `try_attack`) are routed
+## through the light-attack path by default.
+var light_attack_input := false
+## Held flag for the heavy-attack button. Tier D — new in this tier. Tap-or-
+## hold detection lives in the consuming states (HeavyAttackState transitions
+## to ChargeWindupState if the button is still held past
+## `CHARGE_HOLD_THRESHOLD_TICKS`).
+var heavy_attack_input := false
 var roll_input := false
+## Held flag for the block button. BlockState reads it each tick to decide
+## whether to stay in block or release. Edge-press is also tracked through
+## the buffer dict for "press to enter Block from action-locked states later",
+## though Tier C only uses the held flag.
+var block_input := false
+## Tier E — held flag for the ultimate (slot 4) ability. Activation flows
+## through `AvatarActor._unhandled_input` reading `Input.is_action_just_pressed`,
+## same shape as secondary_ability/item_1/item_2; this held-flag is here for
+## symmetry / future hold-to-channel ultimates. Currently unused on the
+## consumer side.
+var ultimate_input := false
 
 ## When false, all input is zeroed (pause menu open).
 var input_enabled: bool = true
@@ -32,19 +52,29 @@ func _gather() -> void:
 		input_dir = Input.get_vector("left", "right", "forward", "backward")
 		jump_input = Input.is_action_pressed("jump")
 		run_input = Input.is_action_pressed("run")
-		attack_input = Input.is_action_pressed("primary_ability")
+		light_attack_input = Input.is_action_pressed("light_attack")
+		heavy_attack_input = Input.is_action_pressed("heavy_attack")
 		roll_input = Input.is_action_pressed("roll")
+		block_input = Input.is_action_pressed("block")
+		ultimate_input = Input.is_action_pressed("ultimate") if InputMap.has_action("ultimate") else false
 		var t: int = NetworkTime.tick
-		if Input.is_action_just_pressed("primary_ability"):
-			_press_tick[&"primary_ability"] = t
+		if Input.is_action_just_pressed("light_attack"):
+			_press_tick[&"light_attack"] = t
+		if Input.is_action_just_pressed("heavy_attack"):
+			_press_tick[&"heavy_attack"] = t
 		if Input.is_action_just_pressed("roll"):
 			_press_tick[&"roll"] = t
+		if Input.is_action_just_pressed("block"):
+			_press_tick[&"block"] = t
 	else:
 		input_dir = Vector2.ZERO
 		jump_input = false
 		run_input = false
-		attack_input = false
+		light_attack_input = false
+		heavy_attack_input = false
 		roll_input = false
+		block_input = false
+		ultimate_input = false
 		_press_tick.clear()
 
 ## Returns true if `action` was edge-pressed within BUFFER_WINDOW ticks, and

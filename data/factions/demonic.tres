@@ -4,10 +4,20 @@
 [ext_resource type="Script" uid="uid://cidrom8q5ad0m" path="res://scripts/faction_profile.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/abilities/hellfire_strike.tres" id="5_hellfire"]
 [ext_resource type="Resource" path="res://data/abilities/demon_rage.tres" id="6_demon_rage"]
+[ext_resource type="Resource" path="res://data/abilities/ultimate_demonic.tres" id="7_ultimate"]
+[ext_resource type="Resource" path="res://data/factions/passives/demonic_passive.tres" id="8_passive"]
 
 [resource]
 script = ExtResource("1_script")
 id = 1
 display_name = "Demonic"
 color = Color(0.37109375, 0.08228602, 0.04194973, 1)
-avatar_abilities = Array[ExtResource("1_5rwxe")]([ExtResource("5_hellfire"), ExtResource("6_demon_rage")])
+avatar_abilities = Array[ExtResource("1_5rwxe")]([ExtResource("5_hellfire"), ExtResource("6_demon_rage"), null, ExtResource("7_ultimate")])
+avatar_hp = 120
+avatar_base_damage = 32
+attack_speed_mult = 0.95
+roll_distance = 6.0
+roll_iframe_ticks = 12
+max_posture = 130
+passive = ExtResource("8_passive")
+animation_library_name = ""

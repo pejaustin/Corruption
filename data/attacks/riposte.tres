@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AttackData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"riposte"
+display_name = "Riposte Execution"
+animation_name = "large-male/Attack"
+damage_mult = 4.0
+posture_damage_mult = 0.0
+hyper_armor = true
+damage_type = &"physical"
+hitbox_start_ratio = 0.4
+hitbox_end_ratio = 0.6
+hitbox_profile = &""
+combo_window_start_ratio = 0.95
+combo_window_end_ratio = 1.0
+next_attack_id = &""
+lunge_distance = 0.0

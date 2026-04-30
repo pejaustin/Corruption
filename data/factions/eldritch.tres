@@ -4,10 +4,20 @@
 [ext_resource type="Script" uid="uid://c3atsw0qdlnig" path="res://scripts/avatar_ability.gd" id="1_tespb"]
 [ext_resource type="Resource" path="res://data/abilities/mind_blast.tres" id="5_mind_blast"]
 [ext_resource type="Resource" path="res://data/abilities/eldritch_ritual.tres" id="6_eldritch_ritual"]
+[ext_resource type="Resource" path="res://data/abilities/ultimate_eldritch.tres" id="7_ultimate"]
+[ext_resource type="Resource" path="res://data/factions/passives/eldritch_passive.tres" id="8_passive"]
 
 [resource]
 script = ExtResource("1_script")
 id = 3
 display_name = "Eldritch"
 color = Color(0.2745099, 0.109375, 0.4375, 1)
-avatar_abilities = Array[ExtResource("1_tespb")]([ExtResource("5_mind_blast"), ExtResource("6_eldritch_ritual")])
+avatar_abilities = Array[ExtResource("1_tespb")]([ExtResource("5_mind_blast"), ExtResource("6_eldritch_ritual"), null, ExtResource("7_ultimate")])
+avatar_hp = 80
+avatar_base_damage = 18
+attack_speed_mult = 1.0
+roll_distance = 6.0
+roll_iframe_ticks = 12
+max_posture = 90
+passive = ExtResource("8_passive")
+animation_library_name = ""

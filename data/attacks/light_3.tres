@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AttackData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"light_3"
+display_name = "Light Combo 3 (Finisher)"
+animation_name = "large-male/Attack"
+damage_mult = 1.5
+posture_damage_mult = 1.4
+hyper_armor = false
+damage_type = &"physical"
+hitbox_start_ratio = 0.3
+hitbox_end_ratio = 0.65
+hitbox_profile = &""
+combo_window_start_ratio = 0.55
+combo_window_end_ratio = 0.85
+next_attack_id = &""
+lunge_distance = 0.6

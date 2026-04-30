@@ -44,23 +44,49 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Animation pipeline | Done | `docs/technical/3d-asset-pipeline.md` |
 | Rollback netcode | Done | `RollbackSynchronizer` on Avatar |
 | Death / takeover transfer | Done | `scenes/actors/player/avatar/avatar_actor.gd` |
-| Light/Heavy split | TBD | — |
-| Combo strings | TBD | — |
-| Charge attack | TBD | — |
-| Sprint attack / jump attack | TBD | — |
-| Block | TBD | — |
-| Parry | TBD | — |
-| Stamina meter | TBD | — |
-| Posture meter (Sekiro-style) | TBD | — |
-| Lock-on / target tracking | TBD | — |
-| Camera shake / FOV punch | TBD | — |
-| Hitstop | TBD | — |
-| Hit FX (particles, sound) | TBD | — |
-| Damage numbers | TBD | — |
+| Light/Heavy split | Done — needs `light_*`, `heavy_*` clips | `scenes/actors/player/states/light_attack_state.gd`, `heavy_attack_state.gd` |
+| Combo strings | Done — needs `light_1/2/3` clips with combo-window method tracks | `scenes/actors/player/states/light_attack_state.gd` (`combo_step` state_property) |
+| Charge attack | Done — needs `heavy_charge_loop` / `heavy_charge_release` clips | `scenes/actors/player/states/charge_windup_state.gd`, `charge_release_state.gd` |
+| Sprint attack / jump attack | Done — needs `sprint_attack` / `jump_attack` clips | `scenes/actors/player/states/sprint_attack_state.gd`, `jump_attack_state.gd` |
+| Block | Done — needs `block_*` clips | `scenes/actors/player/states/block_state.gd` |
+| Parry | Done — needs `parry_flash` / `parry_recoil` clips | `scenes/actors/actor.gd:take_damage` + `scripts/combat/forced_recovery.gd` |
+| Backstep | Done — needs `backstep` clip | `scenes/actors/player/states/backstep_state.gd` |
+| Stamina meter | TBD (deferred per design pillar §3) | — |
+| Posture meter (Sekiro-style) | Done — HUD bar wired into AvatarHUD | `scenes/actors/actor.gd:gain_posture/_decay_posture`, `scenes/ui/posture_bar.tscn` |
+| Posture-broken state | Done — needs `posture_broken` clip | `scenes/actors/states/posture_broken_state.gd` |
+| Lock-on / target tracking | Done (hard-lock + cycle); soft-lock plumbed but disabled | `scripts/combat/targeting.gd`, `scripts/avatar_camera.gd:_tick_lock_follow`, `scenes/ui/lock_on_reticle.tscn` |
+| Strafe locomotion (target-relative basis) | Done — needs strafe clips for full feel | `scenes/actors/player/states/move_state.gd` |
+| Directional roll | Done — needs `roll_back/_left/_right` clips | `scenes/actors/player/states/roll_state.gd` |
+| Camera shake / FOV punch | Done | `scripts/avatar_camera.gd:shake()` + attack/avatar hookups |
+| Hitstop | Done | `Actor.hitstop_until_tick` state-prop; freezes `AnimationPlayer.speed_scale` per tick |
+| Hit FX (particles, sound) | Partial — code only, asset wiring pending | `scripts/combat/hit_fx.gd` + `scenes/vfx/hit_spark_*.tscn`; sound deferred |
+| Damage numbers | Done | `scripts/ui/damage_numbers.gd` autoload + `scenes/ui/damage_number.tscn` |
 | Knockback / launch | TBD | — |
 | Critical / weak-point hits | TBD (hurtbox supports it) | — |
-| Faction-specific movesets | TBD | — |
-| Riposte / execution | TBD | — |
+| Faction-specific movesets | Asset-only (state machine is library-agnostic; see tier-e-implementation.md) | `scripts/faction_profile.gd:animation_library_name` |
+| Faction asymmetry — stats on FactionProfile | Done | `scripts/faction_profile.gd:30-87`, `data/factions/*.tres` |
+| Faction passive resource | Done | `scripts/faction_passive.gd`, `scripts/faction_passive_*.gd`, `data/factions/passives/*.tres` |
+| Slot-4 ultimate (charge-gated) | Done — needs HUD slot + per-faction VFX | `scripts/avatar_abilities.gd:SLOT_ULTIMATE`, `data/abilities/ultimate_*.tres` |
+| `ultimate_charge: int` state_property | Done | `scenes/actors/actor.gd:75`, `scenes/actors/player/player_actor.tscn:30` |
+| Resource economy (`GameState.corruption_power`) | Done — DORMANT (cost=0 on shipped abilities) | `scripts/game_state.gd:36-46`, `scripts/avatar_ability.gd:cost,cost_resource` |
+| Riposte / execution | Done — needs `riposte_attacker` / `riposte_victim` paired clips | `scenes/actors/player/states/riposte_attacker_state.gd`, `scenes/actors/states/riposte_victim_state.gd` |
+| Respawn invulnerability (Tier F) | Done | `scenes/actors/actor.gd:respawn_invuln_until_tick`, `scenes/actors/player/avatar/avatar_actor.gd:_apply_respawn` |
+| Respawn delay (Tier F) | Done — 90 ticks (~3s) | `scenes/actors/player/avatar/avatar_actor.gd:_respawn,_do_respawn` |
+| Anti-camp spawn picker (Tier F) | Done — distance-from-opponent scoring | `scenes/actors/player/avatar/avatar_actor.gd:RESPAWN_POSITIONS,_pick_respawn_position` |
+| Friendly-fire filter (Tier F) | Done — `DamageFilter.allow` gate; default ON (per design lean) | `scripts/combat/damage_filter.gd`, `scripts/game_state.gd:friendly_fire_enabled` |
+| Lag-tolerance audit (Tier F) | Documented checklist | `docs/technical/tier-f-implementation.md` § lag |
+| Hostile-takeover edge harness (Tier F) | Done | `scenes/test/takeover_edge_test.tscn`, `scripts/test/takeover_edge_test_controller.gd` |
+| Anti-degen LOS cooldown (Tier F) | Done — opt-in per-ability via `requires_los` | `scripts/avatar_ability.gd:requires_los`, `scripts/avatar_abilities.gd:_has_hostile_los` |
+| `StatusEffect` resource (Tier G) | Done | `scripts/combat/status_effect.gd`, `data/status/*.tres` |
+| `StatusController` per-actor (Tier G) | Done | `scripts/combat/status_controller.gd`, `scenes/actors/actor.tscn` |
+| Status sync (`active_status_ids` state-prop, Tier G) | Done | `scenes/actors/player/player_actor.tscn:30` |
+| Bleed/Burn/Corruption/Slow/Silenced statuses (Tier G) | Done — needs `visual_scene` for HUD | `data/status/{bleed,burn,corruption,slow,silenced}.tres` |
+| Damage-type resistance (Tier G) | Done — direct-hit type tagging is followup | `scenes/actors/actor.gd:damage_type_resistances` |
+| `AttackData.parryable` flag (Tier G) | Done | `scripts/combat/attack_data.gd:parryable` |
+| Boss telegraph cosmetic (Tier G) | Done — placeholder mesh; bosses must call `setup()` | `scripts/vfx/telegraph_arc.gd`, `scenes/vfx/telegraph_arc.tscn` |
+| Per-region hurtbox template (Tier G) | Done — designers retrofit per-actor in editor | `scenes/test/hurtbox_regions_template.tscn` |
+| Fey passive → StatusController (Tier G) | Done | `scripts/faction_passive_fey.gd` |
+| Boss `AttackData` authoring (Tier G) | Asset/design — author per-attack `.tres` then flip `parryable` | `data/attacks/boss_*.tres` (TBD) |
 | Downed / last-stand | TBD | — |
 
 ---

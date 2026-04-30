@@ -13,6 +13,10 @@ extends Control
 @onready var _btn_boost_corruption: Button = %BtnBoostCorruption
 @onready var _btn_aggro_rings: Button = %BtnAggroRings
 @onready var _btn_combat_boxes: Button = %BtnCombatBoxes
+# Tier F — Friendly Fire toggle (host-only). The button is optional — if a
+# scene's pause menu doesn't carry it yet, the @onready resolves to null and
+# the handler just no-ops. Safe to add the button later without code changes.
+@onready var _btn_friendly_fire: Button = get_node_or_null(^"%BtnFriendlyFire") as Button
 
 func _ready() -> void:
 	visible = false
@@ -73,6 +77,9 @@ func _refresh_button_states() -> void:
 		_btn_cycle_faction.disabled = not is_host
 	if _btn_boost_corruption:
 		_btn_boost_corruption.disabled = not is_host
+	if _btn_friendly_fire:
+		_btn_friendly_fire.disabled = not is_host
+		_btn_friendly_fire.text = "Friendly Fire: %s" % ("ON" if GameState.friendly_fire_enabled else "OFF")
 
 func _on_resume_pressed() -> void:
 	close()
@@ -127,3 +134,9 @@ func _on_aggro_rings_pressed() -> void:
 
 func _on_combat_boxes_pressed() -> void:
 	DebugManager.toggle_combat_boxes()
+
+func _on_friendly_fire_pressed() -> void:
+	## Tier F — toggle FF host-side. Stays open (toggle, not one-shot) so the
+	## host can flip and read the result without re-opening the menu.
+	DebugManager.toggle_friendly_fire()
+	_refresh_button_states()

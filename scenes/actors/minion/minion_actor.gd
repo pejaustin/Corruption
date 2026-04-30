@@ -184,6 +184,10 @@ func _die() -> void:
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
 		_interpolate_client(delta)
+		# Clients also need the hitstop freeze locally — they animate the
+		# minion themselves; the host's animation isn't replicated. Sync
+		# delivers hitstop_until_tick (see sync_from_server).
+		_apply_hitstop_animation_pause()
 		return
 
 	force_update_is_on_floor()
@@ -199,6 +203,7 @@ func _physics_process(delta: float) -> void:
 			_observe()
 
 	_state_machine._rollback_tick(delta, 0, true)
+	_apply_hitstop_animation_pause()
 
 	if _state_machine.state == &"DeathState":
 		_death_timer += delta
@@ -248,11 +253,24 @@ func _observe() -> void:
 			"observed_tick": observed_tick,
 		}
 
-func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
+func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, new_hitstop_until_tick: int = -1, new_posture: int = 0) -> void:
 	_target_pos = pos
 	_target_rot = rot_y
 	if _state_machine and _state_machine.state != new_state:
 		_state_machine.state = new_state
+	# Receiving a fresh hp drop on a client is the moment to fire local
+	# hit feedback — the host's own take_damage already emitted took_damage
+	# host-side. Mirror that emission here so client peers get damage numbers
+	# and hit-flash without depending on rollback state.
+	var damage_taken: int = max(0, hp - new_hp)
 	hp = new_hp
+	if damage_taken > 0:
+		_last_damage_amount = damage_taken
+		_hit_flash_intensity = 1.0
+		took_damage.emit(damage_taken, null)
+	hitstop_until_tick = new_hitstop_until_tick
+	# Tier C: posture is host-authoritative on minions; the 10Hz sync rate
+	# means clients see slightly stale values, which is fine for a meter.
+	posture = new_posture
 	if _state_machine and _state_machine.state == &"DeathState" and collision_layer != 0:
 		collision_layer = 0

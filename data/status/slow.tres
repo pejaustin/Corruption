@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="StatusEffect" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/status_effect.gd" id="1_status"]
+
+[resource]
+script = ExtResource("1_status")
+id = &"slow"
+display_name = "Slow"
+duration_ticks = 60
+tick_interval_ticks = 0
+damage_per_tick = 0
+damage_type = &"physical"
+move_speed_mult = 0.6
+attack_speed_mult = 1.0
+max_stacks = 1
+refresh_on_apply = true
+visual_scene = null

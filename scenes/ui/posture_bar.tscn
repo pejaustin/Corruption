@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://bposture0bar000"]
+
+[ext_resource type="Script" path="res://scripts/ui/posture_bar.gd" id="1_posture"]
+
+[node name="PostureBar" type="Control"]
+script = ExtResource("1_posture")
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -88.0
+offset_right = 200.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+max_value = 100.0
+value = 0.0
+show_percentage = false
+modulate = Color(0.95, 0.55, 0.15, 1)

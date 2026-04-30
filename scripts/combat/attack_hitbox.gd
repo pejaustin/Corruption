@@ -14,7 +14,8 @@ class_name AttackHitbox extends Area3D
 ##   hitbox.enable(&"Impact")              # swap shape, start tracking
 ##   for hurt in hitbox.get_new_hits():    # Hurtbox areas newly overlapping
 ##       hurt.get_actor().take_damage(
-##           dmg * hitbox.get_damage_multiplier() * hurt.get_damage_multiplier())
+##           dmg * hitbox.get_damage_multiplier() * hurt.get_damage_multiplier(),
+##           attacker)                     # source carries Tier C block/parry causality
 ##   hitbox.disable()                      # end window, clear log
 ##
 ## Hit targets are Hurtbox areas, not CharacterBody3Ds — damage detection
