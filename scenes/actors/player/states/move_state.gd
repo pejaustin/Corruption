@@ -35,6 +35,10 @@ func tick(delta: float, tick: int, is_fresh: bool) -> void:
 		return
 	if try_roll():
 		return
+	# Holding block while moving immediately drops into BlockState; the
+	# avatar slows to a guarded stop. Same priority as in IdleState.
+	if try_block():
+		return
 	if is_target_locked():
 		_face_locked_target(delta)
 		_move_target_relative(delta)

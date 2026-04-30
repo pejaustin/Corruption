@@ -48,10 +48,12 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Combo strings | TBD | — |
 | Charge attack | TBD | — |
 | Sprint attack / jump attack | TBD | — |
-| Block | TBD | — |
-| Parry | TBD | — |
-| Stamina meter | TBD | — |
-| Posture meter (Sekiro-style) | TBD | — |
+| Block | Done — needs `block_*` clips | `scenes/actors/player/states/block_state.gd` |
+| Parry | Done — needs `parry_flash` / `parry_recoil` clips | `scenes/actors/actor.gd:take_damage` + `scripts/combat/forced_recovery.gd` |
+| Backstep | Done — needs `backstep` clip | `scenes/actors/player/states/backstep_state.gd` |
+| Stamina meter | TBD (deferred per design pillar §3) | — |
+| Posture meter (Sekiro-style) | Done — HUD bar wired into AvatarHUD | `scenes/actors/actor.gd:gain_posture/_decay_posture`, `scenes/ui/posture_bar.tscn` |
+| Posture-broken state | Done — needs `posture_broken` clip | `scenes/actors/states/posture_broken_state.gd` |
 | Lock-on / target tracking | Done (hard-lock + cycle); soft-lock plumbed but disabled | `scripts/combat/targeting.gd`, `scripts/avatar_camera.gd:_tick_lock_follow`, `scenes/ui/lock_on_reticle.tscn` |
 | Strafe locomotion (target-relative basis) | Done — needs strafe clips for full feel | `scenes/actors/player/states/move_state.gd` |
 | Directional roll | Done — needs `roll_back/_left/_right` clips | `scenes/actors/player/states/roll_state.gd` |

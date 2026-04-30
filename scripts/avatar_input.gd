@@ -15,6 +15,11 @@ var jump_input := false
 var run_input := false
 var attack_input := false
 var roll_input := false
+## Held flag for the block button. BlockState reads it each tick to decide
+## whether to stay in block or release. Edge-press is also tracked through
+## the buffer dict for "press to enter Block from action-locked states later",
+## though Tier C only uses the held flag.
+var block_input := false
 
 ## When false, all input is zeroed (pause menu open).
 var input_enabled: bool = true
@@ -34,17 +39,21 @@ func _gather() -> void:
 		run_input = Input.is_action_pressed("run")
 		attack_input = Input.is_action_pressed("primary_ability")
 		roll_input = Input.is_action_pressed("roll")
+		block_input = Input.is_action_pressed("block")
 		var t: int = NetworkTime.tick
 		if Input.is_action_just_pressed("primary_ability"):
 			_press_tick[&"primary_ability"] = t
 		if Input.is_action_just_pressed("roll"):
 			_press_tick[&"roll"] = t
+		if Input.is_action_just_pressed("block"):
+			_press_tick[&"block"] = t
 	else:
 		input_dir = Vector2.ZERO
 		jump_input = false
 		run_input = false
 		attack_input = false
 		roll_input = false
+		block_input = false
 		_press_tick.clear()
 
 ## Returns true if `action` was edge-pressed within BUFFER_WINDOW ticks, and

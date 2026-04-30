@@ -9,7 +9,18 @@ signal died
 ## Fired AFTER take_damage applies the hit and any hitstop has been latched.
 ## Local-only consumers (damage numbers, hit-flash, FX) listen here. Gated by
 ## _is_resimulating() inside take_damage so resims don't double-fire.
+##
+## Tier C: `source` is now propagated through the damage pipeline (was always
+## null in Tiers A/B). Listeners that branched on source != null now light up
+## (e.g. Targeting._on_owner_took_damage's behind-attack lock-break).
 signal took_damage(amount: int, source: Node)
+## Fired locally on the parrier and the attacker when a parry is resolved
+## host-side. `attacker` was the swinging actor, `victim` is the parrier.
+## Local-only — same resim gate as took_damage. VFX/SFX hooks subscribe here.
+signal parried(attacker: Node, victim: Node)
+## Fired host-side when posture reaches max. Local — clients learn via
+## the synced `state` flipping to PostureBrokenState. UI hooks may listen.
+signal posture_broken
 
 ## Hitstop hold-the-frame duration in physics ticks. ~67ms at netfox 30Hz.
 ## Authoritative source sets `hitstop_until_tick = NetworkTime.tick + this`
@@ -24,6 +35,27 @@ const HEAVY_REACT_THRESHOLD: int = 30
 ## Hit-flash decay rate (seconds). The flash intensity goes from 1.0 to 0.0
 ## over this duration via local _process; never enters rollback state.
 const HIT_FLASH_DURATION: float = 0.15
+
+# --- Tier C: Defense / Posture constants ---
+
+## Block protects this much front-cone, half-angle in degrees. ±60° = 120° arc.
+const BLOCK_FRONT_CONE_DEG: float = 60.0
+## Damage multiplier applied to incoming hits while blocking and facing the
+## source within the front cone. 0.3 = 70% reduction.
+const BLOCK_DAMAGE_REDUCTION: float = 0.3
+## Tap-block window (ticks since BlockState entered) that registers as a parry
+## instead of a held block. ~200ms at netfox 30Hz.
+const PARRY_WINDOW_TICKS: int = 6
+## How long PostureBrokenState lingers before the actor recovers. Riposte
+## (Tier D) interrupts early.
+const POSTURE_BROKEN_DURATION_TICKS: int = 30
+## Posture gained on the victim per unblocked hit.
+const HIT_POSTURE_PER_HIT: int = 4
+## Posture gained on the victim per blocked hit (greater than unblocked —
+## blocking trades hp for posture).
+const BLOCK_POSTURE_PER_HIT: int = 12
+## Posture gained on the attacker when their swing is parried.
+const PARRY_POSTURE_GAIN: int = 30
 
 var hp: int
 var incoming_damage: int = 0
@@ -51,6 +83,44 @@ var _hit_flash_intensity: float = 0.0
 ## Animation method tracks call _spawn_dust(&"footstep") / _spawn_dust(&"roll_dust")
 ## etc. Wire scenes per faction in the actor scene's inspector.
 @export var dust_scenes: Dictionary[StringName, PackedScene] = {}
+
+# --- Tier C: posture meter exports + state ---
+
+## Sekiro-style posture cap. Hits while blocking accelerate posture gain;
+## reaching this triggers PostureBrokenState.
+@export var max_posture: int = 100
+## Per-rollback-tick posture decay applied while not in active combat.
+## Float to allow sub-integer rates; accumulator is integer-clamped on apply.
+@export var posture_decay_per_tick: float = 0.5
+
+## Current posture (rollback-synced via PlayerActor's RollbackSynchronizer;
+## host-authoritative on MinionActor — see scripts/minion_manager.gd sync RPC).
+var posture: int = 0
+## NetworkTime.tick at which the most recent posture-break event happened.
+## Carried as a state_property so resim reproduces the entry deterministically.
+## -1 = never broken.
+var posture_break_tick: int = -1
+## Marker for ripostable victims. Set true on entry to PostureBrokenState,
+## cleared on exit. Local-only flag — Tier D's heavy-attack-vs-broken-target
+## logic reads it on the host that's running the attacker.
+var is_ripostable: bool = false
+## NetworkTime.tick when BlockState was last entered. Used host-side to
+## resolve parry causality: a hit that lands while
+## `NetworkTime.tick - block_press_tick <= PARRY_WINDOW_TICKS` parries.
+## State_property on PlayerActor so clients carry the same value during resim.
+## -1 = no recent press.
+var block_press_tick: int = -1
+## Sub-integer accumulator for posture decay. Stays out of state_properties —
+## resim deltas are deterministic from the synced posture/tick pair, and the
+## fractional drift is invisible to gameplay.
+var _posture_decay_accumulator: float = 0.0
+## NetworkTime.tick at which the most recent damage was taken. Posture decay
+## is gated on (now - this) > POSTURE_DECAY_GRACE_TICKS so combat doesn't
+## drain a victim's poise while the next swing is still landing. -1 = never.
+var _last_damage_tick: int = -1
+## Grace window after taking damage where posture decay is suspended. Avoids
+## the posture meter feeling "leaky" during sustained pressure.
+const POSTURE_DECAY_GRACE_TICKS: int = 60
 
 var _state_machine: RewindableStateMachine
 var _model: Node3D
@@ -98,25 +168,74 @@ func is_stealthed_from(_observer: Actor) -> bool:
 
 # --- Combat ---
 
-func take_damage(amount: int) -> void:
+## Apply `amount` damage to this actor, attributed to `source` (the attacking
+## actor, when known). Tier C: defends against the hit through
+## `is_blocking_against(source.global_position)` (full block reduction or a
+## parry flip), and gains posture proportional to the outcome. Source = null
+## is allowed for legacy / non-actor damage paths (debug, ability AoE on
+## itself, environmental damage). All callers SHOULD pass source where it's
+## available so the lock-from-behind drop and parry causality both fire.
+func take_damage(amount: int, source: Node = null) -> void:
 	if not can_take_damage():
 		return
-	hp = max(0, hp - amount)
+	var source_actor := source as Actor
+	var final_damage: int = amount
+	var was_parried: bool = false
+	# Block / parry resolution — only meaningful when we know where the hit
+	# came from. Without a source we can't run the front-cone check, so we
+	# fall back to plain damage.
+	if source_actor and is_instance_valid(source_actor):
+		if is_blocking_against(source_actor.global_position):
+			# Active BlockState + facing the attacker. Now check parry window.
+			var since_press: int = NetworkTime.tick - block_press_tick
+			if block_press_tick >= 0 and since_press >= 0 and since_press <= PARRY_WINDOW_TICKS:
+				# Parry: zero damage to victim, posture to attacker, force
+				# attacker into recovery. Local FX hook fires on both sides.
+				was_parried = true
+				final_damage = 0
+				if source_actor.has_method(&"gain_posture"):
+					source_actor.gain_posture(PARRY_POSTURE_GAIN)
+				ForcedRecovery.apply(source_actor)
+				# Local-only feedback. Both attacker and parrier emit on their
+				# own peers — resim gate on each side handles double-fire.
+				if not _is_resimulating():
+					parried.emit(source_actor, self)
+					if source_actor.has_signal(&"parried"):
+						source_actor.parried.emit(source_actor, self)
+			else:
+				# Held block — reduce damage, accumulate posture faster than
+				# unblocked (blocking trades hp for poise pressure).
+				final_damage = int(round(amount * BLOCK_DAMAGE_REDUCTION))
+				gain_posture(BLOCK_POSTURE_PER_HIT)
+		else:
+			# Unblocked hit — small posture bump (heavy hits feel like they
+			# erode poise more than chip).
+			gain_posture(HIT_POSTURE_PER_HIT)
+	else:
+		# Source unknown — treat as unblocked, accumulate posture as normal.
+		gain_posture(HIT_POSTURE_PER_HIT)
+
+	hp = max(0, hp - final_damage)
 	hp_changed.emit(hp)
-	_last_damage_amount = amount
+	_last_damage_amount = final_damage
+	_last_damage_tick = NetworkTime.tick
 	# Hitstop is authority-set; on PlayerActor this is a state_property so
 	# rollback resim reproduces it. MinionActor carries it via its own sync
-	# RPC (see scripts/minion_manager.gd).
-	hitstop_until_tick = NetworkTime.tick + HITSTOP_TICKS
+	# RPC (see scripts/minion_manager.gd). Parries skip hitstop on the victim
+	# (their parry pose is its own beat) but the attacker still gets it via
+	# their own ForcedRecovery / state.
+	if not was_parried:
+		hitstop_until_tick = NetworkTime.tick + HITSTOP_TICKS
 	if hp <= 0:
 		_die()
-	else:
+	elif not was_parried:
 		try_stagger()
 	# Local-only feedback. Skipped during resim so spark/flash/numbers don't
 	# double-fire. See docs/technical/netfox-reference.md §5.
 	if not _is_resimulating():
-		_hit_flash_intensity = 1.0
-		took_damage.emit(amount, null)
+		if final_damage > 0:
+			_hit_flash_intensity = 1.0
+		took_damage.emit(final_damage, source)
 
 func _die() -> void:
 	died.emit()
@@ -148,6 +267,86 @@ func try_stagger() -> bool:
 		return false
 	_state_machine.transition(&"StaggerState")
 	return true
+
+# --- Tier C: Defense / Posture API ---
+
+## True iff this actor is currently in BlockState AND `source_pos` lies inside
+## the front cone (±BLOCK_FRONT_CONE_DEG of the model's forward, projected onto
+## XZ). Used by take_damage to decide whether to apply block reduction or take
+## the hit full. Cone-test ignores the Y axis so jumps don't disengage block.
+func is_blocking_against(source_pos: Vector3) -> bool:
+	if _state_machine == null or _state_machine.state != &"BlockState":
+		return false
+	var to_source: Vector3 = source_pos - global_position
+	to_source.y = 0.0
+	if to_source.length_squared() < 0.0001:
+		# Source is on top of us — treat as in-cone (no meaningful direction).
+		return true
+	to_source = to_source.normalized()
+	var forward: Vector3 = _resolve_forward()
+	if forward.length_squared() < 0.0001:
+		return false
+	var dot: float = forward.dot(to_source)
+	var cos_cone: float = cos(deg_to_rad(BLOCK_FRONT_CONE_DEG))
+	return dot >= cos_cone
+
+## Multiplicative damage reduction this actor would apply to a hit from
+## `source` right now. 1.0 = full damage; 0.0 = invulnerable. Tier C only
+## consults this from take_damage when source is known. Subtypes can override
+## for ability-driven defense (e.g. Eldritch ward).
+func damage_reduction_against(source: Node) -> float:
+	if source is Node3D:
+		var src3 := source as Node3D
+		if is_blocking_against(src3.global_position):
+			return BLOCK_DAMAGE_REDUCTION
+	return 1.0
+
+## Add `amount` to posture, clamped to max_posture. If the cap is reached AND
+## the actor's state machine has a PostureBrokenState node, the actor
+## transitions into it (host-driven; rollback re-runs the same transition
+## because state is in state_properties). Subtypes without the state (the
+## base actor.tscn — minions etc. unless they add it) accumulate posture
+## harmlessly: it caps at max_posture and the meter just shows full. Tier D
+## can wire a riposte on `is_ripostable`, which only flips inside the broken
+## state, so non-broken actors are simply never ripostable.
+##
+## Calling on a non-host peer is safe — they'll receive the broken state via
+## sync. Do NOT call from inside the broken state (would re-enter recursively).
+func gain_posture(amount: int) -> void:
+	if amount <= 0:
+		return
+	if posture >= max_posture:
+		return
+	posture = min(max_posture, posture + amount)
+	if posture < max_posture:
+		return
+	if _state_machine == null:
+		return
+	if _state_machine.state == &"PostureBrokenState":
+		return
+	# Only break if the state machine actually has a PostureBrokenState child.
+	# Minion scenes that don't carry the state cap their meter silently.
+	if _state_machine.get_node_or_null(^"PostureBrokenState") == null:
+		return
+	# Drain so subsequent damage doesn't immediately re-trigger; the broken
+	# state itself takes over.
+	posture = 0
+	posture_break_tick = NetworkTime.tick
+	if not _is_resimulating():
+		posture_broken.emit()
+	_state_machine.transition(&"PostureBrokenState")
+
+## Forward vector for the block cone test. Avatar's _model is rotated by the
+## locomotion code; minions rotate the body itself. Uses model basis when
+## available, else the actor's own basis. Either way, Godot convention has
+## -Z as forward.
+func _resolve_forward() -> Vector3:
+	var basis_node: Node3D = _model if _model else self
+	var fwd: Vector3 = -basis_node.global_basis.z
+	fwd.y = 0.0
+	if fwd.length_squared() < 0.0001:
+		return Vector3.FORWARD
+	return fwd.normalized()
 
 # --- Animation-method-track forwarders ---
 # Bound to the Actor root so AnimationPlayer Call Method Tracks can target a
@@ -206,12 +405,45 @@ func _on_display_state_changed(_old_state: RewindableState, new_state: Rewindabl
 
 func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	if incoming_damage > 0:
-		take_damage(incoming_damage)
+		# Damage from outside the rollback loop (minion swings, debug pokes)
+		# arrives through incoming_damage. Tier C: source attribution is best-
+		# effort here — the dual-write path stores the attacker's peer id, not
+		# the actor reference. Pass null so block/parry/posture-on-attacker
+		# don't fire from this leg. Direct attacker-source damage (player swings)
+		# routes through take_damage(amount, source) and DOES carry the source.
+		take_damage(incoming_damage, null)
 		incoming_damage = 0
 	force_update_is_on_floor()
 	if not is_on_floor():
 		apply_gravity(delta)
 	_apply_hitstop_animation_pause()
+	_decay_posture()
+
+## Decays posture by `posture_decay_per_tick` per rollback tick when the actor
+## is "out of combat" (no damage taken in POSTURE_DECAY_GRACE_TICKS) and not
+## in a state that should hold posture (BlockState, PostureBrokenState). The
+## fractional accumulator is local-only — resim stays deterministic from the
+## synced posture int.
+func _decay_posture() -> void:
+	if posture <= 0:
+		_posture_decay_accumulator = 0.0
+		return
+	# Hold posture during block (the meter is filling and you're under
+	# pressure — no decay) and during posture-broken (the state itself
+	# manages the drain on exit).
+	var holding_state: bool = false
+	if _state_machine and (_state_machine.state == &"BlockState" or _state_machine.state == &"PostureBrokenState"):
+		holding_state = true
+	if holding_state:
+		_posture_decay_accumulator = 0.0
+		return
+	if _last_damage_tick >= 0 and NetworkTime.tick - _last_damage_tick < POSTURE_DECAY_GRACE_TICKS:
+		return
+	_posture_decay_accumulator += posture_decay_per_tick
+	if _posture_decay_accumulator >= 1.0:
+		var whole: int = int(_posture_decay_accumulator)
+		_posture_decay_accumulator -= float(whole)
+		posture = max(0, posture - whole)
 
 # --- Rollback helpers ---
 

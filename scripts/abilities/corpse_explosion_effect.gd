@@ -15,7 +15,14 @@ func _on_activate() -> void:
 		if m.owner_peer_id != -1 or m.hp <= 0:
 			continue
 		if caster.global_position.distance_to(m.global_position) < RADIUS:
-			m.take_damage(DAMAGE)
+			# AoE damage attributed to the caster — lights up Tier C's
+			# behind-attack lock break and Tier D's posture-on-attacker path
+			# when the caster is a player. Block doesn't apply to AoE in this
+			# tier (the caster is the source, but the explosion is omnidirectional);
+			# is_blocking_against will incidentally pass when the caster happens
+			# to be in the victim's front cone, which is acceptable behaviour
+			# for "you guarded against the warlock who lit the bomb."
+			m.take_damage(DAMAGE, caster)
 
 func _minion_manager() -> MinionManager:
 	return get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager

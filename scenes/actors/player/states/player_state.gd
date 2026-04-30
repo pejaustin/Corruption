@@ -38,6 +38,9 @@ func get_attack() -> bool:
 func get_roll() -> bool:
 	return player.avatar_input.roll_input
 
+func get_block() -> bool:
+	return player.avatar_input.block_input
+
 func rotate_player_model(delta: float) -> void:
 	var cam_basis: Basis = player.avatar_camera.camera_basis
 	var player_lookat_target = cam_basis.z
@@ -73,9 +76,15 @@ func try_enter_channel() -> bool:
 ## the input-queue window. Routes via Actor.try_transition so action_locked
 ## states can still be Roll-cancelled when RollState is in their
 ## cancel_whitelist. Returns true if the roll went through.
+##
+## Tier C: when block is currently held, the dodge resolves to BackstepState
+## instead — short i-frame retreat sized for guard-up spacing. The block-then-
+## roll combo IS the input grammar for backstep; no separate keybind needed.
 func try_roll() -> bool:
 	if not (get_roll() or player.avatar_input.consume_if_buffered(&"roll")):
 		return false
+	if get_block():
+		return actor.try_transition(&"BackstepState")
 	return actor.try_transition(&"RollState")
 
 ## Transition into AttackState if the attack input is held OR was buffered.
@@ -85,6 +94,17 @@ func try_attack() -> bool:
 	if not (get_attack() or player.avatar_input.consume_if_buffered(&"primary_ability")):
 		return false
 	return actor.try_transition(&"AttackState")
+
+## Transition into BlockState if the block input is held. Used by IdleState
+## and MoveState — call at the top of tick() so the player can guard from
+## any neutral state. Uses the held flag (not buffered press) because block
+## is a mode you stay in, not a one-shot. Routes via try_transition so
+## action_locked states block the entry while RollState's cancel_whitelist
+## remains intact.
+func try_block() -> bool:
+	if not get_block():
+		return false
+	return actor.try_transition(&"BlockState")
 
 func move_air(delta: float) -> void:
 	var input_dir := get_movement_input()

@@ -5,6 +5,11 @@ func tick(delta: float, tick: int, is_fresh: bool) -> void:
 		return
 	if try_roll():
 		return
+	# Block before attack: a held guard takes priority over a buffered swing,
+	# matching Souls' "block-cancel-attack-press" grammar. Also runs before
+	# movement so the player can guard from a standstill.
+	if try_block():
+		return
 	actor.velocity.x = 0
 	actor.velocity.z = 0
 	rotate_player_model(delta)

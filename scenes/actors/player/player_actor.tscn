@@ -8,6 +8,10 @@
 [ext_resource type="Script" uid="uid://bgvpvaxybmhvs" path="res://scenes/actors/player/states/move_state.gd" id="9_move"]
 [ext_resource type="Script" uid="uid://bivjhfmcrp82a" path="res://scenes/actors/player/states/jump_state.gd" id="10_jump"]
 [ext_resource type="Script" uid="uid://bnpuh35auete6" path="res://scenes/actors/player/states/fall_state.gd" id="11_fall"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/block_state.gd" id="12_block"]
+[ext_resource type="Script" path="res://scenes/actors/player/states/backstep_state.gd" id="13_backstep"]
+[ext_resource type="Script" path="res://scenes/actors/states/posture_broken_state.gd" id="14_posture_broken"]
+[ext_resource type="Script" path="res://scenes/actors/states/parry_recoil_state.gd" id="15_parry_recoil"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -23,7 +27,7 @@ shape = SubResource("CapsuleShape3D_player")
 [node name="RollbackSynchronizer" type="Node" parent="." index="3" unique_id=734396145 node_paths=PackedStringArray("root")]
 script = ExtResource("6_rbsync")
 root = NodePath("..")
-state_properties = Array[String]([":transform", ":velocity", ":hp", ":hitstop_until_tick", "Model:transform", "RewindableStateMachine:state"])
+state_properties = Array[String]([":transform", ":velocity", ":hp", ":hitstop_until_tick", ":posture", ":posture_break_tick", ":block_press_tick", "Model:transform", "RewindableStateMachine:state"])
 
 [node name="TickInterpolator" type="Node" parent="." index="4" unique_id=233949403 node_paths=PackedStringArray("root")]
 script = ExtResource("7_tick")
@@ -44,3 +48,19 @@ animation_name = "large-male/Jump"
 
 [node name="FallState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5" unique_id=1876940063]
 script = ExtResource("11_fall")
+
+[node name="BlockState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=1942067810]
+script = ExtResource("12_block")
+animation_name = "large-male/Stagger"
+
+[node name="BackstepState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=1042867811]
+script = ExtResource("13_backstep")
+animation_name = "large-male/Crouch"
+
+[node name="PostureBrokenState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8" unique_id=1142867812]
+script = ExtResource("14_posture_broken")
+animation_name = "large-male/Stagger"
+
+[node name="ParryRecoilState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="9" unique_id=1242867813]
+script = ExtResource("15_parry_recoil")
+animation_name = "large-male/Stagger"

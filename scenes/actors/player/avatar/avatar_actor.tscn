@@ -76,16 +76,16 @@ owner_actor = NodePath("..")
 camera = NodePath("../AvatarCamera")
 reticle_scene = ExtResource("14_reticle")
 
-[node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
+[node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="10" unique_id=472463938]
 script = ExtResource("9_attack")
 use_animation_keys = true
 animation_name = "large-male/Attack"
 
-[node name="ChannelState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=919482196]
+[node name="ChannelState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="11" unique_id=919482196]
 script = ExtResource("10_channel")
 animation_name = "large-male/Channeling"
 
-[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8" unique_id=1033644063]
+[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="12" unique_id=1033644063]
 script = ExtResource("12_f2kxo")
 animation_name = "large-male/Crouch"
 
@@ -98,7 +98,7 @@ font_size = 24
 outline_size = 8
 
 [node name="RollbackSynchronizer" parent="." index="6" unique_id=734396145]
-input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input"])
+input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input", "AvatarInput:block_input"])
 
 [node name="AvatarHUD" parent="." index="8" unique_id=1564158435 instance=ExtResource("11_hud")]
 

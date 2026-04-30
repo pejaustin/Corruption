@@ -74,7 +74,13 @@ func _announce_boss_defeated() -> void:
 	if GameState.has_avatar():
 		GameState._announce_win.rpc(GameState.avatar_peer_id)
 
-func take_damage(amount: int) -> void:
+## Boss override of take_damage. The boss does NOT consume the Tier C
+## block/parry/posture pipeline — bosses are stagger-gated to HP thresholds
+## and don't carry a posture meter (they're not in PvP scope). The `source`
+## param is accepted for signature compatibility and forwarded through
+## took_damage so observers (Targeting's behind-lock-drop, Tier D's riposte
+## targeting) light up consistently with regular actors.
+func take_damage(amount: int, source: Node = null) -> void:
 	if not can_take_damage():
 		return
 	hp = max(0, hp - amount)
@@ -94,4 +100,4 @@ func take_damage(amount: int) -> void:
 			try_stagger()
 	if not _is_resimulating():
 		_hit_flash_intensity = 1.0
-		took_damage.emit(amount, null)
+		took_damage.emit(amount, source)

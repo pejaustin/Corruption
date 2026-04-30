@@ -98,9 +98,14 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 		else:
 			# Minions don't have a RollbackSynchronizer draining incoming_damage,
 			# so apply the hit directly on the host. HP is broadcast to clients
-			# via MinionManager._sync_minion_actor.
+			# via MinionManager._sync_minion_actor. Tier C: pass `actor` as the
+			# source so victims (other minions, bosses) can run block/parry/
+			# posture-on-attacker logic. Avatars use the dual-write
+			# `incoming_damage` path above; that leg still passes null source
+			# (see comment in actor.gd:_rollback_tick) — Tier C accepts that
+			# limitation rather than rewiring the dual-write to carry actors.
 			var killed := other.hp - dmg <= 0
-			other.take_damage(dmg)
+			other.take_damage(dmg, actor)
 			# Raise-dead: if this hit killed the victim, flag for skeleton raise
 			if minion.minion_trait == &"raise_dead" and killed:
 				var mm := actor.get_tree().current_scene.get_node_or_null("MinionManager")

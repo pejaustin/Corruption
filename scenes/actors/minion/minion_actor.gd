@@ -253,7 +253,7 @@ func _observe() -> void:
 			"observed_tick": observed_tick,
 		}
 
-func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, new_hitstop_until_tick: int = -1) -> void:
+func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, new_hitstop_until_tick: int = -1, new_posture: int = 0) -> void:
 	_target_pos = pos
 	_target_rot = rot_y
 	if _state_machine and _state_machine.state != new_state:
@@ -269,5 +269,8 @@ func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp:
 		_hit_flash_intensity = 1.0
 		took_damage.emit(damage_taken, null)
 	hitstop_until_tick = new_hitstop_until_tick
+	# Tier C: posture is host-authoritative on minions; the 10Hz sync rate
+	# means clients see slightly stale values, which is fine for a meter.
+	posture = new_posture
 	if _state_machine and _state_machine.state == &"DeathState" and collision_layer != 0:
 		collision_layer = 0

@@ -105,7 +105,10 @@ func _force_clear_gem_site() -> void:
 func _damage_avatar(amount: int) -> void:
 	if avatar == null:
 		return
-	avatar.take_damage(amount)
+	# Test harness damage is sourceless — it represents an environment poke,
+	# not an actor attack. Block/parry/posture-on-attacker logic skips this
+	# leg as designed.
+	avatar.take_damage(amount, null)
 
 func _kill_all_enemies() -> void:
 	if minion_manager == null:

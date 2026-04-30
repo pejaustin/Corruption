@@ -113,7 +113,7 @@ func _handle_hits(hurtboxes: Array[Hurtbox]) -> void:
 			continue
 		var final_damage := int(base_final * hurtbox.get_damage_multiplier())
 		if is_host:
-			target.take_damage(final_damage)
+			target.take_damage(final_damage, actor)
 			if lifesteal:
 				var heal := int(final_damage * LIFESTEAL_RATIO)
 				actor.hp = min(actor.hp + heal, actor.get_max_hp())
