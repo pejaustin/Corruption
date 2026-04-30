@@ -70,6 +70,13 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | `ultimate_charge: int` state_property | Done | `scenes/actors/actor.gd:75`, `scenes/actors/player/player_actor.tscn:30` |
 | Resource economy (`GameState.corruption_power`) | Done — DORMANT (cost=0 on shipped abilities) | `scripts/game_state.gd:36-46`, `scripts/avatar_ability.gd:cost,cost_resource` |
 | Riposte / execution | Done — needs `riposte_attacker` / `riposte_victim` paired clips | `scenes/actors/player/states/riposte_attacker_state.gd`, `scenes/actors/states/riposte_victim_state.gd` |
+| Respawn invulnerability (Tier F) | Done | `scenes/actors/actor.gd:respawn_invuln_until_tick`, `scenes/actors/player/avatar/avatar_actor.gd:_apply_respawn` |
+| Respawn delay (Tier F) | Done — 90 ticks (~3s) | `scenes/actors/player/avatar/avatar_actor.gd:_respawn,_do_respawn` |
+| Anti-camp spawn picker (Tier F) | Done — distance-from-opponent scoring | `scenes/actors/player/avatar/avatar_actor.gd:RESPAWN_POSITIONS,_pick_respawn_position` |
+| Friendly-fire filter (Tier F) | Done — `DamageFilter.allow` gate; default ON (per design lean) | `scripts/combat/damage_filter.gd`, `scripts/game_state.gd:friendly_fire_enabled` |
+| Lag-tolerance audit (Tier F) | Documented checklist | `docs/technical/tier-f-implementation.md` § lag |
+| Hostile-takeover edge harness (Tier F) | Done | `scenes/test/takeover_edge_test.tscn`, `scripts/test/takeover_edge_test_controller.gd` |
+| Anti-degen LOS cooldown (Tier F) | Done — opt-in per-ability via `requires_los` | `scripts/avatar_ability.gd:requires_los`, `scripts/avatar_abilities.gd:_has_hostile_los` |
 | Downed / last-stand | TBD | — |
 
 ---

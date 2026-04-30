@@ -151,6 +151,11 @@ layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Combat Boxes"
 
+[node name="BtnFriendlyFire" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Friendly Fire: ON"
+
 [connection signal="pressed" from="GridContainer/Resume" to="." method="_on_resume_pressed"]
 [connection signal="pressed" from="GridContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="GridContainer/Quit" to="." method="_on_quit_pressed"]
@@ -165,3 +170,4 @@ text = "Toggle Combat Boxes"
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnBoostCorruption" to="." method="_on_boost_corruption_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAggroRings" to="." method="_on_aggro_rings_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCombatBoxes" to="." method="_on_combat_boxes_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnFriendlyFire" to="." method="_on_friendly_fire_pressed"]

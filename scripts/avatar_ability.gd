@@ -42,6 +42,25 @@ class_name AvatarAbility extends Resource
 ## the only practical gate.
 @export var is_ultimate: bool = false
 
+# --- Tier F: Anti-degen out-of-LOS cooldown extension (OPT-IN) ---
+# Currently dormant — no shipped ability sets `requires_los = true`. The hook
+# exists so designers can flag ranged-poke abilities (Eldritch ritual / dark-
+# bolt-style) without a code change, then tune the multiplier per-ability.
+# When set, `AvatarAbilities` extends the cooldown by `los_cooldown_mult`
+# on activation if the caster has no line-of-sight to a hostile actor at the
+# moment of cast. See `docs/technical/tier-f-implementation.md` § anti-degen.
+
+## When true, this ability's cooldown is multiplied by `los_cooldown_mult`
+## when the caster has no line-of-sight to any hostile actor at activation
+## time. Discourages "hide-and-spam" patterns where an Eldritch ranged ability
+## is fired from cover indefinitely. Default `false` = old behavior.
+@export var requires_los: bool = false
+
+## Cooldown multiplier applied when `requires_los = true` and the caster has
+## no LOS to a hostile. 1.5 = 50% longer cooldown when blind-firing. Ignored
+## when `requires_los = false`.
+@export var los_cooldown_mult: float = 1.5
+
 func duplicate_for_match() -> AvatarAbility:
 	## Return a match-local copy safe to mutate (cooldown reductions, etc).
 	return duplicate(true) as AvatarAbility

@@ -7,7 +7,26 @@ class_name AvatarActor extends PlayerActor
 const WATCHER_ORB_DISTANCE: float = 2.5
 const WATCHER_ORB_HEIGHT: float = 2.0
 const DEATH_TRANSFER_DELAY: float = 2.0
+## Legacy single-point respawn. Kept for backwards compatibility with code paths
+## that may still read it; new code consults `RESPAWN_POSITIONS` via
+## `_pick_respawn_position`. Designers should override the array in subclassed
+## scenes once the map has multiple safe spawn anchors.
 const RESPAWN_POSITION: Vector3 = Vector3(0.1, 0.04, -0.06)
+## Tier F — anti-camp spawn-point variation. The picker scores each candidate
+## by min-distance to any alive opponent and picks the highest. Currently
+## seeded with the legacy origin in slot 0 plus three offset candidates so the
+## picker has something to choose between even before the map adds dedicated
+## anchors. Designers should replace this with map-authored spawn markers
+## (TODO: per-tower spawn points exported from the world scene).
+const RESPAWN_POSITIONS: Array[Vector3] = [
+	Vector3(0.1, 0.04, -0.06),
+	Vector3(8.0, 0.04, 8.0),
+	Vector3(-8.0, 0.04, 8.0),
+	Vector3(0.0, 0.04, -10.0),
+]
+## Ticks between death and respawn. ~3s at netfox 30Hz — long enough for a
+## death animation to read, short enough that 4-way PvP doesn't stall.
+const RESPAWN_DELAY_TICKS: int = 90
 ## Camera-shake feel on hit received. Larger than the hit-dealt punch in
 ## attack_state.gd because the victim experience needs more weight; both are
 ## clamped at AvatarCamera.SHAKE_AMPLITUDE_CAP.
@@ -139,14 +158,78 @@ func _on_death_transfer() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _respawn() -> void:
-	# Don't call deactivate() here — release_avatar() already triggered
-	# _on_avatar_changed which activates the next peer and deactivates the old.
-	# We just need to reset the Avatar's physical state for the new controller.
-	global_position = RESPAWN_POSITION
+	# Tier F — schedule the actual respawn after RESPAWN_DELAY_TICKS so the
+	# new owner has a beat to orient. The avatar stays in DeathState (already
+	# entered host-side via _die → state_machine.transition(DeathState)) until
+	# `_do_respawn` fires. Host-only timer; clients will see the eventual
+	# state_property + transform sync once the host respawns.
+	if multiplayer.is_server():
+		# Convert ticks → seconds via netfox ticktime so the timer matches the
+		# rollback clock. Using a tree timer is fine here — the respawn itself
+		# is fully host-authoritative; clients receive the final position +
+		# state via the standard rollback channel.
+		var delay: float = float(RESPAWN_DELAY_TICKS) * NetworkTime.ticktime
+		get_tree().create_timer(delay).timeout.connect(_do_respawn)
+	# else: clients no-op; the host's _do_respawn will broadcast.
+
+func _do_respawn() -> void:
+	## Host-side respawn body. Picks a spawn point furthest from any alive
+	## opponent, restores HP, grants brief invuln, and transitions to Idle.
+	## RPCs to clients with the resolved position + state changes.
+	if not multiplayer.is_server():
+		return
+	var spawn_pos: Vector3 = _pick_respawn_position(controlling_peer_id)
+	_apply_respawn.rpc(spawn_pos, NetworkTime.tick + RESPAWN_INVULN_TICKS)
+
+@rpc("authority", "call_local", "reliable")
+func _apply_respawn(spawn_pos: Vector3, invuln_until_tick: int) -> void:
+	# Body of the respawn — runs on every peer so transform / hp / invuln
+	# match. The state_property `respawn_invuln_until_tick` already syncs via
+	# rollback, but we set it directly here so the assignment lands at the
+	# same wall-clock moment as the position teleport (avoids a one-tick
+	# window where the new avatar exists at the new spot without invuln).
+	global_position = spawn_pos
 	velocity = Vector3.ZERO
 	hp = get_max_hp()
 	hp_changed.emit(hp)
+	respawn_invuln_until_tick = invuln_until_tick
 	_state_machine.transition(&"IdleState")
+
+## Tier F — anti-camp spawn picker. Scores each candidate in `RESPAWN_POSITIONS`
+## by the minimum distance to any alive opponent (avatars in the actors group
+## with hp > 0, excluding self and the new owner). Returns the highest-scoring
+## candidate. With no opponents alive, returns slot 0 deterministically.
+func _pick_respawn_position(_new_owner_peer_id: int) -> Vector3:
+	if RESPAWN_POSITIONS.is_empty():
+		return RESPAWN_POSITION
+	# Gather alive opponent positions. Avatar is shared, but additional
+	# AvatarActors / hostile minions could exist in future; we treat any
+	# living non-self actor as a threat. Iterating the actors group avoids
+	# coupling to MinionManager / scene-specific paths.
+	var threat_positions: Array[Vector3] = []
+	for n in get_tree().get_nodes_in_group(&"actors"):
+		var a := n as Actor
+		if a == null or a == self:
+			continue
+		if not is_instance_valid(a):
+			continue
+		if a.hp <= 0:
+			continue
+		threat_positions.append(a.global_position)
+	if threat_positions.is_empty():
+		return RESPAWN_POSITIONS[0]
+	var best: Vector3 = RESPAWN_POSITIONS[0]
+	var best_score: float = -1.0
+	for candidate in RESPAWN_POSITIONS:
+		var min_d: float = INF
+		for tp in threat_positions:
+			var d: float = candidate.distance_to(tp)
+			if d < min_d:
+				min_d = d
+		if min_d > best_score:
+			best_score = min_d
+			best = candidate
+	return best
 
 # --- Activation ---
 

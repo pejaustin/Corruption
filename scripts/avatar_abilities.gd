@@ -137,9 +137,54 @@ func _do_activate(ability_id: StringName) -> void:
 	var ability := _find_ability(ability_id)
 	if ability == null:
 		return
-	_cooldowns[ability_id] = ability.cooldown
+	# Tier F — anti-degen LOS cooldown extension. Opt-in per ability via
+	# `requires_los`. When true and the caster has no hostile in line-of-sight
+	# at cast-time, the recorded cooldown is multiplied by `los_cooldown_mult`
+	# so blind-firing from cover is taxed. Default behavior (requires_los =
+	# false) is unchanged. See docs/technical/tier-f-implementation.md.
+	var cd: float = ability.cooldown
+	if ability.requires_los and not _has_hostile_los():
+		cd *= ability.los_cooldown_mult
+	_cooldowns[ability_id] = cd
 	_spawn_effect(ability)
 	ability_activated.emit(ability_id)
+
+## Tier F — true iff the caster has line-of-sight to at least one hostile
+## actor right now. Implementation: ray-cast from the actor's chest to each
+## hostile in the actors group; return on the first clear path. Cheap, single-
+## frame check (no caching) — only fires on ability cast, which is bounded by
+## cooldown. KnowledgeManager-aware version is documented as a follow-up
+## (per docs/systems/avatar-combat.md §13 anti-camp); for now the simple
+## raycast suffices.
+func _has_hostile_los() -> bool:
+	if _actor == null:
+		return false
+	var space := _actor.get_world_3d().direct_space_state
+	if space == null:
+		return false
+	var origin: Vector3 = _actor.global_position + Vector3(0, 1.2, 0)
+	for n in _actor.get_tree().get_nodes_in_group(&"actors"):
+		var a := n as Actor
+		if a == null or a == _actor:
+			continue
+		if not is_instance_valid(a):
+			continue
+		if a.hp <= 0:
+			continue
+		if not _actor.is_hostile_to(a):
+			continue
+		var target_pos: Vector3 = a.global_position + Vector3(0, 1.2, 0)
+		var query := PhysicsRayQueryParameters3D.create(origin, target_pos)
+		# Exclude both the caster's collider and the target's so we hit only
+		# world geometry between them. Hurtbox / hitbox layers are area-only
+		# anyway, but the caster's own CharacterBody3D body would otherwise
+		# auto-collide.
+		query.exclude = [_actor.get_rid(), a.get_rid()]
+		var hit: Dictionary = space.intersect_ray(query)
+		if hit.is_empty():
+			# No occluder — clear LOS to this hostile.
+			return true
+	return false
 
 func cancel(ability_id: StringName) -> void:
 	## Force-expire any active effect matching this id.

@@ -190,6 +190,19 @@ var _slow_until_tick: int = -1
 ## Multiplier active during the slow window.
 var _slow_multiplier: float = 1.0
 
+# --- Tier F: PvP polish ---
+
+## NetworkTime.tick at which respawn invulnerability ends. -1 = no invuln.
+## Set on respawn (`AvatarActor._do_respawn`); checked in `take_damage` so any
+## hit that lands during the window is silently dropped. State_property on
+## PlayerActor (rollback-synced via player_actor.tscn) so resim reproduces the
+## immunity deterministically. Minions don't respawn — they stay at -1.
+var respawn_invuln_until_tick: int = -1
+## Length of the invuln window granted on respawn, in netfox ticks.
+## ~2s at 30Hz — long enough for a fresh claim to orient before the
+## previous fight resumes.
+const RESPAWN_INVULN_TICKS: int = 60
+
 var _state_machine: RewindableStateMachine
 var _model: Node3D
 var _animation_player: AnimationPlayer
@@ -245,6 +258,18 @@ func is_stealthed_from(_observer: Actor) -> bool:
 ## available so the lock-from-behind drop and parry causality both fire.
 func take_damage(amount: int, source: Node = null) -> void:
 	if not can_take_damage():
+		return
+	# Tier F — respawn invulnerability gate. The window is host-set on
+	# `AvatarActor._do_respawn` and rollback-synced via the state_property,
+	# so resim reproduces the no-op deterministically. Hits during the window
+	# are silently dropped — no posture, no hitstop, no signal.
+	if respawn_invuln_until_tick > 0 and NetworkTime.tick < respawn_invuln_until_tick:
+		return
+	# Tier F — friendly-fire / damage filter. Default policy lets every hit
+	# through (FF on, dark-lord PvP); only blocks when the host has flipped
+	# `GameState.friendly_fire_enabled` off and attacker/victim share a peer
+	# or faction. See `scripts/combat/damage_filter.gd` for the rule table.
+	if not DamageFilter.allow(source, self):
 		return
 	var source_actor := source as Actor
 	var final_damage: int = amount

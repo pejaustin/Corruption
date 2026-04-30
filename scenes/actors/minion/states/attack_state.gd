@@ -90,6 +90,12 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 		if not minion.is_hostile_to(other):
 			continue
 		var dmg := int(base_dmg * hurtbox.get_damage_multiplier())
+		# Tier F — friendly-fire gate. The avatar leg dual-writes via
+		# `incoming_damage` (no source on the resulting take_damage call),
+		# which means the gate inside `Actor.take_damage` can't see the
+		# attacker. Apply the filter here so FF-off cleanly drops the hit.
+		if not DamageFilter.allow(actor, other):
+			continue
 		if other is AvatarActor:
 			other.incoming_damage += dmg
 			other.last_damage_source_peer = minion.owner_peer_id

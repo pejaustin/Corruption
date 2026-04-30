@@ -214,6 +214,16 @@ func cycle_faction() -> void:
 	var name = GameConstants.faction_names.get(next_faction, "Unknown")
 	print("[Debug] Faction swapped to %s (%d)" % [name, next_faction])
 
+func toggle_friendly_fire() -> void:
+	## Tier F — host-only. Flips GameState.friendly_fire_enabled and broadcasts
+	## the new value to clients via the GameState RPC. Console echoes the new
+	## state so the host knows what just happened.
+	if not multiplayer.is_server():
+		print("[Debug] Only the host can toggle Friendly Fire")
+		return
+	GameState.toggle_friendly_fire()
+	print("[Debug] Friendly Fire: %s" % ("ON" if GameState.friendly_fire_enabled else "OFF"))
+
 func boost_corruption() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can boost corruption")

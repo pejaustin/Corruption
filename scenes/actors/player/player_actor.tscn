@@ -27,7 +27,7 @@ shape = SubResource("CapsuleShape3D_player")
 [node name="RollbackSynchronizer" type="Node" parent="." index="3" unique_id=734396145 node_paths=PackedStringArray("root")]
 script = ExtResource("6_rbsync")
 root = NodePath("..")
-state_properties = Array[String]([":transform", ":velocity", ":hp", ":hitstop_until_tick", ":posture", ":posture_break_tick", ":block_press_tick", ":combo_step", ":charge_start_tick", ":ultimate_charge", "Model:transform", "RewindableStateMachine:state"])
+state_properties = Array[String]([":transform", ":velocity", ":hp", ":hitstop_until_tick", ":posture", ":posture_break_tick", ":block_press_tick", ":combo_step", ":charge_start_tick", ":ultimate_charge", ":respawn_invuln_until_tick", "Model:transform", "RewindableStateMachine:state"])
 
 [node name="TickInterpolator" type="Node" parent="." index="4" unique_id=233949403 node_paths=PackedStringArray("root")]
 script = ExtResource("7_tick")

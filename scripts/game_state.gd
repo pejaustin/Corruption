@@ -15,6 +15,9 @@ signal capture_broadcast(peer_id: int, faction: int, duration: float)
 ## Tier E — fired host-side after corruption_power for `peer_id` changes.
 ## HUD listeners (ultimate / cost gauges) subscribe here.
 signal corruption_power_changed(peer_id: int, new_value: int)
+## Tier F — fired on every peer when friendly_fire_enabled flips. HUD listeners
+## (FF status indicator) and debug menus subscribe.
+signal friendly_fire_changed(enabled: bool)
 
 # -1 means no Avatar is active
 var avatar_peer_id: int = -1
@@ -47,6 +50,15 @@ var corruption_power: Dictionary[int, int] = {}
 const CORRUPTION_POWER_PER_KILL: int = 25
 const CORRUPTION_POWER_PER_CAPTURE: int = 50
 const CORRUPTION_POWER_MAX: int = 1000
+
+# Tier F — Friendly Fire global flag.
+## When true (default per avatar-combat.md "Lean: enabled — we are dark lords"),
+## the damage pipeline applies hits regardless of attacker/victim peer or
+## faction. When false, `DamageFilter.allow` blocks same-peer-same-faction
+## damage; cross-faction PvP still works. Static so test harnesses can flip
+## without restarting; debug pause-menu button ("Toggle Friendly Fire")
+## drives it host-side and is mirrored to clients via _set_friendly_fire RPC.
+static var friendly_fire_enabled: bool = true
 
 func is_avatar(peer_id: int) -> bool:
 	return avatar_peer_id == peer_id
@@ -240,6 +252,28 @@ func _set_corruption_power(peer_id: int, value: int) -> void:
 	corruption_power[peer_id] = value
 	corruption_power_changed.emit(peer_id, value)
 
+# --- Tier F: Friendly Fire toggle (host-driven, broadcast to all peers) ---
+
+func toggle_friendly_fire() -> void:
+	## Host-only. Flip FF and broadcast. Clients should never write the flag
+	## directly — they call this and the host's RPC fans it back out.
+	if not multiplayer.is_server():
+		return
+	_set_friendly_fire.rpc(not friendly_fire_enabled)
+
+func set_friendly_fire(enabled: bool) -> void:
+	## Host-only setter. Broadcasts to all peers.
+	if not multiplayer.is_server():
+		return
+	if friendly_fire_enabled == enabled:
+		return
+	_set_friendly_fire.rpc(enabled)
+
+@rpc("authority", "call_local", "reliable")
+func _set_friendly_fire(enabled: bool) -> void:
+	friendly_fire_enabled = enabled
+	friendly_fire_changed.emit(enabled)
+
 func get_highest_influence_peer() -> int:
 	## Returns the peer with the highest influence, or -1 if none.
 	var best_peer := -1
@@ -331,3 +365,5 @@ func reset() -> void:
 	eldritch_vision_peer = -1
 	eldritch_vision_timer = 0.0
 	corruption_power.clear()
+	# Tier F — keep FF default (lean per design doc) on each match start.
+	friendly_fire_enabled = true
