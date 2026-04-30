@@ -17,8 +17,10 @@ static var INFINITE_BROADCAST_RANGE: bool = true
 
 ## When true, War Table clicks are executed immediately via MinionManager.
 ## When false, clicks record an intent and an Advisor dispatches a courier
-## (build order step 7). Runtime-mutable; see above.
-static var INSTANT_COMMANDS: bool = true
+## (build order step 7). Runtime-mutable; see above. Default-off now that the
+## courier path is the canonical "real game" flow — the test harness flips it
+## back on for direct-command iteration.
+static var INSTANT_COMMANDS: bool = false
 
 ## Radius around a friendly minion (or its tower) within which activity leaks
 ## into the owner's WorldModel. Unused while INFINITE_BROADCAST_RANGE is true.
@@ -167,7 +169,10 @@ func current_tick() -> int:
 
 # --- Commands ---
 
-func issue_move_command(peer_id: int, target_pos: Vector3) -> void:
+func issue_move_command(peer_id: int, minion_ids: Array[int], target_pos: Vector3) -> void:
+	## minion_ids identifies which of the overlord's minions the order is for.
+	## The courier travels to the believed location of those minions (looked up
+	## from the peer's WorldModel) and only delivers to that specific set.
 	var scene := get_tree().current_scene
 	if scene == null:
 		return
@@ -175,25 +180,51 @@ func issue_move_command(peer_id: int, target_pos: Vector3) -> void:
 	if mm == null:
 		return
 	if INSTANT_COMMANDS:
-		mm.command_minions_move(target_pos)
+		# Bypass the courier loop: command exactly the selected minions.
+		for mid in minion_ids:
+			mm.command_minion_move(mid, target_pos)
 		return
-	# Courier path: the click only records intent as a *draft* in this peer's
-	# WorldModel. The order doesn't reach the field until the overlord walks to
-	# their Advisor and hands it off, at which point dispatch_drafts spawns a
-	# courier per draft and promotes the entry to "dispatched".
+	if minion_ids.is_empty():
+		return
 	var spawn := mm.get_spawn_point_for(peer_id)
 	if spawn == null:
 		push_warning("[KnowledgeManager] No spawn point for peer %d; draft not recorded" % peer_id)
+		return
+	# Source position = belief about where the selected minions are. Average
+	# the believed positions of the selected ids — for a single piece this is
+	# just that piece's position; for a group it lands in the center.
+	var source_pos := _believed_centroid(peer_id, minion_ids)
+	if source_pos == Vector3.INF:
+		# We have no belief about any of the selected minions (race condition or
+		# stale selection). Drop the order rather than dispatch a blind courier.
 		return
 	var cmd_id := _next_command_id
 	_next_command_id += 1
 	get_model(peer_id).pending_commands[cmd_id] = {
 		"stage": STAGE_DRAFT,
-		"start_pos": spawn.global_position,
+		"spawn_pos": spawn.global_position,
+		"source_pos": source_pos,
 		"target_pos": target_pos,
+		"minion_ids": minion_ids.duplicate(),
 		"courier_id": -1,
 		"issued_tick": _tick,
 	}
+
+func _believed_centroid(peer_id: int, minion_ids: Array[int]) -> Vector3:
+	if not has_model(peer_id):
+		return Vector3.INF
+	var model := get_model(peer_id)
+	var sum := Vector3.ZERO
+	var n := 0
+	for mid in minion_ids:
+		var entry: Dictionary = model.believed_friendly_minions.get(mid, {})
+		if entry.is_empty():
+			continue
+		sum += entry.get("pos", Vector3.ZERO) as Vector3
+		n += 1
+	if n == 0:
+		return Vector3.INF
+	return sum / n
 
 func get_draft_count(peer_id: int) -> int:
 	if not has_model(peer_id):
@@ -203,6 +234,46 @@ func get_draft_count(peer_id: int) -> int:
 		if entry.get("stage", STAGE_DISPATCHED) == STAGE_DRAFT:
 			n += 1
 	return n
+
+func cancel_last_draft(peer_id: int) -> bool:
+	## Pop the most recently issued draft. Used by the war table's "undo last
+	## command" key so the overlord can back out without exiting the table.
+	## Returns true if a draft was removed.
+	if not has_model(peer_id):
+		return false
+	var model := get_model(peer_id)
+	var latest_id: int = -1
+	var latest_tick: int = -1
+	for cmd_id in model.pending_commands.keys():
+		var entry: Dictionary = model.pending_commands[cmd_id]
+		if entry.get("stage", STAGE_DISPATCHED) != STAGE_DRAFT:
+			continue
+		var t: int = int(entry.get("issued_tick", 0))
+		# Tie-break on cmd_id so two drafts issued the same tick still pop in
+		# LIFO order (later id == later issue).
+		if t > latest_tick or (t == latest_tick and cmd_id > latest_id):
+			latest_tick = t
+			latest_id = cmd_id
+	if latest_id < 0:
+		return false
+	model.pending_commands.erase(latest_id)
+	return true
+
+func clear_drafts(peer_id: int) -> int:
+	## Discard every draft entry. Dispatched commands (couriers already running)
+	## are untouched — those are committed and only end when their courier
+	## delivers or dies. Returns the number of drafts removed.
+	if not has_model(peer_id):
+		return 0
+	var model := get_model(peer_id)
+	var to_remove: Array[int] = []
+	for cmd_id in model.pending_commands.keys():
+		var entry: Dictionary = model.pending_commands[cmd_id]
+		if entry.get("stage", STAGE_DISPATCHED) == STAGE_DRAFT:
+			to_remove.append(cmd_id)
+	for cmd_id in to_remove:
+		model.pending_commands.erase(cmd_id)
+	return to_remove.size()
 
 func dispatch_info_courier(peer_id: int, target_pos: Vector3) -> void:
 	## Host-only. Spawn an info-courier minion at the owner's tower spawn,
@@ -252,11 +323,25 @@ func dispatch_drafts(peer_id: int) -> void:
 			draft_ids.append(cmd_id)
 	for cmd_id in draft_ids:
 		var entry: Dictionary = model.pending_commands[cmd_id]
-		var start_pos: Vector3 = entry.get("start_pos", Vector3.ZERO)
+		var spawn_pos: Vector3 = entry.get("spawn_pos", Vector3.ZERO)
+		var source_pos: Vector3 = entry.get("source_pos", Vector3.ZERO)
 		var target_pos: Vector3 = entry.get("target_pos", Vector3.ZERO)
-		var courier_id: int = mm.spawn_named_minion_for_peer(peer_id, &"courier", start_pos, target_pos)
+		var minion_ids: Array = entry.get("minion_ids", [])
+		# Spawn courier at tower; first leg is spawn_pos → source_pos. The
+		# courier's arrival_state will then deliver to minion_ids and walk back.
+		var courier_id: int = mm.spawn_named_minion_for_peer(peer_id, &"courier", spawn_pos, source_pos)
 		if courier_id < 0:
 			continue
+		# Stash the delivery payload on the courier actor so its arrival state
+		# can read who to command and where to send them once it gets to the
+		# believed source position. Payload lives on the actor (not on the
+		# WorldModel entry) because the courier executes in real space —
+		# pending_commands is the overlord's belief layer.
+		var courier := mm.get_minion_by_id(courier_id)
+		if courier:
+			courier.delivery_minion_ids = minion_ids.duplicate()
+			courier.delivery_target_pos = target_pos
+			courier.return_pos = spawn_pos
 		entry["stage"] = STAGE_DISPATCHED
 		entry["courier_id"] = courier_id
 		entry["dispatched_tick"] = _tick

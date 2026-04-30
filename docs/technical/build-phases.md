@@ -129,7 +129,7 @@
 - [x] **Basic minion AI** — State machine: idle, move_to (NavigationAgent3D with direct-steer fallback), jump (JumpableLink traversal), attack, die
 
 ### Core (impl complete — ready to test)
-- [x] **Minion commands** — War Table: top-down map view, click to set waypoints for all minions (also relocates the sender's rally). Clicks now route through `KnowledgeManager.issue_move_command`; with `INSTANT_COMMANDS=true` the behavior is identical to the old direct path. See `docs/systems/war-table.md` for the information-warfare layer (`WorldModel`, diorama rendering, courier plans).
+- [x] **Minion commands** — War Table: top-down map view, two-click selection (click a friendly piece on the diorama to select, click empty map to submit). With `INSTANT_COMMANDS=true` each selected id's waypoint is set directly; with `INSTANT_COMMANDS=false` a draft is queued and the Advisor dispatches a Courier per draft on E (carries delivery payload to the believed source, walks home after delivery). See `docs/systems/war-table.md` for the full information-warfare layer (`WorldModel`, two-arrow diorama rendering, courier lifecycle).
 - [x] **Territory system** — Grid-based corruption spreads from minion presence, decays without them
 - [x] **Influence tracking** — GameState tracks per-peer influence, displayed in debug overlay
 - [x] **Minor gem sites** — GemSite interactible: minions clear, Avatar confirms capture, grants passive influence
@@ -235,12 +235,12 @@ Systems whose implementation is complete but haven't been confirmed working in a
 ### Tier 3 — The Dark Lords Scheme
 
 #### Minion commands (War Table)
-- [ ] Interact with War Table → camera tweens to `MapViewPoint`
-- [ ] Click on map → all owned minions move toward the click point in a phalanx grid (slots assigned by `MinionManager.command_minions_move`)
-- [ ] Click also relocates the sender's `MinionRallyPoint`
-- [ ] Other peers' minions ignore your clicks
-- [ ] Releasing the table returns camera to overlord position
-- [ ] With `INFINITE_BROADCAST_RANGE = true` and `INSTANT_COMMANDS = true` (defaults), behavior matches the pre-KnowledgeManager direct path
+- [ ] Interact with War Table → camera tweens to `MapViewPoint` and the rig pins to the StandPoint via `PlayerActor.pin_transform`
+- [ ] First click on a friendly piece on the diorama → toggles that minion id in `WarTable._selected_minion_ids` (piece glows yellow); multiple clicks build up a multi-piece selection
+- [ ] Second click on empty map (with a non-empty selection) → submits via `KnowledgeManager.issue_move_command(peer_id, minion_ids, target_pos)`; selection clears
+- [ ] Other peers' minions are not selectable from your table
+- [ ] Releasing the table (E to exit) returns camera to overlord position; rig stays at the StandPoint with `unpin_transform` so you can walk away naturally
+- [ ] With `INSTANT_COMMANDS = true` (default) the submit moves only the selected ids (`MinionManager.command_minion_move` per id); with `INSTANT_COMMANDS = false` it records a draft
 
 #### War Table information-warfare layer (Advisor + Courier + reality overlay)
 
@@ -259,21 +259,21 @@ Test harness: `scenes/test/war_table_test.tscn`. Place an Advisor `StartingMinio
 - [ ] A non-owner overlord sees "Another overlord's Advisor" and pressing E does nothing
 - [ ] Out of range: no prompt
 
-**Drafts (red arrows)**
-- [ ] With `INSTANT_COMMANDS = true`, war-table clicks behave as before (immediate minion move, no arrows)
-- [ ] With `INSTANT_COMMANDS = false`, each war-table click draws a **red** arrow from the owner's tower spawn marker to the click point
-- [ ] Drafts have NO midpoint pawn (red arrow only)
-- [ ] Multiple clicks stack multiple red arrows on the same table
+**Drafts (red order arrows)**
+- [ ] With `INSTANT_COMMANDS = true`, the two-click selection still applies but the submit moves the selected minions immediately (no arrows)
+- [ ] With `INSTANT_COMMANDS = false`, each submit draws a **red** order arrow from the believed minion source to the destination click point (source is the centroid of the believed positions of the selected ids)
+- [ ] Drafts have NO courier route arrow (red order arrow only — no courier dispatched yet)
+- [ ] Multiple submissions stack multiple red arrows on the same table
 - [ ] Red arrows persist after exiting the table — they don't vanish until handoff or courier despawn
 - [ ] Drafts are per-peer; another peer's table does not show your red arrows
 
 **Handoff transition (red → black, dispatch)**
 - [ ] Pressing E on the owner's Advisor with N drafts spawns N couriers, one at the tower spawn marker per draft
-- [ ] Each red arrow flips to **black** in place at handoff (same arrow node, color swap, no flicker)
-- [ ] Each dispatched arrow gains a **courier-color (light blue) midpoint pawn**
-- [ ] Each courier walks to its target via `NavigationAgent3D`; on arrival, the owner's squad receives a formation move (`MinionManager._assign_formation_waypoints`)
-- [ ] On courier despawn (delivery), its black arrow + midpoint pawn evaporate
-- [ ] Killing a courier mid-flight (K) also clears its arrow + pawn cleanly
+- [ ] Each red order arrow flips to **black** in place at handoff (same arrow node, color swap, no flicker)
+- [ ] Each dispatched entry gains a second **courier-color (light blue) route arrow** from the tower spawn to the believed source
+- [ ] Each courier walks to its `source_pos` via `NavigationAgent3D`; on arrival, `courier_arrival_state.gd` sets each `delivery_minion_ids` target's waypoint to `delivery_target_pos`, then sets its own waypoint to `return_pos` and walks home
+- [ ] On courier despawn (arrival home or death), the order arrow + route arrow evaporate together
+- [ ] Killing a courier mid-flight (K) also clears its arrows cleanly
 - [ ] Pressing E on the Advisor with 0 drafts is a no-op (just the prompt; no spurious dispatches)
 
 **Reality overlay (debug, M)**

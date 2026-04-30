@@ -74,9 +74,6 @@ func _on_interact() -> void:
 		# Refresh after a short delay so the host has time to apply.
 		get_tree().create_timer(0.1).timeout.connect(_refresh_prompt)
 
-func _on_player_exited() -> void:
-	_altar_active = false
-
 func _unhandled_input(event: InputEvent) -> void:
 	if _altar_active and event is InputEventKey and event.pressed:
 		if event.keycode == KEY_Q:

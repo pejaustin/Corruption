@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://dyl7bol73bpei" path="res://scenes/ui/avatar_hud.tscn" id="11_hud"]
 [ext_resource type="Script" uid="uid://du8oa62cayfhx" path="res://scenes/actors/player/states/roll_state.gd" id="12_f2kxo"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
+[ext_resource type="Script" path="res://scripts/interaction_focus.gd" id="13_focus"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
 radius = 0.2
@@ -92,5 +93,10 @@ outline_size = 8
 input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input"])
 
 [node name="AvatarHUD" parent="." index="8" unique_id=1564158435 instance=ExtResource("11_hud")]
+
+[node name="InteractionFocus" type="Node" parent="." index="9" unique_id=1729384651 node_paths=PackedStringArray("raycast", "owner_actor")]
+script = ExtResource("13_focus")
+raycast = NodePath("../AvatarCamera/CameraMount/CameraRot/Camera3D/InteractionRayCast")
+owner_actor = NodePath("..")
 
 [editable path="Model/Avatar"]

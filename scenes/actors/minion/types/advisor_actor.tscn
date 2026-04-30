@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://71btovk3inad"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
-[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/ZombieModel.tscn" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
 [ext_resource type="Resource" path="res://data/minions/advisor.tres" id="2_type"]
 [ext_resource type="Texture2D" uid="uid://v3001qns3ks7" path="res://assets/characters/large-male/skins/zombieA.png" id="4_v3ndx"]
 [ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
@@ -25,7 +25,7 @@ radius = 1.0
 height = 3.002
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_handoff"]
-size = Vector3(6, 4, 6)
+size = Vector3(1.2, 3, 1.2)
 
 [node name="Advisor" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
@@ -70,11 +70,13 @@ script = ExtResource("10_hurt")
 shape = SubResource("CapsuleShape3D_advisor_hurt")
 
 [node name="HandoffArea" type="Area3D" parent="." index="6" unique_id=533498638]
-collision_layer = 0
+collision_layer = 16
+collision_mask = 1
 script = ExtResource("13_handoff")
-aim_angle_threshold = 75.0
+aim_angle_threshold = 30.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HandoffArea" index="0" unique_id=497836904]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 shape = SubResource("BoxShape3D_handoff")
 
 [editable path="Model/Zombie"]

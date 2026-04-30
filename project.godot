@@ -52,7 +52,7 @@ window/stretch/mode="viewport"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/netfox.extras/plugin.cfg", "res://addons/netfox.internals/plugin.cfg", "res://addons/netfox/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
+enabled=PackedStringArray("res://addons/netfox.extras/plugin.cfg", "res://addons/netfox.internals/plugin.cfg", "res://addons/netfox/plugin.cfg")
 
 [importer_defaults]
 

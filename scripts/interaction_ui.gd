@@ -39,6 +39,20 @@ func clear_prompt(source: Interactable) -> void:
 		_prompt_label.visible = false
 		_prompt_label.text = ""
 
+## Hide the prompt label without dropping the source. Used by the pause menu
+## so the prompt vanishes behind the menu UI while the focused Interactable
+## keeps its active state intact (palantir scry, altar UI etc. survive a
+## pause-and-resume).
+func hide_prompt() -> void:
+	if _prompt_label and is_instance_valid(_prompt_label):
+		_prompt_label.visible = false
+
+## Re-show the prompt label if a source is still registered. Used on pause
+## menu close.
+func show_prompt() -> void:
+	if _current_source and _prompt_label and is_instance_valid(_prompt_label):
+		_prompt_label.visible = true
+
 func _process(_delta: float) -> void:
 	if _current_source and not is_instance_valid(_current_source):
 		_current_source = null

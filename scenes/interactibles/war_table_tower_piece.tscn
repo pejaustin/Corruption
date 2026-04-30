@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://d7xfjcm6c6xv"]
+
+[ext_resource type="Material" path="res://assets/materials/Concrete020_2K-JPG/Concrete020_2K-JPG.tres" id="1_w5bg4"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_tower_body"]
+top_radius = 0.085
+bottom_radius = 0.095
+height = 0.18
+radial_segments = 16
+
+[sub_resource type="BoxMesh" id="BoxMesh_tower_top"]
+size = Vector3(0.18, 0.04, 0.18)
+
+[node name="WarTableTowerPiece" type="Node3D" unique_id=1424249472]
+
+[node name="Body" type="MeshInstance3D" parent="." unique_id=779688058]
+mesh = SubResource("CylinderMesh_tower_body")
+surface_material_override/0 = ExtResource("1_w5bg4")
+
+[node name="Crown" type="MeshInstance3D" parent="." unique_id=1871956731]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.105, 0)
+mesh = SubResource("BoxMesh_tower_top")
+surface_material_override/0 = ExtResource("1_w5bg4")

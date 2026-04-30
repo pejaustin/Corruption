@@ -30,6 +30,13 @@ var owner_peer_id: int = -1
 var minion_type_id: StringName = &""
 var minion_trait: StringName = &""
 var waypoint: Vector3 = Vector3.ZERO
+## Courier-only payload. Populated by KnowledgeManager.dispatch_drafts when the
+## courier is spawned. courier_arrival_state reads these on arrival at the
+## believed source position to deliver the move-to-target order to a specific
+## set of minions, then sets `waypoint = return_pos` to walk home and despawn.
+var delivery_minion_ids: Array[int] = []
+var delivery_target_pos: Vector3 = Vector3.INF
+var return_pos: Vector3 = Vector3.INF
 ## Set by _on_link_reached when the nav agent hits a NavigationLink3D in the
 ## "jumpable" group. JumpState reads this to aim its arc.
 var jump_target: Vector3 = Vector3.INF

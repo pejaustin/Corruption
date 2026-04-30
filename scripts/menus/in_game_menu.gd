@@ -37,21 +37,33 @@ func _unhandled_input(_event: InputEvent) -> void:
 			open()
 
 func _set_gameplay_input(enabled: bool) -> void:
-	# Two gameplay-input paths bypass the menu's focus/mouse state:
+	# Three gameplay-input paths bypass the menu's focus/mouse state:
 	#   1. PlayerInput / AvatarInput poll Input.is_action_pressed each tick.
 	#   2. Interactables (war table, palantir, altar, summoning circle,
 	#      mirror, base interact E) run their own _unhandled_input hooks.
-	# Disabling process_mode on each Interactable halts its input callbacks
-	# without touching the subclass scripts; the input flags cover poll-path.
+	#   3. InteractionFocus raycasts each physics frame and pushes
+	#      set_focused() calls onto interactables — left running it would
+	#      keep the prompt flickering on/off behind the menu.
+	# Disabling process_mode on each halts its callbacks. We deliberately do
+	# NOT call set_focused(false) on whatever was focused — that would clear
+	# _is_focused and the prompt source, and a pause shouldn't lose state.
+	# Instead we just hide the prompt label visually; the focused
+	# Interactable keeps its refs and the prompt re-appears on resume.
 	var scene := get_tree().current_scene
 	if scene == null:
 		return
 	_toggle_inputs_under(scene, enabled)
+	if enabled:
+		InteractionUI.show_prompt()
+	else:
+		InteractionUI.hide_prompt()
 
 func _toggle_inputs_under(node: Node, enabled: bool) -> void:
 	if node is PlayerInput or node is AvatarInput:
 		node.input_enabled = enabled
 	elif node is Interactable:
+		node.process_mode = Node.PROCESS_MODE_INHERIT if enabled else Node.PROCESS_MODE_DISABLED
+	elif node is InteractionFocus:
 		node.process_mode = Node.PROCESS_MODE_INHERIT if enabled else Node.PROCESS_MODE_DISABLED
 	for child in node.get_children():
 		_toggle_inputs_under(child, enabled)

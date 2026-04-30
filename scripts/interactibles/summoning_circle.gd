@@ -70,9 +70,6 @@ func _on_interact() -> void:
 			mm.request_summon_minion(String(roster[_selected_type_index].id))
 		_refresh_prompt()
 
-func _on_player_exited() -> void:
-	_circle_active = false
-
 func _unhandled_input(event: InputEvent) -> void:
 	if _circle_active and event is InputEventKey and event.pressed:
 		if event.keycode == KEY_Q:

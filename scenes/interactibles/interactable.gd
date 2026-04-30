@@ -2,104 +2,74 @@ class_name Interactable extends Area3D
 
 ## Base class for all interactible objects.
 ##
-## Handles:
-## - Body enter/exit tracking (OverlordActor for Overlord mode, AvatarActor for Avatar mode)
-## - Prompt text routing to the HUD via InteractionUI singleton
-## - Aim-based focus: Overlord must look at the interactible to see the prompt
-## - Subclasses override get_prompt_text(), get_prompt_color(), and _on_interact()
+## Focus is driven from the outside: each local player has an InteractionFocus
+## controller that reads the camera's RayCast3D, finds the hit Interactable,
+## and calls set_focused() on it. Interactables themselves do not poll
+## cameras or run raycasts.
+##
+## Modal lock: while one Interactable holds it (e.g. War Table is open), the
+## InteractionFocus controller routes focus to the holder regardless of where
+## the player is aiming. Subclasses call _claim_modal / _release_modal.
 
-## How close the player/Avatar must be for the prompt to appear.
-## The Area3D collision shape handles proximity; this is just for
-## the aim check to kick in.
-@export var aim_angle_threshold: float = 30.0  # degrees
+## Layer interactable Area3Ds live on. Set in interactable.tscn so the
+## camera's interaction RayCast3D (collision_mask = world | this bit) hits
+## them on a forward look.
+const INTERACTABLE_LAYER: int = 1 << 4
 
+static var _modal_holder: Interactable = null
+
+static func has_modal() -> bool:
+	return _modal_holder != null and is_instance_valid(_modal_holder)
+
+## Legacy field — kept so old scenes still load. Focus is now raycast-only;
+## the cone threshold is unused.
+@export var aim_angle_threshold: float = 30.0  # unused
+
+var _is_focused: bool = false
+## The local player currently aiming at us, set by InteractionFocus when it
+## calls set_focused(true, who). Subclass logic (war_table tween, advisor
+## handoff peer_id, palantir scry binding) reads these.
 var _player_in_range: OverlordActor = null
 var _avatar_in_range: AvatarActor = null
-var _is_focused: bool = false
 
 func _ready() -> void:
-	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
 	_interactable_ready()
 
 ## Override in subclass for additional setup. Called at the end of _ready().
 func _interactable_ready() -> void:
 	pass
 
-func _on_body_entered(body: Node3D) -> void:
-	if body is OverlordActor:
-		_player_in_range = body
-	elif body is AvatarActor:
-		_avatar_in_range = body
-
-func _on_body_exited(body: Node3D) -> void:
-	if body is OverlordActor and body == _player_in_range:
-		_player_in_range = null
-		if _is_focused:
-			_is_focused = false
-			InteractionUI.clear_prompt(self)
-		_on_player_exited()
-	elif body is AvatarActor and body == _avatar_in_range:
-		_avatar_in_range = null
-		if _is_focused:
-			_is_focused = false
-			InteractionUI.clear_prompt(self)
-		_on_avatar_exited()
-
-## Called when the Overlord player leaves range. Override for cleanup.
-func _on_player_exited() -> void:
-	pass
-
-## Called when the Avatar leaves range. Override for cleanup.
-func _on_avatar_exited() -> void:
-	pass
-
-func _process(_delta: float) -> void:
-	var should_focus = _check_focus()
-	if should_focus and not _is_focused:
-		_is_focused = true
+## Called by InteractionFocus when this Interactable gains or loses the
+## local player's gaze. `who` is the OverlordActor or AvatarActor whose
+## camera the ray came from (null on focus loss).
+func set_focused(focused: bool, who: Node3D = null) -> void:
+	if focused:
+		if who is OverlordActor:
+			_player_in_range = who
+			_avatar_in_range = null
+		elif who is AvatarActor:
+			_avatar_in_range = who
+			_player_in_range = null
+		if not _is_focused:
+			_is_focused = true
 		_update_ui_prompt()
-	elif not should_focus and _is_focused:
+		return
+	_player_in_range = null
+	_avatar_in_range = null
+	if _is_focused:
 		_is_focused = false
 		InteractionUI.clear_prompt(self)
-	elif should_focus and _is_focused:
-		# Refresh prompt text (it may change dynamically)
+
+## Refresh the prompt while focused — subclasses with state-dependent text
+## (e.g. War Table changing prompt mid-session) call this after mutating.
+func _refresh_prompt() -> void:
+	if _is_focused:
 		_update_ui_prompt()
 
-func _check_focus() -> bool:
-	# Check Overlord player focus (proximity + aim)
-	if _player_in_range and _is_local_player(_player_in_range):
-		if _is_player_aiming_at_us(_player_in_range):
-			return true
-	# Check Avatar focus (just proximity — 3rd person doesn't need aim check)
-	if _avatar_in_range and not _avatar_in_range.is_dormant:
-		if _avatar_in_range.controlling_peer_id == multiplayer.get_unique_id():
-			return true
-	return false
-
-func _is_local_player(player: OverlordActor) -> bool:
-	return multiplayer.get_unique_id() == player.name.to_int()
-
-func _is_player_aiming_at_us(player: OverlordActor) -> bool:
-	var cam_input: CameraInput = player.get_node_or_null("CameraInput")
-	if not cam_input or not cam_input.camera_3d:
-		return false
-	var cam: Camera3D = cam_input.camera_3d
-	# Aim against the collision shape's center (which is where the visual lives),
-	# not the Area3D root — for interactables whose visual sits well above the
-	# root (e.g. the mirror at +1.5m) the root-based check would fail when the
-	# player looks straight at the visual.
-	var target_pos := _get_aim_target_position()
-	var to_target = (target_pos - cam.global_position).normalized()
-	var cam_forward = -cam.global_basis.z
-	var angle = rad_to_deg(cam_forward.angle_to(to_target))
-	return angle < aim_angle_threshold
-
-func _get_aim_target_position() -> Vector3:
-	var shape := get_node_or_null(^"CollisionShape3D") as CollisionShape3D
-	if shape:
-		return shape.global_position
-	return global_position
+## No-op so subclass `_process` overrides can call `super(delta)` safely
+## without depending on whether the base does any per-frame work.
+func _process(_delta: float) -> void:
+	pass
 
 func _update_ui_prompt() -> void:
 	var text = get_prompt_text()
@@ -111,6 +81,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("interaction"):
 		_on_interact()
+		# Consume so a second focused interactable in modal limbo doesn't
+		# also process the same press.
+		get_viewport().set_input_as_handled()
+
+## Subclasses call this to announce they've taken over the player's input/UI
+## (e.g. War Table activation). InteractionFocus pins focus on us until we
+## release.
+func _claim_modal() -> void:
+	_modal_holder = self
+
+## Subclasses call this when their modal session ends.
+func _release_modal() -> void:
+	if _modal_holder == self:
+		_modal_holder = null
 
 ## Override in subclass: return the prompt text for the current state.
 func get_prompt_text() -> String:
@@ -129,8 +113,11 @@ func _on_interact() -> void:
 func get_local_peer_id() -> int:
 	return multiplayer.get_unique_id()
 
+func _is_local_player(player: OverlordActor) -> bool:
+	return player != null and multiplayer.get_unique_id() == player.name.to_int()
+
 func is_overlord_in_range() -> bool:
-	return _player_in_range != null and _is_local_player(_player_in_range)
+	return _player_in_range != null
 
 func is_avatar_in_range() -> bool:
 	return _avatar_in_range != null and not _avatar_in_range.is_dormant and _avatar_in_range.controlling_peer_id == get_local_peer_id()

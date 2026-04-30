@@ -400,11 +400,13 @@ Each avatar ability is an `AbilityEffect` subclass (scripts/abilities/<id>_effec
 
 ### Information-warfare layer (`KnowledgeManager` autoload)
 
-The War Table renders an overlord's **belief**, not truth. Each peer has a `WorldModel` (per-peer dict of believed minion sightings, timestamped) maintained by the `KnowledgeManager` autoload at `scripts/knowledge/`. War Table clicks route through `KnowledgeManager.issue_move_command(peer_id, pos)`; minion deaths fan out via `KnowledgeManager.notify_minion_removed(id)`.
+The War Table renders an overlord's **belief**, not truth. Each peer has a `WorldModel` (per-peer dict of believed minion sightings, timestamped) maintained by the `KnowledgeManager` autoload at `scripts/knowledge/`. War Table commands route through `KnowledgeManager.issue_move_command(peer_id, minion_ids: Array[int], target_pos)` — note the **selection-based** signature: a draft is for a specific set of minion ids, not "everything you own." Minion deaths fan out via `KnowledgeManager.notify_minion_removed(id)`.
+
+The table uses a **two-click flow**: click a friendly piece on the diorama to toggle it in `WarTable._selected_minion_ids`, click empty map to submit. With `INSTANT_COMMANDS=false`, the submit records a draft entry (`stage`, `spawn_pos`, `source_pos`, `target_pos`, `minion_ids`, `courier_id`); E at the Advisor (`advisor_handoff.gd`) dispatches a real Courier per draft, which travels to the believed source, sets each delivery target's waypoint to `target_pos`, then walks home and despawns.
 
 Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration. Both are `static var` (runtime-mutable, e.g. test harnesses can A/B-toggle without restarting):
 - `INFINITE_BROADCAST_RANGE: bool = true` — every minion updates every model every tick (belief ≈ truth). Flip off to tune broadcast range.
-- `INSTANT_COMMANDS: bool = true` — commands apply immediately via `MinionManager.command_minions_move`, which assigns each minion a slot in a phalanx grid centered on the click point. Flip off when couriers are built (step 7 in `docs/systems/war-table.md`).
+- `INSTANT_COMMANDS: bool = true` — commands apply immediately: each selected id's waypoint is set to the target via `MinionManager.command_minion_move`, no courier loop. Flip off to exercise the Courier dispatch path.
 
 `WarTable` (script `scripts/interactibles/war_table.gd`, `class_name WarTable`) exports `map_world_size: Vector2` and `map_world_center: Vector3` directly on the interactable; the setters tunnel to the `Map` child's `WarTableMap` so per-tower regions are configured next to the rest of the table's setup. `WarTableMap` still owns `table_surface_size` and the piece spawner. `WarTableRange` is a `@tool` MeshInstance3D that draws a semi-transparent BoxMesh at the map's effective region so designers can see it in both editor and play.
 
@@ -413,6 +415,24 @@ Isolated iteration harness: `scenes/test/war_table_test.tscn` — runs the **rea
 Minion-vs-minion physical collision is intentionally OFF (`minion_actor.gd:COLLISION_MASK_MOVEMENT = COLLISION_MASK_WORLD`); the `NavigationAgent3D`'s RVO avoidance handles spacing instead. This sidesteps the cluster-stop bug where the first minion to reach a shared waypoint would park and physically block late arrivers from finishing their nav path.
 
 Full design: `docs/systems/war-table.md`.
+
+### Interactable focus — raycast-pull, not poll-push
+
+Interactables (war table, palantir, altar, summoning circle, advisor handoff, gem, gem site, mirror, etc.) all extend `Interactable` (Area3D, `scenes/interactibles/interactable.gd`). Focus is driven from the **player side**, not from each interactable.
+
+Each local player rig (`OverlordActor`, `AvatarActor`) carries:
+- A `RayCast3D` named `InteractionRayCast` parented under `Camera3D` (target_position = -3.5m forward, `collision_mask = 17` = world bit + interactable bit, `hit_back_faces = false`, `collide_with_areas = true`). Updates every physics step by Godot.
+- An `InteractionFocus` controller node (`scripts/interaction_focus.gd`) wired to that raycast and the rig. Each `_physics_process` it reads the ray, walks up the hit collider's parent chain to find an `Interactable` ancestor, and `_assign`s focus — calling `set_focused(false, ...)` on the previously-focused interactable and `set_focused(true, owner_actor)` on the new one. After assigning, it calls `_refresh_prompt()` on the current target so subclasses with state-dependent prompts (resource counts, mirror state, war table selection size) stay live.
+
+Interactable areas live on `collision_layer = 16` (bit 5) so the ray hits them; the world (bit 1) is also in the mask so walls block line-of-sight. A nested solid (e.g. the war table's `Solid` StaticBody3D, layer 1) gets hit first when the player aims at the visible mesh — the walk-up still resolves to the parent `Interactable`, so focus lands on the right node.
+
+Subclass surface: just `set_focused(focused, who)` is called by the controller. Inside `set_focused`, the base updates `_player_in_range` / `_avatar_in_range`, flips `_is_focused`, and refreshes the prompt. Subclasses override `get_prompt_text()` / `get_prompt_color()` / `_on_interact()` and call `_refresh_prompt()` when their state changes mid-focus.
+
+**Modal lock** — `Interactable._modal_holder` is a static var. Subclasses that take over the camera or block out the world (war table, palantir scry) call `_claim_modal()` on entry and `_release_modal()` on exit; while a modal is held, `InteractionFocus` pins focus to the holder regardless of where the ray points, so the player can still press E/Q to exit. Stateful interactables that DON'T take over the camera (upgrade altar, summoning circle, mirror) leave their `_active` flag in their own state and let normal raycast focus apply — looking away hides the prompt, looking back restores it with the current state.
+
+**Pause integration** — `in_game_menu.gd:_set_gameplay_input(false)` disables `process_mode` on every `Interactable` and `InteractionFocus` in the tree and calls `InteractionUI.hide_prompt()`. It deliberately does NOT call `set_focused(false)` — pause should not tear down active modal modes. Resume re-enables and `show_prompt()`s the existing source.
+
+**Player rig pinning during war table** — `PlayerActor.pin_transform(xform)` / `unpin_transform()` writes a target transform that gets re-applied at the end of every `_rollback_tick`. Plain `global_transform = ...` is fine for one-shot teleports (avatar respawn) but doesn't survive the rollback recorder during continuous activity — pinning makes `on_record_tick` capture the pinned value so subsequent `on_prepare_tick` restores keep it. War Table uses this to plant the overlord at the StandPoint while the camera takes over.
 
 ### Per-peer game state APIs (`GameState`)
 

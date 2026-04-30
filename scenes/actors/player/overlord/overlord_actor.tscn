@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://btpe5aa8fcnbd" path="res://scripts/states/movement/fall_state.gd" id="10_fall"]
 [ext_resource type="PackedScene" uid="uid://bn3n0bpjlw5aq" path="res://scenes/ui/overlord_hud.tscn" id="11_hud"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
+[ext_resource type="Script" path="res://scripts/interaction_focus.gd" id="13_focus"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_overlord_hurt"]
 radius = 0.4
@@ -108,6 +109,11 @@ script = ExtResource("12_hurt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox" index="0" unique_id=1900355884]
 shape = SubResource("CapsuleShape3D_overlord_hurt")
+
+[node name="InteractionFocus" type="Node" parent="." index="10" unique_id=1729384650 node_paths=PackedStringArray("raycast", "owner_actor")]
+script = ExtResource("13_focus")
+raycast = NodePath("../CameraInput/CameraMount/CameraRot/Camera3D/InteractionRayCast")
+owner_actor = NodePath("..")
 
 [editable path="Model/Lich"]
 [editable path="Model/Lich/RootNode/Lich-applying"]

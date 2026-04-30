@@ -1,12 +1,17 @@
-[gd_scene load_steps=10 format=3 uid="uid://btwart0000001"]
+[gd_scene load_steps=12 format=3 uid="uid://btwart0000001"]
 
 [ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://b1sy7r7uyt2am" path="res://scripts/interactibles/war_table.gd" id="2_script"]
 [ext_resource type="Script" uid="uid://ybui2et26j0o" path="res://scripts/interactibles/war_table_map.gd" id="3_map"]
 [ext_resource type="Material" path="res://assets/materials/Paper006_2K-JPG/Paper006_2K-JPG.tres" id="4_d8xn4"]
+[ext_resource type="PackedScene" uid="uid://06g410qfr35t" path="res://scenes/interactibles/war_table_piece.tscn" id="5_piece"]
+[ext_resource type="PackedScene" uid="uid://d7xfjcm6c6xv" path="res://scenes/interactibles/war_table_tower_piece.tscn" id="6_tower"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_area"]
 size = Vector3(3.5, 2, 2.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_solid"]
+size = Vector3(3, 1.2, 2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_table"]
 size = Vector3(3, 0.2, 2)
@@ -61,6 +66,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.5, 0.9)
 mesh = SubResource("BoxMesh_leg")
 surface_material_override/0 = SubResource("StandardMaterial3D_leg")
 
+[node name="Solid" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Solid"]
+shape = SubResource("BoxShape3D_solid")
+
 [node name="MapViewPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2.807373, 0)
 
@@ -71,6 +82,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
 script = ExtResource("3_map")
 table_surface_size = Vector2(1.75, 1.75)
+piece_scene = ExtResource("5_piece")
+tower_piece_scene = ExtResource("6_tower")
 
 [node name="Paper" type="MeshInstance3D" parent="Map"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0022970438, 0)

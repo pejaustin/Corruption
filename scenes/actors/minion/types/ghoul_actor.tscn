@@ -1,34 +1,30 @@
 [gd_scene format=3 uid="uid://cx7ym6n6isefo"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
-[ext_resource type="Resource" path="res://data/minions/ghoul.tres" id="2_type"]
-[ext_resource type="PackedScene" uid="uid://twkv4hspfoay" path="res://assets/characters/large-male/large_male.tscn" id="3_gybpn"]
-[ext_resource type="Material" uid="uid://c7kfdc1ak7rwg" path="res://assets/characters/skins/robot_skin_material.tres" id="4_f3fhf"]
+[ext_resource type="Resource" uid="uid://bdk3oltu14ss8" path="res://data/minions/ghoul.tres" id="2_type"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="3_f3fhf"]
 [ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
-[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
+[ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ghoul"]
-height = 3.002
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ghoul_hurt"]
 height = 3.002
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
 radius = 1.0
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ghoul_hurt"]
+height = 3.002
+
 [node name="Ghoul" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
 
-[node name="Model" parent="." index="0" unique_id=397539025 instance=ExtResource("3_gybpn")]
-
-[node name="characterLargeMale" parent="Model/Root/Skeleton3D" parent_id_path=PackedInt32Array(397539025, 1757755038) index="0" unique_id=1626034738]
-surface_material_override/0 = ExtResource("4_f3fhf")
-
-[node name="CollisionShape3D" parent="." index="1" unique_id=2017831966]
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 shape = SubResource("CapsuleShape3D_ghoul")
 
-[node name="AttackHitbox" type="Area3D" parent="."]
+[node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("3_f3fhf")]
+
+[node name="AttackHitbox" type="Area3D" parent="." index="4" unique_id=611303625]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.34678698)
 collision_layer = 0
@@ -36,12 +32,12 @@ collision_mask = 12
 monitorable = false
 script = ExtResource("9_hitbox")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox" index="0" unique_id=736525710]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
 shape = SubResource("SphereShape3D_hitbox")
 disabled = true
 
-[node name="Hurtbox" type="Area3D" parent="."]
+[node name="Hurtbox" type="Area3D" parent="." index="5" unique_id=1896163079]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 collision_layer = 8
@@ -49,7 +45,5 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("10_hurt")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox" index="0" unique_id=1183530655]
 shape = SubResource("CapsuleShape3D_ghoul_hurt")
-
-[editable path="Model"]

@@ -1,6 +1,6 @@
 # War Table — Information & Command System
 
-**Build status:** Steps 1–4 in. `KnowledgeManager` autoload + per-peer `WorldModel`, diorama rendering via `WarTableMap`, table↔world click mapping, and the isolated `war_table_test.tscn` harness are all live. The harness now uses real `OverlordActor` + `MinionActor` + `MinionManager` (single-peer via `OfflineMultiplayerPeer`) instead of stand-in fakes — full command-loop is testable without booting the lobby. `INFINITE_BROADCAST_RANGE` and `INSTANT_COMMANDS` still default to `true` so the rest of the game plays unchanged, but they're now runtime-mutable (`static var`) so tests can toggle them without restarting. Steps 5–9 (range truthing, retreat reporting, courier commands/info, falsification) are pending.
+**Build status:** Steps 1–8 in. `KnowledgeManager` autoload + per-peer `WorldModel`, diorama rendering via `WarTableMap`, table↔world click mapping, and the isolated `war_table_test.tscn` harness are all live. The harness uses real `OverlordActor` + `MinionActor` + `MinionManager` (single-peer via `OfflineMultiplayerPeer`) — full command-loop is testable without booting the lobby. `INFINITE_BROADCAST_RANGE` and `INSTANT_COMMANDS` default to `true` so the rest of the game plays unchanged, but they're runtime-mutable (`static var`) so tests can toggle them without restarting. Step 7 (courier-for-commands) shipped with a **two-click selection flow**: click a friendly piece on the diorama to add it to the selection, click empty map to dispatch — the courier travels to the believed source position and delivers the move order to those specific minion IDs, then walks home and despawns. Steps 9–14 (composition UI / undo, paper held item, Stay-vs-Leave modes, balcony shouting, falsification) are pending.
 
 `MinionType` data for the three info-warfare roles exists at `data/minions/advisor.tres`, `data/minions/courier.tres`, and `data/minions/scout.tres` (NEUTRAL faction, role-not-faction; per-faction visual flavor is layered on at the actor scene). Actor `.tscn` scenes and behavioral state machines are not yet authored — the `.tres` files are stats-only prerequisites for steps 7 and 11.
 
@@ -38,7 +38,15 @@ WorldModel:
     believed_enemy_minions:     { minion_id → { pos, faction, last_updated_tick, source } }
     believed_avatar_pos + timestamp
     believed_gem_states:        { gem_id → { capture_progress, owner, last_updated_tick } }
-    pending_commands:           { command_id → { target_pos, issued_tick, courier_id? } }
+    pending_commands:           { command_id → {
+        stage,         # &"draft" before handoff, &"dispatched" after
+        spawn_pos,     # tower spawn, where the courier originates
+        source_pos,    # believed location of the selected minions
+        target_pos,    # where those minions are ordered to go
+        minion_ids,    # the specific minions the courier carries orders for
+        courier_id,    # -1 while a draft, real minion id once dispatched
+        issued_tick,
+    } }
 ```
 
 Every piece of data is timestamped. The table renders staleness visually — fresh information is opaque, old information fades or shows an "hourglass" icon. This makes information asymmetry legible to the player.
@@ -74,15 +82,24 @@ An "Advisor" NPC stands near the table. It is the in-world entity that:
 
 ## Commands
 
-Clicking a target on the War Table does **not** move minions. It records an **intent** in the overlord's pending_commands. The Advisor then dispatches a courier carrying that order toward the target region. Minions receive the order only when the courier physically reaches them. If the courier dies en route, the order dissolves. If the army has moved, same result as Path 2: courier returns empty-handed, order undelivered.
+Clicking on the War Table does **not** move minions. The shipped flow is a **two-click selection**:
 
-Visually:
-- A **ghost flag** appears on the table at the intended target the moment the player clicks.
-- A **courier icon** animates across the table from tower toward target.
-- When the courier arrives at the target region, the ghost flag becomes a **solid flag** (order active) or disappears (no minions found).
-- If the courier dies, the ghost flag turns red then fades.
+1. **First click on a friendly piece** → adds (or removes) that minion's id from `WarTable._selected_minion_ids`. The piece highlights with a yellow rim. Multiple clicks build up a multi-piece selection.
+2. **Second click on empty map** with a non-empty selection → submits the order via `KnowledgeManager.issue_move_command(peer_id, minion_ids, target_pos)`. The selection clears.
 
-This makes the "command latency" the player's *own* latency — they can see their orders in flight.
+`issue_move_command` looks up the **believed centroid** of the selected ids in the peer's `WorldModel.believed_friendly_minions` and stamps a `pending_commands` entry as `stage = &"draft"` with `source_pos`, `target_pos`, and the `minion_ids` payload.
+
+When the overlord walks to the Advisor and presses E, `KnowledgeManager.dispatch_drafts(peer_id)` runs on the host. For each draft entry it spawns a real Courier minion at the owner's tower spawn marker, with `waypoint = source_pos` and the delivery payload (`delivery_minion_ids`, `delivery_target_pos`, `return_pos`) attached to the courier actor. The entry's `stage` flips in place to `&"dispatched"` and `courier_id` is set.
+
+The Courier travels via the inherited ChaseState. On arrival at `source_pos`, `courier_arrival_state.gd`:
+- Iterates `delivery_minion_ids`, sets each living, still-owned target's waypoint to `delivery_target_pos`.
+- Sets the courier's own `waypoint = return_pos` and clears the payload.
+- Lets ChaseState walk it back to the tower spawn.
+- On arrival home, despawns (Leave mode — Stay mode TBD per step 12).
+
+If the courier dies en route, `MinionManager.notify_minion_died` → `KnowledgeManager.notify_minion_removed` drops the entry; the visuals evaporate.
+
+If the believed source has gone stale (minions actually moved), the courier still walks to the believed location and finds nobody there — but it'll happily command any of the targeted minions that are still in the world (delivery is by id, not radius). A future iteration can tighten this to "only deliver if the target is within X meters of the believed source" so stale beliefs produce empty-handed couriers.
 
 ---
 
@@ -157,14 +174,16 @@ These are design hooks — not in scope for the first build.
 
 ### Order lifecycle on the table
 
-A move command on the table goes through **two stages** that are visually distinct, both stored in `WorldModel.pending_commands` per command_id:
+A move command on the table goes through **two stages**, both stored in `WorldModel.pending_commands` per command_id. Each stage renders **up to two arrows** — an order arrow that always exists, and a courier route arrow that only appears once dispatched:
 
-| Stage | Trigger | Visual on table |
-|---|---|---|
-| `draft` | Overlord clicks the map (any number of clicks → multiple drafts) | **Red** arrow from owner's tower spawn point to target. No midpoint pawn — no courier exists yet. |
-| `dispatched` | Overlord walks to the Advisor and presses E (`KnowledgeManager.dispatch_drafts`) | The same arrow flips to **black** in place, and a courier-color **midpoint pawn** appears. Courier minion spawns at the start point and walks to the target. |
+| Stage | Trigger | Order arrow (source → target) | Courier route arrow (spawn → source) |
+|---|---|---|---|
+| `draft` | Overlord submits a selection on the table (`KnowledgeManager.issue_move_command`) | **Red** — the planned move from believed minion location to destination. | Not drawn — no courier exists yet. |
+| `dispatched` | Overlord walks to the Advisor and presses E (`KnowledgeManager.dispatch_drafts`) | Same arrow flips to **black** in place. | **Blue** courier-color arrow appears — the runner's path from the tower to the believed source. |
 
-The arrow does NOT disappear-and-reappear at handoff — the same `command_id` entry stays put and only the `stage` field flips, so the visual reads as "color change, same arrow." When the courier despawns (delivered, killed, anything in `KnowledgeManager.notify_minion_removed`), the entry is removed and the visual evaporates.
+The order arrow does NOT disappear-and-reappear at handoff — the same `command_id` entry stays put and only the `stage` field flips, so the visual reads as "color change, same arrow." When the courier despawns (delivered, killed, anything in `KnowledgeManager.notify_minion_removed`), the entry is removed and both arrows evaporate together.
+
+The two-arrow rendering is symbolic: the order arrow is the **command** (where minions are ordered to go), the route arrow is the **logistics** (where the courier currently is, abstractly). Neither tracks the courier's actual real-time position — they're belief-layer drawings on the Advisor's table. To see ground truth, flip `WarTableMap.SHOW_REALITY` for a yellow sphere at every live courier's actual world position.
 
 Your own couriers are *suppressed* from the regular minion-sighting buckets so they don't double-render. **Rival couriers** are not — to a rival you don't see *intent*, just a minion you happen to spot, so a rival's courier shows up the same way any other rival minion does (regular pawn at its sighted position).
 
@@ -280,9 +299,9 @@ When a target is at cap, the Palantir picker shows it as **full** and prevents s
 4. ✅ **Test scene** — `scenes/test/war_table_test.tscn` runs the real `WarTable` + `OverlordActor` + `MinionManager` via `OfflineMultiplayerPeer`. Starter minions are authored as `StartingMinionSpec` Marker3D children. Full command loop is exercised end-to-end.
 5. ✅ **Broadcast-range truthing** — flip `INFINITE_BROADCAST_RANGE` off, tune range, validate staleness visuals. **Implemented**: `KnowledgeManager._observable_by` already gates sightings to within `BROADCAST_RANGE` (30m, tunable const) of any of the peer's friendly minions when the flag is `false`. Test harness `B` hotkey toggles the flag at runtime. Staleness *fade visuals* are still pending (open under "Visual / diorama polish") — currently a sighting goes from "fresh" to "stale" in the model but the diorama doesn't fade the cylinder yet.
 6. ✅ **Forced retreat + return-to-tower update** — a retreating minion's arrival flushes its sightings log. **First-pass MVP shipped.** Opt-in per `MinionType` via `can_retreat` (default `false`) and `retreat_hp_threshold` (default 0.3). On the host, `MinionActor._observe()` runs every 0.25s while in the field and stamps nearby hostiles into `_field_log`. `MinionState.check_retreat()` fires from Idle/Chase/Attack at top of `tick()` and routes into `RetreatState`, which navigates to the owner's tower spawn marker and on arrival calls `KnowledgeManager.flush_observations(peer_id, log)` then transitions back to IdleState (with a partial heal so the trigger doesn't immediately re-fire). No retreat animation set yet (uses Run); no panic state; no faction tunables. See `docs/systems/minion-ai.md` for the architecture this'll migrate into.
-7. **Courier for commands** — ghost flags, courier animation, courier success/failure. `KnowledgeManager.issue_move_command` already routes through a flag-gated path. **First-pass MVP shipped**: when `INSTANT_COMMANDS=false`, war-table clicks queue into `KnowledgeManager._pending_commands[peer_id]`. The Advisor (`advisor_actor.tscn` + `scripts/interactibles/advisor_handoff.gd`) shows a "hand orders (N)" prompt; on E it pops the queue and calls `KnowledgeManager.dispatch_courier` per command, which spawns a real Courier minion at the owner's tower spawn with `waypoint = target`. The Courier travels via inherited ChaseState; on arrival, `courier_arrival_state.gd` calls `MinionManager._assign_formation_waypoints` for the owner's squad and despawns. No ghost-flag UI, no Stay/Leave modes, no per-faction cap yet.
+7. ✅ **Courier for commands** — selection-based dispatch, courier delivery, return-home. **MVP shipped.** When `INSTANT_COMMANDS=false`, the table runs the **two-click selection flow**: click a friendly piece to add to `WarTable._selected_minion_ids`, click empty map to submit. `KnowledgeManager.issue_move_command(peer_id, minion_ids, target_pos)` records a draft entry with `spawn_pos` / `source_pos` (believed centroid of the selection) / `target_pos` / `minion_ids`. The Advisor (`advisor_actor.tscn` + `scripts/interactibles/advisor_handoff.gd`) shows a "hand orders (N)" prompt; on E it calls `KnowledgeManager.dispatch_drafts(peer_id)`, which for each draft spawns a real Courier minion at the tower spawn with `waypoint = source_pos` and stamps `delivery_minion_ids` / `delivery_target_pos` / `return_pos` onto the actor. The Courier travels via inherited ChaseState; on arrival at the source, `courier_arrival_state.gd` sets each delivery target's waypoint to `delivery_target_pos`, then sets its own `waypoint = return_pos` and walks home, despawning on arrival (Leave mode). No Stay/Leave selection at composition time, no per-faction courier cap, and no LOS/staleness gate (the courier currently delivers regardless of whether the target is still at the believed source) — those land with steps 12+.
 8. ✅ **Courier for information** — scheduled reports back from the field. **First-pass MVP shipped.** New `info_courier` minion type (`data/minions/info_courier.tres`) and actor scene; `KnowledgeManager.dispatch_info_courier(peer_id, target_pos)` host-spawns one at the owner's tower spawn with `waypoint = target`. Lifecycle: travel via inherited ChaseState → `InfoCourierObserveState` (loiter `OBSERVE_DURATION = 4s`) → `RetreatState` → flush `_field_log` → IdleState/despawn. Bypasses the draft / Advisor handoff loop — info-missions are reactive, not order-batched. No dispatch UI yet (test harness `I` hotkey is the only entry point); composition surface lands with step 9.
-9. **Command composition UI** — cursor-based minion/group select, destination click, painted path arrow, up-to-5-command stack with undo/confirm. Replaces the current click-to-move on confirm; `INSTANT_COMMANDS=true` still bypasses to the direct path for playtesting.
+9. **Command composition UI** — single-piece selection is shipped (step 7); the rest of this step is group-select (drag-select multiple at once, or marker-of-N representation), painted nav-mesh path arrow instead of straight line, an up-to-5-command stack with undo/confirm, and a separate "exit table holding plan-paper" step. Today the selection submits immediately on the second click; the composition UI will defer submission until explicit Confirm.
 10. **Paper held item** — confirming at the table exits camera and places a plan-paper in the overlord's held-item slot (faction-flavored). *Blocked on the held-items system — see `held-items.md`.*
 11. **Advisor handoff** — hand the paper to the Advisor minion in the tower; Advisor parses and queues plans. *Blocked on the Advisor command system — see `advisor.md`.*
 12. **Courier cap + delivery modes** — per-faction cap on in-field couriers; Stay vs Leave per-order mode chosen at composition. WorldModel updates only on courier return, with Stay couriers carrying status reports and Leave couriers carrying only "delivered."

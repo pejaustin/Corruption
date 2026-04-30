@@ -21,10 +21,6 @@ const CAMERA_X_ROT_MAX: float = deg_to_rad(60)
 func _interactable_ready() -> void:
 	GameState.avatar_changed.connect(func(_o, _n): _on_avatar_changed())
 
-func _on_player_exited() -> void:
-	if _is_scrying:
-		_stop_scrying()
-
 func get_prompt_text() -> String:
 	if _is_scrying:
 		return "Q to return"
@@ -86,6 +82,9 @@ func _start_scrying() -> void:
 		return
 
 	_is_scrying = true
+	# Pin the player's gaze to us so the prompt and Q-input stay routed here
+	# even though the camera is now a separate scry rig.
+	_claim_modal()
 
 	# Disable Overlord input and save camera reference
 	var player = _player_in_range
@@ -130,6 +129,7 @@ func _start_scrying() -> void:
 
 func _stop_scrying() -> void:
 	_is_scrying = false
+	_release_modal()
 
 	# Re-enable Overlord
 	if _player_in_range:

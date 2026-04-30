@@ -20,10 +20,12 @@ var believed_avatar_positions: Dictionary[int, Dictionary] = {}
 var believed_gem_states: Dictionary[StringName, Dictionary] = {}
 
 ## command_id -> {
-##   stage: StringName,        # &"draft" before handoff, &"dispatched" after
-##   start_pos: Vector3,        # where the courier will / does spawn from
-##   target_pos: Vector3,       # where the order points
-##   courier_id: int,           # -1 while a draft, real minion id once dispatched
+##   stage: StringName,         # &"draft" before handoff, &"dispatched" after
+##   spawn_pos: Vector3,         # tower spawn — where the courier originates
+##   source_pos: Vector3,        # believed location of the selected minions
+##   target_pos: Vector3,        # where those minions are ordered to go
+##   minion_ids: Array[int],     # the specific minions the courier carries orders for
+##   courier_id: int,            # -1 while a draft, real minion id once dispatched
 ##   issued_tick: int,
 ## }
 var pending_commands: Dictionary[int, Dictionary] = {}

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bn3n0bpjlw5aq"]
 
 [ext_resource type="Script" uid="uid://bt2yt44d2tomt" path="res://scenes/ui/overlord_hud.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widgets/crosshair.tscn" id="2_crosshair"]
 
 [node name="OverlordHUD" type="CanvasLayer" unique_id=1345525174]
 script = ExtResource("1_script")
@@ -22,3 +23,6 @@ grow_vertical = 0
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
+
+[node name="Crosshair" parent="." instance=ExtResource("2_crosshair")]
+unique_name_in_owner = true

@@ -1,11 +1,11 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
-[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/ZombieModel.tscn" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
 [ext_resource type="Resource" path="res://data/minions/info_courier.tres" id="2_type"]
 [ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="9_hitbox"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="10_hurt"]
-[ext_resource type="Script" path="res://scenes/actors/minion/states/info_courier_observe_state.gd" id="11_observe"]
+[ext_resource type="Script" uid="uid://bkhv2x613fx0a" path="res://scenes/actors/minion/states/info_courier_observe_state.gd" id="11_observe"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_info_courier"]
 height = 3.002

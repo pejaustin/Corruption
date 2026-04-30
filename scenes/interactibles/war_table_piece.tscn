@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://06g410qfr35t"]
+
+[ext_resource type="Material" path="res://assets/materials/Concrete020_2K-JPG/Concrete020_2K-JPG.tres" id="1_4cpgq"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_piece"]
+top_radius = 0.024
+bottom_radius = 0.03
+height = 0.15
+radial_segments = 16
+
+[sub_resource type="SphereMesh" id="SphereMesh_4cpgq"]
+radius = 0.04
+height = 0.08
+
+[node name="WarTablePiece" type="Node3D" unique_id=2128216287]
+
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=4308187]
+mesh = SubResource("CylinderMesh_piece")
+surface_material_override/0 = ExtResource("1_4cpgq")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2056506989]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0843128, 0)
+mesh = SubResource("SphereMesh_4cpgq")
+surface_material_override/0 = ExtResource("1_4cpgq")

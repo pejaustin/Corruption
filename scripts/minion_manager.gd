@@ -133,6 +133,13 @@ func _bind_rally_rpc(slot_index: int, peer_id: int, faction: int) -> void:
 	var rally: MinionRallyPoint = _rally_points.get(slot_index)
 	if rally:
 		rally.bind(peer_id, faction)
+	# Each tower has a pre-placed Advisor; bind it to the same peer so it
+	# follows the right overlord and accepts only that overlord's handoffs.
+	for n in get_tree().get_nodes_in_group(Tower.GROUP):
+		var t := n as Tower
+		if t and t.slot_index == slot_index:
+			t.bind_advisor(peer_id)
+			break
 
 @rpc("any_peer", "reliable")
 func _request_rally_bindings() -> void:
@@ -205,6 +212,11 @@ func get_minions_for_player(peer_id: int) -> Array[MinionActor]:
 		if minion.owner_peer_id == peer_id:
 			result.append(minion)
 	return result
+
+func get_minion_by_id(minion_id: int) -> MinionActor:
+	if not _minions_node:
+		return null
+	return _minions_node.get_node_or_null(str(minion_id)) as MinionActor
 
 func get_minion_count(peer_id: int) -> int:
 	return get_minions_for_player(peer_id).size()
