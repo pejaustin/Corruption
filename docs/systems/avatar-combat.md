@@ -77,6 +77,16 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Lag-tolerance audit (Tier F) | Documented checklist | `docs/technical/tier-f-implementation.md` § lag |
 | Hostile-takeover edge harness (Tier F) | Done | `scenes/test/takeover_edge_test.tscn`, `scripts/test/takeover_edge_test_controller.gd` |
 | Anti-degen LOS cooldown (Tier F) | Done — opt-in per-ability via `requires_los` | `scripts/avatar_ability.gd:requires_los`, `scripts/avatar_abilities.gd:_has_hostile_los` |
+| `StatusEffect` resource (Tier G) | Done | `scripts/combat/status_effect.gd`, `data/status/*.tres` |
+| `StatusController` per-actor (Tier G) | Done | `scripts/combat/status_controller.gd`, `scenes/actors/actor.tscn` |
+| Status sync (`active_status_ids` state-prop, Tier G) | Done | `scenes/actors/player/player_actor.tscn:30` |
+| Bleed/Burn/Corruption/Slow/Silenced statuses (Tier G) | Done — needs `visual_scene` for HUD | `data/status/{bleed,burn,corruption,slow,silenced}.tres` |
+| Damage-type resistance (Tier G) | Done — direct-hit type tagging is followup | `scenes/actors/actor.gd:damage_type_resistances` |
+| `AttackData.parryable` flag (Tier G) | Done | `scripts/combat/attack_data.gd:parryable` |
+| Boss telegraph cosmetic (Tier G) | Done — placeholder mesh; bosses must call `setup()` | `scripts/vfx/telegraph_arc.gd`, `scenes/vfx/telegraph_arc.tscn` |
+| Per-region hurtbox template (Tier G) | Done — designers retrofit per-actor in editor | `scenes/test/hurtbox_regions_template.tscn` |
+| Fey passive → StatusController (Tier G) | Done | `scripts/faction_passive_fey.gd` |
+| Boss `AttackData` authoring (Tier G) | Asset/design — author per-attack `.tres` then flip `parryable` | `data/attacks/boss_*.tres` (TBD) |
 | Downed / last-stand | TBD | — |
 
 ---

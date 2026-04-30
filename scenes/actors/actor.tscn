@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://byrgwv2o7hstx" path="res://addons/netfox.extras/state-machine/rewindable-state-machine.gd" id="2_sm"]
 [ext_resource type="Script" uid="uid://co01lndqtjjlq" path="res://scenes/actors/states/stagger_state.gd" id="3_stagger"]
 [ext_resource type="Script" uid="uid://bryow8qq502l8" path="res://scenes/actors/states/death_state.gd" id="4_death"]
+[ext_resource type="Script" path="res://scripts/combat/status_controller.gd" id="5_status"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_actor"]
 radius = 0.4
@@ -28,3 +29,6 @@ animation_name = "large-male/Stagger"
 [node name="DeathState" type="Node" parent="RewindableStateMachine" unique_id=73700415]
 script = ExtResource("4_death")
 animation_name = "large-male/Death"
+
+[node name="StatusController" type="Node" parent="." unique_id=421589142]
+script = ExtResource("5_status")

@@ -203,6 +203,33 @@ var respawn_invuln_until_tick: int = -1
 ## previous fight resumes.
 const RESPAWN_INVULN_TICKS: int = 60
 
+# --- Tier G: Status / damage-type plumbing ---
+
+## Per-actor multiplicative damage-type resistance. Empty by default → every
+## hit takes 1.0× (no resistance). Designers populate per-actor via the
+## inspector (or via a future `.tres` armor system) using StringName keys
+## that match `AttackData.damage_type` / `StatusEffect.damage_type`:
+##
+##     { &"fire": 0.5, &"corruption": 0.75 }
+##
+## consumed at the bottom of `take_damage` — the multiplier is applied AFTER
+## block/parry resolution and AFTER the per-attack `damage_mult` so reductions
+## stack predictably with everything else. Missing keys default to 1.0.
+##
+## The StatusController sets `_pending_damage_type` on the victim before
+## firing damage_per_tick so status DOTs flow through this reduction too.
+## Direct hits set `_pending_damage_type` from the swinging state's
+## AttackData (see attack states). Sources without a known type behave as
+## physical (the default lookup is 1.0 unless `&"physical"` is in the dict).
+@export var damage_type_resistances: Dictionary[StringName, float] = {}
+
+## StatusController child node — owns the live status state for this actor.
+## Resolved lazily on first read; null is acceptable on actor scenes that
+## haven't yet been retrofitted with the controller (Tier G ships the
+## controller on PlayerActor and MinionActor; sub-actor scenes that don't
+## care about statuses can omit it).
+var _status_controller: StatusController = null
+
 var _state_machine: RewindableStateMachine
 var _model: Node3D
 var _animation_player: AnimationPlayer
@@ -216,7 +243,20 @@ func _ready() -> void:
 	hp = get_max_hp()
 	_state_machine.on_display_state_changed.connect(_on_display_state_changed)
 	_state_machine.state = &"IdleState"
+	_resolve_status_controller()
 	_check_combat_components()
+
+## Cache the optional StatusController child node. Tier G actor scenes drop
+## a StatusController as a direct child; pre-Tier-G scenes leave it absent
+## and the controller stays null (every consumer null-checks).
+func _resolve_status_controller() -> void:
+	_status_controller = get_node_or_null(^"StatusController") as StatusController
+
+## Public accessor — used by external callers (faction passives, ability
+## effects) to apply / query statuses without poking at the private field.
+## Returns null if the actor scene has no StatusController child.
+func get_status_controller() -> StatusController:
+	return _status_controller
 
 # --- Virtual methods (override in subtypes) ---
 
@@ -284,11 +324,20 @@ func take_damage(amount: int, source: Node = null) -> void:
 	var posture_mult: float = 1.0
 	if has_meta(&"_pending_posture_mult"):
 		posture_mult = float(get_meta(&"_pending_posture_mult"))
+	# Tier G: per-attack parryable flag, set by attack states from
+	# `AttackData.parryable` before calling take_damage. Defaults to true so
+	# legacy callers (and player attacks) keep the existing parry behavior.
+	# Boss attacks that author `parryable = false` on their AttackData skip
+	# the parry-window check entirely — the hit lands as a normal blocked
+	# hit (or full hit if not blocking).
+	var parryable: bool = true
+	if has_meta(&"_pending_parryable"):
+		parryable = bool(get_meta(&"_pending_parryable"))
 	if source_actor and is_instance_valid(source_actor):
 		if is_blocking_against(source_actor.global_position):
 			# Active BlockState + facing the attacker. Now check parry window.
 			var since_press: int = NetworkTime.tick - block_press_tick
-			if block_press_tick >= 0 and since_press >= 0 and since_press <= PARRY_WINDOW_TICKS:
+			if parryable and block_press_tick >= 0 and since_press >= 0 and since_press <= PARRY_WINDOW_TICKS:
 				# Parry: zero damage to victim, posture to attacker, force
 				# attacker into recovery. Local FX hook fires on both sides.
 				was_parried = true
@@ -314,6 +363,17 @@ func take_damage(amount: int, source: Node = null) -> void:
 	else:
 		# Source unknown — treat as unblocked, accumulate posture as normal.
 		gain_posture(int(round(HIT_POSTURE_PER_HIT * posture_mult)))
+
+	# Tier G — damage-type resistance multiplier. Applied AFTER block/parry
+	# resolution and posture so reductions stack predictably. Damage type
+	# defaults to physical when no `_pending_damage_type` is set; missing keys
+	# in `damage_type_resistances` default to 1.0 (no resistance).
+	if final_damage > 0 and not damage_type_resistances.is_empty():
+		var dtype: StringName = &"physical"
+		if has_meta(&"_pending_damage_type"):
+			dtype = StringName(get_meta(&"_pending_damage_type"))
+		var resist: float = damage_type_resistances.get(dtype, 1.0)
+		final_damage = int(round(final_damage * resist))
 
 	hp = max(0, hp - final_damage)
 	hp_changed.emit(hp)
@@ -479,12 +539,29 @@ func apply_movement_slow(multiplier: float, duration_ticks: int) -> void:
 		_slow_until_tick = until
 
 ## Movement velocity multiplier this actor is under right now. 1.0 normally;
-## `_slow_multiplier` while slowed. Move states call this to scale walk/run
-## speeds. Local helper — slow timing is host-driven and resolves
-## deterministically per-tick (NetworkTime.tick is shared).
+## `_slow_multiplier` while slowed (Tier E Eldritch passive); further
+## multiplied by the StatusController's aggregate when present (Tier G
+## status pipeline). Move states call this to scale walk/run speeds.
+##
+## Local helper — slow timing is host-driven and resolves deterministically
+## per-tick (NetworkTime.tick is shared). StatusController's aggregate is
+## also deterministic on every peer because the active list is rollback-
+## synced.
 func get_movement_speed_mult() -> float:
+	var m: float = 1.0
 	if NetworkTime.tick < _slow_until_tick:
-		return _slow_multiplier
+		m *= _slow_multiplier
+	if _status_controller:
+		m *= _status_controller.get_movement_mult()
+	return m
+
+## Tier G — attack-speed multiplier from active statuses. Subclasses
+## (AvatarActor) override to layer their own faction-driven multiplier on
+## top; the base Actor pulls only from the StatusController. Attack states
+## consult this on entry to drive `AnimationPlayer.speed_scale`.
+func get_status_attack_speed_mult() -> float:
+	if _status_controller:
+		return _status_controller.get_attack_speed_mult()
 	return 1.0
 
 # --- Action gating (see docs/systems/action-gating.md) ---
@@ -686,6 +763,8 @@ func _rollback_tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	_decay_posture()
 	_decay_combo()
 	_drain_passive_queued_hits()
+	if _status_controller:
+		_status_controller.tick_active(delta)
 	if _faction_passive:
 		_faction_passive.on_tick(self, delta)
 

@@ -57,6 +57,12 @@ class_name AttackData extends Resource
 ## faction abilities set their own (fire, corruption, divine, nature, etc.).
 @export var damage_type: StringName = &"physical"
 
+## Tier G — when false, this swing skips the parry-window check inside the
+## victim's `take_damage`. Defaults to true (player attacks remain parryable).
+## Boss attacks that should be unparryable (e.g. a windmill spin or grab) set
+## this to false; the hit then applies as a normal blocked or full hit.
+@export var parryable: bool = true
+
 # --- Hitbox window ---
 
 ## Hitbox activates at this fraction of the animation. Mirrors the legacy
