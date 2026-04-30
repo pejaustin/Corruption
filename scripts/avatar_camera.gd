@@ -20,6 +20,24 @@ const THIRD_PERSON_OFFSET: Vector3 = Vector3(0, 0.5, 4)
 ## off-screen.
 const SHAKE_AMPLITUDE_CAP: float = 0.4
 
+## Critically-damped chase rate for the lock-on yaw assist. Higher = snappier;
+## tuned so a 90° swing settles in ~0.2s without overshoot.
+const LOCK_FOLLOW_RATE: float = 12.0
+## Vertical bias used when sampling the locked target's chest position for the
+## yaw/pitch math. Mirrors Targeting.TARGET_CHEST_OFFSET on purpose.
+const LOCK_TARGET_OFFSET_Y: float = 1.4
+## Soft-lock yaw assist scalar. 0 = off (Tier B default — feature ships
+## disabled until playtested). 1 = fully snaps to soft target. Wired but
+## intentionally inert; flip in inspector when iterating on feel.
+@export var soft_lock_strength: float = 0.0
+
+@export var targeting: Targeting
+
+## When true and `targeting.current_target` is valid, the camera mount yaws
+## toward the target each frame. Toggled by Targeting.acquire/release; never
+## written by the camera itself.
+var look_at_target: bool = false
+
 var controlling_peer_id: int = -1
 
 var _shake_remaining: float = 0.0
@@ -41,7 +59,38 @@ func _process(delta: float) -> void:
 	if controlling_peer_id == multiplayer.get_unique_id():
 		var total = Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
 		rotate_camera(total * CAMERA_JOYSTICK_ROTATION_SPEED * delta)
+		_tick_lock_follow(delta)
 	_tick_shake(delta)
+
+## Damped yaw chase toward the locked target. Additive on top of player input
+## so manual orbiting still works during a hard-lock. Soft-lock contributes a
+## scaled-down version of the same correction (0 by default — see
+## `soft_lock_strength`). No-op when targeting/target are missing.
+func _tick_lock_follow(delta: float) -> void:
+	if targeting == null or targeting.current_target == null:
+		return
+	if not is_instance_valid(targeting.current_target):
+		return
+	var strength: float = 0.0
+	if look_at_target:
+		strength = 1.0
+	elif soft_lock_strength > 0.0:
+		strength = soft_lock_strength
+	else:
+		return
+	var target_pos: Vector3 = targeting.current_target.global_position + Vector3(0.0, LOCK_TARGET_OFFSET_Y, 0.0)
+	var origin: Vector3 = camera_mount.global_position
+	var to_target: Vector3 = target_pos - origin
+	to_target.y = 0.0
+	if to_target.length_squared() < 0.0001:
+		return
+	# Desired global yaw: camera looks down -Z toward the target. atan2 of (x,z)
+	# gives the rotation around Y that turns -Z into the desired direction.
+	var desired_yaw: float = atan2(to_target.x, to_target.z) + PI
+	var current_yaw: float = camera_mount.rotation.y
+	var diff: float = wrapf(desired_yaw - current_yaw, -PI, PI)
+	var t: float = clampf(LOCK_FOLLOW_RATE * delta * strength, 0.0, 1.0)
+	camera_mount.rotation.y = current_yaw + diff * t
 
 ## Add a camera-shake pulse. Amplitudes stack (so a heavy hit immediately
 ## after a light one feels stronger), and the longer of the two durations

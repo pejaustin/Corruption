@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://dyl7bol73bpei" path="res://scenes/ui/avatar_hud.tscn" id="11_hud"]
 [ext_resource type="Script" uid="uid://du8oa62cayfhx" path="res://scenes/actors/player/states/roll_state.gd" id="12_f2kxo"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
+[ext_resource type="Script" path="res://scripts/combat/targeting.gd" id="13_target"]
+[ext_resource type="PackedScene" uid="uid://btblockonreticle" path="res://scenes/ui/lock_on_reticle.tscn" id="14_reticle"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
 radius = 0.2
@@ -63,9 +65,16 @@ shape = SubResource("CapsuleShape3D_avatar_hurt")
 
 [node name="AvatarCamera" parent="." index="2" unique_id=108768714 instance=ExtResource("7_camera")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+targeting = NodePath("../Targeting")
 
 [node name="AvatarInput" type="Node" parent="." index="3" unique_id=597958932]
 script = ExtResource("8_input")
+
+[node name="Targeting" type="Node" parent="." index="4" unique_id=748392104 node_paths=PackedStringArray("owner_actor", "camera")]
+script = ExtResource("13_target")
+owner_actor = NodePath("..")
+camera = NodePath("../AvatarCamera")
+reticle_scene = ExtResource("14_reticle")
 
 [node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
 script = ExtResource("9_attack")

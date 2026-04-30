@@ -11,6 +11,18 @@ const JUMP_VELOCITY: float = 6.5
 var player: AvatarActor:
 	get: return actor as AvatarActor
 
+## True iff the avatar's local Targeting child has a hard-lock target.
+## Local-only — remote peers see is_locked = false on their copies of the
+## avatar, so animation/movement code that branches on this still works.
+func is_target_locked() -> bool:
+	return player.targeting != null and player.targeting.is_locked and is_instance_valid(player.targeting.current_target)
+
+## Locked-target world position with a chest-height bias for aim math. Caller
+## is expected to have already checked is_target_locked().
+func locked_target_position() -> Vector3:
+	var t: Actor = player.targeting.current_target
+	return t.global_position + Vector3(0.0, Targeting.TARGET_CHEST_OFFSET.y, 0.0)
+
 func get_movement_input() -> Vector2:
 	return player.avatar_input.input_dir
 

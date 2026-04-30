@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://btblockonreticle"]
+
+[ext_resource type="Script" path="res://scripts/ui/lock_on_reticle.gd" id="1_reticle"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_reticle"]
+size = Vector2(32, 32)
+
+[node name="LockOnReticle" type="Node3D"]
+script = ExtResource("1_reticle")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+billboard = 1
+no_depth_test = true
+fixed_size = true
+pixel_size = 0.005
+texture = SubResource("PlaceholderTexture2D_reticle")
+modulate = Color(1, 0.85, 0.2, 0.9)

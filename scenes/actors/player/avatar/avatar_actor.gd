@@ -21,6 +21,7 @@ const WATCHER_ORB_EMISSION_ENERGY: float = 2.0
 @onready var avatar_input: AvatarInput = $AvatarInput
 @onready var avatar_camera: AvatarCamera = $AvatarCamera
 @onready var watcher_label: Label3D = $WatcherLabel
+@onready var targeting: Targeting = $Targeting
 
 var controlling_peer_id: int = -1
 var is_dormant: bool = true
@@ -137,6 +138,10 @@ func deactivate() -> void:
 	rollback_synchronizer.process_settings()
 	_set_dormant_visual(true)
 	velocity = Vector3.ZERO
+	# Drop any active lock when the avatar is unclaimed — the reticle and
+	# camera-follow are tied to the previous controlling peer.
+	if targeting:
+		targeting.release()
 	_state_machine.transition(&"IdleState")
 
 func _set_dormant_visual(dormant: bool) -> void:
@@ -162,6 +167,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			abilities.activate_ability(1)
 		elif event.is_action_pressed("item_2"):
 			abilities.activate_ability(2)
+	# Local-only targeting input. These never enter netfox state — see
+	# scripts/combat/targeting.gd for the rationale.
+	if targeting:
+		if event.is_action_pressed("toggle_lock"):
+			targeting.toggle_lock()
+		elif event.is_action_pressed("cycle_target_left"):
+			if targeting.is_locked:
+				targeting.cycle_target(-1)
+		elif event.is_action_pressed("cycle_target_right"):
+			if targeting.is_locked:
+				targeting.cycle_target(1)
 
 # --- Watchers ---
 

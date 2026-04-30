@@ -52,7 +52,9 @@ Cross-references: [Action Gating](../technical/action-gating.md) · [Attack Hitb
 | Parry | TBD | — |
 | Stamina meter | TBD | — |
 | Posture meter (Sekiro-style) | TBD | — |
-| Lock-on / target tracking | TBD | — |
+| Lock-on / target tracking | Done (hard-lock + cycle); soft-lock plumbed but disabled | `scripts/combat/targeting.gd`, `scripts/avatar_camera.gd:_tick_lock_follow`, `scenes/ui/lock_on_reticle.tscn` |
+| Strafe locomotion (target-relative basis) | Done — needs strafe clips for full feel | `scenes/actors/player/states/move_state.gd` |
+| Directional roll | Done — needs `roll_back/_left/_right` clips | `scenes/actors/player/states/roll_state.gd` |
 | Camera shake / FOV punch | Done | `scripts/avatar_camera.gd:shake()` + attack/avatar hookups |
 | Hitstop | Done | `Actor.hitstop_until_tick` state-prop; freezes `AnimationPlayer.speed_scale` per tick |
 | Hit FX (particles, sound) | Partial — code only, asset wiring pending | `scripts/combat/hit_fx.gd` + `scenes/vfx/hit_spark_*.tscn`; sound deferred |
