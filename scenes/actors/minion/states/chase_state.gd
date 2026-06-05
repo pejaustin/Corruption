@@ -11,6 +11,13 @@ const STUCK_PROGRESS_RATIO: float = 0.25
 ## treated as arrived. Long enough to ride out a single corner-turn or
 ## momentary deflection, short enough that pile-ups settle quickly.
 const STUCK_DURATION: float = 0.5
+## Stuck-arrived only fires when the agent is at most this far from its
+## destination. Beyond this, RVO orbits and chokepoint stalls are normal —
+## giving up early causes minions to halt mid-path while still nowhere near
+## the waypoint, and ping-pongs couriers between Chase ↔ arrival_state when
+## the navmesh edge keeps them orbiting their spawn area. Inside this radius,
+## the agent is "as good as arrived" and committing to idle/despawn is fine.
+const STUCK_NEAR_DISTANCE: float = 3.5
 
 var _stuck_time: float = 0.0
 
@@ -57,6 +64,25 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
+	# Path-end commit: if our computed path's final point is meaningfully short
+	# of the destination AND we've reached it, we're as close as the navmesh
+	# allows — treat as arrived. Catches the "slot inside a wall / on a tiny
+	# island" case where is_navigation_finished never fires because
+	# target_position is unreachable. Without this the minion would orbit at
+	# its path-end forever, since stuck-detection's STUCK_NEAR_DISTANCE gate
+	# (3.5m) doesn't fire when the unreachable slot is further than that.
+	var path_end: Vector3 = nav.get_final_position()
+	var to_path_end: float = actor.global_position.distance_to(path_end)
+	var path_end_to_dest: float = path_end.distance_to(destination)
+	if to_path_end < 1.0 and path_end_to_dest > nav.target_desired_distance + 0.5:
+		actor.velocity.x = 0
+		actor.velocity.z = 0
+		physics_move()
+		if minion.minion_trait != &"courier":
+			minion.waypoint = Vector3.ZERO
+		state_machine.transition(&"IdleState")
+		return
+
 	var next_pos: Vector3 = nav.get_next_path_position()
 	var dir := next_pos - actor.global_position
 	dir.y = 0
@@ -77,11 +103,14 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		# agent has no closing speed regardless of how fast it's sliding
 		# sideways. Skip when chasing a live target so units don't give
 		# up on a fleeing enemy during a momentary pile-up at a chokepoint.
+		# Also gated by distance: outside STUCK_NEAR_DISTANCE we keep trying
+		# (lateral motion at long range is normal corner-cutting / chokepoint
+		# routing — not a pile-up signal).
 		if target == null:
 			var to_dest := destination - actor.global_position
 			to_dest.y = 0
 			var to_dest_len: float = to_dest.length()
-			if to_dest_len > 0.01:
+			if to_dest_len > 0.01 and to_dest_len <= STUCK_NEAR_DISTANCE:
 				var to_dest_dir: Vector3 = to_dest / to_dest_len
 				var v: Vector3 = minion.safe_velocity
 				v.y = 0
@@ -92,8 +121,17 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 						actor.velocity.x = 0
 						actor.velocity.z = 0
 						physics_move()
+						# Latch the current spot as "arrived" so IdleState's
+						# distance-to-waypoint check doesn't immediately bounce
+						# us back to chase. Couriers keep their original
+						# waypoint — courier_arrival_state needs return_pos
+						# intact to check the return zone overlap.
+						if minion.minion_trait != &"courier":
+							minion.waypoint = Vector3.ZERO
 						state_machine.transition(&"IdleState")
 						return
 				else:
 					_stuck_time = 0.0
+			else:
+				_stuck_time = 0.0
 	physics_move()

@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://csumonsl0tscn1"]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://csumonsl0t001" path="res://scripts/interactibles/summoning_slot.gd" id="2_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape_summon_slot"]
+size = Vector3(0.3, 0.3, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_summon_slot"]
+size = Vector3(0.18, 0.18, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_summon_slot"]
+albedo_color = Color(0.6, 0.4, 0.85, 1)
+metallic = 0.3
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.5, 0.3, 0.95, 1)
+emission_energy_multiplier = 0.5
+
+[node name="SummoningSlot" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="CollisionShape3D" parent="." index="0"]
+shape = SubResource("BoxShape_summon_slot")
+
+[node name="Mesh" type="MeshInstance3D" parent="Model" index="0"]
+mesh = SubResource("BoxMesh_summon_slot")
+surface_material_override/0 = SubResource("StandardMaterial_summon_slot")

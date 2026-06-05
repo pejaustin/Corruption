@@ -1,6 +1,12 @@
-[gd_scene format=3 uid="uid://06g410qfr35t"]
+[gd_scene load_steps=8 format=3 uid="uid://06g410qfr35t"]
 
-[ext_resource type="Material" path="res://assets/materials/Concrete020_2K-JPG/Concrete020_2K-JPG.tres" id="1_4cpgq"]
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://c2wartabp1ece1" path="res://scripts/interactibles/war_table_piece.gd" id="2_script"]
+[ext_resource type="Material" path="res://assets/materials/Concrete020_2K-JPG/Concrete020_2K-JPG.tres" id="3_mat"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_piece_hit"]
+radius = 0.04
+height = 0.22
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_piece"]
 top_radius = 0.024
@@ -8,17 +14,46 @@ bottom_radius = 0.03
 height = 0.15
 radial_segments = 16
 
-[sub_resource type="SphereMesh" id="SphereMesh_4cpgq"]
+[sub_resource type="SphereMesh" id="SphereMesh_top"]
 radius = 0.04
 height = 0.08
 
-[node name="WarTablePiece" type="Node3D" unique_id=2128216287]
+[node name="WarTablePiece" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
 
-[node name="Mesh" type="MeshInstance3D" parent="." unique_id=4308187]
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+shape = SubResource("CapsuleShape_piece_hit")
+
+[node name="Mesh" type="MeshInstance3D" parent="Model" index="0"]
 mesh = SubResource("CylinderMesh_piece")
-surface_material_override/0 = ExtResource("1_4cpgq")
+surface_material_override/0 = ExtResource("3_mat")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2056506989]
+[node name="Top" type="MeshInstance3D" parent="Model" index="1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0843128, 0)
-mesh = SubResource("SphereMesh_4cpgq")
-surface_material_override/0 = ExtResource("1_4cpgq")
+mesh = SubResource("SphereMesh_top")
+surface_material_override/0 = ExtResource("3_mat")
+
+[node name="CountBadge" type="Label3D" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+pixel_size = 0.0008
+font_size = 64
+outline_size = 16
+modulate = Color(1, 1, 0.7, 1)
+outline_modulate = Color(0, 0, 0, 1)
+text = "1"
+
+[node name="StaleBadge" type="Label3D" parent="." index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+pixel_size = 0.0008
+font_size = 64
+outline_size = 16
+modulate = Color(1, 0.45, 0.45, 1)
+outline_modulate = Color(0, 0, 0, 1)
+text = "?"

@@ -3,11 +3,13 @@
 [ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://e2apbn3oog5j" path="res://scripts/interactibles/summoning_circle.gd" id="2_circle"]
 [ext_resource type="PackedScene" uid="uid://dqenbqq12tohd" path="res://assets/world/env/table.glb" id="3_table"]
+[ext_resource type="PackedScene" uid="uid://btnjokehfc2y7" path="res://scenes/interactibles/summoning_slot.tscn" id="4_slot"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ttk50"]
 size = Vector3(4.0577393, 2.2612915, 5.5260925)
 
 [node name="SummoningCircle" unique_id=352341713 instance=ExtResource("1_base")]
+collision_layer = 0
 script = ExtResource("2_circle")
 
 [node name="CollisionShape3D" parent="." index="0" unique_id=2111479269]
@@ -15,3 +17,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02557373, 1.1629333, 0.0681
 shape = SubResource("BoxShape3D_ttk50")
 
 [node name="table" parent="Model" parent_id_path=PackedInt32Array(1560310609) index="0" unique_id=1902748539 instance=ExtResource("3_table")]
+
+[node name="Slot0" parent="." index="2" unique_id=401414536 instance=ExtResource("4_slot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 1.8846487, 1.0422521)
+slot_index = 0
+
+[node name="Slot1" parent="." index="3" unique_id=2045463550 instance=ExtResource("4_slot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8627733, 0)
+slot_index = 1
+
+[node name="Slot2" parent="." index="4" unique_id=1594963175 instance=ExtResource("4_slot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.50111806, 1.876048, -1.3236461)
+slot_index = 2

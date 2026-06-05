@@ -30,13 +30,39 @@ var owner_peer_id: int = -1
 var minion_type_id: StringName = &""
 var minion_trait: StringName = &""
 var waypoint: Vector3 = Vector3.ZERO
-## Courier-only payload. Populated by KnowledgeManager.dispatch_drafts when the
-## courier is spawned. courier_arrival_state reads these on arrival at the
-## believed source position to deliver the move-to-target order to a specific
-## set of minions, then sets `waypoint = return_pos` to walk home and despawn.
-var delivery_minion_ids: Array[int] = []
-var delivery_target_pos: Vector3 = Vector3.INF
+## Courier-only payload. Populated by KnowledgeManager.dispatch_readied when
+## the courier is spawned. courier_arrival_state pops the head leg as the
+## courier arrives at each cluster, dispatches every sub_order at that source
+## (each sub_order may target a different position), and sets `waypoint` to
+## the next leg's source_pos (or return_pos if the queue is empty).
+##
+## Each leg: {
+##     source_pos: Vector3,
+##     sub_orders: Array[{minion_ids: Array[int], target_pos: Vector3}],
+## }
+## Legs are TSP-greedy ordered from the tower spawn at dispatch time;
+## colocated minions (within ~3m world) share a leg even when their targets
+## differ. A leg with multiple sub_orders (= multiple distinct targets being
+## delivered to one source cluster) is the multi-order batching case driven
+## by MinionType.max_orders.
+var delivery_legs: Array[Dictionary] = []
 var return_pos: Vector3 = Vector3.INF
+## Per-leg failures accumulated during the trip. Each entry: {minion_ids,
+## target_pos, leg_source}. Reported to KnowledgeManager on home arrival so
+## the overlord knows their belief was stale and which orders went undelivered.
+var delivery_failures: Array[Dictionary] = []
+## Mirrored from MinionType — read by courier_arrival_state to decide visibility
+## and loiter time at each leg's source. Default zero (non-courier minions).
+var courier_visual_range: float = 0.0
+var courier_wait_seconds: float = 0.0
+## Optional Area3D the courier should despawn upon entering. Set by
+## KnowledgeManager.dispatch_readied when the tower's CourierSpawn is an Area3D
+## (the canonical setup). Zone overlap is the authoritative arrival test
+## because point-distance checks fail when CourierSpawn sits on a slope or at
+## slightly different Y than the navmesh polygon under the courier's feet.
+## Falls back to the distance check when null (e.g. test harness using a plain
+## Marker3D as a spawn).
+var return_zone: Area3D = null
 ## Set by _on_link_reached when the nav agent hits a NavigationLink3D in the
 ## "jumpable" group. JumpState reads this to aim its arc.
 var jump_target: Vector3 = Vector3.INF
@@ -74,6 +100,10 @@ var _target_rot: float
 
 var _minion_manager: Node
 var _aggro_ring: MeshInstance3D
+## Translucent sphere visualization of `courier_visual_range`, toggleable via
+## DebugManager.show_courier_visual_range. Built lazily in apply_type when the
+## type has a non-zero range (so non-couriers don't carry the overhead).
+var _visual_range_overlay: MeshInstance3D
 ## Throttle for the host-side observation sweep — runs every OBSERVE_INTERVAL
 ## seconds rather than every physics tick to keep the actor loop cheap.
 const OBSERVE_INTERVAL: float = 0.25
@@ -160,7 +190,42 @@ func apply_type(mtype: MinionType) -> void:
 	minion_trait = mtype.trait_tag
 	can_retreat = mtype.can_retreat
 	retreat_hp_threshold = mtype.retreat_hp_threshold
+	courier_visual_range = mtype.courier_visual_range
+	courier_wait_seconds = mtype.courier_wait_seconds
 	_refresh_aggro_ring()
+	_refresh_visual_range_overlay()
+
+func _refresh_visual_range_overlay() -> void:
+	## Tear down or rebuild the translucent visual-range sphere whenever
+	## courier_visual_range changes. Non-couriers (range = 0) get nothing.
+	if courier_visual_range <= 0.0:
+		if _visual_range_overlay and is_instance_valid(_visual_range_overlay):
+			_visual_range_overlay.queue_free()
+			_visual_range_overlay = null
+		return
+	if _visual_range_overlay == null:
+		_visual_range_overlay = MeshInstance3D.new()
+		_visual_range_overlay.name = "VisualRangeOverlay"
+		_visual_range_overlay.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(_visual_range_overlay)
+		DebugManager.courier_visual_range_toggled.connect(_on_visual_range_toggled)
+	var mesh := SphereMesh.new()
+	mesh.radius = courier_visual_range
+	mesh.height = courier_visual_range * 2.0
+	mesh.radial_segments = 32
+	mesh.rings = 16
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.6, 0.85, 1.0, 0.18)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mesh.surface_set_material(0, mat)
+	_visual_range_overlay.mesh = mesh
+	_visual_range_overlay.visible = DebugManager.show_courier_visual_range
+
+func _on_visual_range_toggled(visible: bool) -> void:
+	if _visual_range_overlay and is_instance_valid(_visual_range_overlay):
+		_visual_range_overlay.visible = visible
 
 func get_max_hp() -> int:
 	return max_hp_value
@@ -204,6 +269,26 @@ func _physics_process(delta: float) -> void:
 		if _observe_timer >= OBSERVE_INTERVAL:
 			_observe_timer = 0.0
 			_observe()
+
+	# Courier homeward despawn: if our body's CollisionShape3D is overlapping
+	# the return_zone Area3D's CollisionShape3D AND we have nothing left to
+	# deliver, we're home — despawn. Runs every host tick regardless of state
+	# machine so we don't depend on ChaseState transitioning to arrival_state
+	# (which can fail when the navmesh edge keeps the courier orbiting outside
+	# the nav-finished threshold). return_zone is only set for couriers, so
+	# the null guard implicitly skips every other minion type.
+	#
+	# Before despawning, flush any accumulated delivery_failures into the
+	# owner's WorldModel so the overlord gets a "missing" report for orders
+	# the courier couldn't deliver.
+	if return_zone != null and is_instance_valid(return_zone) and delivery_legs.is_empty():
+		if return_zone.overlaps_body(self):
+			if not delivery_failures.is_empty():
+				KnowledgeManager.notify_delivery_failures(owner_peer_id, delivery_failures)
+				delivery_failures.clear()
+			if _minion_manager and _minion_manager.has_method("notify_minion_died"):
+				_minion_manager.notify_minion_died(self)
+				return
 
 	_state_machine._rollback_tick(delta, 0, true)
 

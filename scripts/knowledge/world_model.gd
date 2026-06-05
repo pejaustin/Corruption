@@ -30,6 +30,13 @@ var believed_gem_states: Dictionary[StringName, Dictionary] = {}
 ## }
 var pending_commands: Dictionary[int, Dictionary] = {}
 
+## Reports brought home by couriers when their targeted minions weren't at
+## the believed source location. Each entry: {tick, leg_source, minion_ids,
+## target_pos, courier_id}. Read by HUD code (or the war table) to surface
+## "your orders for these minions weren't delivered" to the overlord. Stored
+## in arrival order, never trimmed automatically.
+var failure_messages: Array[Dictionary] = []
+
 func update_minion_sighting(
 	minion_id: int,
 	pos: Vector3,

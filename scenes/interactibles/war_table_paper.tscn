@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://cwartabppr0001"]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://c7wartabp1ppr1" path="res://scripts/interactibles/war_table_paper.gd" id="2_script"]
+[ext_resource type="Material" path="res://assets/materials/Paper006_2K-JPG/Paper006_2K-JPG.tres" id="3_paper"]
+
+[sub_resource type="BoxShape3D" id="BoxShape_paper_hit"]
+size = Vector3(0.4, 0.05, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_paper"]
+size = Vector3(0.4, 0.01, 0.3)
+
+[node name="WarTablePaper" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+shape = SubResource("BoxShape_paper_hit")
+
+[node name="Mesh" type="MeshInstance3D" parent="Model" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+mesh = SubResource("BoxMesh_paper")
+surface_material_override/0 = ExtResource("3_paper")

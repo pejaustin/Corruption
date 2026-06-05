@@ -1,9 +1,13 @@
 extends Interactable
 
 ## Mounted on advisor_actor.tscn as a child Area3D. Lets the owning overlord
-## hand pending War Table commands to the Advisor. The Advisor then dispatches
+## hand readied War Table commands to the Advisor. The Advisor then dispatches
 ## one Courier per command from the owner's tower spawn point, with each
 ## courier's waypoint set to the command's target.
+##
+## Pipeline: drafts are recorded at the war-table MapTarget; the Paper on the
+## table promotes drafts → readied; the Advisor (this handoff) promotes readied
+## → dispatched. Drafts still on the table are NOT touched by this interaction.
 ##
 ## When KnowledgeManager.INSTANT_COMMANDS is true (default), War Table clicks
 ## skip this loop entirely — see knowledge_manager.gd:issue_move_command.
@@ -13,10 +17,10 @@ func get_prompt_text() -> String:
 		return "Advisor"
 	if not _is_owning_overlord_in_range():
 		return "Another overlord's Advisor"
-	var draft_count := KnowledgeManager.get_draft_count(_player_in_range.name.to_int())
-	if draft_count == 0:
+	var ready_count := KnowledgeManager.get_readied_count(_player_in_range.name.to_int())
+	if ready_count == 0:
 		return "E to confer with Advisor"
-	return "E to hand orders (%d)" % draft_count
+	return "E to hand orders (%d)" % ready_count
 
 func get_prompt_color() -> Color:
 	return Color(0.95, 0.85, 0.55)
@@ -39,7 +43,7 @@ func _request_handoff_rpc(peer_id: int) -> void:
 	# Only the owner of the drafts may hand them off.
 	if sender != peer_id:
 		return
-	KnowledgeManager.dispatch_drafts(peer_id)
+	KnowledgeManager.dispatch_readied(peer_id)
 
 func _is_owning_overlord_in_range() -> bool:
 	## The Advisor only accepts orders from its owner. Owner is identified by

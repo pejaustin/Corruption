@@ -43,14 +43,33 @@ func _gather() -> void:
 func _input(event: InputEvent) -> void:
 	if _overridden:
 		return
-	if event is InputEventMouseMotion and is_multiplayer_authority() and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	if not _is_rig_locally_active():
+		return
+	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		rotate_camera(event.relative * CAMERA_MOUSE_ROTATION_SPEED)
 
 func get_input_joystick(delta: float) -> void:
 	if _overridden:
 		return
+	if not _is_rig_locally_active():
+		return
 	var total = Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
 	rotate_camera(total * CAMERA_JOYSTICK_ROTATION_SPEED * delta)
+
+func _is_rig_locally_active() -> bool:
+	## Mouse + joystick input only drives the camera when the local peer is
+	## actually controlling this rig. For an OverlordActor, that means the
+	## rig is its peer's AND _overlord_active is true (false during avatar
+	## possession or palantir scry — both call set_overlord_active(false)).
+	## Without this gate, the overlord body kept rotating while in avatar/scry
+	## mode; invisible to the local player (camera not current) but visible
+	## to remote peers via the rollback-synced rotation.
+	if not is_multiplayer_authority():
+		return false
+	var rig := get_parent()
+	if rig is OverlordActor:
+		return (rig as OverlordActor)._overlord_active
+	return true
 
 func _process(delta: float) -> void:
 	get_input_joystick(delta)

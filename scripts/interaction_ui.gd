@@ -27,6 +27,14 @@ func set_prompt(source: Interactable, text: String, color: Color = Color.WHITE) 
 	_current_source = source
 	if _prompt_label == null or not is_instance_valid(_prompt_label):
 		return
+	# An empty prompt is the way an Interactable says "I'm focused but have
+	# nothing to offer right now" (foreign-owner war table, foreign-faction
+	# piece, no resources to summon, …). Hide the label outright instead of
+	# showing an empty colored span — keeps the HUD clean.
+	if text.is_empty():
+		_prompt_label.text = ""
+		_prompt_label.visible = false
+		return
 	var hex := color.to_html(false)
 	_prompt_label.text = "[center][color=#%s]%s[/color][/center]" % [hex, text]
 	_prompt_label.visible = true

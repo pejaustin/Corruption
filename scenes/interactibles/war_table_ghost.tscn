@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://c4wartabp1ghs02"]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://c3wartabp1ghst1" path="res://scripts/interactibles/war_table_ghost.gd" id="2_script"]
+
+[sub_resource type="SphereShape3D" id="SphereShape_ghost_hit"]
+radius = 0.05
+
+[sub_resource type="SphereMesh" id="SphereMesh_ghost_default"]
+radius = 0.04
+height = 0.08
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_ghost_default"]
+albedo_color = Color(0.7, 0.7, 0.75, 0.55)
+metallic = 0.0
+roughness = 0.6
+transparency = 1
+
+[node name="WarTableGhost" node_paths=PackedStringArray("visual_root") instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+visual_root = NodePath("Visual")
+
+[node name="CollisionShape3D" parent="." index="0"]
+shape = SubResource("SphereShape_ghost_hit")
+
+[node name="Visual" type="Node3D" parent="." index="2"]
+
+[node name="DefaultMesh" type="MeshInstance3D" parent="Visual"]
+mesh = SubResource("SphereMesh_ghost_default")
+surface_material_override/0 = SubResource("StandardMaterial_ghost_default")

@@ -139,3 +139,12 @@ func _on_aggro_rings_pressed() -> void:
 
 func _on_combat_boxes_pressed() -> void:
 	DebugManager.toggle_combat_boxes()
+
+func _on_courier_visual_range_pressed() -> void:
+	DebugManager.toggle_courier_visual_range()
+
+func _on_instant_commands_pressed() -> void:
+	DebugManager.toggle_instant_commands()
+
+func _on_broadcast_range_pressed() -> void:
+	DebugManager.toggle_infinite_broadcast_range()

@@ -8,6 +8,7 @@ const DUMMY_BASE_ID: int = 9001
 
 signal aggro_rings_toggled(visible: bool)
 signal combat_boxes_toggled(visible: bool)
+signal courier_visual_range_toggled(visible: bool)
 
 var _dummy_count := 0
 var _player_scene: PackedScene = preload("res://scenes/actors/player/overlord/overlord_actor.tscn")
@@ -20,6 +21,10 @@ var show_aggro_rings: bool = false
 ## Global toggle for AttackHitbox / Hurtbox visualization. Local-only. Each
 ## component subscribes to combat_boxes_toggled.
 var show_combat_boxes: bool = false
+## Global toggle for the courier visual-range debug sphere. Local-only.
+## MinionActor (when its MinionType has a non-zero courier_visual_range)
+## subscribes to courier_visual_range_toggled.
+var show_courier_visual_range: bool = false
 
 func toggle_aggro_rings() -> void:
 	show_aggro_rings = not show_aggro_rings
@@ -30,6 +35,28 @@ func toggle_combat_boxes() -> void:
 	show_combat_boxes = not show_combat_boxes
 	combat_boxes_toggled.emit(show_combat_boxes)
 	print("[Debug] Combat boxes: %s" % ("ON" if show_combat_boxes else "OFF"))
+
+func toggle_courier_visual_range() -> void:
+	show_courier_visual_range = not show_courier_visual_range
+	courier_visual_range_toggled.emit(show_courier_visual_range)
+	print("[Debug] Courier visual range: %s" % ("ON" if show_courier_visual_range else "OFF"))
+
+func toggle_instant_commands() -> void:
+	## Flips KnowledgeManager.INSTANT_COMMANDS. With it ON, war-table dispatch
+	## bypasses the courier loop entirely and minions snap to their orders;
+	## with it OFF (default for "real" play) every order has to ride a courier.
+	KnowledgeManager.INSTANT_COMMANDS = not KnowledgeManager.INSTANT_COMMANDS
+	print("[Debug] INSTANT_COMMANDS: %s" % ("ON" if KnowledgeManager.INSTANT_COMMANDS else "OFF"))
+
+func toggle_infinite_broadcast_range() -> void:
+	## Flips KnowledgeManager.INFINITE_BROADCAST_RANGE. ON = every minion
+	## continuously updates every overlord's WorldModel (debug-friendly,
+	## belief == truth). OFF = the production information-warfare model where
+	## sightings only reach a peer's WorldModel when within BROADCAST_RANGE
+	## of one of their friendly minions; out-of-range pieces go stale and
+	## eventually pick up a "?" badge on the table.
+	KnowledgeManager.INFINITE_BROADCAST_RANGE = not KnowledgeManager.INFINITE_BROADCAST_RANGE
+	print("[Debug] INFINITE_BROADCAST_RANGE: %s" % ("ON" if KnowledgeManager.INFINITE_BROADCAST_RANGE else "OFF"))
 
 func add_dummy_player() -> void:
 	if not multiplayer.is_server():

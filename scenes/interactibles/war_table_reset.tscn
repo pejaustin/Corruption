@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://cwartabrst0001"]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://c8wartabp1rst1" path="res://scripts/interactibles/war_table_reset.gd" id="2_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape_reset_hit"]
+size = Vector3(0.15, 0.18, 0.15)
+
+[sub_resource type="BoxMesh" id="BoxMesh_reset"]
+size = Vector3(0.12, 0.15, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_reset"]
+albedo_color = Color(0.55, 0.18, 0.18, 1)
+roughness = 0.5
+metallic = 0.1
+emission_enabled = true
+emission = Color(0.85, 0.25, 0.25, 1)
+emission_energy_multiplier = 0.3
+
+[node name="WarTableReset" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0)
+shape = SubResource("BoxShape_reset_hit")
+
+[node name="Mesh" type="MeshInstance3D" parent="Model" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
+mesh = SubResource("BoxMesh_reset")
+surface_material_override/0 = SubResource("StandardMaterial_reset")

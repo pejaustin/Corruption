@@ -74,16 +74,16 @@ environment = SubResource("Environment_s4jie")
 unique_name_in_owner = true
 
 [node name="Tower" parent="World/Env/Towers" unique_id=984997556 instance=ExtResource("3_mxkvs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 137.9306, -0.12594986, -0.52825546)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 137.9306, -0.39602947, -0.52825546)
 
 [node name="Tower2" parent="World/Env/Towers" unique_id=2114439563 instance=ExtResource("3_mxkvs")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.52178955, 3.4428635, 135.47406)
 
 [node name="Tower3" parent="World/Env/Towers" unique_id=1015982083 instance=ExtResource("3_mxkvs")]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -147.6676, 0.7861233, -0.028255463)
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -147.6676, -0.03651619, -0.028255463)
 
 [node name="Tower4" parent="World/Env/Towers" unique_id=817588753 instance=ExtResource("3_mxkvs")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.52178955, 0.4758072, -121.27914)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.52178955, -0.3645935, -121.27914)
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="World" unique_id=975852457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.9944, 40.9769, 1.018)

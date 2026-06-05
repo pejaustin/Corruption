@@ -90,6 +90,15 @@ func _ready() -> void:
 		minion_manager.bind_peer_spawn_point(LOCAL_PEER_ID, spawn_point)
 	else:
 		push_warning("[WarTableTest] World/PlayerSpawnPoint missing — courier dispatch will silently no-op until added")
+	# Couriers despawn when their CharacterBody3D enters this Area3D's collision
+	# shape (see MinionActor._physics_process zone-overlap check). Without it
+	# the courier walks home and just sits there — no return_zone means no
+	# despawn. Production builds get this from each Tower's CourierSpawn child.
+	var courier_spawn := get_node_or_null("World/CourierSpawn") as Area3D
+	if courier_spawn != null:
+		minion_manager.bind_peer_courier_spawn(LOCAL_PEER_ID, courier_spawn)
+	else:
+		push_warning("[WarTableTest] World/CourierSpawn missing — couriers will not despawn on return")
 	_spawn_starting_state()
 	_refresh_status()
 
@@ -150,6 +159,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				WarTableMap.SHOW_REALITY = not WarTableMap.SHOW_REALITY
 			KEY_I:
 				_dispatch_info_courier_to_random_point()
+			KEY_V:
+				DebugManager.toggle_courier_visual_range()
 			_:
 				handled = false
 		if handled:

@@ -33,11 +33,18 @@ var resources: Dictionary[int, float] = {}
 # slot_index -> MinionSpawnPoint / MinionRallyPoint, populated by bind_tower_markers
 var _spawn_points: Dictionary[int, MinionSpawnPoint] = {}
 var _rally_points: Dictionary[int, MinionRallyPoint] = {}
+## slot_index -> CourierSpawn marker (plain Node3D, not a typed class — see
+## Tower.courier_spawn). Couriers spawn and return here instead of at
+## _spawn_points, which is authored high on the tower and unreachable by
+## NavigationAgent3D from the world below.
+var _courier_spawns: Dictionary[int, Node3D] = {}
 ## Per-peer override map. When a test harness or other minimal scene doesn't
 ## have the full Tower / MultiplayerManager / slot infrastructure, callers can
 ## bind a peer directly to a MinionSpawnPoint via bind_peer_spawn_point().
 ## Checked first by get_spawn_point_for; falls through to the slot-based map.
 var _peer_spawn_overrides: Dictionary[int, MinionSpawnPoint] = {}
+## Same shape, but for the courier spawn point.
+var _peer_courier_spawn_overrides: Dictionary[int, Node3D] = {}
 # peer_id -> multiplier (<1.0 = discount). Granted by the Domination Mastery ritual.
 var domination_discounts: Dictionary[int, float] = {}
 
@@ -108,6 +115,8 @@ func bind_tower_markers() -> void:
 		towers[i].assign_slot(i, rally)
 		if towers[i].spawn_point:
 			_spawn_points[i] = towers[i].spawn_point
+		if towers[i].courier_spawn:
+			_courier_spawns[i] = towers[i].courier_spawn
 		if rally:
 			_rally_points[i] = rally
 	# Peer binding is host-authoritative: host knows the slot table, clients
@@ -138,7 +147,7 @@ func _bind_rally_rpc(slot_index: int, peer_id: int, faction: int) -> void:
 	for n in get_tree().get_nodes_in_group(Tower.GROUP):
 		var t := n as Tower
 		if t and t.slot_index == slot_index:
-			t.bind_advisor(peer_id)
+			t.bind_advisor(peer_id, faction)
 			break
 
 @rpc("any_peer", "reliable")
@@ -174,6 +183,29 @@ func bind_peer_spawn_point(peer_id: int, spawn: MinionSpawnPoint) -> void:
 		_peer_spawn_overrides.erase(peer_id)
 		return
 	_peer_spawn_overrides[peer_id] = spawn
+
+func get_courier_spawn_for(peer_id: int) -> Node3D:
+	## The point couriers spawn at and return to. Override map first (test
+	## harnesses), then the tower slot's CourierSpawn child, then a fallback to
+	## the regular spawn point so legacy scenes that haven't authored a
+	## CourierSpawn yet keep dispatching couriers (just to the unreachable old
+	## location, which is the bug we're fixing — but not regressing in scope).
+	if peer_id in _peer_courier_spawn_overrides:
+		return _peer_courier_spawn_overrides[peer_id]
+	var mm := _mp_manager()
+	if mm:
+		var slot := mm.get_player_slot(peer_id)
+		if slot in _courier_spawns:
+			return _courier_spawns[slot]
+	return get_spawn_point_for(peer_id)
+
+func bind_peer_courier_spawn(peer_id: int, spawn: Node3D) -> void:
+	## Test-harness equivalent of bind_peer_spawn_point for the courier-only
+	## spawn marker. Pass null to clear.
+	if spawn == null:
+		_peer_courier_spawn_overrides.erase(peer_id)
+		return
+	_peer_courier_spawn_overrides[peer_id] = spawn
 
 func get_rally_point_for(peer_id: int) -> MinionRallyPoint:
 	var mm := _mp_manager()
@@ -404,7 +436,25 @@ func _assign_formation_waypoints(minions: Array[MinionActor], target: Vector3) -
 		var row: int = i / FORMATION_WIDTH
 		var col_offset: float = (float(col) - (FORMATION_WIDTH - 1) * 0.5) * FORMATION_SPACING
 		var row_offset: float = -float(row) * FORMATION_SPACING
-		ordered[i].waypoint = target + right * col_offset + forward * row_offset
+		var slot: Vector3 = target + right * col_offset + forward * row_offset
+		# Snap each slot to the navmesh so a slot that lands inside a wall /
+		# off the walkable region doesn't strand a minion at "as close as I
+		# can get" forever. The agent's nav map is authoritative for what's
+		# walkable from this minion's perspective.
+		ordered[i].waypoint = _snap_to_navmesh(ordered[i], slot)
+
+func _snap_to_navmesh(minion: MinionActor, point: Vector3) -> Vector3:
+	if minion == null or minion.nav_agent == null:
+		return point
+	var map_rid: RID = minion.nav_agent.get_navigation_map()
+	if not map_rid.is_valid():
+		return point
+	var snapped: Vector3 = NavigationServer3D.map_get_closest_point(map_rid, point)
+	# If the navmesh map isn't loaded yet, map_get_closest_point may return
+	# Vector3.ZERO. Fall back to the original point in that case.
+	if snapped == Vector3.ZERO and point != Vector3.ZERO:
+		return point
+	return snapped
 
 @rpc("any_peer", "call_local", "reliable")
 func command_minion_move(minion_id: int, target_pos: Vector3) -> void:
@@ -421,6 +471,29 @@ func command_minion_move(minion_id: int, target_pos: Vector3) -> void:
 		sender = 1
 	if minion.owner_peer_id == sender:
 		minion.waypoint = target_pos
+
+func command_selection_move(minion_ids: Array, target_pos: Vector3) -> void:
+	## Host-only. Distribute a set of minions across formation slots around
+	## `target_pos`, so N minions to one location get N distinct waypoints
+	## instead of all stacking on one point. The selection is filtered to the
+	## minions that actually exist; ownership is NOT checked here because the
+	## caller (war-table dispatch / courier delivery) is already authoritative
+	## about who's allowed to be in the list.
+	if not multiplayer.is_server():
+		return
+	if _minions_node == null:
+		return
+	var actors: Array[MinionActor] = []
+	for raw in minion_ids:
+		var actor := _minions_node.get_node_or_null(str(int(raw))) as MinionActor
+		if actor == null or not is_instance_valid(actor):
+			continue
+		if not actor.can_take_damage():
+			continue
+		actors.append(actor)
+	if actors.is_empty():
+		return
+	_assign_formation_waypoints(actors, target_pos)
 
 # --- Domination (Eldritch) ---
 
@@ -500,6 +573,13 @@ func notify_minion_died(minion: MinionActor) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _remove_minion(id: int) -> void:
+	# Tell every peer's KnowledgeManager so per-peer pending_commands and
+	# WorldModel sightings clear in lockstep with the actor going away.
+	# Without this, only the host saw the entry vanish (notify_minion_died
+	# called notify_minion_removed locally), so client war tables kept their
+	# arrows up after couriers despawned. notify_minion_removed is idempotent
+	# — running it again on the host is harmless.
+	KnowledgeManager.notify_minion_removed(id)
 	if _minions_node:
 		var minion := _minions_node.get_node_or_null(str(id))
 		if minion:

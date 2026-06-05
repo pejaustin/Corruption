@@ -3,3 +3,5 @@
 
 # Build artifacts
 *.dmg
+*.exe
+*.pck

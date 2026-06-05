@@ -16,3 +16,6 @@ attack_range = 0.0
 attack_cooldown = 0.0
 color = Color(0.6, 0.8, 1.0, 1)
 trait_tag = &"courier"
+max_orders = 5
+courier_visual_range = 6.0
+courier_wait_seconds = 4.0

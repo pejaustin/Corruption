@@ -151,6 +151,21 @@ layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Combat Boxes"
 
+[node name="BtnCourierVisualRange" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Toggle Courier Visual Range"
+
+[node name="BtnInstantCommands" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Toggle Instant Commands"
+
+[node name="BtnBroadcastRange" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Toggle Infinite Broadcast"
+
 [connection signal="pressed" from="GridContainer/Resume" to="." method="_on_resume_pressed"]
 [connection signal="pressed" from="GridContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="GridContainer/Quit" to="." method="_on_quit_pressed"]
@@ -165,3 +180,6 @@ text = "Toggle Combat Boxes"
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnBoostCorruption" to="." method="_on_boost_corruption_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAggroRings" to="." method="_on_aggro_rings_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCombatBoxes" to="." method="_on_combat_boxes_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCourierVisualRange" to="." method="_on_courier_visual_range_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnInstantCommands" to="." method="_on_instant_commands_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnBroadcastRange" to="." method="_on_broadcast_range_pressed"]

@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://cwartabmtgt001"]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://c6wartabp1mtgt1" path="res://scripts/interactibles/war_table_map_target.gd" id="2_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_maptarget"]
+size = Vector3(1.75, 0.005, 1.75)
+
+[node name="WarTableMapTarget" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+shape = SubResource("BoxShape3D_maptarget")

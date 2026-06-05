@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://cupgradeslt001"]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://cupgradesl0t01" path="res://scripts/interactibles/upgrade_slot.gd" id="2_script"]
+
+[sub_resource type="BoxShape3D" id="BoxShape_upgrade_slot"]
+size = Vector3(0.2, 0.25, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_upgrade_slot"]
+size = Vector3(0.12, 0.18, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_upgrade_slot"]
+albedo_color = Color(0.7, 0.5, 0.95, 1)
+metallic = 0.4
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.8, 0.4, 1, 1)
+emission_energy_multiplier = 0.6
+
+[node name="UpgradeSlot" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+shape = SubResource("BoxShape_upgrade_slot")
+
+[node name="Mesh" type="MeshInstance3D" parent="Model" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0)
+mesh = SubResource("BoxMesh_upgrade_slot")
+surface_material_override/0 = SubResource("StandardMaterial_upgrade_slot")

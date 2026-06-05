@@ -59,11 +59,18 @@ func _assign(target: Interactable) -> void:
 
 func _is_local_authority() -> bool:
 	## Only the local player drives focus — remote peers see other players'
-	## rigs but should not be raycasting on their behalf.
+	## rigs but should not be raycasting on their behalf. Crucially, the
+	## overlord rig also goes silent while the local peer is controlling the
+	## avatar; otherwise the overlord's raycast keeps firing prompts (e.g.
+	## "Avatar is active") at whatever it happens to be facing back in the
+	## tower while the player is in the field as the avatar.
 	if owner_actor == null:
 		return false
 	if owner_actor is OverlordActor:
-		return owner_actor.name.to_int() == multiplayer.get_unique_id()
+		var local_pid := multiplayer.get_unique_id()
+		if owner_actor.name.to_int() != local_pid:
+			return false
+		return not GameState.is_avatar(local_pid)
 	if owner_actor is AvatarActor:
 		var av := owner_actor as AvatarActor
 		return av.controlling_peer_id == multiplayer.get_unique_id() and not av.is_dormant

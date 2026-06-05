@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://btwart0000001"]
+[gd_scene load_steps=16 format=3 uid="uid://btwart0000001"]
 
 [ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
 [ext_resource type="Script" uid="uid://b1sy7r7uyt2am" path="res://scripts/interactibles/war_table.gd" id="2_script"]
@@ -6,6 +6,11 @@
 [ext_resource type="Material" path="res://assets/materials/Paper006_2K-JPG/Paper006_2K-JPG.tres" id="4_d8xn4"]
 [ext_resource type="PackedScene" uid="uid://06g410qfr35t" path="res://scenes/interactibles/war_table_piece.tscn" id="5_piece"]
 [ext_resource type="PackedScene" uid="uid://d7xfjcm6c6xv" path="res://scenes/interactibles/war_table_tower_piece.tscn" id="6_tower"]
+[ext_resource type="PackedScene" uid="uid://cwartabmtgt001" path="res://scenes/interactibles/war_table_map_target.tscn" id="7_maptarget"]
+[ext_resource type="PackedScene" uid="uid://cwartabppr0001" path="res://scenes/interactibles/war_table_paper.tscn" id="8_paper"]
+[ext_resource type="PackedScene" uid="uid://cwartabrst0001" path="res://scenes/interactibles/war_table_reset.tscn" id="9_reset"]
+[ext_resource type="PackedScene" uid="uid://c4wartabp1ghs02" path="res://scenes/interactibles/war_table_ghost.tscn" id="10_ghost"]
+[ext_resource type="Script" uid="uid://c5wartabp1nspct1" path="res://scripts/interactibles/war_table_stack_inspector.gd" id="11_inspector"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_area"]
 size = Vector3(3.5, 2, 2.5)
@@ -30,10 +35,9 @@ albedo_color = Color(0.22, 0.14, 0.08, 1)
 material = ExtResource("4_d8xn4")
 size = Vector2(1.75, 1.75)
 
-[node name="WarTable" node_paths=PackedStringArray("map_view_point", "stand_point", "map") instance=ExtResource("1_base")]
+[node name="WarTable" node_paths=PackedStringArray("map") instance=ExtResource("1_base")]
+collision_layer = 0
 script = ExtResource("2_script")
-map_view_point = NodePath("MapViewPoint")
-stand_point = NodePath("StandPoint")
 map = NodePath("Map")
 map_world_size = Vector2(150, 150)
 
@@ -72,12 +76,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Solid"]
 shape = SubResource("BoxShape3D_solid")
 
-[node name="MapViewPoint" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2.807373, 0)
-
-[node name="StandPoint" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
-
 [node name="Map" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
 script = ExtResource("3_map")
@@ -88,3 +86,15 @@ tower_piece_scene = ExtResource("6_tower")
 [node name="Paper" type="MeshInstance3D" parent="Map"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0022970438, 0)
 mesh = SubResource("PlaneMesh_e6tu6")
+
+[node name="MapTarget" parent="Map" instance=ExtResource("7_maptarget")]
+
+[node name="OrdersPaper" parent="." instance=ExtResource("8_paper")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 1.2, 0)
+
+[node name="ResetMarker" parent="." instance=ExtResource("9_reset")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.15, 1.2, 0)
+
+[node name="StackInspector" type="Node" parent="."]
+script = ExtResource("11_inspector")
+ghost_scene = ExtResource("10_ghost")

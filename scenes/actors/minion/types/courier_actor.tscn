@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://j43tcafvxx3m"]
 
 [ext_resource type="PackedScene" uid="uid://b25akr8pwv23f" path="res://scenes/actors/minion/minion_actor.tscn" id="1_base"]
 [ext_resource type="PackedScene" uid="uid://c1yierr4q72pf" path="res://assets/characters/enemies/Zombie.tscn" id="2_model"]
@@ -10,11 +10,11 @@
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_courier"]
 height = 3.002
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_courier_hurt"]
-height = 3.002
-
 [sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
 radius = 1.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_courier_hurt"]
+height = 3.002
 
 [node name="Courier" unique_id=336466554 instance=ExtResource("1_base")]
 minion_type = ExtResource("2_type")
@@ -25,10 +25,10 @@ shape = SubResource("CapsuleShape3D_courier")
 
 [node name="Zombie" parent="Model" index="0" unique_id=397539025 instance=ExtResource("2_model")]
 
-[node name="IdleState" parent="RewindableStateMachine" index="3" unique_id=1500154886]
+[node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=1500154886]
 script = ExtResource("11_arrival")
 
-[node name="AttackHitbox" type="Area3D" parent="."]
+[node name="AttackHitbox" type="Area3D" parent="." index="4" unique_id=495270554]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.34678698)
 collision_layer = 0
@@ -36,12 +36,12 @@ collision_mask = 12
 monitorable = false
 script = ExtResource("9_hitbox")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackHitbox" index="0" unique_id=930679057]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.46592152)
 shape = SubResource("SphereShape3D_hitbox")
 disabled = true
 
-[node name="Hurtbox" type="Area3D" parent="."]
+[node name="Hurtbox" type="Area3D" parent="." index="5" unique_id=1335707689]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4299316, 0.2021122)
 collision_layer = 8
@@ -49,5 +49,5 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("10_hurt")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox" index="0" unique_id=764346636]
 shape = SubResource("CapsuleShape3D_courier_hurt")
