@@ -28,22 +28,11 @@ func get_prompt_color() -> Color:
 func _on_interact() -> void:
 	if not _is_owning_overlord_in_range():
 		return
-	var peer_id := _player_in_range.name.to_int()
-	# Route through host. Any peer can request; only the host actually
-	# promotes the drafts to dispatched and spawns couriers.
-	_request_handoff_rpc.rpc_id(1, peer_id)
-
-@rpc("any_peer", "call_local", "reliable")
-func _request_handoff_rpc(peer_id: int) -> void:
-	if not multiplayer.is_server():
-		return
-	var sender := multiplayer.get_remote_sender_id()
-	if sender == 0:
-		sender = 1
-	# Only the owner of the drafts may hand them off.
-	if sender != peer_id:
-		return
-	KnowledgeManager.dispatch_readied(peer_id)
+	# Owner-authoritative handoff: the readied entries live in THIS machine's
+	# local WorldModel (models are never replicated), so KnowledgeManager
+	# gathers them here and ships the payload to the host, which spawns the
+	# couriers and confirms each entry back. See request_dispatch.
+	KnowledgeManager.request_dispatch(_player_in_range.name.to_int())
 
 func _is_owning_overlord_in_range() -> bool:
 	## The Advisor only accepts orders from its owner. Owner is identified by

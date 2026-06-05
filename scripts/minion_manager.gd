@@ -45,6 +45,10 @@ var _courier_spawns: Dictionary[int, Node3D] = {}
 var _peer_spawn_overrides: Dictionary[int, MinionSpawnPoint] = {}
 ## Same shape, but for the courier spawn point.
 var _peer_courier_spawn_overrides: Dictionary[int, Node3D] = {}
+## peer_id → tower slot, learned from _bind_rally_rpc on EVERY peer.
+## MultiplayerManager._player_slot_order only exists on the host, so clients
+## must resolve slots from this map — see _slot_for_peer.
+var _peer_slots: Dictionary[int, int] = {}
 # peer_id -> multiplier (<1.0 = discount). Granted by the Domination Mastery ritual.
 var domination_discounts: Dictionary[int, float] = {}
 
@@ -85,6 +89,29 @@ func _adopt_preplaced_minions() -> void:
 		minion.global_position = pos
 		minion.waypoint = pos
 		minion_spawned.emit(minion)
+	# Tower Advisors are pre-placed in tower.tscn rather than spawned, so they
+	# need the same adoption to join the manager's sync set — otherwise the
+	# host's advisor AI follows its overlord while every client watches its own
+	# frozen local copy (_sync_all_minions only covers _minions_node children).
+	# Towers cached their `advisor` reference in _ready, and node references
+	# survive the reparent, so bind_advisor keeps working afterwards. Adoption
+	# order (enemies first, then advisors in tower tree order) is identical on
+	# every peer so the numeric IDs align for the sync RPCs. owner_peer_id and
+	# faction are NOT clobbered here — _bind_rally_rpc sets them later.
+	for n in get_tree().get_nodes_in_group(Tower.GROUP):
+		var t := n as Tower
+		if t == null or t.advisor == null:
+			continue
+		var advisor: MinionActor = t.advisor
+		var advisor_pos := advisor.global_position
+		var advisor_id := _next_minion_id
+		_next_minion_id += 1
+		advisor.get_parent().remove_child(advisor)
+		advisor.name = str(advisor_id)
+		_minions_node.add_child(advisor)
+		advisor.global_position = advisor_pos
+		advisor.waypoint = advisor_pos
+		minion_spawned.emit(advisor)
 
 func _mp_manager() -> MultiplayerManager:
 	return get_tree().current_scene.get_node_or_null("MultiplayerManager") as MultiplayerManager
@@ -139,6 +166,9 @@ func bind_tower_markers() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _bind_rally_rpc(slot_index: int, peer_id: int, faction: int) -> void:
+	# Record the peer→slot pairing locally — this is the only slot source
+	# clients have (MultiplayerManager's table is host-only).
+	_peer_slots[peer_id] = slot_index
 	var rally: MinionRallyPoint = _rally_points.get(slot_index)
 	if rally:
 		rally.bind(peer_id, faction)
@@ -154,7 +184,6 @@ func _bind_rally_rpc(slot_index: int, peer_id: int, faction: int) -> void:
 func _request_rally_bindings() -> void:
 	if not multiplayer.is_server():
 		return
-	var requester := multiplayer.get_remote_sender_id()
 	var mm := _mp_manager()
 	if mm == null:
 		return
@@ -165,15 +194,30 @@ func _request_rally_bindings() -> void:
 		var slot := mm.get_player_slot(pid)
 		if slot < 0:
 			continue
-		_bind_rally_rpc.rpc_id(requester, slot, pid, _get_player_faction(pid))
+		# Broadcast (not rpc_id to the requester): the host's own initial bind
+		# loop can race slot assignment and miss peers, leaving host-side
+		# tower/advisor owner bindings unset (advisor never follows, handoffs
+		# rejected). Re-broadcasting to everyone is idempotent — same values
+		# re-applied — and heals the host plus any client that missed a peer.
+		_bind_rally_rpc.rpc(slot, pid, _get_player_faction(pid))
+
+func _slot_for_peer(peer_id: int) -> int:
+	## Slot lookup that works on every peer. _peer_slots is populated by
+	## _bind_rally_rpc (host broadcast), so clients can resolve slots without
+	## MultiplayerManager._player_slot_order — that table is host-only. Falls
+	## back to the MultiplayerManager table for host-side callers that run
+	## before bindings have been broadcast.
+	if peer_id in _peer_slots:
+		return _peer_slots[peer_id]
+	var mm := _mp_manager()
+	if mm == null:
+		return -1
+	return mm.get_player_slot(peer_id)
 
 func get_spawn_point_for(peer_id: int) -> MinionSpawnPoint:
 	if peer_id in _peer_spawn_overrides:
 		return _peer_spawn_overrides[peer_id]
-	var mm := _mp_manager()
-	if mm == null:
-		return null
-	return _spawn_points.get(mm.get_player_slot(peer_id))
+	return _spawn_points.get(_slot_for_peer(peer_id))
 
 func bind_peer_spawn_point(peer_id: int, spawn: MinionSpawnPoint) -> void:
 	## Direct peer→spawn binding for environments without a MultiplayerManager
@@ -192,11 +236,9 @@ func get_courier_spawn_for(peer_id: int) -> Node3D:
 	## location, which is the bug we're fixing — but not regressing in scope).
 	if peer_id in _peer_courier_spawn_overrides:
 		return _peer_courier_spawn_overrides[peer_id]
-	var mm := _mp_manager()
-	if mm:
-		var slot := mm.get_player_slot(peer_id)
-		if slot in _courier_spawns:
-			return _courier_spawns[slot]
+	var slot := _slot_for_peer(peer_id)
+	if slot in _courier_spawns:
+		return _courier_spawns[slot]
 	return get_spawn_point_for(peer_id)
 
 func bind_peer_courier_spawn(peer_id: int, spawn: Node3D) -> void:
@@ -208,10 +250,7 @@ func bind_peer_courier_spawn(peer_id: int, spawn: Node3D) -> void:
 	_peer_courier_spawn_overrides[peer_id] = spawn
 
 func get_rally_point_for(peer_id: int) -> MinionRallyPoint:
-	var mm := _mp_manager()
-	if mm == null:
-		return null
-	return _rally_points.get(mm.get_player_slot(peer_id))
+	return _rally_points.get(_slot_for_peer(peer_id))
 
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():

@@ -2,173 +2,70 @@
 
 **Philosophy:** Each tier is a playable game with a win condition. Social and Overlord tools come before combat polish — 3 out of 4 players are always Overlords, so their experience matters most. Debug tooling is first-class, not an afterthought. Greybox everything — art comes last.
 
+This file tracks **what to build and test next**. Completed-work detail, verification records, and design-call history live in `changelog.md` (sibling file). War-table build steps + phase plan: `docs/systems/war-table.md`.
+
+## Progress Tracker
+
+| Tier | Name | Win Condition | Status | Playable? |
+|------|------|---------------|--------|-----------|
+| 0 | The Board is Set | Walk to gem | **Complete** | Yes |
+| 1 | The Tower is Alive | Walk to gem (with social tools) | **Core complete** | Yes |
+| 2 | Blood on the Ground | Fight to gem (combat + transfer) | **Complete** | Yes |
+| 3 | The Dark Lords Scheme | Beat guardian boss (minions + territory) | **Impl complete** — war-table layer verified 2026-06-05; rest needs testing | Yes |
+| 4 | Corruption Has a Face | Full 2-boss endgame + factions | **Impl complete** — altars/circles verified; rest blocked on editor setup | Ready to test |
+| 5 | Polish & Content | Complete game | Not started | - |
+
 ---
 
 ## Tier 0: The Board is Set [COMPLETE]
 
-**Goal:** Players connect. One is the Avatar. Others are Overlords in their towers. The Avatar can reach the gem and "win." Solo-testable with dummy players.
+**Win condition:** Avatar walks to the gem in the Capitol and interacts with it.
 
-**Win condition:** Avatar walks to the gem in the Capitol and interacts with it. You win. (No combat, no bosses — just reach it.)
+Done: P2P lobby + faction selection, 4 towers spawning Overlords, shared Avatar entity with claim/transfer and synced movement, gem win interactible, win screen → lobby flow, F3 debug overlay, F2 dummy players.
 
-### Debug tooling
-- [x] F3 debug overlay (network, factions, players, FPS, Avatar status, influence, minions, territory, boss)
-- [x] **Dummy player system** — F2 to add bot players, idle in towers
+Open:
 - [ ] **Debug console** — Key commands: force Avatar transfer, teleport, spawn at location
 
-### Core
-- [x] Project setup (Godot 4.6, netfox)
-- [x] P2P lobby with faction selection
-- [x] 4-player max enforcement
-- [x] Overlord 1st-person tower view (existing)
-- [x] 4 towers spawn players as Overlords
-- [x] **Avatar as separate shared entity** — Paladin vessel with 3rd-person camera, own movement states, transferable input authority
-- [x] **Avatar claim** — Press E at tower interactible to claim the Avatar
-- [x] **Control transfer** — Claiming Avatar disables Overlord input/camera, enables Avatar camera/input for that peer
-- [x] **Avatar movement syncs** across all clients
-- [x] **The gem** — Interactible at map center, Avatar touches it and presses E to win
-- [x] **Win screen** — Victory/defeat overlay with return to menu
-- [x] **Match flow** — Win screen → back to lobby (disconnect and return)
+## Tier 1: The Tower is Alive [CORE COMPLETE]
 
-**Riskiest thing:** Mode split + camera switching over network.
+**Win condition:** Same as Tier 0, but Overlords can watch and talk about it.
 
----
+Done: greybox tower interior with E-interactible stations, Palantir (watch Avatar via SubViewport, watched-cue), Mirror (pose + mic recording with reverb, send/playback per Overlord), balcony overlooking the map, voluntary Avatar recall.
 
-## Tier 1: The Tower is Alive
-
-**Goal:** Overlords have things to do. Palantir and Mirror are functional. The Avatar can be watched and talked about. Social gameplay works.
-
-**Win condition:** Same as Tier 0 (reach the gem), but now Overlords can watch you do it and talk about it.
-
-### Debug tooling
-- [ ] **Mirror playback inspector** — Debug panel showing all recorded messages, timestamps, recipients
+Open:
+- [ ] **Mirror playback inspector** — Debug panel showing recorded messages, timestamps, recipients
 - [ ] **Palantir force-activate** — Debug command to enable/disable Palantir without walking to it
 
-### Core
-- [x] **Tower interior** — Greybox room with interactible stations (walk up and press E)
-- [x] **Palantir** — Interact to watch the Avatar in real-time via SubViewport. Avatar gets a visual cue (eye icon, sound) that they're being watched, and can see how many watchers.
-- [x] **Mirror** — Stand in front, record button captures pose track + mic audio with reverb. Plays back as ghost reflection in Mirror3D. Sends to selected Overlord(s). Recipient gets notification, can watch playback.
-- [x] **Tower balcony** — Overlord can walk to a balcony and directly observe a scaled-down view of the map below. No UI overlay — you physically look out and see the world.
-- [x] **Avatar transfer (simple)** — Avatar can voluntarily return to tower (recall). Control passes to next player by influence (or round-robin for now).
+## Tier 2: Blood on the Ground [COMPLETE]
 
-**Riskiest thing:** Mirror recording — mic capture + SubViewport + audio effects + network delivery. Prototype this early.
+**Win condition:** Fight through neutral enemies to the gem; on death, the next player gets a turn.
 
----
+Done: committed melee attack with stamina + animation-driven hitboxes, HP/damage/death, neutral enemy AI (patrol/aggro/attack), Avatar death → round-robin transfer with full mode-swap cycle, host-authoritative combat sync via rollback + EnemyManager. Debug: god mode (F4), spawn enemy (F6), kill Avatar (F5), spawn minion (F7), +influence (F8).
 
-## Tier 2: Blood on the Ground
+## Tier 3: The Dark Lords Scheme [IMPL COMPLETE]
 
-**Goal:** Avatar can fight and die. Death triggers control transfer. The core loop turns. Combat is basic but functional.
+**Goal:** Overlords project power onto the map. Minions exist. Territory matters. Influence determines who gets the Avatar.
+**Win condition:** Reach the gem and defeat a single guardian boss, debuffed by total corruption.
 
-**Win condition:** Reach the gem, but now there are neutral enemies guarding it. Fight through them or die trying. On death, next player gets a turn.
+Done (war-table command layer **verified 2026-06-05** — see changelog): minion spawning via Summoning Circle slots, per-tower spawn/rally markers, minion AI state machine, War Table single-shot-E command flow (draft → readied → dispatched), Advisor handoff + batched couriers, info-couriers, broadcast-range belief model with staleness badges, reality overlay, belief privacy, client-peer parity.
 
-### Debug tooling
-- [x] **God mode** — F4 toggles invincibility for Avatar
-- [x] **Spawn enemy** — F6 spawns enemy at camera target (now synced via EnemyManager)
-- [x] **Kill Avatar** — F5 force-kills Avatar to test transfer flow
-- [x] **Influence display** — All players' influence scores visible in F3 debug panel
-- [x] **Spawn minion** — F7 spawns minion at camera target
-- [x] **Add influence** — F8 adds 10 influence to self
+Done (impl complete, **not yet verified**): territory system, influence tracking, gem sites, hostile takeover, influence fallback, guardian boss, astral projection — see Testing TODO.
 
-### Core
-- [x] **Basic melee attack**
-  - Light attack bound to left click (Avatar-only, Overlords cannot attack)
-  - Attack plays a commitment animation — no cancel once started
-  - Hitbox spawns on a specific animation frame window
-  - Hitbox damages any damageable body it overlaps
-  - Stamina cost per attack; can't attack at zero stamina
-  - Stamina regens passively over time
-- [x] **HP and damage**
-  - Avatar has an HP value displayed in debug overlay (HUD later)
-  - Taking damage reduces HP; HP floors at 0
-  - Death state triggers at 0 HP (no knockback/hitstun yet)
-  - No healing for now
-- [x] **Simple neutral enemy**
-  - Enemy scene with HP, a patrol point, and an aggro radius
-  - Idles at patrol point until Avatar enters aggro range
-  - Chases Avatar while in aggro range
-  - Has a melee attack with its own hitbox and commitment animation
-  - Takes damage from Avatar attacks; dies at 0 HP
-  - Death plays animation then frees the node
-  - Hand-placed in the world scene (not procedural)
-- [x] **Avatar death → transfer**
-  - 0 HP triggers death animation/state
-  - Avatar is disabled after death (hidden, no collision, no input)
-  - Control transfers to next player via round-robin (existing `game_state.gd`)
-  - New Avatar owner gets camera/input swap to Avatar mode
-  - Avatar respawns at a fixed point (TBD: Capitol center or tower)
-  - Previous controller returns to Overlord mode
-- [x] **Mode switch at runtime**
-  - Fixed respawn clobbering new Avatar activation after death transfer
-  - Claim → death → transfer → re-claim cycle verified
-- [x] **Animation-driven hitboxes** — Hitbox window driven by animation progress ratio instead of timers
-- [x] **Combat sync**
-  - Attack animations visible to all clients (state machine synced via rollback)
-  - Hitbox activation/deactivation synced (host-authoritative)
-  - Damage is host-validated
-  - Enemy HP and death synced to all clients via EnemyManager RPCs
-  - No desync on hit — if host says hit, all clients see the hit
-
-**Riskiest thing:** Combat sync over P2P with rollback. Tight latency tolerance.
-
----
-
-## Tier 3: The Dark Lords Scheme
-
-**Goal:** Overlords can project power onto the map. Minions exist. Territory matters. Influence determines who gets the Avatar.
-
-**Win condition:** Reach the gem and defeat a single guardian boss (simplified). Boss is debuffed by total corruption. Overlords can send minions to help or hinder.
-
-### Debug tooling
-- [x] **Spawn minion** — F7 spawns minion at camera target
-- [x] **Set influence** — F8 adds influence to self
+Open:
 - [ ] **Territory paint** — Debug tool to mark areas as corrupted
-- [x] **Boss health/debuff display** — Boss stats visible in F3 debug overlay
 
-### Core (tested)
-- [x] **Minion spawning** — Summoning Circle interaction in tower. Spend resources. MinionManager handles sync.
-- [x] **Per-tower spawn + rally markers** — Each tower owns a `MinionSpawnPoint` (summons appear there). `MinionRallyPoint`s live under `World/Markers` and are paired with towers by child order. Rally is only visible to, and only movable by, the owning overlord.
-- [x] **Basic minion AI** — State machine: idle, move_to (NavigationAgent3D with direct-steer fallback), jump (JumpableLink traversal), attack, die
+## Tier 4: Corruption Has a Face [IMPL COMPLETE]
 
-### Core (impl complete — ready to test)
-- [x] **Minion commands** — War Table: top-down map view, two-click selection (click a friendly piece on the diorama to select, click empty map to submit). With `INSTANT_COMMANDS=true` each selected id's waypoint is set directly; with `INSTANT_COMMANDS=false` a draft is queued and the Advisor dispatches a Courier per draft on E (carries delivery payload to the believed source, walks home after delivery). See `docs/systems/war-table.md` for the full information-warfare layer (`WorldModel`, two-arrow diorama rendering, courier lifecycle).
-- [x] **Territory system** — Grid-based corruption spreads from minion presence, decays without them
-- [x] **Influence tracking** — GameState tracks per-peer influence, displayed in debug overlay
-- [x] **Minor gem sites** — GemSite interactible: minions clear, Avatar confirms capture, grants passive influence
-- [x] **Hostile takeover** — Minion kills Avatar → that minion's owner becomes Avatar
-- [x] **Influence fallback** — Avatar dies to neutrals → highest influence peer takes over
-- [x] **Guardian boss** — GuardianBoss at Capitol, debuffed by total corruption, defeat to win
-- [x] **Astral projection** — SubViewport spectator overlay auto-activates during boss fight
+**Goal:** Factions feel different in both modes.
+**Win condition:** Two back-to-back bosses; divine intervention lose condition active.
 
-**Riskiest thing:** Minion AI + networking. Keep it dead simple — state machine with patrol/aggro/attack.
+Done (verified 2026-06-05): Summoning Circle + Upgrade Altar slot-based flows incl. client purchase RPC. Done (impl complete, not yet verified): faction rosters/abilities/Overlord tools, Eldritch rituals, Undeath raise-dead, two-boss endgame, divine intervention — see Testing TODO.
 
----
-
-## Tier 4: Corruption Has a Face
-
-**Goal:** Factions feel different. Picking Undeath vs Demonic changes how you play both modes.
-
-**Win condition:** Full endgame — two back-to-back bosses, debuffed by corruption. Divine intervention lose condition active.
-
-### Debug tooling
-- [x] **Faction swap** — F9 cycles faction mid-game for testing
-- [x] **Corruption boost** — F10 adds corruption around origin
+Open:
+- [ ] **Neutral faction detection asymmetry** — Nature/Fey stealth past priests
 - [ ] **Balance dashboard** — Faction win rates, average influence, minion efficiency
 
-### Core (impl complete — ready to test)
-- [x] **Faction-specific minion rosters** (all 4 factions) — FactionData with unique stats, costs, traits
-- [x] **Faction-specific Avatar abilities** (all 4 factions) — AvatarAbilities with cooldowns, damage mults, lifesteal, camouflage
-- [x] **Faction-specific Overlord tools** — Summoning Circle shows roster, Eldritch dominate, Demonic single-minion command, Nature/Fey info advantage
-- [ ] **Neutral faction detection asymmetry** — Nature/Fey stealth past priests
-- [x] **Eldritch ritual mechanic** — RitualSite interactible, Avatar channels to unlock bonuses (domination discount, corruption surge, eldritch vision)
-- [x] **Undeath raise-dead mechanic** — Ghoul trait spawns skeletons from killed enemy minions
-- [x] **Two-boss endgame** — BossManager: Capitol Guardian → Corrupted Seraph sequence
-- [x] **Divine intervention** — DivineIntervention node: lose if corruption stays below threshold for 60s
-- [x] **Upgrade Altar** — Tower interactible: 5 upgrade types (minion HP/DMG, resource rate, Avatar HP/DMG)
-
----
-
-## Tier 5: Polish & Content
-
-**Goal:** The game feels good. Art, audio, UI, balance.
+## Tier 5: Polish & Content [NOT STARTED]
 
 - [ ] **UI/UX pass** — HUD, faction-themed menus, influence display
 - [ ] **Audio** — Combat, ambient tower atmosphere, faction themes, Mirror reverb tuning
@@ -180,149 +77,32 @@
 
 ---
 
-## Progress Tracker
-
-| Tier | Name | Win Condition | Status | Playable? |
-|------|------|---------------|--------|-----------|
-| 0 | The Board is Set | Walk to gem | **Complete** | Yes |
-| 1 | The Tower is Alive | Walk to gem (with social tools) | **Core complete** | Yes |
-| 2 | Blood on the Ground | Fight to gem (combat + transfer) | **Complete** | Yes |
-| 3 | The Dark Lords Scheme | Beat guardian boss (minions + territory) | **Impl complete** | Ready to test |
-| 4 | Corruption Has a Face | Full 2-boss endgame + factions | **Impl complete** | Ready to test |
-| 5 | Polish & Content | Complete game | Not started | - |
-
----
-
 ## Editor TODO — Nodes to Add in Scenes
 
 Scripts are implemented but these nodes/scenes need to be created or wired up in the editor before testing.
 
 ### Tier 3
 
-**tower_scene.tscn — root level:**
-- [ ] `MinionManager` (Node) — already added, script `scripts/minion_manager.gd` attached
-- [ ] `EnemyManager` (Node) — already added, script `scripts/enemy_manager.gd` attached
-- [ ] `TerritoryManager` (Node) — already added, script `scripts/territory_manager.gd` attached
-
-**tower.tscn — inside each tower:**
-- [x] `WarTable` — Already placed in `tower.tscn`. Contains `MapViewPoint`, `StandPoint`, and `Map` (WarTableMap) children. Inside each tower scene also sits a `WarTableRange` (@tool MeshInstance3D) wired to `WarTable/Map` that draws a semi-transparent BoxMesh over the effective map region. Tune `Map World Center` / `Map World Size` per tower once per-overlord AOs are designed.
 - [ ] `GemSite` (x2-3 in world) — Create as Area3D with CollisionShape3D (sphere, radius ~4). Attach `scripts/interactibles/gem_site.gd`. Place in `World/Interactables/`. Set `site_name` export
-
-**tower_scene.tscn — World/GuardianBoss:**
-- [ ] Instance `scenes/actors/enemy/guardian/guardian_boss.tscn`, rename to `GuardianBoss`. Place near Capitol/gem area. (Phase-2 boss `corrupted_seraph.tscn` is an inherited scene — no script override needed.)
-
-**tower_scene.tscn — CanvasLayer:**
-- [ ] `AstralProjection` (Control) — Attach `scripts/astral_projection.gd`. Needs SubViewportContainer child with SubViewport containing a Camera3D
+- [ ] `GuardianBoss` — Instance `scenes/actors/enemy/guardian/guardian_boss.tscn` near Capitol/gem area, rename to `GuardianBoss`. (Phase-2 boss `corrupted_seraph.tscn` is an inherited scene — no script override needed.)
+- [ ] `AstralProjection` (Control, in CanvasLayer) — Attach `scripts/astral_projection.gd`. Needs SubViewportContainer child with SubViewport containing a Camera3D
+- [ ] Verify `MinionManager` / `EnemyManager` / `TerritoryManager` nodes at game-scene root (already added with scripts attached)
 
 ### Tier 4
 
-**tower_scene.tscn — root level:**
-- [ ] `BossManager` (Node) — Attach `scripts/boss_manager.gd`. Set `initial_boss` export to the world's `GuardianBoss` node. Optionally set `seraph_spawn_point` (defaults to the initial boss's position) and override `seraph_scene` (defaults to `corrupted_seraph.tscn`).
-- [ ] `DivineIntervention` (Node) — Attach `scripts/divine_intervention.gd`
+- [ ] `BossManager` (Node, scene root) — Attach `scripts/boss_manager.gd`. Set `initial_boss` export to the world's `GuardianBoss`. Optional: `seraph_spawn_point` (defaults to initial boss position), `seraph_scene` override (defaults to `corrupted_seraph.tscn`)
+- [ ] `DivineIntervention` (Node, scene root) — Attach `scripts/divine_intervention.gd`
+- [ ] `RitualSite` (x2-3 in `World/Interactables/`) — Area3D + CollisionShape3D (sphere, radius ~3), attach `scripts/interactibles/ritual_site.gd`, set `ritual` export to one of `res://data/rituals/*.tres`. Greybox mesh. Place away from Capitol — risky detours
 
-**tower.tscn — inside each tower:**
-- [x] `UpgradeAltar` — Placed in `tower.tscn` at `(-8, 39.75, 11)` (lower floor, opposite SummoningCircle). Inherits `interactable.tscn`, uses `scripts/interactibles/upgrade_altar.gd`, greybox dark-stone base + glowing purple pillar. Catalog reads from `res://data/upgrades/` (5 entries). Reposition in-editor to taste.
-
-**World/Interactables/ (place 2-3 in the world):**
-- [ ] `RitualSite` — Create as Area3D with CollisionShape3D (sphere, radius ~3). Attach `scripts/interactibles/ritual_site.gd`. Set the `ritual` export to one of `res://data/rituals/*.tres` (`domination_mastery.tres`, `corruption_surge.tres`, `eldritch_vision.tres`). Needs a visual mesh (greybox cylinder/rune circle). Place away from Capitol — these should be risky detours
+Placed already: `WarTable` + `WarTableRange` and `UpgradeAltar` in `tower.tscn` (tune `map_world_center`/`size` per tower once per-overlord AOs are designed; reposition altar to taste).
 
 ---
 
 ## Testing TODO — Verify In-Game
 
-Systems whose implementation is complete but haven't been confirmed working in a live session. Items marked **[blocked]** depend on Editor TODO entries above; test them once those scene placements are done.
+Implementation-complete systems not yet confirmed in a live session. Items marked **[blocked]** depend on Editor TODO entries above. The war-table command layer, advisor/courier loop, summoning slots, and upgrade-altar flow were all verified 2026-06-05 — records in `changelog.md`.
 
-### Tier 3 — The Dark Lords Scheme
-
-#### Minion commands (War Table)
-- [ ] Interact with War Table → camera tweens to `MapViewPoint` and the rig pins to the StandPoint via `PlayerActor.pin_transform`
-- [ ] First click on a friendly piece on the diorama → toggles that minion id in `WarTable._selected_minion_ids` (piece glows yellow); multiple clicks build up a multi-piece selection
-- [ ] Second click on empty map (with a non-empty selection) → submits via `KnowledgeManager.issue_move_command(peer_id, minion_ids, target_pos)`; selection clears
-- [ ] Other peers' minions are not selectable from your table
-- [ ] Releasing the table (E to exit) returns camera to overlord position; rig stays at the StandPoint with `unpin_transform` so you can walk away naturally
-- [ ] With `INSTANT_COMMANDS = true` (default) the submit moves only the selected ids (`MinionManager.command_minion_move` per id); with `INSTANT_COMMANDS = false` it records a draft
-
-#### War Table information-warfare layer (Advisor + Courier + reality overlay)
-
-Test harness: `scenes/test/war_table_test.tscn`. Place an Advisor `StartingMinionSpec` (`type_id = "advisor"`, `owner_peer_id = 1`, `faction = UNDEATH`) under `World/StartingMinions` first. Then in-game press **T** to flip `INSTANT_COMMANDS = false` to engage this whole flow.
-
-**Advisor follow behavior**
-- [ ] Advisor stays idle while the owner's overlord is within ~3.5m
-- [ ] Advisor walks toward the owner's overlord when distance > 3.5m (uses `NavigationAgent3D` RVO)
-- [ ] Advisor settles back to idle within ~2.0m on arrival (no orbiting / jitter)
-- [ ] Advisor never engages combat (no aggro, no attack, even if attacked)
-- [ ] Advisor's Hurtbox is live — `K` (kill nearest) can kill the Advisor
-
-**Advisor handoff prompt**
-- [ ] Owner's overlord in HandoffArea sees "E to confer with Advisor" with 0 drafts
-- [ ] Same prompt updates to "E to hand orders (N)" while drafts exist
-- [ ] A non-owner overlord sees "Another overlord's Advisor" and pressing E does nothing
-- [ ] Out of range: no prompt
-
-**Drafts (red order arrows)**
-- [ ] With `INSTANT_COMMANDS = true`, the two-click selection still applies but the submit moves the selected minions immediately (no arrows)
-- [ ] With `INSTANT_COMMANDS = false`, each submit draws a **red** order arrow from the believed minion source to the destination click point (source is the centroid of the believed positions of the selected ids)
-- [ ] Drafts have NO courier route arrow (red order arrow only — no courier dispatched yet)
-- [ ] Multiple submissions stack multiple red arrows on the same table
-- [ ] Red arrows persist after exiting the table — they don't vanish until handoff or courier despawn
-- [ ] Drafts are per-peer; another peer's table does not show your red arrows
-
-**Handoff transition (red → black, dispatch)**
-- [ ] Pressing E on the owner's Advisor with N drafts spawns N couriers, one at the tower spawn marker per draft
-- [ ] Each red order arrow flips to **black** in place at handoff (same arrow node, color swap, no flicker)
-- [ ] Each dispatched entry gains a second **courier-color (light blue) route arrow** from the tower spawn to the believed source
-- [ ] Each courier walks to its `source_pos` via `NavigationAgent3D`; on arrival, `courier_arrival_state.gd` sets each `delivery_minion_ids` target's waypoint to `delivery_target_pos`, then sets its own waypoint to `return_pos` and walks home
-- [ ] On courier despawn (arrival home or death), the order arrow + route arrow evaporate together
-- [ ] Killing a courier mid-flight (K) also clears its arrows cleanly
-- [ ] Pressing E on the Advisor with 0 drafts is a no-op (just the prompt; no spurious dispatches)
-
-**Reality overlay (debug, M)**
-- [ ] Press **M** in the test harness to flip `WarTableMap.SHOW_REALITY`
-- [ ] When ON: a small **yellow sphere** appears at every live courier's actual table-local position, regardless of belief or ownership
-- [ ] Yellow markers track couriers in real-time as they move along their path
-- [ ] When OFF: yellow markers vanish; red/black belief layer remains untouched
-- [ ] Yellow + red are unambiguously distinct on the table
-- [ ] Yellow + black are unambiguously distinct on the table
-
-**Suppression / non-double-render**
-- [ ] Your own couriers do NOT show as cylindrical pawns at their real position in the regular minion bucket — they exist purely as the midpoint-pawn-on-arrow visual
-- [ ] Rival couriers DO show as cylindrical pawns at their real position (regular minion sighting), since you don't see rival intent
-
-**Broadcast-range truthing (war-table.md step 5)**
-- [ ] With `INFINITE_BROADCAST_RANGE = true` (default), every minion contributes sightings every tick → table is a transparent god-view
-- [ ] Press **B** in the test harness to flip `INFINITE_BROADCAST_RANGE = false`
-- [ ] Once off, only enemies within `BROADCAST_RANGE` (30m default) of one of YOUR friendly minions appear in your WorldModel — distant battlefield activity is dark
-- [ ] Move a friendly minion next to a distant enemy: the enemy enters your model only after the friendly closes the gap (`KnowledgeManager._observable_by` gate)
-- [ ] Move that friendly away again: the enemy stays in your model with its last-known position (sightings don't *delete* on out-of-range; staleness is recorded via `last_updated_tick`)
-- [ ] **[Polish, not yet implemented]** Stale entries should fade visually on the diorama; right now they render at full alpha until removed via `notify_minion_removed`
-
-**Forced retreat + return-to-tower update (war-table.md step 6)**
-
-Setup: pick a combat minion type to test with, edit its `.tres` to set `can_retreat = true` (e.g. flip the flag on `data/minions/skeleton.tres` for the test). Place a `MinionSpawnPoint` near peer 1's tower in the harness scene (or rely on the existing tower binding).
-
-- [ ] Spawn a retreat-capable minion via the harness; let it engage hostile minions and take damage
-- [ ] When HP drops below `retreat_hp_threshold * max_hp`, the minion breaks combat at the start of the next Idle/Chase/Attack tick (no waiting for animation completion)
-- [ ] Minion enters `RetreatState`; navigates back to its owner's `MinionSpawnPoint` via `NavigationAgent3D` (no aggro check during retreat)
-- [ ] On arrival within `ARRIVAL_DISTANCE = 1.5m` of the spawn point, the actor's `_field_log` flushes into the owner's WorldModel via `KnowledgeManager.flush_observations`
-- [ ] The flushed sightings appear on the war table as believed-enemy entries (cylinder pieces) with `source = &"return"` (visualization differentiation is a polish-pass TODO; data is correct)
-- [ ] Minion partial-heals to 50% HP on arrival (so it doesn't immediately re-trigger retreat) and transitions to IdleState
-- [ ] If the owner has no spawn point bound, retreat falls back to IdleState (no log lost — stays in `_field_log` for next attempt)
-- [ ] Toggling `can_retreat = false` on a minion type makes it fight to the death as before (no behavioral change to existing combat units)
-- [ ] `_observe()` does NOT log friendlies (your own minions don't need to be reported home)
-
-**Info-courier — scheduled scout-and-return (war-table.md step 8)**
-
-The `I` hotkey in `war_table_test.tscn` dispatches one info-courier from your spawn to a random playspace point. Default `OBSERVE_DURATION = 4.0s`.
-
-- [ ] Press **I** → an info-courier minion (purple-pink cylinder via `info_courier.tres`) spawns at your tower marker with waypoint = target
-- [ ] Courier travels to target via inherited ChaseState (no combat — `aggro_radius = 0`)
-- [ ] On arrival within `ARRIVAL_DISTANCE = 2m`, courier enters `InfoCourierObserveState` and stands still
-- [ ] While observing, `MinionActor._observe()` continues populating `_field_log` (any hostile minion within `OBSERVE_RADIUS = 12m` ends up logged)
-- [ ] After `OBSERVE_DURATION` seconds, courier transitions to `RetreatState` automatically
-- [ ] Courier walks home via NavigationAgent3D and on arrival flushes the log via `KnowledgeManager.flush_observations`
-- [ ] Flushed sightings appear on the war table; rivals' minions in the observed area become visible on YOUR table after the courier returns even if `INFINITE_BROADCAST_RANGE = false`
-- [ ] Killing the info-courier mid-flight (any HP loss past `retreat_hp_threshold * max_hp = 0.4 * 18 ≈ 7`) triggers premature retreat (the courier is `can_retreat = true`)
-- [ ] Reality overlay (M) shows the info-courier as a yellow sphere — same as command-couriers — at its actual position; intent-vs-reality continues to work for both courier kinds
+### Tier 3
 
 #### Territory system
 - [ ] Minions present near a grid cell increase corruption over time
@@ -337,7 +117,7 @@ The `I` hotkey in `war_table_test.tscn` dispatches one info-courier from your sp
 - [ ] F8 (+10 influence) bumps the local peer's score live in the overlay
 - [ ] Influence persists across Avatar transfers within a match
 
-#### Minor gem sites — **[blocked: GemSite not yet placed in `World/Interactables/`]**
+#### Minor gem sites — **[blocked: GemSite not yet placed]**
 - [ ] Minions clear neutral enemies on the site
 - [ ] Avatar can interact to channel a capture
 - [ ] Channel completion grants passive influence to the capturing peer
@@ -355,78 +135,78 @@ The `I` hotkey in `war_table_test.tscn` dispatches one info-courier from your sp
 - [ ] Tiebreak between equal-influence peers is deterministic
 - [ ] Mode swap mirrors the hostile-takeover transfer
 
-#### Guardian boss — **[blocked: GuardianBoss not yet instanced near Capitol]**
+#### Guardian boss — **[blocked: GuardianBoss not yet instanced]**
 - [ ] Boss spawns at the placed location
 - [ ] HP/damage scaled by total corruption (debuff visible in F3 boss panel)
 - [ ] Avatar attacks land; boss attacks reduce Avatar HP
 - [ ] Boss death triggers Tier 3 win condition
 
-#### Astral projection — **[blocked: AstralProjection not yet wired into CanvasLayer]**
+#### Astral projection — **[blocked: AstralProjection not yet wired]**
 - [ ] SubViewport overlay auto-activates when the boss engages
 - [ ] Spectator camera follows the active Avatar for non-Avatar peers
 - [ ] Overlay clears on boss death / match end
 
-### Tier 4 — Corruption Has a Face
+#### Forced retreat + return-to-tower update — **[DEFERRED 2026-06-05: build + test later]**
+
+Setup: flip `can_retreat = true` on a combat type's `.tres` (e.g. `data/minions/skeleton.tres`); harness has the tower binding.
+
+- [ ] HP below `retreat_hp_threshold * max_hp` breaks combat at the next Idle/Chase/Attack tick → `RetreatState` navigates to the owner's `MinionSpawnPoint`, no aggro en route
+- [ ] On arrival: `_field_log` flushes via `KnowledgeManager.flush_observations` (sightings appear on table with `source = &"return"` — visual differentiation is a polish TODO), partial-heal to 50%, back to Idle, no immediate re-trigger
+- [ ] No spawn point bound → falls back to Idle, log retained for next attempt
+- [ ] `can_retreat = false` types fight to the death as before; `_observe()` never logs friendlies
+- [ ] Info-courier premature retreat: HP loss past its threshold mid-flight sends it home early with its log
+
+### Tier 4
 
 #### Faction-specific minion rosters
 - [ ] All 4 factions load distinct rosters from `FactionData`
-- [ ] Costs / stats / traits differ per faction (spot-check Eldritch vs Demonic vs Nature/Fey vs Undeath)
-- [ ] Summoning Circle UI shows the active faction's roster
+- [ ] Costs / stats / traits differ per faction (spot-check all four)
 
 #### Faction-specific Avatar abilities
 - [ ] Each faction's Avatar has its own ability set (cooldowns, damage mults, lifesteal, camouflage)
 - [ ] Activation triggers the right `AbilityEffect` scene under `scenes/abilities/`
-- [ ] Combat queries on `AvatarAbilities` aggregate correctly across `_active` (damage mult, lifesteal, invisibility, channel)
+- [ ] Combat queries on `AvatarAbilities` aggregate correctly across `_active`
 - [ ] `abilities.cancel(&"id")` ends an effect early
 
 #### Faction-specific Overlord tools
-- [ ] Eldritch: domination via Summoning Circle (cost respects discount if granted by ritual)
+- [ ] Eldritch: domination via Summoning Circle (cost respects ritual discount)
 - [ ] Demonic: single-minion direct command works
 - [ ] Nature/Fey: information advantage visible in War Table / map
 - [ ] Tools gated correctly — only the matching faction's overlord can use them
 
 #### Eldritch ritual mechanic — **[blocked: RitualSite not yet placed]**
-- [ ] Avatar interaction starts the channel; channel duration matches `RitualData`
-- [ ] Successful completion applies the ritual's bonus
-- [ ] Each of the three rituals tested: `domination_mastery`, `corruption_surge`, `eldritch_vision`
-- [ ] `GameState.has_eldritch_vision(peer)` ticks down and clears when timer expires
+- [ ] Avatar channel matches `RitualData` duration; completion applies the bonus
+- [ ] All three rituals tested: `domination_mastery`, `corruption_surge`, `eldritch_vision`
+- [ ] `GameState.has_eldritch_vision(peer)` ticks down and clears on expiry
 
 #### Undeath raise-dead mechanic
-- [ ] Minion with the Ghoul trait kills an enemy → skeleton spawns under the killer's owner
-- [ ] Skeleton inherits faction and behaves like a normal Undeath minion
-- [ ] No skeleton spawns from non-Ghoul kills
+- [ ] Ghoul-trait kill → skeleton spawns under the killer's owner, inherits faction, behaves normally
+- [ ] No skeleton from non-Ghoul kills
 
-#### Two-boss endgame (BossManager) — **[blocked: BossManager not yet placed]**
-- [ ] BossManager's `initial_boss` resolves to the world's GuardianBoss
-- [ ] Defeating phase 1 spawns `CorruptedSeraph` at `seraph_spawn_point` (or boss's death position)
-- [ ] Defeating phase 2 triggers match win
-- [ ] No script-swap shenanigans (Seraph is an inherited scene with its own `MinionType`)
+#### Two-boss endgame — **[blocked: BossManager not yet placed]**
+- [ ] `initial_boss` resolves to the world's GuardianBoss; phase-1 death spawns `CorruptedSeraph`; phase-2 death wins the match
 
 #### Divine intervention — **[blocked: DivineIntervention not yet placed]**
-- [ ] 60s loss timer counts down when total corruption < threshold
-- [ ] Timer resets when corruption rises back above threshold
-- [ ] Timer expiry triggers match loss screen for all peers
-- [ ] F10 (+corruption near origin) can cancel an active countdown
+- [ ] 60s loss timer runs while corruption < threshold, resets above it, expiry shows loss screen for all peers; F10 can cancel a countdown
 
-#### Upgrade Altar
-- [ ] **Prompt visibility** — Walk up as Overlord, see "Press E to open Upgrade Altar" in the prompt color (light purple)
-- [ ] **Open/close** — E opens the menu listing 5 upgrades with cost + level; Q closes
-- [ ] **Selection** — 1–5 keys move the `>>` marker to each row
-- [ ] **Purchase (host)** — With ≥cost resources, E on a row deducts resources and bumps the level by 1
-- [ ] **Purchase (client)** — Same flow on a non-host peer; host validates and applies via `_request_upgrade.rpc_id(1, kind)` → `_apply_upgrade.rpc(...)` → `GameState.add_upgrade`
-- [ ] **Insufficient funds** — E with <cost is silently rejected (no level change, no resource deduction)
-- [ ] **Max level** — At `max_level`, row shows `[MAX]` and further purchases are rejected
-- [ ] **Resource sync** — Spending updates the resource counter for *only* the purchasing peer (per-peer `MinionManager.resources`)
-- [ ] **Effect: minion HP / damage** — Upgrade levels feed `get_upgrade_multiplier(peer, kind)` into spawned minions
-- [ ] **Effect: resource rate** — `RESOURCE_RATE` upgrade increases the buying peer's resource regen
-- [ ] **Effect: avatar HP / damage** — `AVATAR_HP` / `AVATAR_DAMAGE` apply when the upgrading peer is in Avatar mode
-- [ ] **Per-tower** — Each of the 4 towers has its own altar instance (via shared `tower.tscn`); each peer only operates their own
-- [ ] **Other peer interaction** — A non-owner Overlord standing near another tower's altar cannot open it (early-out in `_on_interact`)
+#### Upgrade Altar — effect verification (flow verified 2026-06-05)
+- [ ] **Effect: minion HP / damage** — levels feed `get_upgrade_multiplier(peer, kind)` into spawned minions
+- [ ] **Effect: resource rate** — increases the buying peer's resource regen
+- [ ] **Effect: avatar HP / damage** — apply when the upgrading peer is in Avatar mode
 
-### Notes
+---
 
-- All interactibles should inherit from `scenes/interactibles/interactable.tscn` or at minimum be an Area3D with a CollisionShape3D child
-- Interactibles no longer use Label3D — prompts route through the InteractionUI autoload to the HUD RichTextLabel
-- The `InteractionPrompt` RichTextLabel in CanvasLayer is already set up in tower_scene.tscn
-- `InteractionUI` autoload is registered in project.godot
-- War Table uses the overlord's own camera — tweened to `MapViewPoint` during takeover. No separate Camera3D required. The `Map` child renders WorldModel belief as chess-piece markers; `WarTableRange` visualizes the effective map region in-editor and in-game.
+## Known issues / QoL backlog
+
+Carried over from the 2026-06-05 test pass. Small, unscheduled.
+
+- [ ] **QoL: ghost-popup auto-close should clear selection** — when the stack inspector's grace timer closes the popup, reset the selection; walking away mid-composition shouldn't leave a stale half-selection
+- [ ] **QoL: pending ghosts need a disabled state** — a ghost whose member already has a pending order is filtered from selection but still lights up on focus; dim it so it reads as unselectable
+- [ ] **BUG (repro unknown): order issued but no courier spawned** — observed once in the harness 2026-06-05; `issue_move_command`'s early-outs now push_warning, so the next repro will name itself. Check arrow color at failure time (red/amber/black = stage it died at)
+- [ ] **Build + test `can_retreat` retreat-flush** — see the [DEFERRED] section above
+
+## Notes
+
+- All interactibles inherit `scenes/interactibles/interactable.tscn` (or at minimum Area3D + CollisionShape3D); every interactable is single-shot E — no modal enter/use/exit flows
+- Prompts route through the `InteractionUI` autoload to the HUD RichTextLabel (no Label3D); empty prompt text hides the label
+- The War Table has no camera takeover — first-person + discrete child Interactables (Piece/Ghost/MapTarget/Paper/Reset); `WarTableRange` visualizes the map region in-editor and in-game

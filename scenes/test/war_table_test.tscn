@@ -25,32 +25,35 @@ ambient_light_sky_contribution = 0.6
 ambient_light_energy = 0.4
 
 [sub_resource type="BoxShape3D" id="BoxShape_floor"]
-size = Vector3(60, 0.5, 60)
+size = Vector3(320, 0.5, 320)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
-size = Vector2(60, 60)
+size = Vector2(320, 320)
 
 [sub_resource type="StandardMaterial3D" id="Material_floor"]
 albedo_color = Color(0.32, 0.34, 0.3, 1)
 roughness = 0.95
 
 [sub_resource type="NavigationMesh" id="NavMesh_main"]
-vertices = PackedVector3Array(-29.5, 0.505, -29.5, -29.5, 0.505, 29.5, 29.5, 0.505, 29.5, 29.5, 0.505, -29.5)
+vertices = PackedVector3Array(-149.5, 0.505, -149.5, -149.5, 0.505, 149.5, 149.5, 0.505, 149.5, 149.5, 0.505, -149.5)
 polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
 agent_radius = 0.4
 agent_max_climb = 0.3
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_navsource"]
-size = Vector2(60, 60)
+size = Vector2(300, 300)
 
-[sub_resource type="BoxMesh" id="BoxMesh_playspace_border"]
-size = Vector3(30, 0.04, 30)
+[sub_resource type="BoxShape3D" id="BoxShape_platform"]
+size = Vector3(16, 40, 16)
 
-[sub_resource type="StandardMaterial3D" id="Material_playspace_border"]
-transparency = 1
-cull_mode = 2
-shading_mode = 0
-albedo_color = Color(0.95, 0.85, 0.4, 0.18)
+[sub_resource type="BoxMesh" id="BoxMesh_platform"]
+size = Vector3(16, 40, 16)
+
+[sub_resource type="NavigationMesh" id="NavMesh_platform"]
+vertices = PackedVector3Array(162.5, 40.505, -7.5, 162.5, 40.505, 7.5, 177.5, 40.505, 7.5, 177.5, 40.505, -7.5)
+polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
+agent_radius = 0.4
+agent_max_climb = 0.3
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_courier_zone_test"]
 radius = 3.0
@@ -62,7 +65,7 @@ shading_mode = 0
 albedo_color = Color(0.95, 0.75, 0.2, 0.02)
 
 [sub_resource type="BoxMesh" id="BoxMesh_3o13u"]
-size = Vector3(30, 20, 30)
+size = Vector3(300, 20, 300)
 
 [node name="WarTableTest" type="Node3D" unique_id=900000001 node_paths=PackedStringArray("war_table", "overlord", "minion_manager", "starting_minions_root", "debug_markers_root", "status_label")]
 script = ExtResource("1_ctrl")
@@ -99,60 +102,68 @@ navigation_mesh = SubResource("NavMesh_main")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
 mesh = SubResource("PlaneMesh_navsource")
 
-[node name="PlayspaceBorder" type="MeshInstance3D" parent="World" unique_id=900000040]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
-mesh = SubResource("BoxMesh_playspace_border")
-surface_material_override/0 = SubResource("Material_playspace_border")
+[node name="Platform" type="StaticBody3D" parent="World" unique_id=900000041]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 170, 20, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Platform" unique_id=900000042]
+shape = SubResource("BoxShape_platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="World/Platform" unique_id=900000043]
+mesh = SubResource("BoxMesh_platform")
+surface_material_override/0 = SubResource("Material_floor")
+
+[node name="PlatformNav" type="NavigationRegion3D" parent="World" unique_id=900000044]
+navigation_mesh = SubResource("NavMesh_platform")
 
 [node name="StartingMinions" type="Node3D" parent="World" unique_id=900000050]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4614935, 0)
 
 [node name="Skeleton1" type="Marker3D" parent="World/StartingMinions" unique_id=900000051]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, -40)
 script = ExtResource("2_spec")
 
 [node name="Skeleton2" type="Marker3D" parent="World/StartingMinions" unique_id=900000052]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -57, 0, -37)
 script = ExtResource("2_spec")
 
 [node name="Ghoul1" type="Marker3D" parent="World/StartingMinions" unique_id=900000053]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 0, 30)
 script = ExtResource("2_spec")
 type_id = &"ghoul"
 
 [node name="Imp1" type="Marker3D" parent="World/StartingMinions" unique_id=900000054]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -60)
 script = ExtResource("2_spec")
 type_id = &"imp"
 faction = 1
 owner_peer_id = -1
 
 [node name="Hellhound1" type="Marker3D" parent="World/StartingMinions" unique_id=900000055]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, -55)
 script = ExtResource("2_spec")
 type_id = &"hellhound"
 faction = 1
 owner_peer_id = -1
 
 [node name="Zombie1" type="Marker3D" parent="World/StartingMinions" unique_id=900000056]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -100)
 script = ExtResource("2_spec")
 type_id = &"neutral_zombie"
 faction = 4
 owner_peer_id = -1
 
 [node name="Advisor" type="Marker3D" parent="World/StartingMinions" unique_id=900000057]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 172, 39.74, 5)
 script = ExtResource("2_spec")
 type_id = &"advisor"
 faction = 4
 
 [node name="PlayerSpawnPoint" type="Marker3D" parent="World" unique_id=900000058]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.5, -12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 145, 0.5, 0)
 script = ExtResource("7_spawn")
 
 [node name="CourierSpawn" type="Area3D" parent="World" unique_id=900000059]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.5, -12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 145, 0.5, 0)
 collision_layer = 0
 collision_mask = 8
 
@@ -164,12 +175,12 @@ debug_color = Color(0, 0.595, 0.7, 0.4)
 script = ExtResource("3_mm")
 
 [node name="WarTable" parent="." unique_id=900000070 instance=ExtResource("4_wt")]
-transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 22, 0, 0)
-map_world_size = Vector2(30, 30)
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 170, 40, 0)
+map_world_size = Vector2(300, 300)
 map_world_center = Vector3(0, 0, 0)
 
 [node name="1" parent="." unique_id=900000080 instance=ExtResource("5_ov")]
-transform = Transform3D(0.18551232, 0, 0.98264194, 0, 1, 0, -0.98264194, 0, 0.18551232, 27, 0.1, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 176, 40.1, 0)
 
 [node name="RangeIndicator" type="MeshInstance3D" parent="." unique_id=900000090 node_paths=PackedStringArray("war_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)

@@ -34,7 +34,7 @@ class_name MinionType extends Resource
 ## Trait-tag consumed by minion AI and MinionManager (raise_dead, stealth, dominate, ...).
 @export var trait_tag: StringName
 ## How many distinct sub-orders a courier of this type can carry per outing.
-## Read by KnowledgeManager.dispatch_readied to batch readied entries into the
+## Read by KnowledgeManager._dispatch_entries to batch readied entries into the
 ## fewest couriers. A "sub-order" is one (source cluster, target_pos, minion
 ## set) tuple — N minions in the same stack getting the same target counts as
 ## one sub-order; the same minions getting different targets is N sub-orders.

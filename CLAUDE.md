@@ -372,6 +372,7 @@ When making changes:
 - `docs/one-pager.md` — Visual summary of the entire game
 - `docs/systems/` — One page per major system (combat, overlord mode, factions, territory, bosses, multiplayer, progression)
 - `docs/technical/build-phases.md` — **MVP tier tracker with current progress** (start here for what to build next)
+- `docs/technical/changelog.md` — Dated record of shipped work, verification passes, and design calls. Don't read it for current state — it's history; consult only when you need when/why something changed.
 - `docs/technical/netfox-reference.md` — Project-specific netfox + RPC cheat sheet. Read before any networking change (see § 4).
 - `docs/Corruption_GDD_v0.1.md` — Original GDD (reference, superseded by modular docs)
 

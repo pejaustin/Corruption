@@ -10,10 +10,11 @@ extends Node
 ## and commands go directly to MinionManager.
 
 ## When true, every friendly and enemy minion continuously updates every
-## overlord's WorldModel regardless of distance from the owning tower. Flip
-## off once broadcast-range tuning is ready (build order step 5). Runtime-
-## mutable so test harnesses can A/B the two modes without restarting.
-static var INFINITE_BROADCAST_RANGE: bool = true
+## overlord's WorldModel regardless of distance from the owning tower —
+## debug god-view, belief == truth. Default-off: broadcast-range gating is
+## the canonical "real game" behavior (build order step 5). Runtime-mutable
+## so test harnesses can A/B the two modes without restarting (B hotkey).
+static var INFINITE_BROADCAST_RANGE: bool = false
 
 ## When true, War Table clicks are executed immediately via MinionManager.
 ## When false, clicks record an intent and an Advisor dispatches a courier
@@ -25,6 +26,17 @@ static var INSTANT_COMMANDS: bool = false
 ## Radius around a friendly minion (or its tower) within which activity leaks
 ## into the owner's WorldModel. Unused while INFINITE_BROADCAST_RANGE is true.
 const BROADCAST_RANGE: float = 30.0
+
+## Trait tags that mark a minion as a courier-kind unit. Used by the reality
+## overlay (WarTableMap.SHOW_REALITY) to know which actors get ground-truth
+## markers.
+const COURIER_TRAITS: Array[StringName] = [&"courier", &"info_courier"]
+
+## Support-staff traits that never enter any WorldModel — own or rival — so
+## they never render as pieces on any war table. Couriers exist on the table
+## purely as order/route arrow visuals (pending_commands); the Advisor is
+## tower staff standing next to you, not a battlefield unit worth a pawn.
+const UNTRACKED_TRAITS: Array[StringName] = [&"courier", &"info_courier", &"advisor"]
 
 ## How often sightings are flushed from truth into belief.
 const UPDATE_INTERVAL: float = 0.1
@@ -82,12 +94,12 @@ func _ingest_sightings() -> void:
 		for m in minions:
 			if not is_instance_valid(m):
 				continue
-			# Your own couriers are rendered via pending_commands (intent-based,
-			# midpoint-on-arrow), not as live pawns at their real position.
-			# Skip them here so the war table doesn't double-render them. Rival
-			# couriers DO leak in — to a rival you don't see intent, just a
-			# minion you happen to spot.
-			if m.minion_trait == &"courier" and m.owner_peer_id == pid:
+			# Support staff never enter any WorldModel (design call
+			# 2026-06-05). Your own couriers are rendered via pending_commands
+			# (intent-based, midpoint-on-arrow), rivals' runners and advisors
+			# are invisible — spotting them is future interception gameplay,
+			# not a free sighting from the regular broadcast loop.
+			if m.minion_trait in UNTRACKED_TRAITS:
 				continue
 			if not INFINITE_BROADCAST_RANGE and not _observable_by(pid, m, minions):
 				continue
@@ -163,12 +175,21 @@ func notify_delivery_failures(peer_id: int, failures: Array) -> void:
 	## Called by a returning courier when one or more of its legs couldn't
 	## find the targeted minions in visual range. Each failure entry is
 	## {minion_ids, target_pos, leg_source} produced by courier_arrival_state.
-	## Stamped with the current tick and appended to the peer's WorldModel
-	## inbox; HUD code can surface the most recent N entries to the overlord.
+	## Courier AI runs on the host, but the failure inbox lives in the OWNER's
+	## local model — route remote owners their report via RPC.
 	if failures.is_empty():
 		return
-	if not has_model(peer_id):
+	if peer_id != multiplayer.get_unique_id():
+		_delivery_failures_rpc.rpc_id(peer_id, failures)
 		return
+	_apply_delivery_failures(peer_id, failures)
+
+@rpc("authority", "reliable")
+func _delivery_failures_rpc(failures: Array) -> void:
+	## Owner-side receiver for a courier failure report computed on the host.
+	_apply_delivery_failures(multiplayer.get_unique_id(), failures)
+
+func _apply_delivery_failures(peer_id: int, failures: Array) -> void:
 	var model := get_model(peer_id)
 	for f in failures:
 		var minion_ids: Array = (f.get("minion_ids", []) as Array).duplicate()
@@ -240,6 +261,7 @@ func issue_move_command(peer_id: int, minion_ids: Array[int], target_pos: Vector
 	# ids — better than dispatching a blind courier.
 	var legs := _build_legs(peer_id, minion_ids)
 	if legs.is_empty():
+		push_warning("[KnowledgeManager] Peer %d has no belief about any of %s; draft not recorded" % [peer_id, minion_ids])
 		return
 	# `source_pos` (centroid) is kept for the courier path until phase 4 swaps
 	# couriers to the legs schema. Renderers should read `legs` directly.
@@ -424,35 +446,75 @@ func dispatch_info_courier(peer_id: int, target_pos: Vector3) -> void:
 		return
 	mm.spawn_named_minion_for_peer(peer_id, &"info_courier", spawn.global_position, target_pos)
 
-func dispatch_readied(peer_id: int) -> void:
-	## Host-only. Walk the owner's pending_commands, batch every readied entry's
-	## sub-orders into the fewest couriers (subject to MinionType.max_orders
-	## capacity per courier), spawn those couriers, and promote each batched
-	## entry to "dispatched" with the courier_id of its assigned courier.
-	##
-	## Trigger: overlord interacts with the Advisor after readying drafts at
-	## the war-table Paper.
-	if not multiplayer.is_server():
+func request_dispatch(peer_id: int) -> void:
+	## Called locally by the Advisor handoff on the OWNER's machine. The owning
+	## client is the authority over its pending_commands — models are local and
+	## never replicated, so the host's copy of a client's model has no entries.
+	## The handoff therefore ships the readied entries to the host as an RPC
+	## payload; the host spawns couriers and answers per entry via
+	## _dispatch_confirmed_rpc, which flips the local stage to dispatched.
+	if peer_id != multiplayer.get_unique_id():
 		return
 	if not has_model(peer_id):
 		return
+	var model := get_model(peer_id)
+	var payload: Array = []
+	for cmd_id in model.pending_commands.keys():
+		var entry: Dictionary = model.pending_commands[cmd_id]
+		if entry.get("stage", STAGE_DISPATCHED) != STAGE_READIED:
+			continue
+		if entry.get("in_flight", false):
+			continue
+		# Latch until the host confirms or rejects, so a double-E can't
+		# dispatch the same entry twice.
+		entry["in_flight"] = true
+		payload.append({
+			"cmd_id": cmd_id,
+			"target_pos": entry.get("target_pos", Vector3.ZERO),
+			# duplicate(true): on the host-owner loopback the RPC delivers this
+			# same reference back to us — without the deep copy the dispatch
+			# path would alias the live model entry (netfox-reference.md,
+			# "call_local + dict args = shared reference").
+			"legs": (entry.get("legs", []) as Array).duplicate(true),
+		})
+	if payload.is_empty():
+		return
+	_request_dispatch_rpc.rpc_id(1, payload)
+
+@rpc("any_peer", "call_local", "reliable")
+func _request_dispatch_rpc(entries: Array) -> void:
+	## Host-side receiver. The owner is the SENDER — never trusted from the
+	## payload (a peer can only dispatch orders it gathered from its own model).
+	if not multiplayer.is_server():
+		return
+	var owner_id := multiplayer.get_remote_sender_id()
+	if owner_id == 0:
+		owner_id = multiplayer.get_unique_id()  # local call — host is the owner
+	_dispatch_entries(owner_id, entries)
+
+func _dispatch_entries(peer_id: int, entries: Array) -> void:
+	## Host-only courier execution. Batch every entry's sub-orders into the
+	## fewest couriers (subject to MinionType.max_orders capacity per courier),
+	## spawn them, and confirm each entry back to its owner. Every requested
+	## cmd_id gets exactly one answer — confirm (courier_id) or reject (-1) —
+	## so the owner's in-flight latch always clears.
 	var scene := get_tree().current_scene
 	if scene == null:
 		return
 	var mm := scene.get_node_or_null("MinionManager") as MinionManager
 	if mm == null:
 		return
-	var model := get_model(peer_id)
-	# Collect every sub-order from every readied entry. A "sub-order" is one
+	# Flatten the payload into sub-orders. A "sub-order" is one
 	# (source_pos, minion_ids, target_pos, source_cmd_id) tuple — typically
 	# one per piece-on-the-board the order covers.
 	var sub_orders: Array[Dictionary] = []
-	var readied_cmd_ids: Array[int] = []
-	for cmd_id in model.pending_commands.keys():
-		var entry: Dictionary = model.pending_commands[cmd_id]
-		if entry.get("stage", STAGE_DISPATCHED) != STAGE_READIED:
+	var requested_cmd_ids: Array[int] = []
+	for e in entries:
+		var entry: Dictionary = e
+		var cmd_id := int(entry.get("cmd_id", -1))
+		if cmd_id < 0:
 			continue
-		readied_cmd_ids.append(cmd_id)
+		requested_cmd_ids.append(cmd_id)
 		var entry_target: Vector3 = entry.get("target_pos", Vector3.ZERO)
 		var entry_legs: Array = entry.get("legs", [])
 		for leg in entry_legs:
@@ -466,6 +528,8 @@ func dispatch_readied(peer_id: int) -> void:
 				"cmd_id": cmd_id,
 			})
 	if sub_orders.is_empty():
+		for cmd_id in requested_cmd_ids:
+			_dispatch_confirmed_rpc.rpc_id(peer_id, cmd_id, -1, PackedVector3Array())
 		return
 	# Capacity per courier — read off the courier MinionType.tres so different
 	# courier variants can carry different loads. Falls back to 1 (legacy
@@ -485,6 +549,7 @@ func dispatch_readied(peer_id: int) -> void:
 	# in the same courier, but the cluster step below already groups them by
 	# source so a sequential chunking yields good results in practice.
 	var cmd_to_courier: Dictionary[int, int] = {}
+	var cmd_to_route: Dictionary[int, PackedVector3Array] = {}
 	var i: int = 0
 	while i < sub_orders.size():
 		var batch: Array[Dictionary] = []
@@ -514,19 +579,40 @@ func dispatch_readied(peer_id: int) -> void:
 		for leg in ordered_legs:
 			route.append(leg.get("source_pos", spawn_world))
 		# Map each contributing cmd_id to this courier.
-		var contributing: Dictionary[int, bool] = {}
 		for sub in batch:
-			contributing[int(sub["cmd_id"])] = true
-		for cmd_id in contributing:
+			var cmd_id := int(sub["cmd_id"])
 			cmd_to_courier[cmd_id] = courier_id
-			var entry: Dictionary = model.pending_commands.get(cmd_id, {})
-			if entry.is_empty():
-				continue
-			entry["stage"] = STAGE_DISPATCHED
-			entry["courier_id"] = courier_id
-			entry["dispatched_tick"] = _tick
-			entry["route_waypoints"] = route
-			model.pending_commands[cmd_id] = entry
+			cmd_to_route[cmd_id] = route
+	# Answer every requested entry: confirm with its courier, or reject with
+	# -1 (spawn failed / no usable legs) so the owner's latch clears and the
+	# entry stays readied for a retry.
+	for cmd_id in requested_cmd_ids:
+		_dispatch_confirmed_rpc.rpc_id(
+			peer_id,
+			cmd_id,
+			cmd_to_courier.get(cmd_id, -1),
+			cmd_to_route.get(cmd_id, PackedVector3Array())
+		)
+
+@rpc("authority", "call_local", "reliable")
+func _dispatch_confirmed_rpc(cmd_id: int, courier_id: int, route_waypoints: PackedVector3Array) -> void:
+	## Owner-side. The host's answer to _request_dispatch_rpc — flips the local
+	## entry readied → dispatched (courier in the world), or just clears the
+	## in-flight latch on rejection (courier_id -1) leaving the entry readied.
+	var pid := multiplayer.get_unique_id()
+	if not has_model(pid):
+		return
+	var model := get_model(pid)
+	if cmd_id not in model.pending_commands:
+		return
+	var entry: Dictionary = model.pending_commands[cmd_id]
+	entry.erase("in_flight")
+	if courier_id < 0:
+		return
+	entry["stage"] = STAGE_DISPATCHED
+	entry["courier_id"] = courier_id
+	entry["dispatched_tick"] = _tick
+	entry["route_waypoints"] = route_waypoints
 
 func _build_legs_from_sub_orders(batch: Array[Dictionary]) -> Array[Dictionary]:
 	## Group a courier's batch of sub-orders into legs by source-pos proximity.

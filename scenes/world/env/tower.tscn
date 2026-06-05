@@ -1232,4 +1232,4 @@ end_position = Vector3(-5, -40, 0)
 script = ExtResource("33_7a0l1")
 
 [node name="Advisor" parent="." unique_id=336466554 instance=ExtResource("35_n8gnn")]
-transform = Transform3D(-0.2866082, 0, 0.95804787, 0, 1, 0, -0.95804787, 0, -0.2866082, -8.400562, 40.755337, 0)
+transform = Transform3D(-0.2866082, 0, 0.95804787, 0, 1, 0, -0.95804787, 0, -0.2866082, -8.400562, 39.54174, -2.5393667)

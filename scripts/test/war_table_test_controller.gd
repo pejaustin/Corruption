@@ -15,25 +15,32 @@ extends Node3D
 ##     owner_peer_id from the inspector. Position the marker where you want
 ##     the minion. The controller spawns one MinionActor per spec on _ready.
 ##
+## Layout: the field is a full-scale 300×300 region (production map_world_size)
+## so broadcast range, courier travel, and visual range run at real distances.
+## The overlord, war table, and Advisor live on a 40m observation platform at
+## the field's east edge; couriers spawn/despawn at ground level below it.
+##
 ## Hotkeys (mirrored on the HUD):
 ##   1 — spawn a Skeleton owned by you (UNDEATH) at a random playspace point
 ##   2 — spawn a Demonic Imp (enemy, owner -1) at a random point
 ##   3 — spawn a Nature/Fey Sprite (enemy) at a random point
 ##   4 — spawn an Eldritch Cultist (enemy) at a random point
 ##   F — cycle your overlord's faction (UNDEATH→DEMONIC→NATURE_FEY→ELDRITCH)
-##   K — kill the nearest minion to the overlord (tests piece removal)
+##   K — kill the nearest minion to the overlord, skipping the Advisor
+##   Shift+K — same, including the Advisor (advisor-death test)
 ##   R — reset: despawn all minions, respawn from StartingMinionSpec children
 ##   T — toggle KnowledgeManager.INSTANT_COMMANDS
 ##   B — toggle KnowledgeManager.INFINITE_BROADCAST_RANGE
 ##   M — toggle WarTableMap.SHOW_REALITY (debug overlay of actual courier positions)
 ##   I — dispatch an info-courier to a random playspace point (fires KnowledgeManager.dispatch_info_courier)
+##   V — toggle courier visual-range debug sphere
+##   H — cycle Engine.time_scale 1x/2x/4x/8x (real-scale courier trips are long)
 ##
-## While the war table is active (E to enter, mouse visible):
-##   Left click       → command your minions to move (real game behavior)
-##   Right click      → Eldritch dominate (faction-gated)
-##   Shift+Left click → Demonic single-target command (faction-gated)
-##   Ctrl+Left click  → drop a yellow debug marker at the projected world point
-##                      (pure click→world mapping check; doesn't issue a command)
+## Table interaction is the standard single-shot-E flow: aim at a piece and E
+## to select (multi-member stacks open the ghost popup), aim at the diorama
+## (MapTarget) and E to draft, Paper E to ready, Advisor E to dispatch, Reset E
+## to wipe drafts. Ctrl+Left click with the mouse released (Esc) drops a yellow
+## debug marker at the projected world point (click→world mapping check).
 
 const LOCAL_PEER_ID: int = 1
 const FACTION_CYCLE: Array[int] = [
@@ -52,11 +59,18 @@ const SPAWN_ID_BASE: int = 10000
 @export var starting_minions_root: Node3D
 @export var debug_markers_root: Node3D
 @export var status_label: Label
-## Half-extent of the playspace on X/Z. Defaults to 14 so spawns stay just
-## inside a 30×30 region (matching WarTableMap.map_world_size).
-@export var playspace_extent: Vector2 = Vector2(14.0, 14.0)
+## Half-extent of the playspace on X/Z. Defaults to 145 so spawns stay just
+## inside the 300×300 region (matching the production map_world_size — the
+## harness field is full scale so broadcast range, courier travel time, and
+## visual range behave exactly as in the real game).
+@export var playspace_extent: Vector2 = Vector2(145.0, 145.0)
+
+## Engine.time_scale steps cycled by the H hotkey. Real-scale courier trips
+## cross ~150m of field; 4x/8x keeps iteration tolerable while waiting.
+const TIME_SCALE_STEPS: Array[float] = [1.0, 2.0, 4.0, 8.0]
 
 var _next_spawn_id: int = SPAWN_ID_BASE
+var _time_scale_index: int = 0
 
 func _enter_tree() -> void:
 	# Must be set BEFORE any child _ready fires. CameraInput._ready captures
@@ -148,7 +162,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_F:
 				_cycle_own_faction()
 			KEY_K:
-				_kill_nearest_to_overlord()
+				# Plain K skips the Advisor — on the platform it is always the
+				# nearest minion to the overlord, so without the filter K could
+				# never reach the field. Shift+K includes it (advisor-death test).
+				_kill_nearest_to_overlord(event.shift_pressed)
+			KEY_H:
+				_time_scale_index = (_time_scale_index + 1) % TIME_SCALE_STEPS.size()
+				Engine.time_scale = TIME_SCALE_STEPS[_time_scale_index]
 			KEY_R:
 				_reset_to_starting_state()
 			KEY_T:
@@ -220,12 +240,14 @@ func _cycle_own_faction() -> void:
 	var next: int = FACTION_CYCLE[(idx + 1) % FACTION_CYCLE.size()]
 	GameState.set_faction_override(LOCAL_PEER_ID, next)
 
-func _kill_nearest_to_overlord() -> void:
+func _kill_nearest_to_overlord(include_advisor: bool = false) -> void:
 	if minion_manager == null or overlord == null:
 		return
 	var closest: MinionActor = null
 	var closest_dist: float = INF
 	for m in minion_manager.get_all_minions():
+		if not include_advisor and m.minion_type_id == &"advisor":
+			continue
 		var d: float = m.global_position.distance_to(overlord.global_position)
 		if d < closest_dist:
 			closest_dist = d
@@ -263,10 +285,11 @@ func _refresh_status() -> void:
 		count_str += "%s:%d  " % [GameConstants.faction_names.get(f, "?"), counts[f]]
 	if count_str == "":
 		count_str = "(none)"
-	status_label.text = "War Table Test — real systems\nYou are peer %d, faction: %s\nMinions: %s\n\n[Esc] release/recapture mouse  [Shift+Esc] quit\n[1] spawn Skeleton (yours)\n[2] spawn Imp (Demonic, neutral owner)\n[3] spawn Sprite (Nature/Fey)\n[4] spawn Cultist (Eldritch)\n[F] cycle your faction\n[K] kill nearest minion to you\n[R] reset to authored starting state\n[I] dispatch info-courier to a random point\n[T] INSTANT_COMMANDS: %s\n[B] INFINITE_BROADCAST_RANGE: %s\n[M] SHOW_REALITY (war table debug overlay): %s\n\nWalk to the War Table, press E to use it.\nLeft-click → command minions. Right-click / Shift-click use faction features.\nCtrl+Left-click on the table → yellow debug marker (click→world projection).\n" % [
+	status_label.text = "War Table Test — real systems, full-scale 300x300 field\nYou are peer %d, faction: %s\nMinions: %s\n\n[Esc] release/recapture mouse  [Shift+Esc] quit\n[1] spawn Skeleton (yours)\n[2] spawn Imp (Demonic, neutral owner)\n[3] spawn Sprite (Nature/Fey)\n[4] spawn Cultist (Eldritch)\n[F] cycle your faction\n[K] kill nearest minion (skips Advisor; Shift+K includes)\n[R] reset to authored starting state\n[I] dispatch info-courier to a random point\n[V] courier visual-range sphere\n[H] time scale: %.0fx\n[T] INSTANT_COMMANDS: %s\n[B] INFINITE_BROADCAST_RANGE: %s\n[M] SHOW_REALITY (war table debug overlay): %s\n\nAim and press E: piece → select (stacks open ghost popup),\nmap → draft, Paper → ready, Advisor → dispatch, Reset → wipe drafts.\n" % [
 		LOCAL_PEER_ID,
 		my_faction_name,
 		count_str,
+		Engine.time_scale,
 		"ON" if KnowledgeManager.INSTANT_COMMANDS else "OFF",
 		"ON" if KnowledgeManager.INFINITE_BROADCAST_RANGE else "OFF",
 		"ON" if WarTableMap.SHOW_REALITY else "OFF",

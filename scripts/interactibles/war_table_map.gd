@@ -720,7 +720,7 @@ func _render_reality_couriers() -> void:
 	for m in mm.get_all_minions():
 		if not is_instance_valid(m):
 			continue
-		if m.minion_trait != &"courier":
+		if m.minion_trait not in KnowledgeManager.COURIER_TRAITS:
 			continue
 		var id: int = m.name.to_int()
 		seen[id] = true

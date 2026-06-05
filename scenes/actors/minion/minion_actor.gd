@@ -30,7 +30,7 @@ var owner_peer_id: int = -1
 var minion_type_id: StringName = &""
 var minion_trait: StringName = &""
 var waypoint: Vector3 = Vector3.ZERO
-## Courier-only payload. Populated by KnowledgeManager.dispatch_readied when
+## Courier-only payload. Populated by KnowledgeManager._dispatch_entries when
 ## the courier is spawned. courier_arrival_state pops the head leg as the
 ## courier arrives at each cluster, dispatches every sub_order at that source
 ## (each sub_order may target a different position), and sets `waypoint` to
@@ -56,7 +56,7 @@ var delivery_failures: Array[Dictionary] = []
 var courier_visual_range: float = 0.0
 var courier_wait_seconds: float = 0.0
 ## Optional Area3D the courier should despawn upon entering. Set by
-## KnowledgeManager.dispatch_readied when the tower's CourierSpawn is an Area3D
+## KnowledgeManager._dispatch_entries when the tower's CourierSpawn is an Area3D
 ## (the canonical setup). Zone overlap is the authoritative arrival test
 ## because point-distance checks fail when CourierSpawn sits on a slope or at
 ## slightly different Y than the navmesh polygon under the courier's feet.
