@@ -81,7 +81,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
 [node name="GemSite" parent="World" unique_id=799133122 instance=ExtResource("5_site")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
 site_name = "Gem Site"
-influence_per_second = 0.5
+corruption_per_second = 0.5
 minion_clear_radius = 8.0
 
 [node name="MinionManager" type="Node" parent="." unique_id=1574021431]

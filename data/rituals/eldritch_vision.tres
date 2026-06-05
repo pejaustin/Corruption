@@ -7,6 +7,6 @@ script = ExtResource("1_script")
 id = &"eldritch_vision"
 display_name = "Eldritch Vision"
 description = "Reveal all enemy minions on the War Table for 60 seconds."
-effect = 2
+effect = 1
 channel_time = 5.0
 duration = 60.0

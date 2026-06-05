@@ -1,10 +1,10 @@
 class_name RitualSite extends Interactable
 
 ## Eldritch ritual site. The Avatar channels here for several seconds to
-## complete the ritual. Completion grants a bonus (free domination, corruption
-## boost, eldritch vision) — the specific effect is authored as a RitualData
-## resource so the same scene serves all ritual variants. Only Eldritch can
-## channel; the Avatar is vulnerable while channeling.
+## complete the ritual. Completion grants a bonus (free domination, eldritch
+## vision) — the specific effect is authored as a RitualData resource so the
+## same scene serves all ritual variants. Only Eldritch can channel; the
+## Avatar is vulnerable while channeling.
 
 enum RitualState { AVAILABLE, CHANNELING, COMPLETED }
 
@@ -124,10 +124,6 @@ func _apply_ritual_bonus(peer_id: int) -> void:
 			var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
 			if mm:
 				mm.set_domination_discount(peer_id, ritual.domination_discount)
-		RitualData.Effect.CORRUPTION_SURGE:
-			var tm := get_tree().current_scene.get_node_or_null("TerritoryManager") as TerritoryManager
-			if tm:
-				tm.grant_corruption_surge(peer_id, ritual.duration)
 		RitualData.Effect.ELDRITCH_VISION:
 			GameState.grant_eldritch_vision(peer_id, ritual.duration)
 

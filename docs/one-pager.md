@@ -27,8 +27,8 @@
              │ - Capture   │                  │               │
              │   gems      │                  │ - Spawn       │
              │ - Infiltrate│                  │   minions     │
-             │             │                  │ - Control     │
-             └──────┬──────┘                  │   territory   │
+             │             │                  │ - Hold gem    │
+             └──────┬──────┘                  │   sites       │
                     │                         │ - Sabotage    │
                     │                         │ - Diplomacy   │
                     │                         └───────┬───────┘
@@ -39,7 +39,7 @@
                     │    AVATAR TRANSFER      │
                     │                         │
                     │ Hostile: minions kill    │
-                    │ Fallback: most influence │
+                    │ Fallback: most corruption│
                     └────────────┬────────────┘
                                  │
               ┌──────────────────▼──────────────────┐
@@ -80,11 +80,11 @@
 
 | Mechanic | Summary |
 |----------|---------|
-| **Ambient Influence** | Territory + captured minor gems = your claim to Avatar control |
+| **Corruption** | Earned by holding minor gem sites — your claim to Avatar control; summed, it debuffs the bosses |
 | **Minor Gems** | At settlements, temples, holy sites. Overlord clears, Avatar confirms capture |
 | **Palantir** | Overlord watches Avatar in real-time. Avatar knows when being watched |
 | **Mirror** | Send video messages to rival Overlords. Diegetic diplomacy |
-| **Divine Intervention** | Total corruption stagnates → gods seal gems → everyone loses |
+| **Divine Intervention** | No gem site held for too long → gods seal gems → everyone loses |
 | **Astral Projection** | During boss fight, all rivals spectate and heckle |
 
 ---
@@ -110,7 +110,7 @@ Factions dig in.        Alliances form/break.   intervention race.
 | Avatar Combat | [avatar-combat.md](systems/avatar-combat.md) | Not started |
 | Overlord Mode | [overlord-mode.md](systems/overlord-mode.md) | Not started |
 | Faction Design | [faction-design.md](systems/faction-design.md) | Design done |
-| Territory & Gems | [territory-control.md](systems/territory-control.md) | Not started |
+| Corruption & Gems | [corruption-and-gems.md](systems/corruption-and-gems.md) | Implemented |
 | Boss Mechanics | [boss-mechanics.md](systems/boss-mechanics.md) | Not started |
 | Multiplayer | [multiplayer.md](systems/multiplayer.md) | Foundation built |
 | Progression & Loot | [progression-loot.md](systems/progression-loot.md) | Not started |

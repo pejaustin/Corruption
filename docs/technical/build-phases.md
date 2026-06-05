@@ -11,7 +11,7 @@ This file tracks **what to build and test next**. Completed-work detail, verific
 | 0 | The Board is Set | Walk to gem | **Complete** | Yes |
 | 1 | The Tower is Alive | Walk to gem (with social tools) | **Core complete** | Yes |
 | 2 | Blood on the Ground | Fight to gem (combat + transfer) | **Complete** | Yes |
-| 3 | The Dark Lords Scheme | Beat guardian boss (minions + territory) | **Impl complete** — war-table layer verified 2026-06-05; rest needs testing | Yes |
+| 3 | The Dark Lords Scheme | Beat guardian boss (minions + gem sites) | **Impl complete** — war-table layer verified 2026-06-05; rest needs testing | Yes |
 | 4 | Corruption Has a Face | Full 2-boss endgame + factions | **Impl complete** — altars/circles verified; rest blocked on editor setup | Ready to test |
 | 5 | Polish & Content | Complete game | Not started | - |
 
@@ -40,19 +40,18 @@ Open:
 
 **Win condition:** Fight through neutral enemies to the gem; on death, the next player gets a turn.
 
-Done: committed melee attack with stamina + animation-driven hitboxes, HP/damage/death, neutral enemy AI (patrol/aggro/attack), Avatar death → round-robin transfer with full mode-swap cycle, host-authoritative combat sync via rollback + EnemyManager. Debug: god mode (F4), spawn enemy (F6), kill Avatar (F5), spawn minion (F7), +influence (F8).
+Done: committed melee attack with stamina + animation-driven hitboxes, HP/damage/death, neutral enemy AI (patrol/aggro/attack), Avatar death → round-robin transfer with full mode-swap cycle, host-authoritative combat sync via rollback + EnemyManager. Debug: god mode (F4), spawn enemy (F6), kill Avatar (F5), spawn minion (F7), +corruption (F8).
 
 ## Tier 3: The Dark Lords Scheme [IMPL COMPLETE]
 
-**Goal:** Overlords project power onto the map. Minions exist. Territory matters. Influence determines who gets the Avatar.
+**Goal:** Overlords project power onto the map. Minions exist. Gem sites matter. Corruption determines who gets the Avatar.
 **Win condition:** Reach the gem and defeat a single guardian boss, debuffed by total corruption.
+
+> **Corruption model (changed 2026-06-05):** the old per-player "influence" score was renamed **Corruption**, and the grid-based territory system was removed. Corruption is earned ONLY from held gem sites (0.5/s trickle). Per-player corruption decides Avatar succession; the summed total debuffs the Guardian Boss; holding zero sites runs the divine-intervention loss timer.
 
 Done (war-table command layer **verified 2026-06-05** — see changelog): minion spawning via Summoning Circle slots, per-tower spawn/rally markers, minion AI state machine, War Table single-shot-E command flow (draft → readied → dispatched), Advisor handoff + batched couriers, info-couriers, broadcast-range belief model with staleness badges, reality overlay, belief privacy, client-peer parity.
 
-Done (impl complete, **not yet verified**): territory system, influence tracking, gem sites, hostile takeover, influence fallback, guardian boss, astral projection — see Testing TODO.
-
-Open:
-- [ ] **Territory paint** — Debug tool to mark areas as corrupted
+Done (impl complete, **not yet verified**): corruption tracking, gem sites, hostile takeover, corruption fallback, guardian boss, astral projection — see Testing TODO.
 
 ## Tier 4: Corruption Has a Face [IMPL COMPLETE]
 
@@ -63,11 +62,11 @@ Done (verified 2026-06-05): Summoning Circle + Upgrade Altar slot-based flows in
 
 Open:
 - [ ] **Neutral faction detection asymmetry** — Nature/Fey stealth past priests
-- [ ] **Balance dashboard** — Faction win rates, average influence, minion efficiency
+- [ ] **Balance dashboard** — Faction win rates, average corruption, minion efficiency
 
 ## Tier 5: Polish & Content [NOT STARTED]
 
-- [ ] **UI/UX pass** — HUD, faction-themed menus, influence display
+- [ ] **UI/UX pass** — HUD, faction-themed menus, corruption display
 - [ ] **Audio** — Combat, ambient tower atmosphere, faction themes, Mirror reverb tuning
 - [ ] **Art pass** — Replace greybox with final assets
 - [ ] **Balance pass** — Faction tuning, boss difficulty, match pacing, divine intervention timing
@@ -86,7 +85,7 @@ Scripts are implemented but these nodes/scenes need to be created or wired up in
 - [ ] `GemSite` (x2-3 in world) — Create as Area3D with CollisionShape3D (sphere, radius ~4). Attach `scripts/interactibles/gem_site.gd`. Place in `World/Interactables/`. Set `site_name` export
 - [ ] `GuardianBoss` — Instance `scenes/actors/enemy/guardian/guardian_boss.tscn` near Capitol/gem area, rename to `GuardianBoss`. (Phase-2 boss `corrupted_seraph.tscn` is an inherited scene — no script override needed.)
 - [ ] `AstralProjection` (Control, in CanvasLayer) — Attach `scripts/astral_projection.gd`. Needs SubViewportContainer child with SubViewport containing a Camera3D
-- [ ] Verify `MinionManager` / `EnemyManager` / `TerritoryManager` nodes at game-scene root (already added with scripts attached)
+- [ ] Verify `MinionManager` / `EnemyManager` nodes at game-scene root (already added with scripts attached)
 
 ### Tier 4
 
@@ -104,35 +103,30 @@ Implementation-complete systems not yet confirmed in a live session. Items marke
 
 ### Tier 3
 
-#### Territory system
-- [ ] Minions present near a grid cell increase corruption over time
-- [ ] Cells decay corruption when no minion is nearby
-- [ ] Faction-tagging on cells reflects who controls the area
-- [ ] Total corruption is reflected in the F3 debug overlay
+#### Corruption tracking
+- [ ] "+10 Corruption" pause-menu button bumps the local peer's score live in the F3 overlay
+- [ ] All peers' corruption + total visible in F3 panel
+- [ ] Corruption persists across Avatar transfers within a match
 - [ ] GuardianBoss debuff scales with total corruption (cross-check with boss panel)
-
-#### Influence tracking
-- [ ] Killing enemies/minions awards influence to the owner peer
-- [ ] All peers' influence visible in F3 panel
-- [ ] F8 (+10 influence) bumps the local peer's score live in the overlay
-- [ ] Influence persists across Avatar transfers within a match
+- [ ] Held gem site trickles 0.5/s corruption to the controlling peer **[blocked: GemSite not yet placed]**
 
 #### Minor gem sites — **[blocked: GemSite not yet placed]**
 - [ ] Minions clear neutral enemies on the site
 - [ ] Avatar can interact to channel a capture
-- [ ] Channel completion grants passive influence to the capturing peer
+- [ ] Channel completion grants passive corruption to the capturing peer
 - [ ] Capture state syncs to all peers
+- [ ] F3 "Gem Sites" panel shows held/total count
 
 #### Hostile takeover
 - [ ] Minion (with kill credit) damaging Avatar to 0 HP triggers takeover
 - [ ] That minion's owner becomes Avatar; previous Avatar peer returns to Overlord
 - [ ] Camera/input swap completes cleanly on both peers
-- [ ] Works distinctly from neutral-kill case (does NOT fall through to influence fallback)
+- [ ] Works distinctly from neutral-kill case (does NOT fall through to corruption fallback)
 
-#### Influence fallback
+#### Corruption fallback
 - [ ] Avatar dies to a neutral enemy (no owned minion in kill credit)
-- [ ] Highest-influence peer takes over as Avatar
-- [ ] Tiebreak between equal-influence peers is deterministic
+- [ ] Highest-corruption peer takes over as Avatar
+- [ ] Tiebreak between equal-corruption peers is deterministic
 - [ ] Mode swap mirrors the hostile-takeover transfer
 
 #### Guardian boss — **[blocked: GuardianBoss not yet instanced]**
@@ -176,7 +170,7 @@ Setup: flip `can_retreat = true` on a combat type's `.tres` (e.g. `data/minions/
 
 #### Eldritch ritual mechanic — **[blocked: RitualSite not yet placed]**
 - [ ] Avatar channel matches `RitualData` duration; completion applies the bonus
-- [ ] All three rituals tested: `domination_mastery`, `corruption_surge`, `eldritch_vision`
+- [ ] Both rituals tested: `domination_mastery`, `eldritch_vision` (`corruption_surge` was removed with the territory grid 2026-06-05)
 - [ ] `GameState.has_eldritch_vision(peer)` ticks down and clears on expiry
 
 #### Undeath raise-dead mechanic
@@ -186,8 +180,9 @@ Setup: flip `can_retreat = true` on a combat type's `.tres` (e.g. `data/minions/
 #### Two-boss endgame — **[blocked: BossManager not yet placed]**
 - [ ] `initial_boss` resolves to the world's GuardianBoss; phase-1 death spawns `CorruptedSeraph`; phase-2 death wins the match
 
-#### Divine intervention — **[blocked: DivineIntervention not yet placed]**
-- [ ] 60s loss timer runs while corruption < threshold, resets above it, expiry shows loss screen for all peers; F10 can cancel a countdown
+#### Divine intervention — **[blocked: DivineIntervention + GemSite not yet placed]**
+- [ ] Timer arms after the first gem capture; zero sites held for 60s → loss screen for all peers
+- [ ] Re-holding a site recovers the timer at 2× speed and clears the warning
 
 #### Upgrade Altar — effect verification (flow verified 2026-06-05)
 - [ ] **Effect: minion HP / damage** — levels feed `get_upgrade_multiplier(peer, kind)` into spawned minions

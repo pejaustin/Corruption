@@ -216,13 +216,13 @@ func spawn_minion_at_camera() -> void:
 	else:
 		print("[Debug] MinionManager not found")
 
-func add_influence_to_self() -> void:
+func add_corruption_to_self() -> void:
 	if not multiplayer.is_server():
-		print("[Debug] Only the host can set influence")
+		print("[Debug] Only the host can set corruption")
 		return
 	var my_id = multiplayer.get_unique_id()
-	GameState.add_influence(my_id, 10.0)
-	print("[Debug] Added 10 influence to peer %d (total: %.1f)" % [my_id, GameState.get_influence(my_id)])
+	GameState.add_corruption(my_id, 10.0)
+	print("[Debug] Added 10 corruption to peer %d (total: %.1f)" % [my_id, GameState.get_corruption(my_id)])
 
 func cycle_faction() -> void:
 	if not multiplayer.is_server():
@@ -240,25 +240,6 @@ func cycle_faction() -> void:
 	GameState.set_faction_override(my_id, next_faction)
 	var name = GameConstants.faction_names.get(next_faction, "Unknown")
 	print("[Debug] Faction swapped to %s (%d)" % [name, next_faction])
-
-func boost_corruption() -> void:
-	if not multiplayer.is_server():
-		print("[Debug] Only the host can boost corruption")
-		return
-	var tm = get_tree().current_scene.get_node_or_null("TerritoryManager")
-	if not tm:
-		print("[Debug] TerritoryManager not found")
-		return
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	var my_id = multiplayer.get_unique_id()
-	var faction = 0
-	if mm:
-		faction = mm._get_player_faction(my_id)
-	for x in range(-1, 2):
-		for z in range(-1, 2):
-			var cell = Vector2i(x, z)
-			tm._add_corruption(cell, faction, 0.5)
-	print("[Debug] Boosted corruption around origin (total: %.1f)" % tm.get_total_corruption())
 
 func _get_multiplayer_manager() -> MultiplayerManager:
 	var scene = get_tree().current_scene

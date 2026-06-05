@@ -1,14 +1,16 @@
 class_name GemSite extends Interactable
 
-## A minor gem site that can be captured for influence.
+## A minor gem site that can be captured for corruption.
 ## Step 1: Overlord's minions clear the area (minion presence in range).
 ## Step 2: Avatar walks up and holds E to channel a capture.
-## Captured sites grant passive influence to the controlling Overlord.
+## Captured sites trickle Corruption to the controlling Overlord — the ONLY
+## source of corruption in the game (Avatar claim + boss debuff + holding off
+## divine intervention all flow from held sites).
 
 enum SiteState { NEUTRAL, CLEARED, CAPTURED }
 
 @export var site_name: String = "Gem Site"
-@export var influence_per_second: float = 0.5
+@export var corruption_per_second: float = 0.5
 @export var minion_clear_radius: float = 8.0
 
 @onready var _channel: CaptureChannel = $CaptureChannel
@@ -16,9 +18,11 @@ enum SiteState { NEUTRAL, CLEARED, CAPTURED }
 var state: SiteState = SiteState.NEUTRAL
 var controlling_faction: int = -1
 var controlling_peer_id: int = -1
-var _influence_timer: float = 0.0
+var _corruption_timer: float = 0.0
 
 func _interactable_ready() -> void:
+	# DivineIntervention polls this group for held sites.
+	add_to_group(&"gem_sites")
 	if _channel:
 		_channel.channel_completed.connect(_on_channel_completed)
 
@@ -71,10 +75,10 @@ func _physics_process(delta: float) -> void:
 		_check_minion_clear()
 
 	if state == SiteState.CAPTURED and controlling_peer_id > 0:
-		_influence_timer += delta
-		if _influence_timer >= 1.0:
-			_influence_timer = 0.0
-			GameState.add_influence(controlling_peer_id, influence_per_second)
+		_corruption_timer += delta
+		if _corruption_timer >= 1.0:
+			_corruption_timer = 0.0
+			GameState.add_corruption(controlling_peer_id, corruption_per_second)
 
 func _check_minion_clear() -> void:
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
@@ -110,4 +114,4 @@ func reset_site() -> void:
 	state = SiteState.NEUTRAL
 	controlling_faction = -1
 	controlling_peer_id = -1
-	_influence_timer = 0.0
+	_corruption_timer = 0.0

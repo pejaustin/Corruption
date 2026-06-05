@@ -89,15 +89,16 @@ func _process(delta: float) -> void:
 		lines.append("  (no spawn point found)")
 	lines.append("")
 
-	# Influence scores
-	lines.append("[b]Influence[/b]")
-	if GameState.influence.size() > 0:
-		for pid in GameState.influence:
-			var score = GameState.influence[pid]
+	# Corruption scores (earned from held gem sites only)
+	lines.append("[b]Corruption[/b]")
+	if GameState.corruption.size() > 0:
+		for pid in GameState.corruption:
+			var score = GameState.corruption[pid]
 			var marker = " (YOU)" if pid == peer_id else ""
 			lines.append("  Peer %d: %.1f%s" % [pid, score, marker])
+		lines.append("  Total: %.1f" % GameState.get_total_corruption())
 	else:
-		lines.append("  (no scores yet)")
+		lines.append("  (none yet — capture a gem site, or +10 Corruption in pause menu)")
 	lines.append("")
 
 	# Minions
@@ -111,11 +112,15 @@ func _process(delta: float) -> void:
 		lines.append("  Mine: %d/%d | Resources: %.0f" % [my_minions, MinionManager.MAX_MINIONS_PER_PLAYER, my_res])
 		lines.append("")
 
-	# Territory
-	var tm = get_tree().current_scene.get_node_or_null("TerritoryManager")
-	if tm:
-		lines.append("[b]Territory[/b]")
-		lines.append("  Corrupted cells: %d | Total corruption: %.1f" % [tm._cells.size(), tm.get_total_corruption()])
+	# Gem sites (the only corruption source)
+	var sites = get_tree().get_nodes_in_group(&"gem_sites")
+	if sites.size() > 0:
+		var held := 0
+		for site in sites:
+			if site is GemSite and site.state == GemSite.SiteState.CAPTURED:
+				held += 1
+		lines.append("[b]Gem Sites[/b]")
+		lines.append("  Held: %d / %d" % [held, sites.size()])
 		lines.append("")
 
 	# Guardian Boss
@@ -146,7 +151,7 @@ func _process(delta: float) -> void:
 		elif di._active:
 			lines.append("  Active (timer: %.0f / %.0f)" % [di._timer, DivineIntervention.GRACE_PERIOD])
 		else:
-			lines.append("  Inactive (waiting for first corruption)")
+			lines.append("  Inactive (waiting for first gem capture)")
 		lines.append("")
 
 	# Faction

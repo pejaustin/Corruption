@@ -22,7 +22,7 @@
 - [ ] Avatar state sync (position, animation, combat) — high frequency
 - [ ] Mode switch sync (which player is Avatar, who is Overlord)
 - [ ] Minion state sync — medium frequency
-- [ ] Territory/influence state sync — low frequency
+- [ ] Corruption state sync — low frequency
 - [ ] Palantir viewport streaming
 - [ ] Mirror message delivery
 - [ ] Host authority validation for game state changes

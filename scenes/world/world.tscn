@@ -12,7 +12,6 @@
 [ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="10_6hctx"]
 [ext_resource type="Shader" uid="uid://bmai62r5iaiaf" path="res://shaders/ps1_pixelated_postprocess.gdshader" id="11_mxkvs"]
 [ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="12_xq18t"]
-[ext_resource type="Script" uid="uid://ci4j3ujeesv1f" path="res://scripts/territory_manager.gd" id="13_x0nq1"]
 [ext_resource type="Terrain3DMaterial" uid="uid://cvb0ubklss7kv" path="res://assets/world/terrain/terrain_material.tres" id="14_mxkvs"]
 [ext_resource type="Terrain3DAssets" uid="uid://btvc0tfrwrwg" path="res://assets/world/terrain/terrain_assets.tres" id="15_m114p"]
 
@@ -154,6 +153,3 @@ visible = false
 
 [node name="MinionManager" type="Node" parent="." unique_id=172942630]
 script = ExtResource("12_xq18t")
-
-[node name="TerritoryManager" type="Node" parent="." unique_id=824323888]
-script = ExtResource("13_x0nq1")

@@ -34,7 +34,7 @@ The win condition. The Avatar must defeat two bosses back-to-back in the Capitol
 │       │                      YOU WIN             │
 │       ▼                                          │
 │  Control passes to next                          │
-│  highest influence player                        │
+│  highest corruption player                        │
 │  Bosses reset to current                         │
 │  debuffed state                                  │
 │                                                  │
@@ -56,7 +56,7 @@ The bosses are designed to be near-impossible at full strength. The match is a l
 
 **Debuff sources:**
 - **Total corruption** (all players combined) — reduces boss HP, damage, speed
-- **Personal corruption** (attempting player's influence) — additional debuffs
+- **Personal corruption** (attempting player's own score) — additional debuffs
 - **Map interactions** — corrupting holy sites near the Capitol weakens its defenses
 
 This means:
@@ -66,10 +66,10 @@ This means:
 
 ## Attempt Failure
 
-- Avatar dies → control transfers to next highest influence player
+- Avatar dies → control transfers to next highest corruption player
 - Bosses reset to their **current debuffed state** (not full health — debuffs are permanent for the match)
 - New Avatar gets a fresh attempt at the same difficulty
-- Influence can shift during the attempt (Overlord minions still active in background)
+- Corruption can shift during the attempt (gem sites still trickle in the background)
 
 ## Open Design Questions
 

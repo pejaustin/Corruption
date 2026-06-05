@@ -1,21 +1,21 @@
 class_name DivineIntervention extends Node
 
-## Lose condition: if total corruption stays below a threshold for too long,
-## the gods purge the land and all players lose.
-## Host-authoritative. Adds tension — Overlords must keep corruption up.
+## Lose condition: if no gem site is held (CAPTURED) for too long, the gods
+## purge the land and all players lose.
+## Host-authoritative. Adds tension — somebody must always hold a site.
+## Arms after the first capture, so the early game is exempt.
 
 signal intervention_warning(time_remaining: float)
 signal intervention_triggered
 
-const CORRUPTION_THRESHOLD: float = 5.0  # Must maintain at least this much total corruption
-const GRACE_PERIOD: float = 60.0  # Seconds below threshold before divine intervention
+const GRACE_PERIOD: float = 60.0  # Seconds with zero held sites before divine intervention
 const WARNING_START: float = 30.0  # Start warning at this many seconds remaining
-const CHECK_INTERVAL: float = 2.0  # How often to check corruption level
+const CHECK_INTERVAL: float = 2.0  # How often to check site control
 
-var _timer: float = 0.0  # Time spent below threshold
+var _timer: float = 0.0  # Time spent with zero held sites
 var _check_timer: float = 0.0
 var _triggered: bool = false
-var _active: bool = false  # Only starts after first corruption is placed
+var _active: bool = false  # Only starts after the first gem site is captured
 
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
@@ -28,19 +28,15 @@ func _physics_process(delta: float) -> void:
 		return
 	_check_timer = 0.0
 
-	var tm = get_tree().current_scene.get_node_or_null("TerritoryManager")
-	if not tm:
-		return
+	var held := _count_held_sites()
 
-	var total = tm.get_total_corruption()
-
-	# Don't start counting until corruption has been established at least once
+	# Don't start counting until somebody has captured a site at least once
 	if not _active:
-		if total > CORRUPTION_THRESHOLD:
+		if held > 0:
 			_active = true
 		return
 
-	if total < CORRUPTION_THRESHOLD:
+	if held == 0:
 		_timer += CHECK_INTERVAL
 		var remaining = GRACE_PERIOD - _timer
 		if remaining <= WARNING_START:
@@ -52,6 +48,14 @@ func _physics_process(delta: float) -> void:
 			_timer = max(0, _timer - CHECK_INTERVAL * 2.0)  # Recover twice as fast
 			if _timer <= GRACE_PERIOD - WARNING_START:
 				_sync_warning.rpc(-1)  # Clear warning
+
+func _count_held_sites() -> int:
+	## Number of gem sites currently CAPTURED by any player.
+	var held := 0
+	for site in get_tree().get_nodes_in_group(&"gem_sites"):
+		if site is GemSite and site.state == GemSite.SiteState.CAPTURED:
+			held += 1
+	return held
 
 func _trigger_intervention() -> void:
 	_triggered = true

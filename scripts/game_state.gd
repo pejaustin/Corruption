@@ -1,6 +1,6 @@
 extends Node
 
-## Tracks global game state: who is the Avatar, influence, win condition.
+## Tracks global game state: who is the Avatar, corruption, win condition.
 ## Autoload singleton.
 
 signal avatar_changed(old_peer_id: int, new_peer_id: int)
@@ -8,7 +8,7 @@ signal game_won(peer_id: int)
 signal game_lost
 signal watcher_count_changed(count: int)
 signal watcher_positions_changed()
-signal influence_changed(peer_id: int, new_value: float)
+signal corruption_changed(peer_id: int, new_value: float)
 ## Fired on every peer when a gem capture starts (CaptureChannel.broadcast=true).
 ## Listen here for global reactions (storm cue, HUD banner, audio sting).
 signal capture_broadcast(peer_id: int, faction: int, duration: float)
@@ -19,8 +19,9 @@ var avatar_peer_id: int = -1
 var watcher_count: int = 0
 # peer_id -> global camera position of each active scryer
 var watcher_positions: Dictionary[int, Vector3] = {}
-# peer_id -> influence score (float)
-var influence: Dictionary[int, float] = {}
+# peer_id -> corruption score (float). Earned only from held gem sites; the
+# per-player claim to the Avatar AND (summed) the global boss-debuff pool.
+var corruption: Dictionary[int, float] = {}
 # peer_id -> faction id (GameConstants.Faction). Populated by lobby at match start.
 var player_factions: Dictionary[int, int] = {}
 # peer_id -> display name. Populated by lobby at match start. Falls back to "Player <id>".
@@ -188,30 +189,38 @@ func deliver_mirror_message(
 	])
 	mirror_message_received.emit(msg)
 
-func get_influence(peer_id: int) -> float:
-	return influence.get(peer_id, 0.0)
+func get_corruption(peer_id: int) -> float:
+	return corruption.get(peer_id, 0.0)
 
-func add_influence(peer_id: int, amount: float) -> void:
-	## Host-only: add influence and broadcast to all clients.
+func add_corruption(peer_id: int, amount: float) -> void:
+	## Host-only: add corruption and broadcast to all clients.
 	if not multiplayer.is_server():
 		return
-	var current = influence.get(peer_id, 0.0)
-	_set_influence.rpc(peer_id, current + amount)
+	var current = corruption.get(peer_id, 0.0)
+	_set_corruption.rpc(peer_id, current + amount)
 
 @rpc("authority", "call_local", "reliable")
-func _set_influence(peer_id: int, value: float) -> void:
-	influence[peer_id] = value
-	influence_changed.emit(peer_id, value)
+func _set_corruption(peer_id: int, value: float) -> void:
+	corruption[peer_id] = value
+	corruption_changed.emit(peer_id, value)
 
-func get_highest_influence_peer() -> int:
-	## Returns the peer with the highest influence, or -1 if none.
+func get_highest_corruption_peer() -> int:
+	## Returns the peer with the highest corruption, or -1 if none.
 	var best_peer := -1
 	var best_score := -1.0
-	for pid in influence:
-		if influence[pid] > best_score:
-			best_score = influence[pid]
+	for pid in corruption:
+		if corruption[pid] > best_score:
+			best_score = corruption[pid]
 			best_peer = pid
 	return best_peer
+
+func get_total_corruption() -> float:
+	## Sum of every player's corruption — the global "how corrupted is the
+	## land" value that debuffs the Guardian Boss.
+	var total := 0.0
+	for pid in corruption:
+		total += corruption[pid]
+	return total
 
 func get_peer_faction(peer_id: int) -> int:
 	return get_faction(peer_id)
@@ -286,7 +295,7 @@ func reset() -> void:
 	avatar_peer_id = -1
 	watcher_count = 0
 	watcher_positions.clear()
-	influence.clear()
+	corruption.clear()
 	player_factions.clear()
 	player_names.clear()
 	faction_overrides.clear()

@@ -2,12 +2,11 @@ class_name RitualData extends Resource
 
 ## An Eldritch ritual. Authored as .tres files under res://data/rituals/.
 ## The RitualSite scene takes one via @export and applies its effect on
-## completion. State lives on GameState / MinionManager / TerritoryManager
-## as typed fields (not metadata).
+## completion. State lives on GameState / MinionManager as typed fields
+## (not metadata).
 
 enum Effect {
 	DOMINATION_MASTERY, ## Halves domination cost for the completing peer for the match.
-	CORRUPTION_SURGE,   ## Doubles corruption spread for the completing peer for `duration` seconds.
 	ELDRITCH_VISION,    ## Reveals enemy minions to the completing peer for `duration` seconds.
 }
 

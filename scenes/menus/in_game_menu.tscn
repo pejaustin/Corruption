@@ -126,20 +126,15 @@ layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Spawn Minion at Camera"
 
-[node name="BtnAddInfluence" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnAddCorruption" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
 layout_mode = 2
 theme = ExtResource("2_sdrml")
-text = "+10 Influence"
+text = "+10 Corruption"
 
 [node name="BtnCycleFaction" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Cycle Faction"
-
-[node name="BtnBoostCorruption" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
-layout_mode = 2
-theme = ExtResource("2_sdrml")
-text = "Boost Corruption"
 
 [node name="BtnAggroRings" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
 layout_mode = 2
@@ -175,9 +170,8 @@ text = "Toggle Infinite Broadcast"
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnKillAvatar" to="." method="_on_kill_avatar_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnEnemy" to="." method="_on_spawn_enemy_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnMinion" to="." method="_on_spawn_minion_pressed"]
-[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAddInfluence" to="." method="_on_add_influence_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAddCorruption" to="." method="_on_add_corruption_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCycleFaction" to="." method="_on_cycle_faction_pressed"]
-[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnBoostCorruption" to="." method="_on_boost_corruption_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAggroRings" to="." method="_on_aggro_rings_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCombatBoxes" to="." method="_on_combat_boxes_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCourierVisualRange" to="." method="_on_courier_visual_range_pressed"]

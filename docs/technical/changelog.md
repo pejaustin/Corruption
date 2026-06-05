@@ -4,6 +4,31 @@ Dated record of shipped work, verification passes, and design calls — newest f
 
 ---
 
+## 2026-06-05 — Corruption unification (influence + territory → one stat)
+
+The per-player "influence" score and the grid-based territory/corruption system were two parallel resources for one design concept — confusing and unintentional. Merged into a single stat: **Corruption**, tied to gem-site control ONLY.
+
+### Changed
+
+- `GameState`: `influence` → `corruption` (dict, signal `corruption_changed`, `get_/add_corruption`, `get_highest_corruption_peer`); new `get_total_corruption()` (sum over peers).
+- `GemSite`: `influence_per_second` → `corruption_per_second` (0.5/s trickle while CAPTURED, still the only earn path); sites now join group `gem_sites`.
+- `GuardianBoss` debuff reads `GameState.get_total_corruption()` (was TerritoryManager); same `total/60` scaling, cap 0.6 — retune once sites are placed (one site ≈ 2 min to max debuff).
+- `DivineIntervention` rewritten: arms on first capture; **zero held sites** for 60s (2s checks, 2× recovery while held) → all lose. Was: total grid-corruption below threshold.
+- Avatar succession fallback: highest corruption (mechanically unchanged, renamed).
+- Debug: pause-menu button is now "+10 Corruption"; "Boost Corruption near origin" removed. F3: one Corruption section (per-peer + total) + Gem Sites held count; Territory section removed.
+
+### Removed
+
+- `scripts/territory_manager.gd` + its `world.tscn` node — the whole minion-presence grid (cells, spread, decay, faction tags). Corruption no longer accrues from minions standing on land.
+- **Corruption Surge ritual** (orphaned by the grid removal): `data/rituals/corruption_surge.tres`, `RitualData.Effect.CORRUPTION_SURGE` (enum now DOMINATION_MASTERY=0, ELDRITCH_VISION=1; `eldritch_vision.tres` re-pointed 2→1).
+- The never-implemented "kills award influence" test item — kills intentionally award nothing; sites are the only source.
+
+### Design calls
+
+- **Corruption is competitive AND cooperative**: per-player it decides Avatar succession; summed it debuffs the boss and holds off divine intervention.
+- **Gem capture is still permanent** — so corruption is monotonic and divine intervention only threatens pre-first-capture. Site loss/recapture is the open follow-up that would keep both live all match (see `docs/systems/corruption-and-gems.md` open questions).
+- Docs: `docs/systems/territory-control.md` replaced by `docs/systems/corruption-and-gems.md`.
+
 ## 2026-06-05 — War-table phase 3/4 test pass + multiplayer client fixes
 
 Full verification pass over the phase 3/4 refactor: every harness system (`war_table_test.tscn`) and every main-game system in a 2-peer session. Everything below is **verified working** unless marked otherwise.

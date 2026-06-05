@@ -13,8 +13,8 @@ How players grow stronger over the course of a match. Progression feeds into Ava
 │                                          │
 │  As Avatar:           As Overlord:       │
 │  - Kill enemies       - Upgrade altar    │
-│  - Loot drops         - Territory income │
-│  - Clear dungeons     - Gem tap income   │
+│  - Loot drops         - Gem tap income   │
+│  - Clear dungeons                        │
 │  - Complete objectives                   │
 │                                          │
 │              │                │           │
@@ -24,7 +24,7 @@ How players grow stronger over the course of a match. Progression feeds into Ava
 │     │                              │     │
 │     │  Avatar: gear + skills       │     │
 │     │  Overlord: tower + minions   │     │
-│     │  Corruption: influence       │     │
+│     │  Corruption: held gem sites  │     │
 │     └──────────────────────────────┘     │
 └──────────────────────────────────────────┘
 ```

@@ -18,7 +18,7 @@ The HUD is a **passive view**. It owns no gameplay state. Every widget subscribe
 │                                │       │                     │
 │  Actor (hp, stagger)           │       │  AvatarHUD          │
 │  AvatarAbilities               │  ───▶ │  OverlordHUD        │
-│  GameState (influence, buffs)  │       │  (passive widgets,  │
+│  GameState (corruption, buffs) │       │  (passive widgets,  │
 │  CaptureChannel                │       │   signal-driven)    │
 │  BossManager / GuardianBoss    │       │                     │
 └────────────────────────────────┘       └─────────────────────┘
@@ -77,7 +77,7 @@ Legend: ✅ built · 🚧 in progress · ⬜ planned · ❓ open question
 | CaptureProgress     | ✅     | `AvatarActor.active_channel.get_progress()`        | Centered bar above HealthBar. Visible only while channel active. |
 | StaminaBar          | ❓     | TBD (stamina system not built)                     | Reserved slot once stamina lands.                  |
 | BuffTray            | ❓     | `GameState.grant_eldritch_vision`, future buffs    | Temp buffs with ticking remaining-time pill.       |
-| InfluenceReadout    | ❓     | `GameState.influence_changed(peer_id)`             | Possibly Overlord-only — influence is tower-side.  |
+| CorruptionReadout   | ❓     | `GameState.corruption_changed(peer_id)`            | Possibly Overlord-only — corruption is tower-side. |
 | BossBar             | ❓     | `BossManager` + `GuardianBoss.hp_changed`          | Candidate for world-scoped instead of per-HUD.     |
 | Reticle / lock-on   | ❓     | TBD                                                | Blocked on lock-on targeting decision.             |
 
@@ -86,7 +86,7 @@ Legend: ✅ built · 🚧 in progress · ⬜ planned · ❓ open question
 | Widget              | Status | Data source                                        | Notes                                              |
 |---------------------|--------|----------------------------------------------------|----------------------------------------------------|
 | InteractionPrompt   | ⬜     | `InteractionUI` autoload                           | Same widget as avatar, shared sub-scene.           |
-| InfluenceReadout    | ❓     | `GameState.influence_changed(peer_id)`             | Primary overlord resource.                         |
+| CorruptionReadout   | ❓     | `GameState.corruption_changed(peer_id)`            | Primary overlord score.                            |
 | MinionRoster        | ❓     | `MinionManager` (peer-owned count by type)         | How many of each minion type are alive & where.    |
 | CommandFeedback     | ❓     | `KnowledgeManager.pending_commands`                | "Courier en route", "orders undelivered", etc.     |
 | AdvisorTicker       | ❓     | Advisor system (see `docs/systems/advisor.md`)     | Short-form advisor lines.                          |
@@ -123,7 +123,7 @@ When a new mechanic lands, update this doc:
 
 ### Phase 2 — Resource & buff surface
 
-- InfluenceReadout on OverlordHUD, BuffTray on AvatarHUD.
+- CorruptionReadout on OverlordHUD, BuffTray on AvatarHUD.
 
 ### Phase 3 — Information-warfare integration
 
@@ -138,7 +138,7 @@ When a new mechanic lands, update this doc:
 ## Open questions
 
 - **BossBar ownership** — world-scoped (all peers see identical bar, like a raid UI) or per-HUD (belief-aware, shows what your overlord thinks the boss's state is)? Information-warfare argument points to per-HUD.
-- **InfluenceReadout** — Avatar-visible or Overlord-only? Influence is a tower resource but also drives Avatar succession.
+- **CorruptionReadout** — Avatar-visible or Overlord-only? Corruption is a tower-side score but also drives Avatar succession.
 - **Crosshair / lock-on** — blocked on the `avatar-combat.md` open question about aim model.
 - **HUD ownership on avatar transfer** — attached-to-actor (simpler, current plan) vs. instanced-from-`MultiplayerManager` (survives mode swaps without re-instancing). Start with attached-to-actor; revisit if transfer-flicker shows up.
 - **Art direction** — placeholder rectangles for v0. Faction-themed theme resource once art exists.

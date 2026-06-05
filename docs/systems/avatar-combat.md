@@ -312,7 +312,7 @@ Boss telegraph design lives in [boss-mechanics.md](boss-mechanics.md); changes t
 
 ## 15. Death / Respawn
 
-**Current:** Death triggers transfer. Killer attribution: minion → minion's owner takes the Avatar; else highest influence; else round-robin. Respawn at fixed origin, full HP, IdleState. See `avatar_actor.gd:59–98`.
+**Current:** Death triggers transfer. Killer attribution: minion → minion's owner takes the Avatar; else highest corruption; else round-robin. Respawn at fixed origin, full HP, IdleState. See `avatar_actor.gd:59–98`.
 
 **TBD:**
 

@@ -11,7 +11,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Game type:** 4-player PvP Dark Lord simulator — 3D third-person (Avatar) + 3D first-person (Overlords)
 - **Scripting language:** GDScript only
 - **Target platforms:** Desktop
-- **Entry scene:** `scenes/tower_scene.tscn` (the main game scene, loaded as GAME_SCENE despite the name)
+- **Entry scene:** `scenes/world/world.tscn` (loaded as `NetworkManager.GAME_SCENE`; project main scene is `scenes/menus/main_menu.tscn`)
 - **Key autoloads:** `NetworkManager`, `DebugManager`, plus netfox autoloads (`NetworkTime`, `NetworkRollback`, etc.)
 - **Game constants:** `scripts/game_constants.gd` — Factions enum, MAX_PLAYERS, faction names/colors
 - **Full overview:** `docs/one-pager.md`
@@ -24,16 +24,15 @@ TBD
 
 
 ### Debug Access
-- **F3** — Toggle debug overlay (network, players, factions, FPS, influence, minions, territory, boss)
+- **F3** — Toggle debug overlay (network, players, factions, FPS, corruption, gem sites, minions, boss)
 - **Esc** — Open in-game pause menu. All debug actions live in the Debug panel on the right:
   - Add Dummy Player (host)
   - Toggle God Mode
   - Kill Avatar (host)
   - Spawn Enemy at Camera (host) — spawns at wherever the crosshair pointed when you paused
   - Spawn Minion at Camera (host) — same
-  - +10 Influence (host)
+  - +10 Corruption (host)
   - Cycle Faction (host)
-  - Boost Corruption near origin (host)
   - Toggle Aggro Rings (shows each minion's aggro radius, faction-colored)
 
   One-shot buttons auto-close the menu. Toggles (god mode, aggro rings) keep it open.
@@ -370,7 +369,7 @@ When making changes:
 
 ### Documentation
 - `docs/one-pager.md` — Visual summary of the entire game
-- `docs/systems/` — One page per major system (combat, overlord mode, factions, territory, bosses, multiplayer, progression)
+- `docs/systems/` — One page per major system (combat, overlord mode, factions, corruption & gems, bosses, multiplayer, progression)
 - `docs/technical/build-phases.md` — **MVP tier tracker with current progress** (start here for what to build next)
 - `docs/technical/changelog.md` — Dated record of shipped work, verification passes, and design calls. Don't read it for current state — it's history; consult only when you need when/why something changed.
 - `docs/technical/netfox-reference.md` — Project-specific netfox + RPC cheat sheet. Read before any networking change (see § 4).
@@ -388,7 +387,7 @@ Gameplay data lives in `.tres` files under `res://data/`, authored as custom `Re
 |---|---|---|---|
 | `AbilityData` | `scripts/ability_data.gd` | `data/abilities/` | Avatar ability stats + effect scene |
 | `UpgradeData` | `scripts/upgrade_data.gd` | `data/upgrades/` | Upgrade altar catalog (5 entries) |
-| `RitualData` | `scripts/ritual_data.gd` | `data/rituals/` | Ritual site effects (3 entries) |
+| `RitualData` | `scripts/ritual_data.gd` | `data/rituals/` | Ritual site effects (2 entries) |
 | `MinionType` | `scripts/minion_type.gd` | `data/minions/` | Minion/enemy stats (incl. bosses) |
 
 ### Ability architecture
@@ -441,6 +440,7 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - `GameState.set_faction_override(peer_id, faction)` / `clear_faction_override(peer_id)` — for debug swap.
 - `GameState.get_upgrade_level(peer_id, kind)` / `add_upgrade(peer_id, kind)` — upgrade state lives on GameState, not on nodes' metadata.
 - `GameState.grant_eldritch_vision(peer_id, duration)` / `has_eldritch_vision(peer_id)` — ritual-granted temp buff with a ticking timer on GameState.
+- `GameState.get_corruption(peer_id)` / `add_corruption(peer_id, amount)` / `get_highest_corruption_peer()` / `get_total_corruption()` — **Corruption** is the single per-player score (formerly "influence"; the grid territory system was removed 2026-06-05). Earned ONLY from held GemSites (0.5/s trickle). Highest decides Avatar succession on neutral death; the total debuffs the GuardianBoss; zero held sites runs the DivineIntervention loss timer (group `gem_sites`).
 
 ### What's built (Tiers 0-3)
 
@@ -449,13 +449,12 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - Neutral enemies with AI (patrol, aggro, attack)
 - Animation-driven hitboxes, host-authoritative combat sync
 - EnemyManager for networked enemy spawn/death
-- Influence tracking with debug overlay
+- Corruption tracking (per-peer, gem-site sourced ONLY) with debug overlay
 - MinionManager: spawning, AI (NavigationAgent3D), commands, sync
-- TerritoryManager: grid-based corruption spread/decay
-- GemSite capture points (minion clear → Avatar confirm → passive influence)
+- GemSite capture points (minion clear → Avatar confirm → passive corruption)
 - Hostile takeover (minion kills Avatar → owner becomes Avatar)
-- Influence fallback (neutral death → highest influence takes over)
-- GuardianBoss (corruption-debuffed, defeat to win)
+- Corruption fallback (neutral death → highest corruption takes over)
+- GuardianBoss (debuffed by total corruption, defeat to win)
 - AstralProjection spectator overlay for boss fights
 
 #### What needs editor setup

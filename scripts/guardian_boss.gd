@@ -1,7 +1,8 @@
 class_name GuardianBoss extends MinionActor
 
 ## The guardian boss at the Capitol. Must be defeated to win.
-## Debuffed by total corruption: higher corruption = weaker boss.
+## Debuffed by total corruption (sum of all players' gem-site corruption,
+## from GameState): higher corruption = weaker boss.
 ## Base stats come from guardian_boss.tres (MinionType). This class layers on
 ## corruption-driven HP/damage scaling, threshold-only stagger, and win signalling.
 
@@ -17,14 +18,12 @@ var _base_hp: int = 500
 var _base_damage: int = 30
 var max_hp_effective: int = 500
 var _debuff_update_timer: float = 0.0
-var _territory_manager: Node
 
 func _ready() -> void:
 	super()
 	_base_hp = max_hp_value
 	_base_damage = attack_damage
 	max_hp_effective = _base_hp
-	_territory_manager = get_tree().current_scene.get_node_or_null("TerritoryManager")
 
 func get_max_hp() -> int:
 	return max_hp_effective
@@ -55,9 +54,7 @@ func _update_corruption_debuff() -> void:
 		boss_hp_changed.emit(hp, max_hp_effective)
 
 func _get_corruption_debuff() -> float:
-	if not _territory_manager:
-		return 0.0
-	var total = _territory_manager.get_total_corruption()
+	var total = GameState.get_total_corruption()
 	return clampf(total / 60.0, 0.0, CORRUPTION_DEBUFF_MAX)
 
 func _die() -> void:

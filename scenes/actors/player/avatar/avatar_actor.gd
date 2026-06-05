@@ -72,8 +72,8 @@ func _on_death_transfer() -> void:
 		_respawn.rpc()
 		last_damage_source_peer = -1
 		return
-	# Influence fallback: highest influence peer takes over
-	var best = GameState.get_highest_influence_peer()
+	# Corruption fallback: highest corruption peer takes over
+	var best = GameState.get_highest_corruption_peer()
 	if best > 0 and best != controlling_peer_id:
 		var old = GameState.avatar_peer_id
 		GameState._set_avatar.rpc(-1)
