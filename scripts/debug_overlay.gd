@@ -89,13 +89,13 @@ func _process(delta: float) -> void:
 		lines.append("  (no spawn point found)")
 	lines.append("")
 
-	# Corruption scores (earned from held gem sites only)
+	# Corruption scores (regen from held gem sites only; max = Σ held-site contributions)
 	lines.append("[b]Corruption[/b]")
 	if GameState.corruption.size() > 0:
 		for pid in GameState.corruption:
 			var score = GameState.corruption[pid]
 			var marker = " (YOU)" if pid == peer_id else ""
-			lines.append("  Peer %d: %.1f%s" % [pid, score, marker])
+			lines.append("  Peer %d: %.1f / %.1f max%s" % [pid, score, GameState.get_max_corruption(pid), marker])
 		lines.append("  Total: %.1f" % GameState.get_total_corruption())
 	else:
 		lines.append("  (none yet — capture a gem site, or +10 Corruption in pause menu)")

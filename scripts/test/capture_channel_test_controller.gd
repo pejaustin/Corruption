@@ -6,11 +6,14 @@ extends Node3D
 ##
 ## Networking is faked with OfflineMultiplayerPeer: multiplayer.get_unique_id()
 ## returns 1 and multiplayer.is_server() returns true, so host-authoritative
-## paths (CaptureChannel, MinionManager, GemSite clear-check) run locally.
+## paths (CaptureChannel, MinionManager, GemSite contest-check) run locally.
+##
+## Capture model: the site is freely capturable when uncontested; hostile
+## minions within contest_radius block capture and break an active channel.
 ##
 ## Hotkeys (mirrored on the HUD):
 ##   1 — spawn a hostile Sprite (Nature/Fey) 4m in front of the Avatar
-##   2 — force-clear the GemSite for UNDEATH (skips the minion-clear step)
+##   2 — spawn a hostile Sprite AT the GemSite (tests the contest gate)
 ##   3 — damage the Avatar 10 HP (tests damage interruption without AI)
 ##   K — despawn all enemies
 ##   R — reset: heal Avatar, clear enemies, reset GemSite to NEUTRAL
@@ -46,10 +49,7 @@ func _ready() -> void:
 	# spawn enemies, and so the Avatar's _ready has run before we activate it.
 	await get_tree().process_frame
 	avatar.activate(LOCAL_PEER_ID)
-	# Auto-clear the GemSite so it's immediately channelable. Otherwise its
-	# _on_interact bails on state != CLEARED and E appears to do nothing.
-	# Press [2] after a reset to put it back into CLEARED.
-	_force_clear_gem_site()
+	# No pre-clear needed: an uncontested NEUTRAL site is immediately channelable.
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	_refresh_status()
 
@@ -65,7 +65,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_1:
 				_spawn_hostile_sprite()
 			KEY_2:
-				_force_clear_gem_site()
+				_spawn_hostile_at_site()
 			KEY_3:
 				_damage_avatar(10)
 			KEY_K:
@@ -97,10 +97,15 @@ func _spawn_hostile_sprite() -> void:
 	_next_spawn_id += 1
 	minion_manager._spawn_minion_rpc.rpc(id, -1, GameConstants.Faction.NATURE_FEY, pos, "sprite", pos)
 
-func _force_clear_gem_site() -> void:
+func _spawn_hostile_at_site() -> void:
+	# Drop a hostile right on the GemSite so it contests capture.
 	if gem_site == null:
 		return
-	gem_site._set_cleared.rpc(GameConstants.Faction.UNDEATH, LOCAL_PEER_ID)
+	var pos := gem_site.global_position
+	pos.y = 0.0
+	var id := _next_spawn_id
+	_next_spawn_id += 1
+	minion_manager._spawn_minion_rpc.rpc(id, -1, GameConstants.Faction.NATURE_FEY, pos, "sprite", pos)
 
 func _damage_avatar(amount: int) -> void:
 	if avatar == null:
@@ -120,7 +125,6 @@ func _reset() -> void:
 		avatar.hp_changed.emit(avatar.hp)
 	if gem_site:
 		gem_site.reset_site.rpc()
-		_force_clear_gem_site()
 
 func _on_capture_broadcast(peer_id: int, faction: int, duration: float) -> void:
 	print("[Test] capture broadcast: peer %d faction %d duration %.1fs" % [peer_id, faction, duration])
@@ -137,18 +141,21 @@ func _refresh_status() -> void:
 	var state_name := str(avatar._state_machine.state) if avatar else "?"
 	var site_state := ""
 	if gem_site:
-		site_state = ["NEUTRAL", "CLEARED", "CAPTURED"][int(gem_site.state)]
+		site_state = ["NEUTRAL", "CAPTURED"][int(gem_site.state)]
+		if gem_site.state == GemSite.SiteState.CAPTURED:
+			site_state += " (+%.0f max)" % gem_site.max_corruption_contribution
 	var enemy_count := 0
 	if minion_manager:
 		enemy_count = minion_manager.get_all_minions().size()
 	status_label.text = "Capture Channel Test — real systems\n" \
 		+ "You are peer %d (UNDEATH). HP: %s  State: %s%s\n" % [LOCAL_PEER_ID, hp_text, state_name, channeling] \
-		+ "GemSite: %s   Enemies: %d\n" % [site_state, enemy_count] \
+		+ "GemSite: %s   Enemies: %d   My corruption: %.1f / %.1f max\n" % [site_state, enemy_count, GameState.get_corruption(LOCAL_PEER_ID), GameState.get_max_corruption(LOCAL_PEER_ID)] \
 		+ "\n" \
 		+ "Walk to the Gem or GemSite and press E to channel. Press E again to cancel.\n" \
+		+ "Hostiles near the site contest it: capture blocked, active channel broken.\n" \
 		+ "\n" \
 		+ "[1] spawn hostile Sprite in front of you\n" \
-		+ "[2] force-clear the GemSite (skip minion-clear step)\n" \
+		+ "[2] spawn hostile Sprite AT the GemSite (contest gate)\n" \
 		+ "[3] take 10 damage (tests channel interruption)\n" \
 		+ "[K] despawn all enemies\n" \
 		+ "[R] reset: heal, clear enemies, reset GemSite\n" \

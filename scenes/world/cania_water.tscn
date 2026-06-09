@@ -1,0 +1,37 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Shader" path="res://assets/world/water/water.gdshader" id="1_shader"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_wat1"]
+seed = 1
+frequency = 0.008
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wat1"]
+seamless = true
+as_normal_map = true
+bump_strength = 6.0
+noise = SubResource("FastNoiseLite_wat1")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_wat2"]
+seed = 7
+frequency = 0.012
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wat2"]
+seamless = true
+as_normal_map = true
+bump_strength = 6.0
+noise = SubResource("FastNoiseLite_wat2")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
+shader = ExtResource("1_shader")
+shader_parameter/normal_map_1 = SubResource("NoiseTexture2D_wat1")
+shader_parameter/normal_map_2 = SubResource("NoiseTexture2D_wat2")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_water"]
+material = SubResource("ShaderMaterial_water")
+size = Vector2(50000, 27088)
+
+[node name="CaniaWater" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 424, -1, -2840)
+mesh = SubResource("PlaneMesh_water")
+cast_shadow = 0

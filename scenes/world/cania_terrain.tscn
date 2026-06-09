@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dyny4h032nfco"]
+
+[ext_resource type="Terrain3DMaterial" uid="uid://cepw18w4dt0sc" path="res://assets/world/env/cania_materials_assets.tres" id="1_y3465"]
+[ext_resource type="Terrain3DAssets" uid="uid://djljib32gxjvu" path="res://assets/world/env/cania_terrain3d_assets.tres" id="2_8hybe"]
+[ext_resource type="Environment" uid="uid://sq5qf71ymd3b" path="res://assets/world/env/background-environment.tres" id="4_y3465"]
+[ext_resource type="PackedScene" path="res://scenes/world/cania_water.tscn" id="5_water"]
+
+[node name="CaniaTerrain" type="Node3D" unique_id=478464679]
+
+[node name="Terrain3D" type="Terrain3D" parent="." unique_id=1604098601]
+data_directory = "res://assets/world/terrain_cania"
+material = ExtResource("1_y3465")
+assets = ExtResource("2_8hybe")
+vertex_spacing = 16.0
+top_level = true
+metadata/_edit_lock_ = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1331373078]
+environment = ExtResource("4_y3465")
+
+[node name="CaniaWater" parent="." unique_id=1077318547 instance=ExtResource("5_water")]

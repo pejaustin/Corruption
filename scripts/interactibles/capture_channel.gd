@@ -55,6 +55,14 @@ func request_cancel() -> void:
 		return
 	_request_cancel.rpc_id(1)
 
+## Host-side interrupt for owner gameplay rules (e.g. site contested mid-channel).
+func interrupt(reason: StringName) -> void:
+	if not multiplayer.is_server():
+		return
+	if not _active:
+		return
+	_interrupt_channel.rpc(reason)
+
 @rpc("any_peer", "call_local", "reliable")
 func _request_start(peer_id: int, faction: int) -> void:
 	if not multiplayer.is_server():

@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://bxmuicx4i3nwn"]
+
+[ext_resource type="Terrain3DMaterial" uid="uid://cepw18w4dt0sc" path="res://assets/world/env/cania_materials_assets.tres" id="1_of4iv"]
+[ext_resource type="Script" uid="uid://ngejfsa5esvb" path="res://scripts/build/paint_terrain_textures.gd" id="1_paint"]
+[ext_resource type="Terrain3DAssets" uid="uid://djljib32gxjvu" path="res://assets/world/env/cania_terrain3d_assets.tres" id="2_bl7ud"]
+
+[node name="TerrainPainter" type="Terrain3D" unique_id=1038791742]
+data_directory = "res://assets/world/terrain_cania"
+material = ExtResource("1_of4iv")
+assets = ExtResource("2_bl7ud")
+vertex_spacing = 16.0
+top_level = true
+script = ExtResource("1_paint")
+metadata/_edit_lock_ = true

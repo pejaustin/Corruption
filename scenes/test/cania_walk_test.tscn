@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cffn6om3qa7m8"]
+
+[ext_resource type="Script" uid="uid://srv5xhk6wkyc" path="res://scripts/test/cania_walk_test_controller.gd" id="1_ctrl"]
+[ext_resource type="Environment" uid="uid://sq5qf71ymd3b" path="res://assets/world/env/background-environment.tres" id="2_hmiyo"]
+[ext_resource type="PackedScene" uid="uid://dyny4h032nfco" path="res://scenes/world/cania_terrain.tscn" id="2_terrain"]
+[ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="3_avatar"]
+
+[node name="CaniaWalkTest" type="Node3D" unique_id=2008831061 node_paths=PackedStringArray("avatar", "terrain_root")]
+script = ExtResource("1_ctrl")
+avatar = NodePath("Avatar")
+terrain_root = NodePath("CaniaTerrain")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=177337150]
+environment = ExtResource("2_hmiyo")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=873363900]
+transform = Transform3D(1, 0, 0, 0, 0.696001, 0.718041, 0, -0.718041, 0.696001, 0, 100, 0)
+light_color = Color(0.980392, 0.717647, 0.0470588, 1)
+shadow_enabled = true
+
+[node name="CaniaTerrain" parent="." unique_id=1544339026 instance=ExtResource("2_terrain")]
+
+[node name="Avatar" parent="." unique_id=2029652491 instance=ExtResource("3_avatar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 494.68594, 0)

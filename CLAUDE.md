@@ -440,7 +440,7 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - `GameState.set_faction_override(peer_id, faction)` / `clear_faction_override(peer_id)` — for debug swap.
 - `GameState.get_upgrade_level(peer_id, kind)` / `add_upgrade(peer_id, kind)` — upgrade state lives on GameState, not on nodes' metadata.
 - `GameState.grant_eldritch_vision(peer_id, duration)` / `has_eldritch_vision(peer_id)` — ritual-granted temp buff with a ticking timer on GameState.
-- `GameState.get_corruption(peer_id)` / `add_corruption(peer_id, amount)` / `get_highest_corruption_peer()` / `get_total_corruption()` — **Corruption** is the single per-player score (formerly "influence"; the grid territory system was removed 2026-06-05). Earned ONLY from held GemSites (0.5/s trickle). Highest decides Avatar succession on neutral death; the total debuffs the GuardianBoss; zero held sites runs the DivineIntervention loss timer (group `gem_sites`).
+- `GameState.get_corruption(peer_id)` / `add_corruption(peer_id, amount)` / `get_max_corruption(peer_id)` / `get_highest_corruption_peer()` / `get_total_corruption()` — **Corruption** is the single per-player score (formerly "influence"; the grid territory system was removed 2026-06-05). Sourced ONLY from held GemSites: each adds `max_corruption_contribution` to the holder's max and regens 0.5/s toward it (ceiling + regen — sites never deplete). Highest decides Avatar succession on neutral death; the total debuffs the GuardianBoss; zero held sites runs the DivineIntervention loss timer (group `gem_sites`).
 
 ### What's built (Tiers 0-3)
 
@@ -451,7 +451,7 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - EnemyManager for networked enemy spawn/death
 - Corruption tracking (per-peer, gem-site sourced ONLY) with debug overlay
 - MinionManager: spawning, AI (NavigationAgent3D), commands, sync
-- GemSite capture points (minion clear → Avatar confirm → passive corruption)
+- GemSite capture points (contest-gated Avatar capture; a held site raises the holder's max corruption and regens toward it — sites never deplete; hostiles near the site block capture, friendlies never required)
 - Hostile takeover (minion kills Avatar → owner becomes Avatar)
 - Corruption fallback (neutral death → highest corruption takes over)
 - GuardianBoss (debuffed by total corruption, defeat to win)

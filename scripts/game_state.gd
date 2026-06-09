@@ -222,6 +222,16 @@ func get_total_corruption() -> float:
 		total += corruption[pid]
 	return total
 
+func get_max_corruption(peer_id: int) -> float:
+	## Σ max_corruption_contribution over the gem sites this peer holds.
+	## Corruption regenerates toward this ceiling (driven by each GemSite's
+	## tick); drains (abilities etc.) pull below it and held sites refill.
+	var total := 0.0
+	for site in get_tree().get_nodes_in_group(&"gem_sites"):
+		if site is GemSite and site.state == GemSite.SiteState.CAPTURED and site.controlling_peer_id == peer_id:
+			total += site.max_corruption_contribution
+	return total
+
 func get_peer_faction(peer_id: int) -> int:
 	return get_faction(peer_id)
 

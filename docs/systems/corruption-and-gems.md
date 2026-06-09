@@ -33,24 +33,29 @@
 
 ## Minor Gem Capture Flow
 
+The gate is **the absence of hostiles**, not the presence of friendlies. The Avatar captures any uncontested site freely; hostile minions (another faction or the neutral faction) within the contest radius block capture and break an active channel. Friendly minions are never *required* — they're how you clear and hold the area.
+
 ```
-  OVERLORD prepares          AVATAR confirms
+  Site CONTESTED?            AVATAR captures
   ─────────────────          ────────────────
-  1. Send minions to site    3. Take Avatar control
-  2. Clear neutral defenders 4. Travel to prepared site
-     (minion presence in     5. Hold E to channel capture
-      clear radius)          6. Site trickles Corruption
+  Hostile minions within     No hostiles in radius:
+  contest_radius block       walk up, hold E, channel
+  capture. Clear them        completes → site trickles
+  (minions or Avatar's       Corruption to you until
+  own sword) to open it.     its capacity is drained.
          │                              │
          └── VULNERABLE ────────────────┘
-             Site can be taken by rival
-             minions before confirmation
+             A rival minion walking into
+             radius re-contests the site
+             and breaks a channel mid-cast
 ```
 
-**Key tension:** You can prepare a site as Overlord, but you can't lock it down without Avatar time. Other players can swoop in.
+**Key tension:** Holding a site open for capture takes board presence, but only Avatar time converts it. Other players can swoop in.
 
 ## Implementation
 
-- `scripts/interactibles/gem_site.gd` (`GemSite`, in group `gem_sites`) — NEUTRAL → CLEARED (minion presence) → CAPTURED (Avatar channel). While CAPTURED, trickles `corruption_per_second` (default 0.5) to the controlling peer via `GameState.add_corruption`.
+- `scripts/interactibles/gem_site.gd` (`GemSite`, in group `gem_sites`) — NEUTRAL → CAPTURED (Avatar channel, blocked while `_hostiles_near()` within `contest_radius`, default 8m; host re-checks mid-channel and at completion).
+- **Ceiling + regen model (corrected 2026-06-05):** a held site adds `max_corruption_contribution` (default 7) to its holder's **maximum** corruption (`GameState.get_max_corruption(peer)` = Σ held-site contributions) and regenerates the holder's corruption toward that ceiling at `corruption_per_second` (default 0.5). Sites **never deplete** — anything that drains corruption (future abilities) just gets refilled by held sites. Holding more sites = higher max AND faster combined regen.
 - `GameState.corruption` — `Dictionary[int, float]`, host-authoritative, broadcast on change (`corruption_changed` signal).
 - `scripts/guardian_boss.gd` — debuff = `clampf(total / 60.0, 0, 0.6)`. At current tuning, one site held for ~2 minutes maxes the debuff; revisit once sites are placed.
 - `scripts/divine_intervention.gd` — arms on the first capture; zero held sites for 60s (checked every 2s, recovers at 2× while held) → all players lose.
@@ -74,7 +79,8 @@
 
 ## Open Design Questions
 
-- Can captured gem sites be lost / stolen by rival players? (Currently capture is permanent, which means corruption only goes up and divine intervention only threatens the early game. Contested recapture would keep both live all match.)
+- Can captured gem sites be lost / stolen by rival players? (Currently capture is permanent. Contested recapture would keep divine intervention live all match — the contest check already exists for the capture gate. Note: on site loss, the holder's max drops; does corruption above the new max clamp instantly, decay, or persist?)
 - How are held sites visually represented? (Faction-colored gem glow? Environmental change radiating from the site?)
-- Should sites differ — corruption rate, clear difficulty, distance-to-Capitol risk curve?
+- Should sites differ — regen rate, **max contribution**, clear difficulty, distance-to-Capitol risk curve?
+- Boss-debuff tuning: with 3 sites × 7 contribution, the global ceiling is 21 total corruption → max debuff 21/60 = **35%**, well short of the 60% cap. Raise contributions, lower the divisor, or accept — decide at the boss playtest.
 - Does the war-table belief model apply to site state, or is site control public information?
