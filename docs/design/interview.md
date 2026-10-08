@@ -179,3 +179,11 @@ Austin, 2026-10-08:
 > asked to join with the player overlord's cause, and this takes resources like gold and a promise not to harm humans in
 > that settlement or to assassinate a rival. Only nobles can be bought in this way. So only a few or one per settlement
 > and there are advantages and diaanvantages to doing this over other methods of control
+
+**Q24. Where does gold come from?** — Austin asked for a proposal
+Austin, 2026-10-08:
+> Again instead of gold and wealth being a number I want it to be diagetic and feel material. So maybe some of the
+> locations on the board are resource locations that require human intelligent overseers to collect from, and instead of
+> building up wealth and managing it directly we have to rely on human and minion advisors and agents to distribute and
+> the player has low information. What do you think would be a good system that plays on rts expectations while still
+> being fun and clear?
