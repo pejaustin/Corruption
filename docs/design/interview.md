@@ -65,3 +65,8 @@ Austin, 2026-10-08:
 > away if they wanted to, and they would be richly rewarded for a bunch of information if they return safely, but it is
 > risky because they have limited couriers at the start of the game and any number of issues could cause the courier to
 > be killed or captured
+
+**Q4. What does capturing a courier mean for the captor?**
+Austin, 2026-10-08:
+> players can get access to abilities that allow them to get information from other players' couriers, but this is an
+> unlocked ability
