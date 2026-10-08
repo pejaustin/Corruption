@@ -140,3 +140,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > The forces of good will try to recover him if they can when he is weak. If he has full strength, he will take armies
 > out to hunt and remove corruption
+
+**Q17. While you play the Paladin, what happens with your tower?**
+Austin, 2026-10-08:
+> B he can follow orders and move with armies and gets his own map token, but is most powerful being directly
+> controlled as you can micro movements and combat in ways he can't alone.
