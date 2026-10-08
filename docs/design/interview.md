@@ -255,3 +255,9 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > There are theme flavor moments, some corruption sites become permanently unusable, and their corruption threshold gets
 > higher and higher
+
+**Q31. How many players, and how long is a match?**
+Austin, 2026-10-08:
+> Yes same as old plan but match time may be longer like 4-5 hours if the game is set to be slower, a config that
+> changes unit move speed and the good teams scale timer
+(4 players, ~90 minutes by default; a slower setting can stretch it to 4–5 hours.)
