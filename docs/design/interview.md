@@ -155,3 +155,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > Live view, using the palantir anyone can see and hear the avatar and each other. Viewers appear as ghostly orbs that
 > orbit around the avatar reflecting where their "camera" is in real time
+
+**Q20. How do the boss fights in the holy site run?**
+Austin, 2026-10-08:
+> A a gauntlet from least to most powerful in corruption. This is also a comeback mechanic because those least powerful
+> have a chance to fight and take control of the avatar if they win
