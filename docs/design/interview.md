@@ -150,3 +150,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > Both. You may be able to attack but if you try attacking a priest or soldier of the good faction, he'll resist you
 > until you have more corruption
+
+**Q19. What can rivals see of the Paladin?**
+Austin, 2026-10-08:
+> Live view, using the palantir anyone can see and hear the avatar and each other. Viewers appear as ghostly orbs that
+> orbit around the avatar reflecting where their "camera" is in real time
