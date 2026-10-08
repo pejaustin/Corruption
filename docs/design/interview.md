@@ -38,3 +38,22 @@ Austin, 2026-10-08:
 > selectable points to send troops to. A troop order is both a route and a goal. where they are going, and what they are
 > doing there. so "go to site, try to take it" means they will fight and stay there regardless of if they win "go to
 > site to assess threat level" includes going and coming back as part of the goal
+
+**Q2. How much of the route do you choose?**
+Austin, 2026-10-08:
+> the ability to get granular with troop orders on the map is one of the upgrade axes. Start with couriers that can
+> "run" information including orders. Troops can be told to go somewhere, but can't be recalled without a courier.
+> Couriers themselves can be given orders that include a "go and come back" from the beginning. Sending orders includes a
+> "path" for the orders, which is a cool visual effect of ink darkening on the map in a line. Here is an illustrative
+> example of what I want the player to discover in play:
+> Start of game, a player sees their tools, their objectives. They see that there are two corruption sites, one closer
+> than the other, but that is across a river and forest, whereas the other is a straight shot south along a road and then
+> out into stepplands. they choose to send troops to the closer site, but never see their corruption increase. they send
+> a courier to find out what happened, the courier gets to the river and finds the whole army standing around, confused.
+> The player then has to send a courier to find a ford in the river, and then send a courier to give the army orders
+> that include a path across the ford. Then, in the woods, the army is attacked by monsters, maybe the minions of another
+> player, and those that get to the holy site are not enough to corrupt it, and the player sends two couriers to get
+> this information, because the first courier also gets attacked and killed. The player then decides to go the longer
+> route to the safer site, and manages to corrupt it unaccosted. then, with the added corruption, they are able to gain
+> an upgrade to their troops that will automatically send a courier back to the base if the company is attacked, so that
+> in the future they won't loose resources and time for such mistakes.
