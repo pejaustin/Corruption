@@ -79,3 +79,7 @@ Austin, 2026-10-08:
 **Q6. Where does raising the dead happen?**
 Austin, 2026-10-08:
 > b, have to be brought to the tower. can also be done at corruption sites after an upgrade
+
+**Q7. What does "starting faction" mean for the first playable version?**
+Austin, 2026-10-08:
+> Yes, for the MVP I want everyone to be undead, but want this to be an asym PvP and will add more factions later
