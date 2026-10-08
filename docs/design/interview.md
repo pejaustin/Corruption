@@ -135,3 +135,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > B a limit, but holding him near a source of corruption can keep him indefinitely, so others would have to find and
 > attack to take him. Any time he is dropped to zero hp corruption is wiped and whoever currently has him loses control.
+
+**Q16. When nobody controls him, what is the Paladin doing?**
+Austin, 2026-10-08:
+> The forces of good will try to recover him if they can when he is weak. If he has full strength, he will take armies
+> out to hunt and remove corruption
