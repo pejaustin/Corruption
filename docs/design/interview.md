@@ -160,3 +160,9 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > A a gauntlet from least to most powerful in corruption. This is also a comeback mechanic because those least powerful
 > have a chance to fight and take control of the avatar if they win
+
+**Q21. When a rival's boss wins and takes the Paladin, what happens next?**
+Austin, 2026-10-08:
+> They take control and the boss gauntlet ends. Maybe they should also be able to "take" the avatar back to their base,
+> since they'd have to presumably fight through enemy armies to get it of the city. Is they then want to try and win the
+> game they would need to take the avatar to the city center and start a fresh boss run
