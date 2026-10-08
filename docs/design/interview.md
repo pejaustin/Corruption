@@ -250,3 +250,8 @@ fights first.)
 Austin, 2026-10-08:
 > The good faction is slowly getting stronger and eventually it becomes imposible to corrupt the city center and ends in
 > a draw
+
+**Q30. How does the draw arrive for the players?**
+Austin, 2026-10-08:
+> There are theme flavor moments, some corruption sites become permanently unusable, and their corruption threshold gets
+> higher and higher
