@@ -369,6 +369,9 @@ When making changes:
 ## 12. Project-specific notes — Corruption
 
 ### Documentation
+- **`docs/GDD.md` — the design (v2, clean-slate rework 2026-10-08). Start here.** Only it is Austin's design; everything
+  below predates it and is reference only where it disagrees. Source interview: `docs/design/interview.md`.
+  Never make creative/content calls; mark stand-ins `PLACEHOLDER:` and list them in `PLACEHOLDERS.md`.
 - `docs/one-pager.md` — Visual summary of the entire game
 - `docs/systems/` — One page per major system (combat, overlord mode, factions, corruption & gems, bosses, multiplayer, progression)
 - `docs/technical/mvp-roadmap.md` — **Path-to-MVP roadmap** (start here for what to build next)
