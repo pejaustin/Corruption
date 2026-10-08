@@ -309,3 +309,8 @@ Austin, 2026-10-08:
 > yes but I think maybe it should survive somehow. Interested to hear your input, but basically, this is something I
 > think needs adjusting from traditional RTS games. A game designer once said a good game is never over until it is
 > done. basicaly that no one should feel that they have to just wait around for the game to end
+(Claude's proposal, not adopted as a whole: sacks loot/kill but never end you; a courier floor; existing comeback paths.)
+Austin, 2026-10-08:
+> ok yeah I think maybe its enough to just say you can be sacked, but will eventually come back, and that your base is a
+> corruption site that is permanently yours and spawns units in such a way that it will disincentivize people from
+> killing you and hanging around
