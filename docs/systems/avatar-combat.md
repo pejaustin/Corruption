@@ -312,7 +312,7 @@ Boss telegraph design lives in [boss-mechanics.md](boss-mechanics.md); changes t
 
 ## 15. Death / Respawn
 
-**Current:** Death triggers transfer. Killer attribution: minion → minion's owner takes the Avatar; else highest corruption; else round-robin. Respawn at fixed origin, full HP, IdleState. See `avatar_actor.gd:59–98`.
+**Current:** Death moves *ownership* (possession rework, 2026-06-09): a killer minion's owner takes the Avatar (no auto-possess; own-minion kills don't transfer); killed by neutrals or the boss → unowned, anyone may re-claim. Respawn at fixed origin, full HP, IdleState — dormant husk while unowned. See the death handling in `avatar_actor.gd` and `docs/systems/avatar-possession.md`.
 
 **TBD:**
 

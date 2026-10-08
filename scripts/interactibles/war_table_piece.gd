@@ -28,6 +28,8 @@ func get_prompt_text() -> String:
 		var available := _available_members(pid)
 		if available.is_empty():
 			return ""
+		if get_meta(&"is_avatar", false):
+			return "[E] select Avatar"
 		return "[E] select"
 	# Multi-member: E latches the ghost popup open / closed.
 	if table.is_popup_open_for(self):

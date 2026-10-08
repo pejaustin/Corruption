@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://du8oa62cayfhx" path="res://scenes/actors/player/states/roll_state.gd" id="12_f2kxo"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
 [ext_resource type="Script" path="res://scripts/interaction_focus.gd" id="13_focus"]
+[ext_resource type="Script" path="res://scenes/actors/player/avatar/avatar_ai.gd" id="14_ai"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
 radius = 0.2
@@ -98,5 +99,13 @@ input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_inp
 script = ExtResource("13_focus")
 raycast = NodePath("../AvatarCamera/CameraMount/CameraRot/Camera3D/InteractionRayCast")
 owner_actor = NodePath("..")
+
+[node name="NavAgent" type="NavigationAgent3D" parent="." index="10" unique_id=1422890771]
+path_desired_distance = 0.5
+target_desired_distance = 0.5
+path_max_distance = 3.0
+
+[node name="AvatarAI" type="Node" parent="." index="11" unique_id=1422890772]
+script = ExtResource("14_ai")
 
 [editable path="Model/Avatar"]

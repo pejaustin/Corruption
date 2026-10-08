@@ -2,7 +2,9 @@
 
 **Philosophy:** Each tier is a playable game with a win condition. Social and Overlord tools come before combat polish — 3 out of 4 players are always Overlords, so their experience matters most. Debug tooling is first-class, not an afterthought. Greybox everything — art comes last.
 
-This file tracks **what to build and test next**. Completed-work detail, verification records, and design-call history live in `changelog.md` (sibling file). War-table build steps + phase plan: `docs/systems/war-table.md`.
+This file tracks the **tier history and standing test checklists**. The forward plan is **`mvp-roadmap.md`** (sibling file, created 2026-06-10). Completed-work detail, verification records, and design-call history live in `changelog.md`. War-table build steps + phase plan: `docs/systems/war-table.md`.
+
+> **▶ FORWARD PLAN MOVED (2026-06-10):** what-to-build-next now lives in **`docs/technical/mvp-roadmap.md`** (Path to MVP). This file keeps the tier history and the standing test checklists — they still gate the roadmap's M0. Test state: possession Phases A–C implemented; the 2026-06-09 smoke pass confirmed the loop (flag removed) but the **formal checklists are unticked** — run **`docs/technical/test-plan-corruption-avatar.md`**, then tick the Phase A/B/C + gem-site boxes below. Open repro hunt: an avatar war-table order once produced no courier; dispatch now logs `[KnowledgeManager] Courier N dispatched…` so the next failure names its stage.
 
 ## Progress Tracker
 
@@ -40,7 +42,7 @@ Open:
 
 **Win condition:** Fight through neutral enemies to the gem; on death, the next player gets a turn.
 
-Done: committed melee attack with stamina + animation-driven hitboxes, HP/damage/death, neutral enemy AI (patrol/aggro/attack), Avatar death → round-robin transfer with full mode-swap cycle, host-authoritative combat sync via rollback + EnemyManager. Debug: god mode (F4), spawn enemy (F6), kill Avatar (F5), spawn minion (F7), +corruption (F8).
+Done: committed melee attack with stamina + animation-driven hitboxes, HP/damage/death, neutral enemy AI (patrol/aggro/attack), Avatar death → transfer with full mode-swap cycle (round-robin at the time; replaced by the possession model 2026-06-09), host-authoritative combat sync via rollback. (The Tier 2 EnemyManager was later absorbed: neutral enemies are NEUTRAL-faction minions via `MinionManager.spawn_neutral_minion`.) Debug: god mode (F4), spawn enemy (F6), kill Avatar (F5), spawn minion (F7), +corruption (F8).
 
 ## Tier 3: The Dark Lords Scheme [IMPL COMPLETE]
 
@@ -58,11 +60,50 @@ Done (impl complete, **not yet verified**): corruption tracking, gem sites, host
 **Goal:** Factions feel different in both modes.
 **Win condition:** Two back-to-back bosses; divine intervention lose condition active.
 
-Done (verified 2026-06-05): Summoning Circle + Upgrade Altar slot-based flows incl. client purchase RPC. Done (impl complete, not yet verified): faction rosters/abilities/Overlord tools, Eldritch rituals, Undeath raise-dead, two-boss endgame, divine intervention — see Testing TODO.
+Done (verified 2026-06-05): Summoning Circle + Upgrade Altar slot-based flows incl. client purchase RPC. Done (impl complete, not yet verified): faction rosters/abilities/Overlord tools, Undeath raise-dead, two-boss endgame, divine intervention — see Testing TODO. (Eldritch ritual stations were CUT 2026-06-10 — never part of the original plan; code + data deleted.)
 
 Open:
 - [ ] **Neutral faction detection asymmetry** — Nature/Fey stealth past priests
 - [ ] **Balance dashboard** — Faction win rates, average corruption, minion efficiency
+
+## Avatar Possession Rework [PLANNED — design locked 2026-06-05]
+
+Cross-tier change: the Avatar becomes an optionally controllable minion (ownership/control split, neutral start, no round-robin, full minion AI when released, war-table pawn, corruption-fed upkeep gauge). Full design + phasing: `docs/systems/avatar-possession.md`. **This is the default avatar model as of 2026-06-09** — the `AVATAR_AS_MINION` flag and the legacy hot-seat path were removed after first hands-on testing.
+
+- [x] **Phase A** — ownership/control split, neutral start, Q = release-keep-ownership, death rules (impl 2026-06-05, untested)
+- [x] **Phase B** — host-driven AI brain (input synthesis via `before_tick_loop`) (impl 2026-06-05, untested)
+- [x] **Phase C** — war-table pawn + command routing (reserved `AVATAR_ID` in KnowledgeManager) (impl 2026-06-09, untested)
+- [ ] **Phase D** — upkeep gauge (drains over time, fed by corruption income, empty → neutral)
+
+#### Phase A testing (default behavior — F3 shows the Owner | Controller line)
+- [ ] Claim at tower → own + possess in one step (F3: Owner = Controller = you)
+- [ ] Q → release: overlord body resumes, avatar stands in the field in YOUR faction, F3 Controller = "released"
+- [ ] Claim station now reads "possess your Avatar"; re-possess works
+- [ ] Re-possessing does NOT heal the avatar (take damage, Q, re-possess, check HP)
+- [ ] Released avatar is damageable; minions aggro it
+- [ ] Kill Avatar debug button (= neutral kill) → ownership reverts to neutral, dormant husk, claimable again
+- [ ] Hostile takeover (2-peer/dummy): rival minion kill → rival gains OWNERSHIP, nobody auto-possesses, rival can possess at their tower
+- [ ] Own-minion kill (friendly fire) does NOT transfer ownership
+
+#### Phase B testing (AI brain — host session, avatar claimed then released with Q)
+- [ ] Released avatar stands idle; "Spawn Enemy at Camera" within ~10m → avatar aggros, chases, melees it dead
+- [ ] Avatar returns to idle after the kill (no twitching/spinning — watch the model facing)
+- [ ] "Order Avatar to Camera" → avatar runs/walks to the point, fighting hostiles en route, stops on arrival
+- [ ] Possessing mid-AI-fight takes over cleanly (AI orders void); Q hands back to AI
+- [ ] 2-peer: client sees the AI avatar move/attack smoothly (input syncs from host authority)
+- [ ] AI avatar killed by spawned enemy (neutral) → ownership reverts; by rival minion → rival owns
+- [ ] Rollback sanity: no rubberbanding on the controlling client when possessing right after AI control
+
+#### Phase C testing (war-table pawn — avatar claimed then released with Q)
+- [ ] Released avatar appears on the owner's war table as a distinct oversized piece with "AVATAR" badge, faction-tinted
+- [ ] Piece prompt reads "[E] select Avatar"; E toggles selection (yellow tint)
+- [ ] Select avatar → E on empty map → draft arrow appears; Paper → Advisor dispatches a courier; courier reaches the avatar → avatar walks to the target
+- [ ] Same flow with `INSTANT_COMMANDS` ON (T in test harness / debug toggle) → avatar moves immediately on map click
+- [ ] Mixed selection (avatar + minions) → one draft; all units arrive at the target
+- [ ] Avatar piece is NOT selectable on a rival's table (renders as enemy piece, no prompt)
+- [ ] Possessing the avatar voids pending AI orders (clear_orders); the piece stays on the board while possessed
+- [ ] Avatar dies / reverts to neutral → piece disappears from all tables; reappears on re-claim
+- [ ] With `INFINITE_BROADCAST_RANGE` OFF: owner always sees own avatar; rival's table only shows it within broadcast range of rival units (stale "?" when out of range)
 
 ## Tier 5: Polish & Content [NOT STARTED]
 
@@ -82,16 +123,15 @@ Scripts are implemented but these nodes/scenes need to be created or wired up in
 
 ### Tier 3
 
-- [ ] `GemSite` (x2-3 in world) — Create as Area3D with CollisionShape3D (sphere, radius ~4). Attach `scripts/interactibles/gem_site.gd`. Place in `World/Interactables/`. Set `site_name` export
-- [ ] `GuardianBoss` — Instance `scenes/actors/enemy/guardian/guardian_boss.tscn` near Capitol/gem area, rename to `GuardianBoss`. (Phase-2 boss `corrupted_seraph.tscn` is an inherited scene — no script override needed.)
-- [ ] `AstralProjection` (Control, in CanvasLayer) — Attach `scripts/astral_projection.gd`. Needs SubViewportContainer child with SubViewport containing a Camera3D
-- [ ] Verify `MinionManager` / `EnemyManager` nodes at game-scene root (already added with scripts attached)
+- [x] `GemSite` ×3 placed in `world.tscn` (2026-06-05) — scene root, ~30-40m ring around the Capitol. QoL: all three still have the default `site_name = "Gem Site"` (prompts are indistinguishable); optionally reparent under `World/Interactables/`
+- [x] `GuardianBoss` — instanced at `World/Enemies/GuardianBoss` near the Capitol. (Phase-2 boss `corrupted_seraph.tscn` is an inherited scene — no script override needed.)
+- `AstralProjection` — **DEFERRED 2026-06-10**: boss-room activation isn't ready; MVP uses a HUD notification ("the Guardian is under attack — scry to watch") + Palantir instead. The pre-built `scenes/astral_projection.tscn` stays on disk for later.
+- [x] `MinionManager` node at game-scene root (verified in `world.tscn` 2026-06-10). No `EnemyManager` exists anymore — neutral enemies spawn through `MinionManager.spawn_neutral_minion` as NEUTRAL-faction minions
 
 ### Tier 4
 
-- [ ] `BossManager` (Node, scene root) — Attach `scripts/boss_manager.gd`. Set `initial_boss` export to the world's `GuardianBoss`. Optional: `seraph_spawn_point` (defaults to initial boss position), `seraph_scene` override (defaults to `corrupted_seraph.tscn`)
-- [ ] `DivineIntervention` (Node, scene root) — Attach `scripts/divine_intervention.gd`
-- [ ] `RitualSite` (x2-3 in `World/Interactables/`) — Area3D + CollisionShape3D (sphere, radius ~3), attach `scripts/interactibles/ritual_site.gd`, set `ritual` export to one of `res://data/rituals/*.tres`. Greybox mesh. Place away from Capitol — risky detours
+- [x] `BossManager` (Node, scene root) — placed 2026-06-10 (Austin); `initial_boss` wired to `World/Enemies/GuardianBoss` via tscn edit — verify in-editor. Optional: `seraph_spawn_point` (defaults to initial boss position), `seraph_scene` override (defaults to `corrupted_seraph.tscn`)
+- [x] `DivineIntervention` (Node, scene root) — placed 2026-06-10 (Austin)
 
 Placed already: `WarTable` + `WarTableRange` and `UpgradeAltar` in `tower.tscn` (tune `map_world_center`/`size` per tower once per-overlord AOs are designed; reposition altar to taste).
 
@@ -104,18 +144,22 @@ Implementation-complete systems not yet confirmed in a live session. Items marke
 ### Tier 3
 
 #### Corruption tracking
-- [ ] "+10 Corruption" pause-menu button bumps the local peer's score live in the F3 overlay
-- [ ] All peers' corruption + total visible in F3 panel
+- [x] "+10 Corruption" pause-menu button bumps the local peer's score live in the F3 overlay (verified 2026-06-05)
+- [ ] All peers' corruption + total visible in F3 panel (multi-peer session)
 - [ ] Corruption persists across Avatar transfers within a match
 - [ ] GuardianBoss debuff scales with total corruption (cross-check with boss panel)
-- [ ] Held gem site trickles 0.5/s corruption to the controlling peer **[blocked: GemSite not yet placed]**
+- [ ] Held gem site regens 0.5/s corruption to the holder, stopping at max (Σ held-site contributions)
 
-#### Minor gem sites — **[blocked: GemSite not yet placed]**
-- [ ] Minions clear neutral enemies on the site
-- [ ] Avatar can interact to channel a capture
-- [ ] Channel completion grants passive corruption to the capturing peer
+#### Minor gem sites (contest-gated capture, reworked 2026-06-05)
+- [ ] Uncontested NEUTRAL site: Avatar holds E and captures — no friendly minions required
+- [ ] Hostile minion (other faction or neutral) within `contest_radius` blocks capture; prompt reads "contested"
+- [ ] Hostile arriving mid-channel breaks the channel
+- [ ] Channel completion starts corruption regen for the capturing peer
+- [ ] Regen stops at max corruption (one site → climbs to 7 and holds; F3 shows `current / max`)
+- [ ] Holding a second site raises the max AND the combined regen rate
 - [ ] Capture state syncs to all peers
 - [ ] F3 "Gem Sites" panel shows held/total count
+- [ ] Harness `capture_channel_test.tscn`: [2] spawns a hostile at the site → contest gate + channel break
 
 #### Hostile takeover
 - [ ] Minion (with kill credit) damaging Avatar to 0 HP triggers takeover
@@ -129,13 +173,13 @@ Implementation-complete systems not yet confirmed in a live session. Items marke
 - [ ] Tiebreak between equal-corruption peers is deterministic
 - [ ] Mode swap mirrors the hostile-takeover transfer
 
-#### Guardian boss — **[blocked: GuardianBoss not yet instanced]**
+#### Guardian boss
 - [ ] Boss spawns at the placed location
 - [ ] HP/damage scaled by total corruption (debuff visible in F3 boss panel)
 - [ ] Avatar attacks land; boss attacks reduce Avatar HP
 - [ ] Boss death triggers Tier 3 win condition
 
-#### Astral projection — **[blocked: AstralProjection not yet wired]**
+#### Astral projection — **[DEFERRED 2026-06-10: MVP uses HUD scry notification instead]**
 - [ ] SubViewport overlay auto-activates when the boss engages
 - [ ] Spectator camera follows the active Avatar for non-Avatar peers
 - [ ] Overlay clears on boss death / match end
@@ -163,24 +207,19 @@ Setup: flip `can_retreat = true` on a combat type's `.tres` (e.g. `data/minions/
 - [ ] `abilities.cancel(&"id")` ends an effect early
 
 #### Faction-specific Overlord tools
-- [ ] Eldritch: domination via Summoning Circle (cost respects ritual discount)
+- [ ] Eldritch: domination via Summoning Circle
 - [ ] Demonic: single-minion direct command works
 - [ ] Nature/Fey: information advantage visible in War Table / map
 - [ ] Tools gated correctly — only the matching faction's overlord can use them
-
-#### Eldritch ritual mechanic — **[blocked: RitualSite not yet placed]**
-- [ ] Avatar channel matches `RitualData` duration; completion applies the bonus
-- [ ] Both rituals tested: `domination_mastery`, `eldritch_vision` (`corruption_surge` was removed with the territory grid 2026-06-05)
-- [ ] `GameState.has_eldritch_vision(peer)` ticks down and clears on expiry
 
 #### Undeath raise-dead mechanic
 - [ ] Ghoul-trait kill → skeleton spawns under the killer's owner, inherits faction, behaves normally
 - [ ] No skeleton from non-Ghoul kills
 
-#### Two-boss endgame — **[blocked: BossManager not yet placed]**
+#### Two-boss endgame
 - [ ] `initial_boss` resolves to the world's GuardianBoss; phase-1 death spawns `CorruptedSeraph`; phase-2 death wins the match
 
-#### Divine intervention — **[blocked: DivineIntervention + GemSite not yet placed]**
+#### Divine intervention
 - [ ] Timer arms after the first gem capture; zero sites held for 60s → loss screen for all peers
 - [ ] Re-holding a site recovers the timer at 2× speed and clears the warning
 

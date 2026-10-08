@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://b6bm3krm5xl8v"]
+
+[ext_resource type="PackedScene" uid="uid://dh1yd251v76mt" path="res://assets/world/env/mod-castle/Walls/Foundations/Foundation_Full_x8.fbx" id="1_gov60"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gov60"]
+size = Vector3(2.1224976, 8.515747, 16.186768)
+
+[node name="Foundation_Full_x" unique_id=1535287952 instance=ExtResource("1_gov60")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1" unique_id=2112986979]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=872813535]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0128479, 3.7578735, -7.0723877)
+shape = SubResource("BoxShape3D_gov60")

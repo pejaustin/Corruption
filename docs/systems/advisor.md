@@ -8,7 +8,7 @@
 
 The **Advisor** is a minion NPC who lives in the overlord's tower and is the single point of contact between the overlord's *intent* and the world's *execution*. The overlord does not directly push buttons that move minions, capture gems, or dispatch couriers. The overlord formulates a plan (usually by producing a held item at a station like the War Table), **hands the plan to the Advisor**, and the Advisor decides how to execute it.
 
-This system is **broader than the War Table.** The War Table produces one kind of plan (movement orders). Other stations will eventually produce others (defensive postures, construction orders, ritual preparations, diplomatic dispatches). All of them route through the Advisor.
+This system is **broader than the War Table.** The War Table produces one kind of plan (movement orders). Other stations will eventually produce others (defensive postures, construction orders, diplomatic dispatches). All of them route through the Advisor.
 
 ```
 ┌─── OVERLORD ────┐      ┌──── ADVISOR ────┐      ┌──── WORLD ────┐
@@ -46,7 +46,7 @@ Once a payload is received:
 1. **Advisor parses** it into command objects. Different inputs map to different command subclasses:
    - Plan-paper (handed) → `MovementCommand` — group targets, destinations, Stay/Leave modes, dispatched via couriers.
    - Plan-paper (shouted from balcony) → `MovementCommand` — same payload, but execution is direct voice to any minion in visual range of the balcony; no couriers dispatched.
-   - *(future)* Sealed order → `ConstructionCommand`, `RitualCommand`, etc.
+   - *(future)* Sealed order → `ConstructionCommand`, etc.
 2. **Advisor decides execution strategy.** For courier-routed movement commands: dispatch one courier per group, subject to the faction's courier cap. If the cap is hit, queue until a courier returns. For shouted movement commands: resolve immediately against minions in balcony sight range.
 3. **Advisor emits sub-tasks** (courier dispatches, minion orders, whatever the command resolves to).
 4. **Sub-tasks report back** to the Advisor on completion or failure.
@@ -72,7 +72,6 @@ These are the reasons the Advisor exists as a physical entity. A UI-only command
 |---|---|---|---|
 | `MovementCommand` | War Table plan-paper | Dispatch couriers per group, Stay/Leave modes | Stay: execution status + sightings. Leave: "delivered" only. |
 | *(planned)* `ConstructionCommand` | TBD station | Dispatch worker minion(s) | Structure state |
-| *(planned)* `RitualCommand` | Ritual Site reagent | Dispatch ritualist minion or spend locally | Buff applied |
 | *(planned)* `RecallCommand` | Tower recall action | Dispatch courier with recall order (same as War Table Path 2) | Returning minion sightings |
 
 ---
@@ -95,7 +94,7 @@ Numbers TBD. Tuned in a later balance pass.
 ## Open questions
 
 - Is the Advisor a **fixed tower NPC** (one per tower, respawns on death) or a **summoned minion** the overlord can choose from their roster?
-- Does each station have its own dedicated NPC (War Advisor, Ritual Advisor, ...) or one generalist Advisor that accepts everything?
+- Does each station have its own dedicated NPC (War Advisor, Construction Advisor, ...) or one generalist Advisor that accepts everything?
 - Does the Advisor have an inventory visible to walking-past observers — i.e. can a rival glimpse your pending plans through a Palantir / Mirror?
 - What happens to in-flight couriers when the Advisor dies? Do they still complete and just have no one to report back to? Do they go feral?
 - Does the Advisor have combat ability, or is it a defenseless specialist that relies on the tower's other minions for protection?

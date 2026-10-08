@@ -4,6 +4,7 @@ extends Node
 ## Autoload singleton.
 
 signal avatar_changed(old_peer_id: int, new_peer_id: int)
+signal avatar_owner_changed(old_peer_id: int, new_peer_id: int)
 signal game_won(peer_id: int)
 signal game_lost
 signal watcher_count_changed(count: int)
@@ -13,8 +14,16 @@ signal corruption_changed(peer_id: int, new_value: float)
 ## Listen here for global reactions (storm cue, HUD banner, audio sting).
 signal capture_broadcast(peer_id: int, faction: int, duration: float)
 
-# -1 means no Avatar is active
+# The Avatar is a minion that can be optionally controlled directly by the
+# player with power over it (docs/systems/avatar-possession.md): ownership
+# (whose pawn it is) and control (who is driving right now) are separate.
+# It starts the match neutral and unowned; the first claim owns it, Q releases
+# control but keeps ownership, and ownership moves only via defeat (or the
+# Phase D upkeep gauge).
+# CONTROLLER: -1 = no one is driving it (AI drives while owned).
 var avatar_peer_id: int = -1
+# OWNER: which peer owns the Avatar as their pawn. -1 = neutral/unowned.
+var avatar_owner_peer_id: int = -1
 # How many Overlords are scrying the Avatar right now
 var watcher_count: int = 0
 # peer_id -> global camera position of each active scryer
@@ -30,9 +39,6 @@ var player_names: Dictionary[int, String] = {}
 var faction_overrides: Dictionary[int, int] = {}
 # peer_id -> { upgrade_kind_int -> level_int } (see UpgradeData.Kind)
 var upgrade_levels: Dictionary[int, Dictionary] = {}
-# Eldritch Vision ritual effect — timed broadcast buff.
-var eldritch_vision_peer: int = -1
-var eldritch_vision_timer: float = 0.0
 
 func is_avatar(peer_id: int) -> bool:
 	return avatar_peer_id == peer_id
@@ -40,41 +46,11 @@ func is_avatar(peer_id: int) -> bool:
 func has_avatar() -> bool:
 	return avatar_peer_id != -1
 
-func claim_avatar(peer_id: int) -> void:
-	## Called by the host when a player claims the Avatar.
-	if not multiplayer.is_server():
-		return
-	if has_avatar():
-		return
-	_set_avatar.rpc(peer_id)
+func is_avatar_owner(peer_id: int) -> bool:
+	return avatar_owner_peer_id == peer_id
 
-func release_avatar() -> void:
-	## Called by the host when the Avatar is released (death, recall, etc.)
-	## Passes control to the next player in round-robin order.
-	if not multiplayer.is_server():
-		return
-	var old = avatar_peer_id
-	_set_avatar.rpc(-1)
-	# Round-robin: find the next connected peer
-	var next = _get_next_peer(old)
-	if next > 0:
-		_set_avatar.rpc(next)
-
-func _get_next_peer(current_peer: int) -> int:
-	## Returns the next peer in round-robin order, skipping the current one.
-	var peers = multiplayer.get_peers().duplicate()
-	if multiplayer.get_unique_id() not in peers:
-		peers.append(multiplayer.get_unique_id())
-	peers.sort()
-	if peers.size() <= 1:
-		return -1  # No one else to transfer to
-	var idx = peers.find(current_peer)
-	if idx == -1:
-		return peers[0]
-	var next_idx = (idx + 1) % peers.size()
-	if peers[next_idx] == current_peer:
-		return -1
-	return peers[next_idx]
+func has_avatar_owner() -> bool:
+	return avatar_owner_peer_id != -1
 
 @rpc("authority", "call_local", "reliable")
 func _set_avatar(peer_id: int) -> void:
@@ -82,28 +58,43 @@ func _set_avatar(peer_id: int) -> void:
 	avatar_peer_id = peer_id
 	avatar_changed.emit(old, peer_id)
 
+@rpc("authority", "call_local", "reliable")
+func _set_avatar_owner(peer_id: int) -> void:
+	var old = avatar_owner_peer_id
+	avatar_owner_peer_id = peer_id
+	avatar_owner_changed.emit(old, peer_id)
+
 @rpc("any_peer", "call_local", "reliable")
 func request_claim_avatar() -> void:
 	## Any peer can request to claim. Host validates and grants.
+	## Claiming an unowned avatar = own + possess in one step; the owner
+	## re-requesting an uncontrolled avatar = possess only. A rival's avatar
+	## can't be claimed here — take it in the field.
 	if not multiplayer.is_server():
 		request_claim_avatar.rpc_id(1)
 		return
 	var sender = multiplayer.get_remote_sender_id()
 	if sender == 0:
 		sender = 1 # Local call from host
-	claim_avatar(sender)
+	if avatar_owner_peer_id == -1:
+		_set_avatar_owner.rpc(sender)
+		_set_avatar.rpc(sender)
+	elif avatar_owner_peer_id == sender and avatar_peer_id == -1:
+		_set_avatar.rpc(sender)
 
 @rpc("any_peer", "call_local", "reliable")
 func request_recall_avatar() -> void:
-	## Avatar controller requests to return to their tower.
+	## Q from the Avatar: releases control only — the sender keeps ownership
+	## and the avatar stays in the field as their pawn (AI-driven).
 	if not multiplayer.is_server():
 		request_recall_avatar.rpc_id(1)
 		return
 	var sender = multiplayer.get_remote_sender_id()
 	if sender == 0:
 		sender = 1
-	if is_avatar(sender):
-		release_avatar()
+	if not is_avatar(sender):
+		return
+	_set_avatar.rpc(-1)
 
 @rpc("any_peer", "call_local", "reliable")
 func request_win() -> void:
@@ -270,21 +261,6 @@ func add_upgrade(peer_id: int, kind: int) -> void:
 		upgrade_levels[peer_id] = {}
 	upgrade_levels[peer_id][kind] = upgrade_levels[peer_id].get(kind, 0) + 1
 
-# --- Eldritch Vision ritual effect ---
-
-func grant_eldritch_vision(peer_id: int, duration: float) -> void:
-	eldritch_vision_peer = peer_id
-	eldritch_vision_timer = duration
-
-func has_eldritch_vision(peer_id: int) -> bool:
-	return eldritch_vision_peer == peer_id and eldritch_vision_timer > 0.0
-
-func _process(delta: float) -> void:
-	if eldritch_vision_timer > 0.0:
-		eldritch_vision_timer = max(0.0, eldritch_vision_timer - delta)
-		if eldritch_vision_timer <= 0.0:
-			eldritch_vision_peer = -1
-
 @rpc("authority", "call_local", "reliable")
 func sync_player_factions(factions: Dictionary) -> void:
 	player_factions.clear()
@@ -303,6 +279,7 @@ func get_player_name(peer_id: int) -> String:
 func reset() -> void:
 	## Called when returning to menu to clear game state.
 	avatar_peer_id = -1
+	avatar_owner_peer_id = -1
 	watcher_count = 0
 	watcher_positions.clear()
 	corruption.clear()
@@ -310,5 +287,3 @@ func reset() -> void:
 	player_names.clear()
 	faction_overrides.clear()
 	upgrade_levels.clear()
-	eldritch_vision_peer = -1
-	eldritch_vision_timer = 0.0

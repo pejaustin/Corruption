@@ -16,7 +16,7 @@
                     │                                  │
              ┌──────▼──────┐                  ┌───────▼───────┐
              │   AVATAR    │                  │   OVERLORD    │
-             │  (1 player) │                  │  (3 players)  │
+             │(0-1 players)│                  │ (3-4 players) │
              │             │                  │               │
              │ 3rd person  │    Palantir:     │ 1st person    │
              │ Souls-like  │◄── watch but ───►│ Tower view    │
@@ -36,10 +36,16 @@
                     └────────────┬─────────────────────┘
                                  │
                     ┌────────────▼────────────┐
-                    │    AVATAR TRANSFER      │
+                    │   AVATAR OWNERSHIP      │
                     │                         │
-                    │ Hostile: minions kill    │
-                    │ Fallback: most corruption│
+                    │ Claim: first E owns it  │
+                    │ Q: release → AI drives  │
+                    │ Killed by minions →     │
+                    │   killer's owner takes  │
+                    │ Killed by neutrals →    │
+                    │   unowned, re-claimable │
+                    │ Upkeep gauge empty →    │
+                    │   neutral (planned)     │
                     └────────────┬────────────┘
                                  │
               ┌──────────────────▼──────────────────┐
@@ -48,7 +54,7 @@
               │  Avatar reaches Capitol → 2 bosses   │
               │  Bosses debuffed by total corruption  │
               │  Other players: astral spectators     │
-              │  If Avatar dies → next in line        │
+              │  If Avatar dies → re-claim & retry    │
               │                                      │
               │  WIN: Corrupt the gem                 │
               │  LOSE: Divine intervention (all lose) │
@@ -80,8 +86,9 @@
 
 | Mechanic | Summary |
 |----------|---------|
-| **Corruption** | Earned by holding minor gem sites — your claim to Avatar control; summed, it debuffs the bosses |
-| **Minor Gems** | At settlements, temples, holy sites. Overlord clears, Avatar confirms capture |
+| **Avatar possession** | The Avatar is a claimable pawn — own it, possess it, or release it to AI; lose it to combat defeat or unpaid upkeep (upkeep escalates, faster on autopilot) |
+| **Corruption** | THE currency: held gem sites bank it toward your ceiling; spend it on minions, upgrades, and Avatar upkeep; summed (current), it debuffs the bosses |
+| **Minor Gems** | At settlements, temples, holy sites. Avatar captures freely unless hostiles contest the radius; sites never deplete |
 | **Palantir** | Overlord watches Avatar in real-time. Avatar knows when being watched |
 | **Mirror** | Send video messages to rival Overlords. Diegetic diplomacy |
 | **Divine Intervention** | No gem site held for too long → gods seal gems → everyone loses |
@@ -107,12 +114,14 @@ Factions dig in.        Alliances form/break.   intervention race.
 
 | System | Page | Build Status |
 |--------|------|--------------|
-| Avatar Combat | [avatar-combat.md](systems/avatar-combat.md) | Not started |
-| Overlord Mode | [overlord-mode.md](systems/overlord-mode.md) | Not started |
-| Faction Design | [faction-design.md](systems/faction-design.md) | Design done |
-| Corruption & Gems | [corruption-and-gems.md](systems/corruption-and-gems.md) | Implemented |
-| Boss Mechanics | [boss-mechanics.md](systems/boss-mechanics.md) | Not started |
-| Multiplayer | [multiplayer.md](systems/multiplayer.md) | Foundation built |
+| Avatar Combat | [avatar-combat.md](systems/avatar-combat.md) | Implemented (Tier 2) |
+| Avatar Possession | [avatar-possession.md](systems/avatar-possession.md) | Phases A–C in; D (upkeep) planned |
+| Overlord Mode | [overlord-mode.md](systems/overlord-mode.md) | Implemented (Tiers 1–3) |
+| War Table & Knowledge | [war-table.md](systems/war-table.md) | Implemented, verified 2026-06-05 |
+| Faction Design | [faction-design.md](systems/faction-design.md) | Scripts ready, untested |
+| Corruption & Gems | [corruption-and-gems.md](systems/corruption-and-gems.md) | Implemented, untested |
+| Boss Mechanics | [boss-mechanics.md](systems/boss-mechanics.md) | Guardian in; sequel needs editor setup |
+| Multiplayer | [multiplayer.md](systems/multiplayer.md) | Implemented |
 | Progression & Loot | [progression-loot.md](systems/progression-loot.md) | Not started |
 
 ## Technical Pages
@@ -121,4 +130,5 @@ Factions dig in.        Alliances form/break.   intervention race.
 |-------|------|--------------|
 | Project Structure | [project-structure.md](technical/project-structure.md) | Done |
 | Networking Implementation | [networking.md](technical/networking.md) | Foundation built |
-| Build Phases (MVP) | [build-phases.md](technical/build-phases.md) | Active |
+| Path to MVP Roadmap | [mvp-roadmap.md](technical/mvp-roadmap.md) | **Active — start here** |
+| Build Phases (tier history + test checklists) | [build-phases.md](technical/build-phases.md) | Reference |

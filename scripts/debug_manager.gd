@@ -174,16 +174,42 @@ func kill_avatar() -> void:
 	else:
 		print("[Debug] Avatar not active")
 
+func _aim_world_point(default_distance: float) -> Vector3:
+	## World point under the camera crosshair — raycast against world geometry
+	## (layer 1), excluding the camera's own actor body. Returns Vector3.INF if
+	## there's no active camera. The old `pos.y = 0` flatten broke when the
+	## terrain rework raised ground height: points computed that way landed
+	## beneath the heightmap, so spawns/orders vanished underground.
+	var camera := get_viewport().get_camera_3d()
+	if not camera:
+		return Vector3.INF
+	var from := camera.global_position
+	var dir := -camera.global_basis.z
+	var query := PhysicsRayQueryParameters3D.create(from, from + dir * 300.0, 1)
+	var exclude: Array[RID] = []
+	var node: Node = camera
+	while node:
+		if node is CollisionObject3D:
+			exclude.append((node as CollisionObject3D).get_rid())
+		node = node.get_parent()
+	query.exclude = exclude
+	var hit := camera.get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		return hit.position
+	# Crosshair pointed at the sky — fall back to a point ahead, snapped to
+	# the navmesh so it still lands on walkable ground.
+	var ahead := from + dir * default_distance
+	return NavigationServer3D.map_get_closest_point(camera.get_world_3d().navigation_map, ahead)
+
 func spawn_enemy_at_camera() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can spawn enemies")
 		return
-	var camera = get_viewport().get_camera_3d()
-	if not camera:
+	var spawn_pos := _aim_world_point(5.0)
+	if spawn_pos == Vector3.INF:
 		print("[Debug] No active camera")
 		return
-	var spawn_pos = camera.global_position + (-camera.global_basis.z * 5.0)
-	spawn_pos.y = 0
+	spawn_pos.y += 0.5  # clear the surface so the body settles instead of clipping
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
 	if mm:
 		mm.spawn_neutral_minion(spawn_pos)
@@ -201,12 +227,11 @@ func spawn_minion_at_camera() -> void:
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can spawn minions")
 		return
-	var camera = get_viewport().get_camera_3d()
-	if not camera:
+	var spawn_pos := _aim_world_point(5.0)
+	if spawn_pos == Vector3.INF:
 		print("[Debug] No active camera")
 		return
-	var spawn_pos = camera.global_position + (-camera.global_basis.z * 5.0)
-	spawn_pos.y = 0
+	spawn_pos.y += 0.5  # clear the surface so the body settles instead of clipping
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
 	if mm:
 		var my_id = multiplayer.get_unique_id()
@@ -215,6 +240,24 @@ func spawn_minion_at_camera() -> void:
 		print("[Debug] Spawned minion at (%.1f, %.1f, %.1f)" % [spawn_pos.x, spawn_pos.y, spawn_pos.z])
 	else:
 		print("[Debug] MinionManager not found")
+
+func order_avatar_to_camera() -> void:
+	## Phase B test hook: sends the released (AI-driven) avatar a move order to
+	## where the crosshair pointed when the menu opened — same entry point the
+	## war table will use in Phase C (AvatarAI.command_move).
+	if not multiplayer.is_server():
+		print("[Debug] Only the host can order the avatar")
+		return
+	var target_pos := _aim_world_point(10.0)
+	if target_pos == Vector3.INF:
+		print("[Debug] No active camera")
+		return
+	var avatar = _get_avatar()
+	if avatar and avatar.avatar_ai:
+		avatar.avatar_ai.command_move(target_pos)
+		print("[Debug] Avatar ordered to (%.1f, %.1f, %.1f)" % [target_pos.x, target_pos.y, target_pos.z])
+	else:
+		print("[Debug] Avatar (or its AI) not found")
 
 func add_corruption_to_self() -> void:
 	if not multiplayer.is_server():

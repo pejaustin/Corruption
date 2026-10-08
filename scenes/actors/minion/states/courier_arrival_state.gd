@@ -117,6 +117,18 @@ func _attempt_delivery_at_head_leg() -> void:
 		var still_pending: Array = []
 		for raw in ids:
 			var mid: int = int(raw)
+			if mid == KnowledgeManager.AVATAR_ID:
+				# The possession-rework avatar: deliver straight to its AI
+				# brain (host-side, same machine as this state). Ownership can
+				# flip between draft and delivery — that's a failed delivery,
+				# same as a dominated minion.
+				var avatar := _find_commandable_avatar()
+				if avatar == null \
+						or actor.global_position.distance_squared_to(avatar.global_position) > visual_range_sq:
+					still_pending.append(mid)
+					continue
+				avatar.avatar_ai.command_move(target_pos)
+				continue
 			var target := mm.get_minion_by_id(mid)
 			if target == null or not is_instance_valid(target) or not target.can_take_damage():
 				# Dead or removed — can't deliver. Don't keep retrying; let
@@ -134,6 +146,16 @@ func _attempt_delivery_at_head_leg() -> void:
 		if not visible.is_empty():
 			mm.command_selection_move(visible, target_pos)
 		sub["minion_ids"] = still_pending
+
+func _find_commandable_avatar() -> AvatarActor:
+	## The avatar this courier may deliver to: must exist, be alive, and still
+	## belong to the courier's owner.
+	if GameState.avatar_owner_peer_id != minion.owner_peer_id:
+		return null
+	var avatar := actor.get_tree().current_scene.get_node_or_null("World/Avatar") as AvatarActor
+	if avatar == null or avatar.is_dormant or avatar.hp <= 0 or avatar.avatar_ai == null:
+		return null
+	return avatar
 
 func _is_head_leg_fully_delivered() -> bool:
 	var leg: Dictionary = minion.delivery_legs[0]

@@ -49,8 +49,6 @@ var _peer_courier_spawn_overrides: Dictionary[int, Node3D] = {}
 ## MultiplayerManager._player_slot_order only exists on the host, so clients
 ## must resolve slots from this map — see _slot_for_peer.
 var _peer_slots: Dictionary[int, int] = {}
-# peer_id -> multiplier (<1.0 = discount). Granted by the Domination Mastery ritual.
-var domination_discounts: Dictionary[int, float] = {}
 
 func _ready() -> void:
 	_minions_node = Node3D.new()
@@ -557,8 +555,6 @@ func request_dominate_minion(minion_id: int, new_owner_id: int) -> void:
 	if not minion.can_take_damage():
 		return
 	var cost := DOMINATE_COST
-	if sender in domination_discounts:
-		cost = int(DOMINATE_COST * domination_discounts[sender])
 	if get_resources(sender) < cost:
 		return
 	if get_minion_count(sender) >= MAX_MINIONS_PER_PLAYER:
@@ -626,7 +622,3 @@ func _remove_minion(id: int) -> void:
 
 func _get_player_faction(peer_id: int) -> int:
 	return GameState.get_faction(peer_id)
-
-func set_domination_discount(peer_id: int, multiplier: float) -> void:
-	## Granted by the Domination Mastery ritual. Persists for the match.
-	domination_discounts[peer_id] = multiplier

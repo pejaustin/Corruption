@@ -6,7 +6,7 @@
 
 - **Phase 1 — Capitol Guardian:** `scenes/actors/enemy/guardian/guardian_boss.tscn` (script `scripts/guardian_boss.gd`, stats from `data/minions/guardian_boss.tres`). Pre-placed in the world.
 - **Phase 2 — Corrupted Seraph:** `scenes/actors/enemy/seraph/corrupted_seraph.tscn` is an **inherited scene** of `guardian_boss.tscn` with `minion_type = corrupted_seraph.tres` and `boss_name = "Corrupted Seraph"`. No runtime script override — just scene inheritance.
-- **Sequencer:** `scripts/boss_manager.gd` (BossManager Node in `tower_scene.tscn`). Exports `initial_boss`, `seraph_scene`, `seraph_spawn_point`. Listens for `boss_defeated`, runs 3s intermission, instantiates the Seraph scene, then announces win on phase-2 defeat.
+- **Sequencer:** `scripts/boss_manager.gd` (BossManager Node — **not yet placed**; Editor TODO in `build-phases.md` says add it at the world scene root with `initial_boss` pointed at the placed GuardianBoss). Exports `initial_boss`, `seraph_scene`, `seraph_spawn_point`. Listens for `boss_defeated`, runs 3s intermission, instantiates the Seraph scene, then announces win on phase-2 defeat.
 
 ---
 
@@ -33,10 +33,11 @@ The win condition. The Avatar must defeat two bosses back-to-back in the Capitol
 │    defeated                  GEM CORRUPTED       │
 │       │                      YOU WIN             │
 │       ▼                                          │
-│  Control passes to next                          │
-│  highest corruption player                        │
-│  Bosses reset to current                         │
-│  debuffed state                                  │
+│  Killed by minions → killer's                    │
+│  owner takes the Avatar;                         │
+│  boss/neutral kill → unowned,                    │
+│  walk up and re-claim                            │
+│  Bosses keep current debuffed state              │
 │                                                  │
 │  ┌────────────────────────────────────┐          │
 │  │ ASTRAL PROJECTION                  │          │
@@ -45,7 +46,7 @@ The win condition. The Avatar must defeat two bosses back-to-back in the Capitol
 │  │ the boss room as spectators.       │          │
 │  │ Can watch and heckle.              │          │
 │  │ Cannot interfere.                  │          │
-│  │ Minions/territory on autopilot.    │          │
+│  │ Minions/gem sites on autopilot.    │          │
 │  └────────────────────────────────────┘          │
 └──────────────────────────────────────────────────┘
 ```
@@ -66,9 +67,9 @@ This means:
 
 ## Attempt Failure
 
-- Avatar dies → control transfers to next highest corruption player
+- Avatar dies → possession rules apply: a killer minion's owner takes *ownership*; killed by the boss or neutrals → reverts to unowned, anyone may re-claim it (see `avatar-possession.md`)
 - Bosses reset to their **current debuffed state** (not full health — debuffs are permanent for the match)
-- New Avatar gets a fresh attempt at the same difficulty
+- The next owner gets a fresh attempt at the same difficulty
 - Corruption can shift during the attempt (gem sites still trickle in the background)
 
 ## Open Design Questions

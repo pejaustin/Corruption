@@ -2,7 +2,7 @@
 
 Iterate balance numbers in a spreadsheet. `scripts/build/balance_csv.gd`
 (an `EditorScript`) round-trips every custom-`Resource` `.tres` under
-`data/{minions,factions,abilities,upgrades,rituals}/` through CSVs in
+`data/{minions,factions,abilities,upgrades}/` through CSVs in
 `data/csv/`.
 
 ## Workflow
@@ -21,7 +21,7 @@ links preserved — no hand-rolled `.tres` text).
 | Type | CSV form |
 |---|---|
 | `int`, `float`, `bool`, `String`, `StringName` | literal |
-| Enum (`MinionType.faction`, `UpgradeData.kind`, `RitualData.effect`, `FactionProfile.id`) | member name (`UNDEATH`, `MINION_HP`, …); ints also accepted |
+| Enum (`MinionType.faction`, `UpgradeData.kind`, `FactionProfile.id`) | member name (`UNDEATH`, `MINION_HP`, …); ints also accepted |
 | `Color` | `r,g,b,a` floats (CSV-quoted because of the commas) |
 | `Vector2` / `Vector3` | comma-separated floats |
 | `Resource` ref (`effect_scene`, `icon`, `default_avatar_scene`) | `res://...` path; empty = null |
@@ -47,7 +47,7 @@ Current Project*) so the editor picks up new files.
 
 - `MinionCatalog` (`data/minion_catalog.tres`) — single-row scene
   registry, manage in editor.
-- Anything outside the five target dirs — add to `TARGETS` if you want
+- Anything outside the four target dirs — add to `TARGETS` if you want
   a new resource class round-tripped.
 
 ## Caveats

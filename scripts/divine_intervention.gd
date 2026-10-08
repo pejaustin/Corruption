@@ -8,7 +8,7 @@ class_name DivineIntervention extends Node
 signal intervention_warning(time_remaining: float)
 signal intervention_triggered
 
-const GRACE_PERIOD: float = 60.0  # Seconds with zero held sites before divine intervention
+const GRACE_PERIOD: float = 600.0  # Seconds with zero held sites before divine intervention
 const WARNING_START: float = 30.0  # Start warning at this many seconds remaining
 const CHECK_INTERVAL: float = 2.0  # How often to check site control
 

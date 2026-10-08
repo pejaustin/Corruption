@@ -46,7 +46,7 @@ This works because:
 
 **Info-courier (step 8).** A multi-stage mission: Travel → Observe → Return → Flush. Today's pattern would be three more state-script overrides on top of the courier scene, with bespoke transition logic encoded in each.
 
-**Future: scout-mission, defend-position, patrol-route, follow-target, kamikaze, hold-line, escort-courier.** Each is a "policy" composed of a few motor states and a control loop. Without an abstraction they each need ~1 actor scene + ~3 state scripts + transition logic.
+**Confirmed (2026-06-10, roadmap W7): stationed-guard and patrol-route with leash-return-to-station, for neutral gem-site camps — likely the migration trigger.** Future: scout-mission, follow-target, kamikaze, hold-line, escort-courier. Each is a "policy" composed of a few motor states and a control loop. Without an abstraction they each need ~1 actor scene + ~3 state scripts + transition logic.
 
 ---
 
@@ -98,7 +98,8 @@ func enter(inst: Instance) -> void:
 | `RetreatableBehavior(wraps: MinionBehavior)` | any combat fighter with `can_retreat = true` | Delegates to wrapped behavior; intercepts when HP < threshold and switches to RetreatState |
 | `InfoCourierMissionBehavior` (planned, step 8) | info_courier | Travel → Observe(N sec) → Retreat-and-flush |
 | `ScoutBehavior` (planned, scout) | scout | Maintain station at broadcast-range edge; passive observation |
-| `PatrolBehavior` (planned) | future | Cycle waypoints; engage hostiles if encountered |
+| `StationedGuardBehavior` (W7) | neutral camps | Hold a station anchor; engage hostiles; leash back to station when aggro drops |
+| `PatrolBehavior` (W7) | neutral camps | Cycle waypoints from a station anchor; engage hostiles; leash back to station when aggro drops |
 | `EscortBehavior(target_id)` (planned) | future | Stay near target id; engage threats to it |
 
 The wrapping pattern (`RetreatableBehavior`) is what makes this scale: composable, optional, doesn't pollute the wrapped behavior.

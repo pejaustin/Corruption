@@ -22,6 +22,12 @@ var input_enabled: bool = true
 ## The peer ID currently controlling the Avatar. -1 = dormant/no one.
 var controlling_peer_id: int = -1
 
+## Host-side AI driver (AvatarAI). While the possession rework has the avatar
+## owned-but-uncontrolled, _gather delegates input synthesis here instead of
+## zeroing — the host is input authority then, so AI input syncs to all peers
+## through the normal rollback path.
+var ai_driver: AvatarAI = null
+
 var _press_tick: Dictionary[StringName, int] = {}
 
 func _ready() -> void:
@@ -39,6 +45,9 @@ func _gather() -> void:
 			_press_tick[&"primary_ability"] = t
 		if Input.is_action_just_pressed("roll"):
 			_press_tick[&"roll"] = t
+	elif ai_driver != null and ai_driver.is_driving():
+		ai_driver.drive(self)
+		_press_tick.clear()
 	else:
 		input_dir = Vector2.ZERO
 		jump_input = false

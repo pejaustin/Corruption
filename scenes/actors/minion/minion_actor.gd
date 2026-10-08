@@ -86,6 +86,9 @@ var _field_log: Dictionary[int, Dictionary] = {}
 
 var attack_timer: float = 0.0
 var _death_timer: float = 0.0
+# TEMP DIAGNOSTIC (courier-stuck): progress tracking, see _physics_process.
+var _diag_last_pos: Vector3 = Vector3.ZERO
+var _diag_stuck_timer: float = 0.0
 var _pending_raise_pos: Vector3 = Vector3.ZERO
 
 ## Last avoidance-adjusted velocity from NavigationAgent3D. ChaseState calls
@@ -291,6 +294,38 @@ func _physics_process(delta: float) -> void:
 				return
 
 	_state_machine._rollback_tick(delta, 0, true)
+
+	# TEMP DIAGNOSTIC (stuck): any minion that is actively trying to move
+	# (ChaseState/JumpState) but barely moved in the last second — report its
+	# state, where it stopped, whether that spot is on the navmesh, and what it
+	# is colliding against (name + layer). Distinguishes a stray collider vs a
+	# navmesh dead-end vs a failed jump-link trigger. Remove when fixed.
+	if _state_machine != null:
+		_diag_stuck_timer += delta
+		if _diag_stuck_timer >= 1.0:
+			var moved := global_position.distance_to(_diag_last_pos)
+			var st: StringName = _state_machine.state
+			# Report a non-moving minion if it's either up on the tower (y>15, the
+			# balcony — catches the "gave up to Idle" case) OR actively trying to
+			# move anywhere (Chase/Jump). The y-gate keeps resting ground minions
+			# from spamming.
+			var trying: bool = st == &"ChaseState" or st == &"JumpState"
+			if moved < 0.3 and st != &"DeathState" and (global_position.y > 15.0 or trying):
+				var nmap := get_world_3d().navigation_map
+				var onmesh := -1.0
+				if nmap.is_valid():
+					onmesh = NavigationServer3D.map_get_closest_point(nmap, global_position).distance_to(global_position)
+				var hits := ""
+				for ci in range(get_slide_collision_count()):
+					var col := get_slide_collision(ci).get_collider()
+					if col:
+						var lyr: int = col.collision_layer if (col is CollisionObject3D) else -1
+						hits += " hit=%s(layer=%d)" % [col.name, lyr]
+				print("[StuckMinion] %s trait=%s state=%s pos=%v onmesh=%.2fm wp=%v dist_wp=%.1f jump_tgt=%v%s" % [
+					name, minion_trait, st, global_position, onmesh, waypoint,
+					global_position.distance_to(waypoint), jump_target, hits])
+			_diag_last_pos = global_position
+			_diag_stuck_timer = 0.0
 
 	if _state_machine.state == &"DeathState":
 		_death_timer += delta

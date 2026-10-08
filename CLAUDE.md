@@ -33,6 +33,7 @@ TBD
   - Spawn Minion at Camera (host) — same
   - +10 Corruption (host)
   - Cycle Faction (host)
+  - Order Avatar to Camera (host) — move order for the released (AI-driven) avatar, same routing as war-table orders
   - Toggle Aggro Rings (shows each minion's aggro radius, faction-colored)
 
   One-shot buttons auto-close the menu. Toggles (god mode, aggro rings) keep it open.
@@ -370,14 +371,15 @@ When making changes:
 ### Documentation
 - `docs/one-pager.md` — Visual summary of the entire game
 - `docs/systems/` — One page per major system (combat, overlord mode, factions, corruption & gems, bosses, multiplayer, progression)
-- `docs/technical/build-phases.md` — **MVP tier tracker with current progress** (start here for what to build next)
+- `docs/technical/mvp-roadmap.md` — **Path-to-MVP roadmap** (start here for what to build next)
+- `docs/technical/build-phases.md` — tier history (0–4) + standing test checklists for implemented-but-unverified systems
 - `docs/technical/changelog.md` — Dated record of shipped work, verification passes, and design calls. Don't read it for current state — it's history; consult only when you need when/why something changed.
 - `docs/technical/netfox-reference.md` — Project-specific netfox + RPC cheat sheet. Read before any networking change (see § 4).
 - `docs/Corruption_GDD_v0.1.md` — Original GDD (reference, superseded by modular docs)
 
-### Current State (Tiers 0-3 Complete, Tier 4 Scripts Ready)
+### Current State (Tiers 0-3 complete; MVP push)
 
-Tiers 0-3 are playable. Tier 4 scripts are implemented (boss sequence, upgrade altars, rituals, abilities) but need editor setup.
+Tiers 0-3 are playable. Tier 4 scripts are implemented (boss sequence, upgrade altars, abilities); BossManager + DivineIntervention were placed in `world.tscn` 2026-06-10. Current focus is the Path-to-MVP roadmap (`docs/technical/mvp-roadmap.md`). Eldritch ritual stations were CUT 2026-06-10 (code + data deleted); AstralProjection is deferred — MVP uses a HUD boss notification + Palantir scrying instead.
 
 ### Resource-driven data (Tier 4 refactor)
 
@@ -387,7 +389,6 @@ Gameplay data lives in `.tres` files under `res://data/`, authored as custom `Re
 |---|---|---|---|
 | `AbilityData` | `scripts/ability_data.gd` | `data/abilities/` | Avatar ability stats + effect scene |
 | `UpgradeData` | `scripts/upgrade_data.gd` | `data/upgrades/` | Upgrade altar catalog (5 entries) |
-| `RitualData` | `scripts/ritual_data.gd` | `data/rituals/` | Ritual site effects (2 entries) |
 | `MinionType` | `scripts/minion_type.gd` | `data/minions/` | Minion/enemy stats (incl. bosses) |
 
 ### Ability architecture
@@ -404,9 +405,11 @@ The War Table renders an overlord's **belief**, not truth. Each peer has a `Worl
 
 The table uses a **two-click flow**: click a friendly piece on the diorama to toggle it in `WarTable._selected_minion_ids`, click empty map to submit. With `INSTANT_COMMANDS=false`, the submit records a draft entry (`stage`, `spawn_pos`, `source_pos`, `target_pos`, `minion_ids`, `courier_id`); E at the Advisor (`advisor_handoff.gd`) dispatches a real Courier per draft, which travels to the believed source, sets each delivery target's waypoint to `target_pos`, then walks home and despawns.
 
-Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration. Both are `static var` (runtime-mutable, e.g. test harnesses can A/B-toggle without restarting):
-- `INFINITE_BROADCAST_RANGE: bool = true` — every minion updates every model every tick (belief ≈ truth). Flip off to tune broadcast range.
-- `INSTANT_COMMANDS: bool = true` — commands apply immediately: each selected id's waypoint is set to the target via `MinionManager.command_minion_move`, no courier loop. Flip off to exercise the Courier dispatch path.
+Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration. Both are `static var` (runtime-mutable, e.g. test harnesses can A/B-toggle without restarting). **Both default `false` (the canonical "real game" behavior); flip ON for debug shortcuts:**
+- `INFINITE_BROADCAST_RANGE: bool = false` — ON: every minion updates every model every tick (belief ≈ truth). OFF: broadcast-range gating, beliefs go stale.
+- `INSTANT_COMMANDS: bool = false` — ON: commands apply immediately (selected ids' waypoints set directly, no courier loop). OFF: orders ride the draft → Paper → Advisor → Courier pipeline.
+
+**The Avatar is a war-table pawn too** (reserved id `KnowledgeManager.AVATAR_ID = -100`): while owned and alive it enters WorldModels like a minion sighting (owner always sees it; rivals by broadcast range), renders as an oversized "AVATAR" piece, and is selectable/commandable only by its owner. Order delivery routes to `AvatarAI.command_move` — via `KnowledgeManager.request_avatar_move` (instant path) or the courier's arrival state (courier path) — never to a `MinionActor` waypoint. See `docs/systems/avatar-possession.md`.
 
 `WarTable` (script `scripts/interactibles/war_table.gd`, `class_name WarTable`) exports `map_world_size: Vector2` and `map_world_center: Vector3` directly on the interactable; the setters tunnel to the `Map` child's `WarTableMap` so per-tower regions are configured next to the rest of the table's setup. `WarTableMap` still owns `table_surface_size` and the piece spawner. `WarTableRange` is a `@tool` MeshInstance3D that draws a semi-transparent BoxMesh at the map's effective region so designers can see it in both editor and play.
 
@@ -439,23 +442,24 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - `GameState.get_faction(peer_id)` — authoritative lookup (checks overrides, then player_factions, falls back to round-robin). Use this instead of any per-manager faction resolution.
 - `GameState.set_faction_override(peer_id, faction)` / `clear_faction_override(peer_id)` — for debug swap.
 - `GameState.get_upgrade_level(peer_id, kind)` / `add_upgrade(peer_id, kind)` — upgrade state lives on GameState, not on nodes' metadata.
-- `GameState.grant_eldritch_vision(peer_id, duration)` / `has_eldritch_vision(peer_id)` — ritual-granted temp buff with a ticking timer on GameState.
-- `GameState.get_corruption(peer_id)` / `add_corruption(peer_id, amount)` / `get_max_corruption(peer_id)` / `get_highest_corruption_peer()` / `get_total_corruption()` — **Corruption** is the single per-player score (formerly "influence"; the grid territory system was removed 2026-06-05). Sourced ONLY from held GemSites: each adds `max_corruption_contribution` to the holder's max and regens 0.5/s toward it (ceiling + regen — sites never deplete). Highest decides Avatar succession on neutral death; the total debuffs the GuardianBoss; zero held sites runs the DivineIntervention loss timer (group `gem_sites`).
+- `GameState.get_corruption(peer_id)` / `add_corruption(peer_id, amount)` / `get_max_corruption(peer_id)` / `get_highest_corruption_peer()` / `get_total_corruption()` — **Corruption** is the single per-player score (formerly "influence"; the grid territory system was removed 2026-06-05). Sourced ONLY from held GemSites: each adds `max_corruption_contribution` to the holder's max and regens 0.5/s toward it (ceiling + regen — sites never deplete). The total debuffs the GuardianBoss; zero held sites runs the DivineIntervention loss timer (group `gem_sites`). (It no longer gates Avatar succession — see avatar possession below; Phase D will feed the upkeep gauge from it.)
+- `GameState.avatar_owner_peer_id` (owner, -1 = neutral/unowned) and `GameState.avatar_peer_id` (controller, -1 = released/AI-driven) — **the Avatar is a minion optionally controlled directly by the player with power over it.** Claim at a tower station = own + possess; Q releases control (the AI drives, `AvatarAI`) while keeping ownership; ownership moves ONLY on combat defeat (killer's owner takes it; neutral kill → unowned) or the future Phase D upkeep gauge. `request_claim_avatar()` / `request_recall_avatar()` validate on the host. Design: `docs/systems/avatar-possession.md`.
 
 ### What's built (Tiers 0-3)
 
 - P2P lobby with faction selection (4 factions)
-- Avatar claim/recall, 3rd-person combat, death → transfer cycle
+- Avatar possession (ownership/control split — claim to own+possess, Q to release to AI), 3rd-person combat
+- AvatarAI: released avatar aggros, fights, follows war-table/debug move orders (host-driven input through rollback)
+- Avatar as war-table pawn (reserved `AVATAR_ID`, owner-only selection, courier-delivered orders)
 - Neutral enemies with AI (patrol, aggro, attack)
 - Animation-driven hitboxes, host-authoritative combat sync
-- EnemyManager for networked enemy spawn/death
+- Neutral enemies spawned/synced through MinionManager (`spawn_neutral_minion`, NEUTRAL faction — there is no separate EnemyManager)
 - Corruption tracking (per-peer, gem-site sourced ONLY) with debug overlay
 - MinionManager: spawning, AI (NavigationAgent3D), commands, sync
 - GemSite capture points (contest-gated Avatar capture; a held site raises the holder's max corruption and regens toward it — sites never deplete; hostiles near the site block capture, friendlies never required)
-- Hostile takeover (minion kills Avatar → owner becomes Avatar)
-- Corruption fallback (neutral death → highest corruption takes over)
+- Hostile takeover (minion kills Avatar → its owner gains avatar OWNERSHIP; neutral kill → unowned, claimable)
 - GuardianBoss (debuffed by total corruption, defeat to win)
-- AstralProjection spectator overlay for boss fights
+- AstralProjection spectator overlay for boss fights (scene built; DEFERRED from MVP — HUD scry notification instead)
 
 #### What needs editor setup
-See "Editor TODO" section at bottom of this file for nodes to add in scenes.
+See the "Editor TODO" section in `docs/technical/build-phases.md` (BossManager + DivineIntervention landed 2026-06-10; AstralProjection deferred).

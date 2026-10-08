@@ -102,16 +102,20 @@ func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
 				child.set_overlord_active(true)
 
 	if new_peer_id > 0:
-		# Activate Avatar with new controller
-		avatar.activate(new_peer_id)
+		# New controller takes the wheel
+		avatar.possess(new_peer_id)
 		# Disable the controller's Overlord input/camera
 		if _player_spawn_point:
 			for child in _player_spawn_point.get_children():
 				if child is OverlordActor and child.name.to_int() == new_peer_id:
 					child.set_overlord_active(false)
 	else:
-		# No one controls it — go dormant
-		avatar.deactivate()
+		# No one is driving it. An OWNED avatar stays in the field as its
+		# owner's pawn (AI-driven); only an unowned one goes dormant.
+		if GameState.has_avatar_owner():
+			avatar.release_control()
+		else:
+			avatar.deactivate()
 
 func _peer_connected(network_id: int) -> void:
 	print("Peer connected: %s" % network_id)

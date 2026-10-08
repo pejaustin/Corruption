@@ -12,6 +12,7 @@ extends Control
 @onready var _btn_cycle_faction: Button = %BtnCycleFaction
 @onready var _btn_aggro_rings: Button = %BtnAggroRings
 @onready var _btn_combat_boxes: Button = %BtnCombatBoxes
+@onready var _btn_order_avatar: Button = %BtnOrderAvatar
 
 func _ready() -> void:
 	visible = false
@@ -82,6 +83,8 @@ func _refresh_button_states() -> void:
 		_btn_add_corruption.disabled = not is_host
 	if _btn_cycle_faction:
 		_btn_cycle_faction.disabled = not is_host
+	if _btn_order_avatar:
+		_btn_order_avatar.disabled = not is_host
 
 func _on_resume_pressed() -> void:
 	close()
@@ -141,3 +144,7 @@ func _on_instant_commands_pressed() -> void:
 
 func _on_broadcast_range_pressed() -> void:
 	DebugManager.toggle_infinite_broadcast_range()
+
+func _on_order_avatar_pressed() -> void:
+	DebugManager.order_avatar_to_camera()
+	close()

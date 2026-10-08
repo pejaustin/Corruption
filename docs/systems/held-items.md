@@ -16,7 +16,7 @@ This system is **broader than the War Table** — the War Table is one producer 
 │  War Table (plan-paper)     │     │                │    │  Advisor (read & enact)  │
 │  Mirror (sealed message)    │ ──▶ │  One item at   │ ─▶ │  Mirror (deliver)        │
 │  Summoning Circle? (token)  │     │  a time (?)    │    │  Balcony (shout aloud)   │
-│  Ritual site? (reagent)     │     │                │    │  Another overlord (?)    │
+│  (future producers)         │     │                │    │  Another overlord (?)    │
 │                             │     │                │    │                          │
 └─────────────────────────────┘     └────────────────┘    └──────────────────────────┘
 ```
@@ -26,7 +26,7 @@ This system is **broader than the War Table** — the War Table is one producer 
 ## Design goals
 
 - **Diegetic, not UI.** The item exists in world space in the overlord's hands. You can see other overlords' held items at a glance when you watch them through a Mirror or from another tower.
-- **One-at-a-time friction.** Holding an item is a commitment — you can't have a plan-paper, a sealed letter, and a ritual reagent simultaneously. Picking up a new item either drops or replaces the current one (TBD).
+- **One-at-a-time friction.** Holding an item is a commitment — you can't have a plan-paper and a sealed letter simultaneously. Picking up a new item either drops or replaces the current one (TBD).
 - **Interruptible.** Holding an item does not pause the game. You can be interrupted mid-walk-to-Advisor by a Mirror message, a Palantir alert, etc.
 - **Stealable / droppable (later).** Eventually a held item should be a physical object an enemy or compromised Advisor can take or read. Out of scope for first build.
 
@@ -38,7 +38,6 @@ This system is **broader than the War Table** — the War Table is one producer 
 |---|---|---|---|
 | Plan-paper | War Table confirm | Advisor (queues as Commands), Balcony (shout to in-range minions) | Up to 5 movement commands + delivery modes |
 | Sealed message | Mirror record | Mirror deliver (send to rival) | Recorded video + audio |
-| *(future)* Ritual reagent | Ritual Site gather | Ritual Site cast | Per-faction buff input |
 | *(future)* Summoning token | Summoning Circle | Summoning Circle spawn | Minion type + count |
 
 Per-faction **flavor variants** of plan-paper (non-mechanical):

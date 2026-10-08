@@ -256,25 +256,31 @@ func _cluster_minions(model: WorldModel) -> Array[Dictionary]:
 	var merge_dist_sq: float = MERGE_DISTANCE * MERGE_DISTANCE
 	for e in entries:
 		var pos_local: Vector3 = world_to_table_local(e["pos"])
+		# The avatar never merges into a stack — it's the most important pawn
+		# on the board and always renders as its own distinct piece.
+		var is_avatar: bool = int(e["id"]) == KnowledgeManager.AVATAR_ID
 		var merged: bool = false
-		for c in clusters:
-			if c["owner_peer_id"] != e["owner_peer_id"] or c["faction"] != e["faction"]:
-				continue
-			var cx: Vector3 = c["centroid"]
-			var dx: float = cx.x - pos_local.x
-			var dz: float = cx.z - pos_local.z
-			if dx * dx + dz * dz > merge_dist_sq:
-				continue
-			var members: Array[int] = c["member_ids"]
-			members.append(e["id"])
-			var n: int = members.size()
-			# Running mean — keeps centroid honest as members join.
-			c["centroid"] = cx * (float(n - 1) / float(n)) + pos_local * (1.0 / float(n))
-			# Cluster freshness = freshest member. Show stale "?" only when
-			# every belief in this cluster has aged out.
-			c["last_updated_tick"] = max(int(c["last_updated_tick"]), int(e["last_updated_tick"]))
-			merged = true
-			break
+		if not is_avatar:
+			for c in clusters:
+				if c.get("is_avatar", false):
+					continue
+				if c["owner_peer_id"] != e["owner_peer_id"] or c["faction"] != e["faction"]:
+					continue
+				var cx: Vector3 = c["centroid"]
+				var dx: float = cx.x - pos_local.x
+				var dz: float = cx.z - pos_local.z
+				if dx * dx + dz * dz > merge_dist_sq:
+					continue
+				var members: Array[int] = c["member_ids"]
+				members.append(e["id"])
+				var n: int = members.size()
+				# Running mean — keeps centroid honest as members join.
+				c["centroid"] = cx * (float(n - 1) / float(n)) + pos_local * (1.0 / float(n))
+				# Cluster freshness = freshest member. Show stale "?" only when
+				# every belief in this cluster has aged out.
+				c["last_updated_tick"] = max(int(c["last_updated_tick"]), int(e["last_updated_tick"]))
+				merged = true
+				break
 		if not merged:
 			var fresh: Array[int] = [e["id"]]
 			clusters.append({
@@ -283,6 +289,7 @@ func _cluster_minions(model: WorldModel) -> Array[Dictionary]:
 				"faction": e["faction"],
 				"centroid": pos_local,
 				"last_updated_tick": int(e["last_updated_tick"]),
+				"is_avatar": is_avatar,
 			})
 
 	# Assign canonical keys after clustering settles.
@@ -315,7 +322,7 @@ func _render_stack(cluster: Dictionary) -> void:
 	var target: Vector3 = cluster["centroid"]
 	var last_updated_tick: int = int(cluster.get("last_updated_tick", 0))
 	var existed: bool = key in _stacks
-	var stack := _get_or_create_stack(key, member_ids, faction, owner_pid)
+	var stack := _get_or_create_stack(key, member_ids, faction, owner_pid, cluster.get("is_avatar", false))
 	if not existed:
 		# Snap brand-new stacks to their target so they don't swoop in from the
 		# origin. Existing stacks update the lerp target and _process eases.
@@ -337,11 +344,28 @@ func _update_stale_badge(stack: Node3D, last_updated_tick: int) -> void:
 	var stale_threshold_ticks: int = int(STALE_THRESHOLD_SECONDS / KnowledgeManager.UPDATE_INTERVAL)
 	badge.visible = age_ticks > stale_threshold_ticks
 
-func _get_or_create_stack(key: StringName, member_ids: Array[int], faction: int, owner_peer_id: int) -> Node3D:
+func _get_or_create_stack(key: StringName, member_ids: Array[int], faction: int, owner_peer_id: int, is_avatar: bool = false) -> Node3D:
 	var stack: Node3D = _stacks.get(key)
 	if stack == null or not is_instance_valid(stack):
 		stack = _instantiate_piece()
 		stack.name = "Stack_%s" % str(key)
+		if is_avatar:
+			# The avatar reads as the board's hero piece: bigger than any
+			# minion pawn, with a floating label so it can't be mistaken for
+			# a regular stack.
+			stack.scale = Vector3.ONE * 1.6
+			var badge := Label3D.new()
+			badge.name = "AvatarBadge"
+			badge.text = "AVATAR"
+			badge.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+			badge.no_depth_test = true
+			badge.pixel_size = 0.0004
+			badge.font_size = 48
+			badge.outline_size = 12
+			badge.modulate = Color(1, 1, 0.85, 1)
+			badge.outline_modulate = Color(0, 0, 0, 1)
+			badge.position = Vector3(0, piece_radius * 3.5, 0)
+			stack.add_child(badge)
 		_stacks_root.add_child(stack)
 		_stacks[key] = stack
 	# Re-stamp metadata on the stack root every render so ownership changes
@@ -351,6 +375,7 @@ func _get_or_create_stack(key: StringName, member_ids: Array[int], faction: int,
 	stack.set_meta(&"member_ids", member_ids.duplicate())
 	stack.set_meta(&"owner_peer_id", owner_peer_id)
 	stack.set_meta(&"faction", faction)
+	stack.set_meta(&"is_avatar", is_avatar)
 	var any_selected: bool = false
 	for mid in member_ids:
 		if _selected_member_ids.get(mid, false):

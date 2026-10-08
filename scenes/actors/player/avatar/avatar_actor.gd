@@ -16,6 +16,7 @@ const WATCHER_ORB_EMISSION_ENERGY: float = 2.0
 @onready var avatar_input: AvatarInput = $AvatarInput
 @onready var avatar_camera: AvatarCamera = $AvatarCamera
 @onready var watcher_label: Label3D = $WatcherLabel
+@onready var avatar_ai: AvatarAI = $AvatarAI
 
 var controlling_peer_id: int = -1
 var is_dormant: bool = true
@@ -33,6 +34,7 @@ func _ready() -> void:
 	super()
 	_set_dormant_visual(true)
 	GameState.watcher_count_changed.connect(_on_watcher_count_changed)
+	GameState.avatar_owner_changed.connect(_on_avatar_owner_changed)
 	_update_watcher_label(0)
 	# Create abilities node
 	abilities = AvatarAbilities.new()
@@ -64,33 +66,24 @@ func _die() -> void:
 func _on_death_transfer() -> void:
 	if not multiplayer.is_server():
 		return
-	# Hostile takeover: if a minion killed the Avatar, its owner becomes Avatar
-	if last_damage_source_peer > 0 and last_damage_source_peer != controlling_peer_id:
-		var old = GameState.avatar_peer_id
-		GameState._set_avatar.rpc(-1)
-		GameState._set_avatar.rpc(last_damage_source_peer)
-		_respawn.rpc()
-		last_damage_source_peer = -1
-		return
-	# Corruption fallback: highest corruption peer takes over
-	var best = GameState.get_highest_corruption_peer()
-	if best > 0 and best != controlling_peer_id:
-		var old = GameState.avatar_peer_id
-		GameState._set_avatar.rpc(-1)
-		GameState._set_avatar.rpc(best)
-		_respawn.rpc()
-		last_damage_source_peer = -1
-		return
-	# Default: round-robin
-	GameState.release_avatar()
+	# Defeat is one of only two ways ownership moves (the other is the
+	# Phase D upkeep gauge). No auto-possession.
+	var killer_owner := last_damage_source_peer
+	GameState._set_avatar.rpc(-1)  # dead hands off the wheel
+	if killer_owner > 0 and killer_owner != GameState.avatar_owner_peer_id:
+		# Hostile takeover: the killer's owner gains OWNERSHIP (they
+		# choose when to possess); own-minion kills don't transfer.
+		GameState._set_avatar_owner.rpc(killer_owner)
+	elif killer_owner <= 0:
+		# Killed by neutrals: the vessel walks free.
+		GameState._set_avatar_owner.rpc(-1)
 	_respawn.rpc()
 	last_damage_source_peer = -1
 
 @rpc("authority", "call_local", "reliable")
 func _respawn() -> void:
-	# Don't call deactivate() here — release_avatar() already triggered
-	# _on_avatar_changed which activates the next peer and deactivates the old.
-	# We just need to reset the Avatar's physical state for the new controller.
+	# Ownership/control RPCs in _on_death_transfer already drove the mode
+	# swaps via their signals; this just resets the vessel's physical state.
 	global_position = RESPAWN_POSITION
 	velocity = Vector3.ZERO
 	hp = get_max_hp()
@@ -124,6 +117,49 @@ func deactivate() -> void:
 	_set_dormant_visual(true)
 	velocity = Vector3.ZERO
 	_state_machine.transition(&"IdleState")
+
+# --- Possession (ownership/control split) ---
+
+func possess(peer_id: int) -> void:
+	## Take direct control: drives input/camera only. HP and faction are
+	## OWNERSHIP-scoped (_on_avatar_owner_changed) — re-possessing your own
+	## avatar doesn't heal the vessel.
+	controlling_peer_id = peer_id
+	is_dormant = false
+	avatar_input.set_controller(peer_id)
+	avatar_camera.activate(peer_id)
+	rollback_synchronizer.process_settings()
+	_set_dormant_visual(false)
+	if avatar_ai:
+		avatar_ai.clear_orders()  # the owner took the wheel — pending AI orders are void
+
+func release_control() -> void:
+	## Q: the controller lets go; the avatar remains the owner's pawn —
+	## visible, damageable, owner-factioned, AI-driven (AvatarAI).
+	controlling_peer_id = -1
+	avatar_input.set_controller(-1)
+	avatar_camera.deactivate()
+	rollback_synchronizer.process_settings()
+	velocity = Vector3.ZERO
+	_state_machine.transition(&"IdleState")
+
+func _on_avatar_owner_changed(_old_owner: int, new_owner: int) -> void:
+	if avatar_ai:
+		avatar_ai.clear_orders()  # a new master's pawn doesn't keep old orders
+	if new_owner > 0:
+		# New master: fresh vessel in their faction's colors.
+		is_dormant = false
+		faction = GameState.get_faction(new_owner)
+		hp = get_max_hp()
+		hp_changed.emit(hp)
+		if abilities:
+			abilities.setup(self, faction)
+	else:
+		# Unowned: dormant neutral husk until someone claims it.
+		is_dormant = true
+		faction = GameConstants.Faction.NEUTRAL
+		velocity = Vector3.ZERO
+		_state_machine.transition(&"IdleState")
 
 func _set_dormant_visual(dormant: bool) -> void:
 	if _model:

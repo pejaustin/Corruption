@@ -1,6 +1,6 @@
 # Corruption & Gem Sites
 
-**Build status:** Implemented (gem sites need editor placement) — see build-phases.md
+**Build status:** Implemented; 3 sites placed in `world.tscn` (2026-06-05). Capture/regen loop not yet verified in-engine — see `docs/technical/test-plan-corruption-avatar.md`.
 
 > **History:** This page replaces `territory-control.md` (2026-06-05). The original design had two parallel resources — a per-player "influence" score and a grid-based territory/corruption system driven by minion presence. That split was confusing and unintentional: influence was renamed **Corruption**, and the territory grid was removed. Corruption is now tied to gem-site control ONLY.
 
@@ -8,11 +8,12 @@
 
 ## Overview
 
-**Corruption** is the single per-player score. It is earned exclusively by holding Minor Gem Sites, and it drives three things:
+**Corruption** is the single per-player score — and, as of the 2026-06-10 MVP pivot, the **single currency** (the old `resources` pool is to be replaced — rework pending, `mvp-roadmap.md` W3). It is earned exclusively by holding Minor Gem Sites, and it drives four things:
 
-1. **Avatar succession** — when the Avatar dies to a neutral (no hostile takeover), the highest-corruption peer takes over (`GameState.get_highest_corruption_peer()`).
-2. **Boss debuff** — the Guardian Boss's HP/damage are reduced by *total* corruption (sum across all players, `GameState.get_total_corruption()`). Everyone's sites weaken the boss; whoever holds the Avatar reaps it.
-3. **Divine intervention** — if zero gem sites are held for too long, the gods purge the land and all players lose.
+1. **Army & upgrades (decided 2026-06-10, not yet implemented)** — summoning minions and buying upgrades **spend** corruption; held sites refill you toward your ceiling afterward.
+2. **Avatar upkeep (Phase D, speced 2026-06-10)** — owning the Avatar drains corruption at an escalating rate (faster while it's AI-driven); can't pay → it reverts to neutral. See `avatar-possession.md`. (The old rule — neutral-death succession to the highest-corruption peer — was removed 2026-06-09 with the possession rework.)
+3. **Boss debuff** — the Guardian Boss's HP/damage are reduced by *total current* corruption (sum across all players, `GameState.get_total_corruption()`). Reading **current** is deliberate: spending on your army trades off boss debuff, and corruption won't be the only debuff/buff path.
+4. **Divine intervention** — if zero gem sites are held for too long, the gods purge the land and all players lose.
 
 ```
 ┌─────────────────────── THE MAP ───────────────────────┐
@@ -40,9 +41,9 @@ The gate is **the absence of hostiles**, not the presence of friendlies. The Ava
   ─────────────────          ────────────────
   Hostile minions within     No hostiles in radius:
   contest_radius block       walk up, hold E, channel
-  capture. Clear them        completes → site trickles
-  (minions or Avatar's       Corruption to you until
-  own sword) to open it.     its capacity is drained.
+  capture. Clear them        completes → +7 max
+  (minions or Avatar's       corruption, regen 0.5/s
+  own sword) to open it.     toward it. Never depletes.
          │                              │
          └── VULNERABLE ────────────────┘
              A rival minion walking into
@@ -70,7 +71,7 @@ The gate is **the absence of hostiles**, not the presence of friendlies. The Ava
 ## The Neutral Faction ("The Good")
 
 - AI-driven, hostile to all players.
-- Defends gem sites; future: actively re-clears captured sites.
+- **Camps & garrisons (speced 2026-06-10 → roadmap W7):** neutral camps around gem sites are station-aware — some stand static guard, some patrol, and both leash back to their station when aggro drops. A camp **respawns** its members only while the holder's garrison at the protected site is below threshold (not enough player minions stationed there) — hold what you take, or the Good comes back. Open sub-question: do respawned neutrals merely contest (block regen?) or actively re-flip the site to NEUTRAL?
 - **Asymmetric detection by faction:**
   - Demonic: highly detectable
   - Undeath: detectable
@@ -79,7 +80,7 @@ The gate is **the absence of hostiles**, not the presence of friendlies. The Ava
 
 ## Open Design Questions
 
-- Can captured gem sites be lost / stolen by rival players? (Currently capture is permanent. Contested recapture would keep divine intervention live all match — the contest check already exists for the capture gate. Note: on site loss, the holder's max drops; does corruption above the new max clamp instantly, decay, or persist?)
+- Can captured gem sites be lost / stolen by rival players? (Currently capture is permanent. Contested recapture would keep divine intervention live all match — the contest check already exists for the capture gate. Note: on site loss, the holder's max drops; does corruption above the new max clamp instantly, decay, or persist? **Partially answered 2026-06-10:** neutral garrison pressure (W7) becomes a loss *threat* — player-vs-player recapture is still open.)
 - How are held sites visually represented? (Faction-colored gem glow? Environmental change radiating from the site?)
 - Should sites differ — regen rate, **max contribution**, clear difficulty, distance-to-Capitol risk curve?
 - Boss-debuff tuning: with 3 sites × 7 contribution, the global ceiling is 21 total corruption → max debuff 21/60 = **35%**, well short of the 60% cap. Raise contributions, lower the divisor, or accept — decide at the boss playtest.

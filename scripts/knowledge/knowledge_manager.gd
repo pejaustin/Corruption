@@ -41,6 +41,14 @@ const UNTRACKED_TRAITS: Array[StringName] = [&"courier", &"info_courier", &"advi
 ## How often sightings are flushed from truth into belief.
 const UPDATE_INTERVAL: float = 0.1
 
+## Reserved sighting id for the possession-rework Avatar (Phase C). Minion ids
+## are positive (MinionManager._next_minion_id starts at 1), so a negative
+## constant can never collide. The avatar rides the same WorldModel /
+## selection / draft / courier machinery as any minion under this id; only
+## the delivery endpoints special-case it (AvatarAI.command_move instead of
+## a MinionActor waypoint).
+const AVATAR_ID: int = -100
+
 var _models: Dictionary[int, WorldModel] = {}
 var _update_timer: float = 0.0
 var _tick: int = 0
@@ -89,6 +97,7 @@ func _ingest_sightings() -> void:
 	if peers.is_empty():
 		return
 	var minions := mm.get_all_minions()
+	var avatar := _get_tracked_avatar()
 	for pid in peers:
 		var model := get_model(pid)
 		for m in minions:
@@ -101,7 +110,7 @@ func _ingest_sightings() -> void:
 			# not a free sighting from the regular broadcast loop.
 			if m.minion_trait in UNTRACKED_TRAITS:
 				continue
-			if not INFINITE_BROADCAST_RANGE and not _observable_by(pid, m, minions):
+			if not INFINITE_BROADCAST_RANGE and not _observable_by(pid, m.global_position, minions):
 				continue
 			var is_friendly := m.owner_peer_id == pid
 			model.update_minion_sighting(
@@ -112,15 +121,48 @@ func _ingest_sightings() -> void:
 				_tick,
 				is_friendly,
 			)
+		# The possession-rework Avatar is a sighting like any minion (Phase C).
+		# Its owner always sees it (a broadcasting unit self-reports, same as a
+		# friendly minion observing itself); rivals see it under the normal
+		# broadcast-range rules. While untracked (unowned / dormant / dead /
+		# flag off) it's forgotten outright — parity with minion death — but a
+		# mere ownership flip just stops updating the loser's entry, which ages
+		# into a stale "?" like any out-of-range belief.
+		if avatar == null:
+			model.forget_minion(AVATAR_ID)
+		elif INFINITE_BROADCAST_RANGE \
+				or GameState.is_avatar_owner(pid) \
+				or _observable_by(pid, avatar.global_position, minions):
+			model.update_minion_sighting(
+				AVATAR_ID,
+				avatar.global_position,
+				GameState.avatar_owner_peer_id,
+				avatar.faction,
+				_tick,
+				GameState.is_avatar_owner(pid),
+			)
 
-func _observable_by(peer_id: int, minion: MinionActor, all_minions: Array[MinionActor]) -> bool:
+func _get_tracked_avatar() -> AvatarActor:
+	## The avatar joins the sighting network while owned and alive.
+	## Null otherwise.
+	if not GameState.has_avatar_owner():
+		return null
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+	var avatar := scene.get_node_or_null("World/Avatar") as AvatarActor
+	if avatar == null or avatar.is_dormant or avatar.hp <= 0:
+		return null
+	return avatar
+
+func _observable_by(peer_id: int, pos: Vector3, all_minions: Array[MinionActor]) -> bool:
 	# Placeholder for range check. Path 1 (broadcast range) lights up in a
 	# later build step — for now we just approximate by distance from any
 	# friendly minion.
 	for other in all_minions:
 		if other.owner_peer_id != peer_id:
 			continue
-		if other.global_position.distance_to(minion.global_position) <= BROADCAST_RANGE:
+		if other.global_position.distance_to(pos) <= BROADCAST_RANGE:
 			return true
 	return false
 
@@ -239,8 +281,16 @@ func issue_move_command(peer_id: int, minion_ids: Array[int], target_pos: Vector
 	if INSTANT_COMMANDS:
 		# Bypass the courier loop: command exactly the selected minions, with
 		# formation-slot distribution so N minions to one point get N distinct
-		# waypoints instead of piling up.
-		mm.command_selection_move(minion_ids, target_pos)
+		# waypoints instead of piling up. The avatar (reserved id) routes to
+		# its AI brain on the host instead of a MinionManager waypoint.
+		var regular_ids: Array[int] = []
+		for mid in minion_ids:
+			if mid == AVATAR_ID:
+				request_avatar_move(target_pos)
+			else:
+				regular_ids.append(mid)
+		if not regular_ids.is_empty():
+			mm.command_selection_move(regular_ids, target_pos)
 		return
 	if minion_ids.is_empty():
 		return
@@ -278,6 +328,27 @@ func issue_move_command(peer_id: int, minion_ids: Array[int], target_pos: Vector
 		"courier_id": -1,
 		"issued_tick": _tick,
 	}
+
+@rpc("any_peer", "call_local", "reliable")
+func request_avatar_move(target_pos: Vector3) -> void:
+	## Owner-issued direct move order for the avatar — the INSTANT_COMMANDS
+	## war-table path and any future direct-order UI. (The courier path
+	## delivers via courier_arrival_state instead, which runs on the host
+	## already.) Host validates that the sender owns the avatar.
+	if not multiplayer.is_server():
+		request_avatar_move.rpc_id(1, target_pos)
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if sender == 0:
+		sender = multiplayer.get_unique_id()
+	if not GameState.is_avatar_owner(sender):
+		return
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var avatar := scene.get_node_or_null("World/Avatar") as AvatarActor
+	if avatar and avatar.avatar_ai:
+		avatar.avatar_ai.command_move(target_pos)
 
 func _build_legs(peer_id: int, minion_ids: Array[int]) -> Array[Dictionary]:
 	## Snapshot each selected minion's believed position into its own leg. The
@@ -565,7 +636,9 @@ func _dispatch_entries(peer_id: int, entries: Array) -> void:
 		var first_source: Vector3 = ordered_legs[0].get("source_pos", spawn_world)
 		var courier_id: int = mm.spawn_named_minion_for_peer(peer_id, &"courier", spawn_world, first_source)
 		if courier_id < 0:
+			push_warning("[KnowledgeManager] Courier spawn FAILED for peer %d (catalog missing 'courier' scene, or not host?)" % peer_id)
 			continue
+		print("[KnowledgeManager] Courier %d dispatched for peer %d (%d legs)" % [courier_id, peer_id, ordered_legs.size()])
 		var courier := mm.get_minion_by_id(courier_id)
 		if courier:
 			courier.delivery_legs = ordered_legs

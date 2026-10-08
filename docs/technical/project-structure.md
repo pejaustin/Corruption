@@ -22,7 +22,6 @@ corruption/
 │   ├── csv/                 # Balance CSVs (round-trip via scripts/build/balance_csv.gd — see docs/technical/balance-csv.md)
 │   ├── factions/            # FactionProfile .tres (undeath, demonic, nature_fey, eldritch)
 │   ├── minions/             # MinionType .tres (skeleton, imp, guardian, corrupted_seraph, ...)
-│   ├── rituals/             # RitualData .tres (domination_mastery, corruption_surge, eldritch_vision)
 │   └── upgrades/            # UpgradeData .tres (minion_vitality, minion_ferocity, dark_tithe, avatar_fortitude, avatar_might)
 ├── docs/
 │   ├── one-pager.md         # Game overview
@@ -52,7 +51,7 @@ corruption/
 ├── scripts/
 │   ├── abilities/           # AbilityEffect base + per-ability effect scripts
 │   ├── build/               # EditorScripts (balance_csv.gd — Resource ↔ CSV round-trip)
-│   ├── interactibles/       # WarTable + WarTableMap + WarTableRange, GemSite, UpgradeAltar, RitualSite
+│   ├── interactibles/       # WarTable + WarTableMap + WarTableRange, GemSite, UpgradeAltar
 │   ├── knowledge/           # KnowledgeManager autoload + WorldModel (per-peer battlefield belief)
 │   ├── menus/               # Menu logic
 │   ├── network/             # Network manager, connection configs
@@ -60,7 +59,6 @@ corruption/
 │   ├── test/                # WarTableTestController + StartingMinionSpec (harness-only scripts)
 │   ├── ability_data.gd      # AbilityData Resource class
 │   ├── upgrade_data.gd      # UpgradeData Resource class
-│   ├── ritual_data.gd       # RitualData Resource class
 │   ├── minion_type.gd       # MinionType Resource class
 │   ├── boss_manager.gd      # Two-phase boss sequencer
 │   ├── game_constants.gd    # Factions, max players
@@ -87,7 +85,7 @@ corruption/
 | NetworkRollback | netfox | Rollback networking |
 | NetworkEvents | netfox | Network event bus |
 | NetworkPerformance | netfox | Performance monitoring |
-| GameState | `scripts/game_state.gd` | Per-peer faction, upgrades, ritual buffs |
+| GameState | `scripts/game_state.gd` | Per-peer faction, upgrades, corruption, avatar ownership/control |
 | DebugManager | `scripts/debug_manager.gd` | F2–F8 debug keys |
 | InteractionUI | `scripts/interaction_ui.gd` | HUD prompt routing for Interactables |
 | KnowledgeManager | `scripts/knowledge/knowledge_manager.gd` | Per-peer WorldModel; War Table reads belief from here. `INFINITE_BROADCAST_RANGE` / `INSTANT_COMMANDS` are `static var` flags (runtime-mutable for test harnesses) |
@@ -96,7 +94,7 @@ corruption/
 
 | Scene | Purpose |
 |-------|---------|
-| `tower_scene.tscn` | Main game scene (loaded as GAME_SCENE) |
+| `scenes/world/world.tscn` | Main game scene (loaded as `NetworkManager.GAME_SCENE`) |
 | `player.tscn` | Multiplayer-spawned player character |
 | `main_menu.tscn` | Entry point, host/join selection |
 | `enet_menu.tscn` | ENet connection + lobby |

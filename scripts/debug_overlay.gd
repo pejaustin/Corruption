@@ -45,12 +45,11 @@ func _process(delta: float) -> void:
 
 	# Game state
 	lines.append("[b]Game State[/b]")
-	if GameState.has_avatar():
-		var avatar_id = GameState.avatar_peer_id
-		var is_me = avatar_id == peer_id
-		lines.append("  Avatar Controller: %d%s" % [avatar_id, " (YOU)" if is_me else ""])
-	else:
-		lines.append("  Avatar: [color=#888888]dormant[/color]")
+	var owner_txt = str(GameState.avatar_owner_peer_id) if GameState.has_avatar_owner() else "[color=#888888]neutral[/color]"
+	var ctrl_txt = str(GameState.avatar_peer_id) if GameState.has_avatar() else "[color=#888888]released[/color]"
+	if GameState.is_avatar(peer_id):
+		ctrl_txt += " (YOU)"
+	lines.append("  Avatar Owner: %s | Controller: %s" % [owner_txt, ctrl_txt])
 
 	# Avatar entity info
 	var avatar_node = get_tree().current_scene.get_node_or_null("World/Avatar")

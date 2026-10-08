@@ -30,7 +30,6 @@ teaches the skills the next phase needs. Companion to the Tier 5 "Art pass" item
 | Avatar Claim | Primitive |
 | Gem (the win objective!) | **A sphere** |
 | Gem Site | Primitives |
-| Ritual Site | **No mesh at all** (Editor TODO says "needs a visual mesh") |
 
 ### World
 - Environment is covered by third-party kits (medieval town kit, mod-castle kit, rocks/roads/terrain via Terrain3D). Towers are kitbashed from mod-castle — fine.
@@ -83,13 +82,11 @@ Blender→Godot loop.
 ## Phase 2 — Tower interior interactables
 
 **Why second:** the rest of the Overlord's home. Each is a single static prop with an
-emissive accent — one step up in shape complexity. The Ritual Site is on this list
-because it needs a mesh *anyway* before it can even be placed (Editor TODO).
+emissive accent — one step up in shape complexity.
 
 | Asset | Replaces | Notes | Effort |
 |---|---|---|---|
 | **The Gem** | a sphere | The win objective of the entire game. Faceted crystal on an ornate base, strong emissive. Deserves to be iconic. | ★★ |
-| Ritual Site | nothing (blocked TODO) | Circle of rune stones, 3 placements in world. Unblocks Tier 4 testing. | ★★ |
 | Gem Site marker | primitives | Smaller shrine variant of the gem pedestal. | ★ |
 | Summoning circle | `table.glb` | Floor disc with engraved runes + 2–3 braziers. Engine handles glow/particles. | ★★ |
 | Palantir pedestal | greybox under crystal-ball.glb | Clawed/twisted pedestal; keep using the existing crystal ball on top. | ★★ |

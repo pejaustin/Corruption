@@ -142,9 +142,3 @@ func is_camouflaged() -> bool:
 		if e.makes_invisible():
 			return true
 	return false
-
-func is_channeling_ritual() -> bool:
-	for e in _active:
-		if e.is_channeling():
-			return true
-	return false
