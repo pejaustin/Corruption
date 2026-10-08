@@ -30,3 +30,11 @@ Clean-slate rework (Austin, 2026-10-08). The April GDD (`docs/Corruption_GDD_v0.
 > player that successfully beats all players corrupts the site and wins the game.
 
 ## Questions and answers
+
+**Q1. When you give an army an order from the tower, what are you telling it?**
+Austin, 2026-10-08:
+> I think I want the map to be imprecise as well. it is a rough estimation of the terrain, with classic illustrated
+> features showing things like rivers, cliff faces, and towns, mountains, etc. so there are a discreet number of
+> selectable points to send troops to. A troop order is both a route and a goal. where they are going, and what they are
+> doing there. so "go to site, try to take it" means they will fight and stay there regardless of if they win "go to
+> site to assess threat level" includes going and coming back as part of the goal
