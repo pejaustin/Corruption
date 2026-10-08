@@ -123,3 +123,10 @@ Austin, 2026-10-08:
 > I'm still thinking about this. A lot of what I'm trying to do with this project is play with expectations for the
 > genre, and using a resource seems too flatly genre convention. But at the same time it's important to use players
 > experience with other games to help them understand a game's systems.
+
+**Q14. How does a player take control of the Paladin? (Palantir / earned in the field / contest)**
+Austin, 2026-10-08:
+> All of the above. You could raw overpower an avatar, even if currently controlled by another player, via corruption,
+> but the easier way is to find the avatar, take him down, and turn him with troops the same way you do with holy
+> sites. Requires having strong enough troops to fight him and his company if he has one. Any time the avatar gets low
+> health, though, anyone can begin the takeover, and there should be a mechanic for contested takeover
