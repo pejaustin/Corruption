@@ -374,7 +374,7 @@ When making changes:
   Never make creative/content calls; mark stand-ins `PLACEHOLDER:` and list them in `PLACEHOLDERS.md`.
 - `docs/one-pager.md` — Visual summary of the entire game
 - `docs/systems/` — One page per major system (combat, overlord mode, factions, corruption & gems, bosses, multiplayer, progression)
-- `docs/technical/mvp-roadmap.md` — **Path-to-MVP roadmap** (start here for what to build next)
+- `docs/technical/mvp-roadmap.md` — the June 2026 MVP plan, built on the old design (reference only; new work comes from the GDD v2 tickets)
 - `docs/technical/build-phases.md` — tier history (0–4) + standing test checklists for implemented-but-unverified systems
 - `docs/technical/changelog.md` — Dated record of shipped work, verification passes, and design calls. Don't read it for current state — it's history; consult only when you need when/why something changed.
 - `docs/technical/netfox-reference.md` — Project-specific netfox + RPC cheat sheet. Read before any networking change (see § 4).
