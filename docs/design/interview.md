@@ -245,3 +245,8 @@ Austin, 2026-10-08:
 > Yeah weakest boss goes first which is really the number of corruption sites
 (Read as: boss strength comes from the corruption sites you hold, boss-type sites especially, and the weakest boss
 fights first.)
+
+**Q29. Does anything push a match toward its end besides a player winning?**
+Austin, 2026-10-08:
+> The good faction is slowly getting stronger and eventually it becomes imposible to corrupt the city center and ends in
+> a draw
