@@ -130,3 +130,8 @@ Austin, 2026-10-08:
 > but the easier way is to find the avatar, take him down, and turn him with troops the same way you do with holy
 > sites. Requires having strong enough troops to fight him and his company if he has one. Any time the avatar gets low
 > health, though, anyone can begin the takeover, and there should be a mechanic for contested takeover
+
+**Q15. If nobody takes him, what ends your control of the Paladin?**
+Austin, 2026-10-08:
+> B a limit, but holding him near a source of corruption can keep him indefinitely, so others would have to find and
+> attack to take him. Any time he is dropped to zero hp corruption is wiped and whoever currently has him loses control.
