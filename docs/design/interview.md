@@ -261,3 +261,9 @@ Austin, 2026-10-08:
 > Yes same as old plan but match time may be longer like 4-5 hours if the game is set to be slower, a config that
 > changes unit move speed and the good teams scale timer
 (4 players, ~90 minutes by default; a slower setting can stretch it to 4–5 hours.)
+
+**Q32. Where do fights happen?**
+Austin, 2026-10-08:
+> A
+(Every unit exists in the real 3D world the Paladin walks; fights play out there, watchable via the Palantir if he's
+nearby.)
