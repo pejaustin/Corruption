@@ -303,3 +303,9 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > a
 (A ruined tower, the advisor, a few couriers and one small group of troops; no sites.)
+
+**Q39. Can a player's tower be attacked?** — Austin asked for input
+Austin, 2026-10-08:
+> yes but I think maybe it should survive somehow. Interested to hear your input, but basically, this is something I
+> think needs adjusting from traditional RTS games. A game designer once said a good game is never over until it is
+> done. basicaly that no one should feel that they have to just wait around for the game to end
