@@ -172,3 +172,10 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > Ok yeah let's say a boss form player somehow uses the corruption to take the avatar to their base.
 (How he gets there is not yet described.)
+
+**Q23. What do buying and turning humans look like in play?**
+Austin, 2026-10-08:
+> This is for individuals, so individual humans can be corrupted by being killed and raised as undead, or they can be
+> asked to join with the player overlord's cause, and this takes resources like gold and a promise not to harm humans in
+> that settlement or to assassinate a rival. Only nobles can be bought in this way. So only a few or one per settlement
+> and there are advantages and diaanvantages to doing this over other methods of control
