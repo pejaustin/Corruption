@@ -111,3 +111,9 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > Both
 (A minimum strength of your forces present to start corrupting; more forces after that go faster.)
+
+**Q12. Once you hold a site, how can you lose it? (rivals / the humans / upkeep)**
+Austin, 2026-10-08:
+> All three
+(Rivals can corrupt it over to them; the good faction can retake or purify it, especially if unguarded; it slips back
+unless some of your forces stay to hold it.)
