@@ -57,3 +57,11 @@ Austin, 2026-10-08:
 > route to the safer site, and manages to corrupt it unaccosted. then, with the added corruption, they are able to gain
 > an upgrade to their troops that will automatically send a courier back to the base if the company is attacked, so that
 > in the future they won't loose resources and time for such mistakes.
+
+**Q3. Does your map change as you learn things?**
+Austin, 2026-10-08:
+> yeah I think of the fixed points on the map, not all are available from the jump.. it fills in with info from couriers
+> but lots are there already, including far off ones. for instance a player could send a courier across the map right
+> away if they wanted to, and they would be richly rewarded for a bunch of information if they return safely, but it is
+> risky because they have limited couriers at the start of the game and any number of issues could cause the courier to
+> be killed or captured
