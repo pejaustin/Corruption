@@ -102,3 +102,7 @@ Austin, 2026-10-08:
 > will ask what the orders should be, starting options are "go here" and "assess location state and return" different
 > types of selected locations include other options. Corruption sites include "corrupt site" option. After choosing,
 > advisor dispenses orders and couriers as necessary
+
+**Q10. What does a chess piece's position on the floor show?**
+Austin, 2026-10-08:
+> You can move as a way to make guesses or visually plan but you can ask advisor to update to latest info
