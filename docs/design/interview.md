@@ -117,3 +117,9 @@ Austin, 2026-10-08:
 > All three
 (Rivals can corrupt it over to them; the good faction can retake or purify it, especially if unguarded; it slips back
 unless some of your forces stay to hold it.)
+
+**Q13. Is corruption something you spend? (spent / a level / both)** — OPEN
+Austin, 2026-10-08:
+> I'm still thinking about this. A lot of what I'm trying to do with this project is play with expectations for the
+> genre, and using a resource seems too flatly genre convention. But at the same time it's important to use players
+> experience with other games to help them understand a game's systems.
