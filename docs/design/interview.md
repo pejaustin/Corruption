@@ -293,3 +293,8 @@ Austin, 2026-10-08:
 **Q36. What happens when a group leader dies?**
 Austin, 2026-10-08:
 > someone can step up and remember some of the leader's maneuvers but lossing some
+
+**Q37. What is the desk with books for? (records / your notes / both)**
+Austin, 2026-10-08:
+> buth
+(Both: records of what leaders know, relics held and what's been learned, plus a free space for your own notes.)
