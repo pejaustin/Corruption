@@ -145,3 +145,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > B he can follow orders and move with armies and gets his own map token, but is most powerful being directly
 > controlled as you can micro movements and combat in ways he can't alone.
+
+**Q18. With little control of the Paladin, what does it feel like? (locked actions / he resists / both)**
+Austin, 2026-10-08:
+> Both. You may be able to attack but if you try attacking a priest or soldier of the good faction, he'll resist you
+> until you have more corruption
