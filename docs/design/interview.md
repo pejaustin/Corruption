@@ -298,3 +298,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > buth
 (Both: records of what leaders know, relics held and what's been learned, plus a free space for your own notes.)
+
+**Q38. What does each player start with?**
+Austin, 2026-10-08:
+> a
+(A ruined tower, the advisor, a few couriers and one small group of troops; no sites.)
