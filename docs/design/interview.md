@@ -276,3 +276,8 @@ Austin, 2026-10-08:
 (Current build, `scripts/interactibles/mirror.gd`: records audio + the model's transform and animation-state name at
 30 Hz, 10 s max, one-way; the recipient's mirror plays it on a ghost copy in a stage scene. Gaps vs. Austin's answer:
 no live calls; it records animation names, not the skeleton's actual pose.)
+
+**Q34. How does a live mirror call reach a rival who isn't at their mirror?**
+Austin, 2026-10-08:
+> It rings
+(Their mirror chimes or glows; they walk over to answer, or it falls back to a recorded message.)
