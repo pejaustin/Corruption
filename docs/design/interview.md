@@ -281,3 +281,11 @@ no live calls; it records animation names, not the skeleton's actual pose.)
 Austin, 2026-10-08:
 > It rings
 (Their mirror chimes or glows; they walk over to answer, or it falls back to a recorded message.)
+
+**Q35. How do you gain an upgrade?**
+Austin, 2026-10-08:
+> I think there are two parallel mechanics. one is training. Unit group leaders gain experience and can learn to do more
+> complex maneuvers, and can teach these to others at the expense of not having them out in the field for an amount of
+> time necessary to teach others, then there are Relics retrieved from locations, some of them corruption sites but not
+> necessarily so, that add things like an ability for troops to send up signal flares (but anyone can see these) or
+> other useful items. There may also be the ability to pay goods to humans who provide things like better armor.
