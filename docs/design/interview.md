@@ -204,3 +204,26 @@ sending the goods.)
 Austin, 2026-10-08:
 > You already asked me this and I was undecided. Again I'd like input and suggestion. I want to play with expectations
 > while being fun and precise, and key on our overall theme of realism and low information
+(Claude's proposal, not settled: corruption is a felt level, never spent; the tower shows it exactly and immediately —
+a drop tells you something was lost but not what, like an RTS alert ping without the camera jump.)
+Austin, 2026-10-08:
+> Actually, thinking about this more has given me some clarity that corruption shouldn't be a resource at all. That,
+> yes, the more... I really like this idea you came up with of giving the feel of a map alert ping. I was already
+> thinking that, you know, I want like some sort of beacon to show in the sky that you can see from the balcony when a
+> corruption site is changed hands or taken for the first time or moved back to neutral. But yeah, I think that you
+> should feel it. You should, you should see that your like character is growing stronger, that you're that like the
+> ruined tower becomes more whole every time that you gain a corrupted site. I think that that's a really cool visual
+> language. But for what the actual corruption sites do, I think that it should be individual and ability based. So
+> every single corruption site has specific things they provide. So for instance, a corrupted chapel is a place where
+> you can bring a human, a live human, and they will be like dominated, like into a thrall. So that has extra
+> difficulty where you have to find a way to get your skeleton armies to capture humans without killing them and then
+> also transport them without killing them which is very hard and if you succeed on those things then you will gain
+> minions that way you can of course invest resources and and units to you know mine goods to sell to nobles to gain
+> their to curry their favor that way but you can dominate with thralls at corrupted sites And there are other types of
+> corrupted sites that give you things like more power over the avatar. And I'll come up with more. Give me some
+> suggestions if you have any. But what I really like right now is this idea that every corruption site, that there
+> are, that there are types of corruption sites, and that each one gives you something discrete. And that we can...
+> build a, a, a specific map with, with play, you know, with, with paths of play in mind. And that also that could be
+> different by each faction once we have factions figured out. But yeah, this idea that corruption is not a resource
+> like in a traditional RTS. It gives you new capabilities that you have to use in the world.
+(Q13 closed: corruption is not a resource. Each site type grants a discrete capability.)
