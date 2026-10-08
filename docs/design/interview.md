@@ -289,3 +289,7 @@ Austin, 2026-10-08:
 > time necessary to teach others, then there are Relics retrieved from locations, some of them corruption sites but not
 > necessarily so, that add things like an ability for troops to send up signal flares (but anyone can see these) or
 > other useful items. There may also be the ability to pay goods to humans who provide things like better armor.
+
+**Q36. What happens when a group leader dies?**
+Austin, 2026-10-08:
+> someone can step up and remember some of the leader's maneuvers but lossing some
