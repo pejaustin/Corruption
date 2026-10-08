@@ -106,3 +106,8 @@ Austin, 2026-10-08:
 **Q10. What does a chess piece's position on the floor show?**
 Austin, 2026-10-08:
 > You can move as a way to make guesses or visually plan but you can ask advisor to update to latest info
+
+**Q11. How does taking a corruption site work? (threshold / rate / both)**
+Austin, 2026-10-08:
+> Both
+(A minimum strength of your forces present to start corrupting; more forces after that go faster.)
