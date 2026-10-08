@@ -83,3 +83,14 @@ Austin, 2026-10-08:
 **Q7. What does "starting faction" mean for the first playable version?**
 Austin, 2026-10-08:
 > Yes, for the MVP I want everyone to be undead, but want this to be an asym PvP and will add more factions later
+
+**Q8. How do you play in the tower?**
+Austin, 2026-10-08:
+> it is first person perspective, you are in the tower and have a few tools at your disposal. you have an advisor who is
+> how you hear information from couriers, how you give orders, and other dialog. there is a magic mirror for sending
+> messages to other players. a Palantir orb for spying on the Avatar, a balcony for surveying the nearby territory
+> (mostly useless and just for flavor, but useful for things like seeing beams of light when sites are corrupted or
+> keeping track of the day/night cycle. Then there is the map, which is a huge sprawling stone floor so that players can
+> give relatively granular commands, and get a sense of scale. Then there is a summoning circle for turning human
+> remains, and a desk with books where the player devises their plans and tech tree. There are very few UI elements and
+> interactions in the game. everything is meant to be diagetic and low info. mostly interactions with the advisor.
