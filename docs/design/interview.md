@@ -166,3 +166,9 @@ Austin, 2026-10-08:
 > They take control and the boss gauntlet ends. Maybe they should also be able to "take" the avatar back to their base,
 > since they'd have to presumably fight through enemy armies to get it of the city. Is they then want to try and win the
 > game they would need to take the avatar to the city center and start a fresh boss run
+
+**Q22. After winning the Paladin in the gauntlet, where is he?**
+(Austin asked for reasoning; Claude recommended sending him home so the winner can't start a new run on the spot.)
+Austin, 2026-10-08:
+> Ok yeah let's say a boss form player somehow uses the corruption to take the avatar to their base.
+(How he gets there is not yet described.)
