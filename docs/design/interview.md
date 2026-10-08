@@ -193,3 +193,9 @@ better ledgers are an upgrade; 5 spending is physical, e.g. goods sent to a nobl
 Austin, 2026-10-08:
 > Partly, I like the idea of a treasure room, but this should include a ledger of most-up-to-date info on resources held
 > at other sites, the treasure room only shows what gold or special artifacts are held at the base location.
+
+**Q25. Hauling and physical spending: keep either?**
+Austin, 2026-10-08:
+> Yes to both
+(Goods must be hauled by order to be used, and hauls can be ambushed; spending is physical, e.g. paying a noble means
+sending the goods.)
