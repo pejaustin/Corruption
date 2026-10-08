@@ -94,3 +94,11 @@ Austin, 2026-10-08:
 > give relatively granular commands, and get a sense of scale. Then there is a summoning circle for turning human
 > remains, and a desk with books where the player devises their plans and tech tree. There are very few UI elements and
 > interactions in the game. everything is meant to be diagetic and low info. mostly interactions with the advisor.
+
+**Q9. How does an order get made?**
+Austin, 2026-10-08:
+> First select one or more chess piece style markers representing units, then draw a path by walking across the map.
+> Then select a location and confirm. This puts a scroll of orders in the players hand. Give it to the advisor and they
+> will ask what the orders should be, starting options are "go here" and "assess location state and return" different
+> types of selected locations include other options. Corruption sites include "corrupt site" option. After choosing,
+> advisor dispenses orders and couriers as necessary
