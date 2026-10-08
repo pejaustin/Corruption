@@ -227,3 +227,15 @@ Austin, 2026-10-08:
 > different by each faction once we have factions figured out. But yeah, this idea that corruption is not a resource
 > like in a traditional RTS. It gives you new capabilities that you have to use in the world.
 (Q13 closed: corruption is not a resource. Each site type grants a discrete capability.)
+(Claude suggested seven site types — relay post, watch post, burial ground, crossing, scriptorium, Paladin anchor,
+market — as proposals only; not adopted.)
+
+**Q27. Without a corruption number, what sets gauntlet order and boss power?**
+Austin, 2026-10-08:
+> Yeah, so this is another type of corruption site. I think that there are corruption sites that specifically give your
+> boss form more power in the same way that there are corruption sites that give the avatar form more power and that you
+> can you can sort of bias towards that if you feel and maybe certain factions are better at this, right? Like some
+> factions are better as avatar form. Uh, for now, obviously, we're doing just undead, but the idea being, you know,
+> maybe if I collect enough, you know, boss forms, then no matter who gets to the place, to the city, I'll be able to
+> kill them, take over the avatar, and they'll never be able to defeat me, and then I can be the one that controls the
+> avatar the most.
