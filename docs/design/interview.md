@@ -239,3 +239,9 @@ Austin, 2026-10-08:
 > maybe if I collect enough, you know, boss forms, then no matter who gets to the place, to the city, I'll be able to
 > kill them, take over the avatar, and they'll never be able to defeat me, and then I can be the one that controls the
 > avatar the most.
+
+**Q28. What decides the gauntlet order? (boss strength / total sites)**
+Austin, 2026-10-08:
+> Yeah weakest boss goes first which is really the number of corruption sites
+(Read as: boss strength comes from the corruption sites you hold, boss-type sites especially, and the weakest boss
+fights first.)
