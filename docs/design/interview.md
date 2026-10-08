@@ -199,3 +199,8 @@ Austin, 2026-10-08:
 > Yes to both
 (Goods must be hauled by order to be used, and hauls can be ambushed; spending is physical, e.g. paying a noble means
 sending the goods.)
+
+**Q26. If goods are what you spend, what is corruption?** — Austin asked for a proposal (Q13 reopened)
+Austin, 2026-10-08:
+> You already asked me this and I was undecided. Again I'd like input and suggestion. I want to play with expectations
+> while being fun and precise, and key on our overall theme of realism and low information
