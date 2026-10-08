@@ -75,3 +75,7 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > this is different for every faction, but for the starting undead faction, they can be raised from killed humans, and
 > regular units can be trained as couriers but this takes time, and requires the use of a courier to do the training
+
+**Q6. Where does raising the dead happen?**
+Austin, 2026-10-08:
+> b, have to be brought to the tower. can also be done at corruption sites after an upgrade
