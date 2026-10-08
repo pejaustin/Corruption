@@ -187,3 +187,9 @@ Austin, 2026-10-08:
 > building up wealth and managing it directly we have to rely on human and minion advisors and agents to distribute and
 > the player has low information. What do you think would be a good system that plays on rts expectations while still
 > being fun and clear?
+(Claude's proposal, not settled: 1 overseers work resource locations, goods pile up there; 2 goods must be hauled by
+order, hauls can be ambushed; 3 tower treasure room physically shows what's held; 4 everything else is a stale report,
+better ledgers are an upgrade; 5 spending is physical, e.g. goods sent to a noble.)
+Austin, 2026-10-08:
+> Partly, I like the idea of a treasure room, but this should include a ledger of most-up-to-date info on resources held
+> at other sites, the treasure room only shows what gold or special artifacts are held at the base location.
