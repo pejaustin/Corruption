@@ -267,3 +267,12 @@ Austin, 2026-10-08:
 > A
 (Every unit exists in the real 3D world the Paladin walks; fights play out there, watchable via the Palantir if he's
 nearby.)
+
+**Q33. What does a message through the mirror look like? (recorded / live / both)**
+Austin, 2026-10-08:
+> Look at what is built right now. It's pretty ingenious but may do with some additional tweaking. I think it should be
+> live and messages as well, but the screen is actually just recording audio and skeleton movement then animating a
+> "clone" on the other side of the mirror
+(Current build, `scripts/interactibles/mirror.gd`: records audio + the model's transform and animation-state name at
+30 Hz, 10 s max, one-way; the recipient's mirror plays it on a ghost copy in a stage scene. Gaps vs. Austin's answer:
+no live calls; it records animation names, not the skeleton's actual pose.)
