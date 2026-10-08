@@ -70,3 +70,8 @@ Austin, 2026-10-08:
 Austin, 2026-10-08:
 > players can get access to abilities that allow them to get information from other players' couriers, but this is an
 > unlocked ability
+
+**Q5. How do you get more troops and couriers?**
+Austin, 2026-10-08:
+> this is different for every faction, but for the starting undead faction, they can be raised from killed humans, and
+> regular units can be trained as couriers but this takes time, and requires the use of a courier to do the training
