@@ -29,6 +29,30 @@ mesh are identical before/after; the script prints `GEOMETRY_UNCHANGED True`). H
 The texturing is a Blender shader mix; for Godot it will need baking or a matching shader (#605).
 Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds temporary markers and labels, not saved).
 
+## Godot export (`tools/blender/export_landscape.py`)
+
+`blender.exe -b source/world_landscape.blend --python tools/blender/export_landscape.py -- <repo_root>` writes
+`export/world_landscape.glb` (imported by Godot; `source/` is `.gdignore`d). It never saves the .blend and prints
+`GEOMETRY_AND_NAMES_UNCHANGED True` (checksum of every vertex, matrix and name before vs after). +Y north becomes -Z north.
+The glb holds every mesh and every empty (POI markers keep Austin's spellings as node names), vertex colour `Col`, and
+materials by name.
+
+- **Materials:** Blender's node trees do not survive glTF, so `world_landscape.glb.import` maps the three names to
+  `materials/ground_placeholder.tres` (shader `shaders/world_ground.gdshader`: world-space 8 m tiles, nearest, sea / shore /
+  snow heights and slope rock, times `Col`), `water_placeholder.tres` and `forest_placeholder.tres` (StandardMaterial3D,
+  world triplanar, nearest). The shader's heights are absolute (sea -17.898, shore -4.519, snow 108.127: the script prints
+  them); recompute them if his vertical scale changes.
+- **Collision:** only `geo`, set in the `.glb.import` (`PATH:geo`: generate physics, static body, trimesh), not by renaming.
+  Forests and water are flat patches and have none.
+- **Scene:** `scenes/world/open_world/open_world.tscn` (a `NavigationRegion3D` around the glb, sun, sky, fog; all
+  PLACEHOLDER). The navmesh `open_world_navmesh.res` is baked from `geo`'s collision by
+  `godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (agent height and climb as in `world.tscn`; cell size
+  2 m is a PLACEHOLDER tuning for 2000 x 2000 m). Re-bake after any geometry change.
+- **Re-import headless:** with a Blender path unset, `godot --headless --import` stops at the `.blend` files; temporarily set
+  `import/blender/enabled=false` under `[filesystem]` in `project.godot` for the import, then revert it.
+- **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world.tscn SHOT_FAR=6000
+  SHOTS="overview:0,2900,0:0,0,0:50" godot --path . res://tools/shots/shot.tscn`.
+
 ## Files
 
 | File | What |

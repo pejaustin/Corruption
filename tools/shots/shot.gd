@@ -7,13 +7,14 @@ extends Node
 ##   SHOTS="tower:0,60,0:0,40,0" godot --path . res://tools/shots/shot.tscn
 
 const WORLD: String = "res://scenes/world/world.tscn"
+## WORLD=res://scenes/world/open_world/open_world.tscn shoots that scene instead; SHOT_FAR sets the camera far plane.
 
 func _ready() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
 	NetworkManager.is_hosting_game = true
-	var world: Node = (load(WORLD) as PackedScene).instantiate()
+	var world: Node = (load(OS.get_environment("WORLD") if OS.get_environment("WORLD") != "" else WORLD) as PackedScene).instantiate()
 	get_tree().root.add_child(world)
 	get_tree().current_scene = world
 	var settle := float(OS.get_environment("SHOT_SETTLE")) if OS.get_environment("SHOT_SETTLE") != "" else 3.0
@@ -31,7 +32,7 @@ func _run() -> void:
 		if clock != null:
 			clock.call("set_time", float(time_env))
 	var cam := Camera3D.new()
-	cam.far = 2000.0
+	cam.far = float(OS.get_environment("SHOT_FAR")) if OS.get_environment("SHOT_FAR") != "" else 2000.0
 	get_tree().root.add_child(cam)
 	cam.make_current()
 	var out_dir := OS.get_environment("SHOT_DIR")

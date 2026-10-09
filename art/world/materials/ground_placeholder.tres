@@ -1,0 +1,23 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cgwbg180tj7nf"]
+
+[ext_resource type="Shader" uid="uid://c85ap41v6ur5" path="res://shaders/world_ground.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/world/textures/grass.png" id="2_grass"]
+[ext_resource type="Texture2D" path="res://art/world/textures/rock.png" id="3_rock"]
+[ext_resource type="Texture2D" path="res://art/world/textures/sand.png" id="4_sand"]
+[ext_resource type="Texture2D" path="res://art/world/textures/snow.png" id="5_snow"]
+[ext_resource type="Texture2D" path="res://art/world/textures/water.png" id="6_water"]
+
+[resource]
+resource_name = "ground_placeholder"
+shader = ExtResource("1_shader")
+shader_parameter/grass_tex = ExtResource("2_grass")
+shader_parameter/rock_tex = ExtResource("3_rock")
+shader_parameter/sand_tex = ExtResource("4_sand")
+shader_parameter/snow_tex = ExtResource("5_snow")
+shader_parameter/water_tex = ExtResource("6_water")
+shader_parameter/tile_metres = 8.0
+shader_parameter/sea_height = -17.8983
+shader_parameter/shore_height = -4.519
+shader_parameter/snow_height = 108.1265
+shader_parameter/rock_slope = 0.3
+metadata/PLACEHOLDER = "stand-in look, not designed by Austin"
