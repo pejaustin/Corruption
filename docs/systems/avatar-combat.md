@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Avatar Combat
 
 **Build status:** Partial — core loop playable, depth + feedback layers TBD. See [Status by System](#status-by-system).

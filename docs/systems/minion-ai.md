@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Minion AI / Behavior Architecture
 
 **Build status:** Design proposal — not yet implemented. The current per-state-script-override pattern (see § "Today") still works for the four minion roles in flight (combat fighter, advisor, courier, info-courier). This doc captures the architecture we'll migrate toward when role count or composition complexity makes the override pattern hurt.

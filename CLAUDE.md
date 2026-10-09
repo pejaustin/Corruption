@@ -377,8 +377,8 @@ When making changes:
 - **`docs/GDD.md` — the design (v2, clean-slate rework 2026-10-08). Start here.** Only it is Austin's design; everything
   below predates it and is reference only where it disagrees. Source interview: `docs/design/interview.md`.
   Never make creative/content calls; mark stand-ins `PLACEHOLDER:` and list them in `PLACEHOLDERS.md`.
-- `docs/one-pager.md` — Visual summary of the entire game
-- `docs/systems/` — One page per major system (combat, overlord mode, factions, corruption & gems, bosses, multiplayer, progression)
+- `docs/one-pager.md` — Visual summary of the old design (reference only, superseded by the GDD)
+- `docs/systems/` — One page per major system of the old design (reference only, superseded by the GDD)
 - `docs/technical/mvp-roadmap.md` — the June 2026 MVP plan, built on the old design (reference only; new work comes from the GDD v2 tickets)
 - `docs/technical/build-phases.md` — tier history (0–4) + standing test checklists for implemented-but-unverified systems
 - `docs/technical/changelog.md` — Dated record of shipped work, verification passes, and design calls. Don't read it for current state — it's history; consult only when you need when/why something changed.
@@ -499,6 +499,41 @@ One shared `AvatarActor` (`World/Avatar`), always awake: unowned he fights for t
 - **`PaladinVoice`** (`paladin_voice.gd`): proximity-free voice among `get_paladin_voice_peers()`, the mirror's
   capture-bus + `MirrorCodec` approach (bus `PaladinMic`). Real multi-peer voice is untested.
 - Test: `tools/tests/test_paladin.tscn` (starts `NetworkTime` so his rollback tick runs).
+
+### Endgame (GDD §9, `scenes/world/places/holy_site.gd`)
+
+`HolySite` (`World/Places/HolySite`, group `holy_site`, city centre) watches the Paladin: when his owner has him alive within
+`radius`, `start_gauntlet` runs. The other players, weakest first (`strength_of`: held non-tower sites, boss-type sites weigh
+`BOSS_SITE_WEIGHT`), each get a `boss_form` minion (`data/minions/boss_form.tres`, a placeholder) spawned at the centre with
+hp and damage scaled by strength; they are AI-driven (no player control yet). Each boss that dies brings on the next; none
+left -> `GameState.announce_win(owner)`. If the Paladin dies (`AvatarActor.died`) the current boss's player takes him
+(`set_avatar_owner`, deferred past his own owner wipe), the gauntlet ends and he is pinned at that player's tower gate
+(`PLACEHOLDER: #576`). Losing his owner some other way aborts. `GoodFaction`'s draw step calls `HolySite.lock_all`. State is
+mirrored in static vars (`HolySite.state`, `boss_peer`, ...) for the F3 overlay. Test: `tools/tests/test_endgame.tscn`.
+
+### Treasure room and ledger (`scripts/interactibles/treasure_room.gd`, `ledger.gd`)
+
+Each `tower.tscn` has a `TreasureRoom` (a MultiMesh of crates, one per good up to `MAX_CRATES`, plus a "Goods: N" plaque, driven
+by `MinionManager.get_treasury(tower owner)`; invisible unless the tower is yours) and a `Ledger` interactable (E opens a
+panel: the treasury, then `WorldModel.ledger` entries newest first with their age; modal like the desk). The ledger fills
+from `report["resources"]`; groups note the resource sites they pass (`UnitGroup.seen_resources`) so a haul reports the mine.
+Test: `tools/tests/test_treasure.tscn`.
+
+### Getting better (GDD §5, `scripts/groups/`)
+
+- **Experience:** `GroupManager._gain_experience` — a kill credits the killer's nearest group within `KILL_CREDIT_RADIUS`
+  (`Training.XP_PER_KILL`), fighting earns `XP_PER_FIGHT_SECOND`. Crossing a `Maneuver.experience_required` learns it.
+- **`Maneuver`** (`maneuver.gd`, `data/maneuvers/*.tres`, placeholders, #581): recorded only, no combat effect yet. Learning
+  writes a `maneuver` record on the desk (reports carry `"records": [{kind, title, text}]`).
+- **Teaching:** the advisor's "teach" option -> `KnowledgeManager.request_teach` -> `GroupManager.begin_teaching`: the
+  best-taught leader at home teaches one maneuver to the home group that knows fewest; both groups are busy
+  `Training.TEACHING_SECONDS` (`UnitGroup.busy_seconds`) and refuse orders. Succession keeps some maneuvers (already built).
+- **Relics:** `Relic` (`relic.gd`, `data/relics/*.tres`, placeholders, #580) lie at `RelicPlace` nodes under `World/Places`.
+  Goal `OrderGoal.Goal.RETRIEVE` ("bring back what lies here", offered at sites) -> `FieldWork._retrieve` picks one up
+  (`carrying = &"relic"`, `carry_amount` = relic index); unloaded at home it calls `Relic.apply` (sets `UnitGroup.auto_courier`,
+  `GameState.add_route_point_bonus`) and writes a `relic` desk record. A fallen carrier drops it back (`RelicPlace.restore`).
+- Offers: groups with `MinionActor.parley_mode` do not attack nobles; captures skip nobles.
+- Test: `tools/tests/test_growth.tscn`.
 
 ### Interactable focus — raycast-pull, not poll-push
 

@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Action Gating
 
 Per-animation-phase control over whether a state can be interrupted, and whether the actor can be staggered, without putting state-specific logic in every call site.
