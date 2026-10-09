@@ -12,7 +12,7 @@ spellings were unconfirmed (ticket #606; Austin's spellings on his markers are n
 - **Ground:** `geo`, the terrain mesh (52 x 52 grid, 2000 x 2000 m, z scale 3).
 - **Forest areas:** `elder wood`, `northwood` (any mesh with `wood` in its name is a forest).
 - **Water:** `Pale River` (river), `The Still Lake` (lake) (any mesh with `river` or `lake` in its name is water).
-- **POI markers: every empty in the landscape file is a POI marker.** Its snake_case name (lowercase, spaces to `_`,
+- **POI markers: every empty in the landscape file is a POI marker, except tower markers (names ending in `Tower`).** Its snake_case name (lowercase, spaces to `_`,
   apostrophes dropped: `Avequel'la` -> `avequella`, `Naf Ishun` -> `naf_ishun`, `Hell's Mouth` -> `hells_mouth`) is its POI
   file `pois/<snake>.blend`. Markers: `Ale Bend`, `Avequel'la`, `Entbridge`, `far harbor`, `Forest Ruins`, `Hell's Mouth`,
   `Hopes Gate`, `Lastford`, `Mountain Pass`, `Naf Ishun`, `Teshfield`, `Valley Cross`, `Veilton`.
@@ -123,7 +123,8 @@ Tile export and `_far` copies (#605), the scale test (#603), final names (#606),
 
 ## Tower locations (Austin, 2026-10-09)
 
-The four towers stand at **Hell's Mouth**, **Avequel'la** (Austin's spelling, 2026-10-09; marker renamed from `Avegual'la`), **Naf Ishun**, and
-**inside the Elder Wood, atop the hill**. The first three use their markers in `world_landscape.blend`. The Elder Wood
-tower has no marker yet: the highest ground inside the wood's footprint is about (137, -765, 32 m), near its western
-edge; Austin places the marker on the hill he means.
+The four towers: **Volcano Tower** and **Forest Tower** are their own empties in `world_landscape.blend` (the `Hell's Mouth`
+empty marks the volcano POI, not the tower). The **Avequel'la** tower stands at the centre of the ruined city, so it uses
+the `Avequel'la` POI marker (later its POI file, or one linked from it). **Naf Ishun** uses its POI marker. Empties whose
+names end in `Tower` are tower markers, not POIs (no `pois/` file). In Godot, `open_world.tscn` instances
+`scenes/world/env/tower.tscn` as a child of each of these four marker nodes.
