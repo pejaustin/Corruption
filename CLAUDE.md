@@ -428,6 +428,15 @@ corruption score, divine intervention, the scripted Guardian/Seraph bosses and t
 hold-E site capture (`CaptureChannel` / `ChannelState`), the `AvatarClaim` tower station, the Paladin passing to whoever
 lands the killing blow, and the four-faction picker.
 
+### World blockout (`art/world/`, `tools/blender/`)
+
+PLACEHOLDER geography built in Blender 4.5 from Austin's sketch: `art/world/source/world_landscape.blend` (the whole
+landscape, 1 unit = 1 m, 2000 x 1500 m until the scale test #603; `.gdignore`d, tiles come with #605), `props.blend`
+(linked props), `pois/<name>.blend` (one per sketch place, plus `_template`, `holy_site`, `graveyard`) and 32 px nearest-
+filtered textures. Austin edits the .blends by hand from here; `tools/blender/build_all.sh` regenerates them and
+overwrites hand edits, so don't re-run it casually. The four towers are left unplaced (`tower_slot_1..4`). Names and
+layout are unconfirmed (#606). See `art/world/README.md`.
+
 ### Resource-driven data (Tier 4 refactor)
 
 Gameplay data lives in `.tres` files under `res://data/`, authored as custom `Resource` subclasses. Code references them via `@export` — never by string path or metadata. Dictionaries of magic strings were replaced with typed fields during the Tier 4 refactor; prefer that pattern for new systems.

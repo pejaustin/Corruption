@@ -22,6 +22,10 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 
 | What | Stands in for | Where | Ticket |
 |---|---|---|---|
+| World blockout: the whole landscape (heights, mountains, rivers, roads, forests, coast), the stand-in shape of every place, the props and the 32 px textures, all read off the sketch by eye | The world's real geography and art | `art/world/` (see its README), generators in `tools/blender/` | #604 |
+| World size, 2000 m x 1500 m | The real world scale, decided by the scale test | `tools/blender/world_data.py` `WORLD_W/WORLD_H`, `world_root` in `world_landscape.blend` | #603 |
+| Place-name spellings on the `poi_<name>` markers and `pois/*.blend` file names (e.g. `avequalla`, `hopes_gates`, `unnamed_harbour`) | The confirmed names of the places | `art/world/pois/`, `tools/blender/world_data.py` | #606 |
+| Tower slots 1-4, unplaced just outside the west edge | Where Austin puts the four towers | `tower_slot_1..4` in `world_landscape.blend` | #604 |
 | Seat colours (one per tower) and the good faction's colour | How players tell each other apart | `scripts/game_constants.gd` `SEAT_COLORS`, `GOOD_COLOR` | — |
 | Site marker (stone disc + tinted crystal) and the beacon (a coloured column of light) | Site and beacon art | `scenes/sites/corruption_site.gd` | #553 |
 | Desk look (box table and red book) | Desk and book art | `scenes/interactibles/desk.tscn` | #570 |
