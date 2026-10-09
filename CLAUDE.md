@@ -440,7 +440,7 @@ layout are unconfirmed (#606). See `art/world/README.md`.
 **Update 2026-10-09 (second version):** `source/world_landscape.blend` is AUSTIN'S hand-made map (original:
 `source/reference/corruption-map-original.blend`; generated blockout: `world_landscape_generated_placeholder.blend`). +Y is
 north. Ground = `geo` (2000 x 2000 m); forests = `elder wood`, `northwood`; water = `Pale River`, `The Still Lake`; **every
-empty is a POI marker** (his spellings, e.g. `Avegual'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
+empty is a POI marker** (his spellings, e.g. `Avequel'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
 to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend`. Placeholder textures come from
 `tools/blender/texture_austin_map.py` (geometry untouched, checksummed). POI files with no marker yet: `northwood`, `old_gate`,
 `elder_woods`, `holy_site`, `graveyard`. No tower slots, roads or scale figure in his file.

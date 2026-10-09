@@ -13,8 +13,8 @@ spellings were unconfirmed (ticket #606; Austin's spellings on his markers are n
 - **Forest areas:** `elder wood`, `northwood` (any mesh with `wood` in its name is a forest).
 - **Water:** `Pale River` (river), `The Still Lake` (lake) (any mesh with `river` or `lake` in its name is water).
 - **POI markers: every empty in the landscape file is a POI marker.** Its snake_case name (lowercase, spaces to `_`,
-  apostrophes dropped: `Avegual'la` -> `avegualla`, `Naf Ishun` -> `naf_ishun`, `Hell's Mouth` -> `hells_mouth`) is its POI
-  file `pois/<snake>.blend`. Markers: `Ale Bend`, `Avegual'la`, `Entbridge`, `far harbor`, `Forest Ruins`, `Hell's Mouth`,
+  apostrophes dropped: `Avequel'la` -> `avequella`, `Naf Ishun` -> `naf_ishun`, `Hell's Mouth` -> `hells_mouth`) is its POI
+  file `pois/<snake>.blend`. Markers: `Ale Bend`, `Avequel'la`, `Entbridge`, `far harbor`, `Forest Ruins`, `Hell's Mouth`,
   `Hopes Gate`, `Lastford`, `Mountain Pass`, `Naf Ishun`, `Teshfield`, `Valley Cross`, `Veilton`.
 
 I only added placeholder texturing (`tools/blender/texture_austin_map.py`): `geo` gets `ground_placeholder` (grass; sand below
@@ -35,7 +35,7 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 |---|---|
 | `source/world_landscape.blend` | The whole landscape in ONE file, 1 unit = 1 m. Faceted ground, flat sea, rivers/lakes (flat water strips in carved channels), roads, forests (linked tree instances), `poi_<name>` markers, `tower_slot_1..4`, the sketch under the ground, a 1.8 m figure. `source/.gdignore` keeps Godot from importing it; tiles come from the export script (#605). |
 | `props.blend` | Shared prop library: `tree_cone`, `tree_lollipop`, `rock`, `ruin_wall`, `fence`, `grave_marker` (collections, marked as assets). Landscape and POI files **link** these (File > Link / Asset Browser), never copy. |
-| `pois/<snake_name>.blend` | One per POI marker in Austin's map: `ale_bend`, `avegualla`, `entbridge`, `far_harbor`, `forest_ruins`, `hells_mouth`, `hopes_gate`, `lastford`, `mountain_pass`, `naf_ishun`, `teshfield`, `valley_cross`, `veilton`. `forest_ruins` and `mountain_pass` are fresh copies of `_template`; the rest were renamed from the earlier placeholder spellings (`avequalla`, `nofishun`, `hopes_gates`, `entwar`, `unnamed_harbour`, `alebend`). |
+| `pois/<snake_name>.blend` | One per POI marker in Austin's map: `ale_bend`, `avequella`, `entbridge`, `far_harbor`, `forest_ruins`, `hells_mouth`, `hopes_gate`, `lastford`, `mountain_pass`, `naf_ishun`, `teshfield`, `valley_cross`, `veilton`. `forest_ruins` and `mountain_pass` are fresh copies of `_template`; the rest were renamed from the earlier placeholder spellings (`avequalla`, `nofishun`, `hopes_gates`, `entwar`, `unnamed_harbour`, `alebend`). |
 | `pois/northwood`, `old_gate`, `elder_woods` | **No marker yet** in Austin's map (kept from the sketch; `northwood` and `elder wood` exist as forest meshes only). |
 | `pois/_template.blend`, `holy_site.blend`, `graveyard.blend` | Starters (also no marker): duplicate `_template` for a new kind; the other two are generic holy-site and graveyard starters. |
 | `textures/*.png` | 32 px tiling pixel textures (grass, rock, sand, dirt, snow, ash, water, stone, roof, plaster, wood, bark, leaves, lava, canvas). Nearest filtering; vertex colour (`Col`) tints and shades them. |
@@ -48,7 +48,7 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 - +X east, +Y north (Godot: -Z north after export), map centre at the origin. Sea sits in the east at z = 0; the NE and
   north-west are mountain ranges (up to ~135 m); the volcano at Hell's Mouth has a lava pool; the SW ash plain stands
   for the arc marks. Rivers: one from the NW through Teshfield and Hope's Gates to the sea at Entwar (plus the Northwood
-  streams and the Avequal'la lake), one across the south through Lastford to the south-east coast.
+  streams and the Avequel'la lake), one across the south through Lastford to the south-east coast.
 - Roads are dirt strips draped over the ground; they cross rivers as flat decks.
 - Object names follow the Godot import suffixes: `-noimp` (reference plane, scale figure, sun, PLACEHOLDER text),
   `-col` / `-colonly` / `-navmesh` / `-occ` are for the tile export and your hand edits (nothing is marked `-col` on
@@ -81,7 +81,7 @@ Tile export and `_far` copies (#605), the scale test (#603), final names (#606),
 
 ## Tower locations (Austin, 2026-10-09)
 
-The four towers stand at **Hell's Mouth**, **Avequal'la** (marker spelled `Avegual'la`), **Naf Ishun**, and
+The four towers stand at **Hell's Mouth**, **Avequel'la** (Austin's spelling, 2026-10-09; marker renamed from `Avegual'la`), **Naf Ishun**, and
 **inside the Elder Wood, atop the hill**. The first three use their markers in `world_landscape.blend`. The Elder Wood
 tower has no marker yet: the highest ground inside the wood's footprint is about (137, -765, 32 m), near its western
 edge; Austin places the marker on the hill he means.
