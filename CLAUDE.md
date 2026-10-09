@@ -545,8 +545,8 @@ One shared `AvatarActor` (`World/Avatar`), always awake: unowned he fights for t
   unowned, below `RECOVER_BELOW_FRACTION` it walks him to the city centre (`holy_site` group node, else the origin) and
   regenerates him there, and at full strength hunts the nearest held non-tower site.
 - **Palantir** (`scripts/interactibles/palantir.gd`): anyone scries (E, Q to leave); the owner presses E while scrying
-  to possess; others may E to overpower. It stands on the tower floor (y 41, same level as the desk and map) with a
-  1 m trigger sphere: the interaction ray (3.5 m) never hits an Area it starts inside, so a bigger sphere made it dead
+  to possess; others may E to overpower. It stands on the tower's second floor where Austin placed it, with a 1 m
+  trigger sphere: the interaction ray (3.5 m) never hits an Area it starts inside, so a bigger sphere made it dead
   up close. Test: `tools/tests/test_palantir.tscn`. Viewers are seat-coloured orbs at their cameras (`_update_watcher_orbs`).
 - **`PaladinVoice`** (`paladin_voice.gd`): proximity-free voice among `get_paladin_voice_peers()`, the mirror's
   capture-bus + `MirrorCodec` approach (bus `PaladinMic`). Real multi-peer voice is untested.
