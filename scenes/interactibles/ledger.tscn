@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scripts/interactibles/ledger.gd" id="2_ledger"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ledger"]
+size = Vector3(1.6, 1.6, 1.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_stand"]
+size = Vector3(0.9, 1.0, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_book"]
+size = Vector3(0.7, 0.08, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.32, 0.2, 0.12, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_book"]
+albedo_color = Color(0.45, 0.35, 0.1, 1)
+
+; PLACEHOLDER: art — a stand with a flat book
+
+[node name="Ledger" instance=ExtResource("1_base")]
+script = ExtResource("2_ledger")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_ledger")
+
+[node name="Stand" type="MeshInstance3D" parent="Model" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_stand")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="Book" type="MeshInstance3D" parent="Model" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, 0)
+mesh = SubResource("BoxMesh_book")
+surface_material_override/0 = SubResource("StandardMaterial3D_book")

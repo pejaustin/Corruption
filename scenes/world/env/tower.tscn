@@ -32,6 +32,8 @@
 [ext_resource type="PackedScene" path="res://scenes/map/map_floor.tscn" id="42_mapfloor"]
 [ext_resource type="PackedScene" path="res://scenes/interactibles/desk.tscn" id="42_desk"]
 [ext_resource type="PackedScene" path="res://scenes/interactibles/balcony.tscn" id="43_balcony"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/treasure_room.tscn" id="44_treasure"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/ledger.tscn" id="45_ledger"]
 [ext_resource type="Resource" path="res://data/sites/tower.tres" id="41_towertype"]
 [ext_resource type="Script" uid="uid://hthsj34lyade" path="res://scenes/world/env/jumpable_link.gd" id="33_7a0l1"]
 [ext_resource type="PackedScene" uid="uid://71btovk3inad" path="res://scenes/actors/minion/types/advisor_actor.tscn" id="35_n8gnn"]
@@ -125,6 +127,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 39.4, -6)
 
 [node name="Balcony" parent="." instance=ExtResource("43_balcony")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 39.4, 5)
+
+; PLACEHOLDER: where the treasure room and ledger stand in the hall (ticket #565)
+
+[node name="TreasureRoom" parent="." instance=ExtResource("44_treasure")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 39.4, -8)
+
+[node name="Ledger" parent="." instance=ExtResource("45_ledger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 39.4, -4)
 
 [node name="MinionSpawnPoint" parent="." unique_id=1793453589 instance=ExtResource("31_8uuiu")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3415604, 40.38556, 10.8646965)

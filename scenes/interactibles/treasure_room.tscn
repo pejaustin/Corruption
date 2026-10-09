@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/interactibles/treasure_room.gd" id="1_room"]
+
+; PLACEHOLDER: art and layout — the crates are drawn by the script
+
+[node name="TreasureRoom" type="Node3D"]
+script = ExtResource("1_room")
