@@ -262,8 +262,17 @@ func _on_visual_range_toggled(visible: bool) -> void:
 		_visual_range_overlay.visible = visible
 
 func is_hostile_to(other: Actor) -> bool:
-	if parley_mode and other is MinionActor and (other as MinionActor).is_noble:
-		return false
+	var human := other as MinionActor
+	if human and human.is_human:
+		# An offer does not attack the noble it carries goods to.
+		if parley_mode and human.is_noble:
+			return false
+		# A group out to take captives stops at a human it has already brought
+		# down to 1 HP (blows stop short of death, see AttackState) or cannot
+		# take (nobles are bought). Left hostile, the two would swing at each
+		# other for good: the blow never kills and the human is never carried off.
+		if capture_mode and (human.is_noble or human.hp <= 1):
+			return false
 	return super(other)
 
 func get_allegiance() -> int:

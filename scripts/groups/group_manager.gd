@@ -132,6 +132,9 @@ func add_member(group: UnitGroup, minion_id: int) -> void:
 		var old := get_group(m.group_id)
 		if old and old != group:
 			old.member_ids.erase(minion_id)
+			# The old group's fieldwork stance does not follow the unit.
+			m.capture_mode = false
+			m.parley_mode = false
 		m.group_id = group.id
 	if minion_id not in group.member_ids:
 		group.member_ids.append(minion_id)
