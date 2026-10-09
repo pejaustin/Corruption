@@ -23,6 +23,7 @@
 [ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="23_fieldwork"]
 [ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="24_settlement"]
 [ext_resource type="Script" path="res://scenes/world/places/resource_site.gd" id="25_resource"]
+[ext_resource type="Script" path="res://scenes/world/places/holy_site.gd" id="26_holy"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="23_daynight"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
@@ -302,6 +303,11 @@ script = ExtResource("24_settlement")
 radius = 12.0
 villagers = 3
 soldiers = 0
+
+; PLACEHOLDER: the holy site's size and look (tickets #559, #583)
+
+[node name="HolySite" type="Node3D" parent="World/Places" unique_id=1301301506]
+script = ExtResource("26_holy")
 
 [node name="MineSE" type="Node3D" parent="World/Places" unique_id=1301301504]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0, 75)

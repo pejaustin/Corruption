@@ -66,6 +66,8 @@ func _grow() -> void:
 	_sync_step.rpc(next, line)
 	if next >= DRAW_AT_STEP:
 		_drawn = true
+		# The city centre can no longer be corrupted: no gauntlet starts or goes on.
+		HolySite.lock_all(get_tree())
 		GameState.announce_draw()
 
 func _pick_site_to_lose() -> CorruptionSite:

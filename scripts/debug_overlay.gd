@@ -115,6 +115,12 @@ func _process(delta: float) -> void:
 			GoodFaction.step, GoodFaction.DRAW_AT_STEP, gf.get_time_to_next_step(), GoodFaction.threshold_scale()])
 		lines.append("")
 
+	# The boss gauntlet
+	if HolySite.state == HolySite.State.GAUNTLET:
+		lines.append("[b]Gauntlet[/b]")
+		lines.append("  Boss %d / %d: %s" % [HolySite.boss_index, HolySite.boss_total, GameState.get_player_name(HolySite.boss_peer)])
+		lines.append("")
+
 	# Debug info
 	lines.append("[b]Controls[/b]")
 	lines.append("  E = interact/claim | Q = recall | LMB = attack")
