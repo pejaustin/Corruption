@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/widgets/ability_cross.tscn" id="2_cross"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widgets/crosshair.tscn" id="3_crosshair"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widgets/damage_vignette.tscn" id="4_vignette"]
-[ext_resource type="PackedScene" uid="uid://b6captprogress0" path="res://scenes/ui/widgets/capture_progress.tscn" id="5_capture"]
 
 [node name="AvatarHUD" type="CanvasLayer" unique_id=128906444]
 script = ExtResource("1_gya8g")
@@ -61,6 +60,3 @@ offset_right = -40.0
 offset_bottom = -40.0
 grow_horizontal = 0
 grow_vertical = 0
-
-[node name="CaptureProgress" parent="." instance=ExtResource("5_capture")]
-unique_name_in_owner = true

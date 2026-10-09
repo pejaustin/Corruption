@@ -110,12 +110,9 @@ func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
 				if child is OverlordActor and child.name.to_int() == new_peer_id:
 					child.set_overlord_active(false)
 	else:
-		# No one is driving it. An OWNED avatar stays in the field as its
-		# owner's pawn (AI-driven); only an unowned one goes dormant.
-		if GameState.has_avatar_owner():
-			avatar.release_control()
-		else:
-			avatar.deactivate()
+		# No one is driving him: AvatarAI does, for his owner or, unowned,
+		# for the good faction (GDD §8). He is never dormant.
+		avatar.release_control()
 
 func _peer_connected(network_id: int) -> void:
 	print("Peer connected: %s" % network_id)

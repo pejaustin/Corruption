@@ -10,7 +10,13 @@ class_name AvatarAI extends Node
 ## replay the exact same movement.
 ##
 ## Behavior parity with minion AI: idle → aggro → chase → attack, plus
-## war-table waypoints via command_move() (Phase C routes orders here).
+## courier-delivered routes via command_route().
+##
+## Unclaimed (owner -1, GDD §8 Q16) he serves the good faction: when weak he
+## walks home to the city centre and regenerates there; at full strength he
+## hunts the nearest site a player holds and fights there (his presence
+## purifies it, CorruptionSite). Owned, he skips targets he would resist and
+## does not pick fights while his owner's control can't attack.
 
 const AGGRO_RADIUS: float = 10.0
 const LEASH_RADIUS: float = 15.0
@@ -18,6 +24,17 @@ const ATTACK_RANGE: float = 2.0
 const ARRIVE_RADIUS: float = 1.5
 const RUN_DISTANCE: float = 8.0
 const REPATH_INTERVAL: float = 0.5
+## Group of a node marking the city centre / holy site; world origin otherwise.
+const HOLY_SITE_GROUP: StringName = &"holy_site"
+## PLACEHOLDER: tuning — below this HP fraction the unclaimed Paladin goes home
+## to recover, and stays until he is whole again.
+const RECOVER_BELOW_FRACTION: float = 0.5
+## PLACEHOLDER: tuning — he regenerates within this distance of the city centre.
+const RECOVER_RADIUS: float = 6.0
+## PLACEHOLDER: tuning — HP regenerated per second at the city centre.
+const REGEN_PER_SECOND: float = 5.0
+## Fraction of a site's radius he walks into before holding still there.
+const SITE_STAND_FRACTION: float = 0.5
 
 @onready var _avatar: AvatarActor = get_parent()
 @onready var _nav_agent: NavigationAgent3D = get_node("../NavAgent")
@@ -28,6 +45,9 @@ var _has_waypoint: bool = false
 var _repath_timer: float = 0.0
 ## Remaining points of a courier-delivered route, walked in order.
 var _route: Array[Vector3] = []
+## Unclaimed: walking home to recover until whole.
+var _recovering: bool = false
+var _regen_carry: float = 0.0
 
 func _ready() -> void:
 	var input: AvatarInput = get_node("../AvatarInput")
@@ -35,13 +55,26 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_repath_timer = maxf(0.0, _repath_timer - delta)
+	if multiplayer.is_server():
+		_regenerate(delta)
 
 func is_driving() -> bool:
+	## Whenever nobody drives him directly, for his owner or the good faction.
 	return multiplayer.is_server() \
-		and GameState.has_avatar_owner() \
 		and not GameState.has_avatar() \
 		and not _avatar.is_dormant \
 		and _avatar.hp > 0
+
+func is_recovering() -> bool:
+	return _recovering
+
+func get_city_centre() -> Vector3:
+	## Where the good faction takes him to recover: a node in HOLY_SITE_GROUP
+	## if the map has one, else the world origin (the first map's city).
+	var marker := get_tree().get_first_node_in_group(HOLY_SITE_GROUP) as Node3D
+	if marker:
+		return marker.global_position
+	return Vector3.ZERO
 
 func command_move(pos: Vector3) -> void:
 	## War-table order (Phase C) / debug hook: walk here, fighting anything
@@ -72,15 +105,10 @@ func drive(input: AvatarInput) -> void:
 	input.attack_input = false
 	input.roll_input = false
 
-	_update_target()
-	if _target:
-		var dist := _flat_distance(_target.global_position)
-		if dist <= ATTACK_RANGE:
-			_face(_target.global_position)
-			input.attack_input = true
-		else:
-			_steer_toward(_target.global_position, input)
-			input.run_input = dist > RUN_DISTANCE
+	if not GameState.has_avatar_owner():
+		_drive_unclaimed(input)
+		return
+	if _fight(input):
 		return
 	if _has_waypoint:
 		var dist := _flat_distance(_waypoint)
@@ -91,6 +119,79 @@ func drive(input: AvatarInput) -> void:
 			return
 		_steer_toward(_waypoint, input)
 		input.run_input = dist > RUN_DISTANCE
+
+func _drive_unclaimed(input: AvatarInput) -> void:
+	## GDD §8 (Q16): weak, the good faction recovers him; at full strength he
+	## goes out to hunt and remove corruption.
+	var max_hp := float(_avatar.get_max_hp())
+	if float(_avatar.hp) < max_hp * RECOVER_BELOW_FRACTION:
+		_recovering = true
+	elif _avatar.hp >= _avatar.get_max_hp():
+		_recovering = false
+	var home := get_city_centre()
+	if _recovering:
+		_target = null
+		_walk_to(home, RECOVER_RADIUS * SITE_STAND_FRACTION, input)
+		return
+	if _fight(input):
+		return
+	var site := _nearest_corrupted_site()
+	if site:
+		_walk_to(site.global_position, site.radius * SITE_STAND_FRACTION, input)
+	else:
+		_walk_to(home, RECOVER_RADIUS * SITE_STAND_FRACTION, input)
+
+func _fight(input: AvatarInput) -> bool:
+	## Chase and swing at the nearest hostile. False when there is none.
+	if not _avatar.can_use(AvatarActor.ACTION_ATTACK):
+		_target = null
+		return false
+	_update_target()
+	if _target == null:
+		return false
+	var dist := _flat_distance(_target.global_position)
+	if dist <= ATTACK_RANGE:
+		_face(_target.global_position)
+		input.attack_input = true
+	else:
+		_steer_toward(_target.global_position, input)
+		input.run_input = dist > RUN_DISTANCE
+	return true
+
+func _walk_to(goal: Vector3, arrive: float, input: AvatarInput) -> void:
+	var dist := _flat_distance(goal)
+	if dist <= arrive:
+		return
+	_steer_toward(goal, input)
+	input.run_input = dist > RUN_DISTANCE
+
+func _nearest_corrupted_site() -> CorruptionSite:
+	## The nearest site a player holds. Towers are left alone (they never
+	## change hands); usable sites only.
+	var best: CorruptionSite = null
+	var best_dist := INF
+	for node in GameState.get_all_sites():
+		var site := node as CorruptionSite
+		if site == null or site.permanent or site.unusable or not site.is_held():
+			continue
+		var d := _flat_distance(site.global_position)
+		if d < best_dist:
+			best_dist = d
+			best = site
+	return best
+
+func _regenerate(delta: float) -> void:
+	## Unclaimed and at the city centre, he heals (host; applied in his rollback tick).
+	if GameState.has_avatar_owner() or _avatar.hp <= 0 or _avatar.hp >= _avatar.get_max_hp():
+		_regen_carry = 0.0
+		return
+	if _flat_distance(get_city_centre()) > RECOVER_RADIUS:
+		return
+	_regen_carry += REGEN_PER_SECOND * delta
+	var whole := floori(_regen_carry)
+	if whole > 0:
+		_regen_carry -= whole
+		_avatar.heal(whole)
 
 func _update_target() -> void:
 	# Sticky: keep the current target while it's alive and inside the leash.
@@ -110,6 +211,8 @@ func _update_target() -> void:
 			continue
 		if not minion.can_take_damage():
 			continue
+		if _avatar.resists_striking(minion):
+			continue  # he won't strike the good faction for a weak owner
 		var d := _flat_distance(minion.global_position)
 		if d < best_dist:
 			best_dist = d

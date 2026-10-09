@@ -18,8 +18,6 @@ signal watcher_positions_changed()
 ## ... marks a site taken for the first time, changing hands, or returning to
 ## neutral"). old/new are peer ids; -1 is neutral.
 signal site_changed(site: Node, old_holder: int, new_holder: int, first_taken: bool)
-## Fired on every peer when a capture channel starts (CaptureChannel.broadcast).
-signal capture_broadcast(peer_id: int, faction: int, duration: float)
 signal mirror_message_received(message: MirrorMessage)
 ## Mirror calls (GDD §10). Each fires only on the peer the call is addressed to.
 signal mirror_ring_received(caller_id: int)
@@ -37,7 +35,10 @@ var avatar_peer_id: int = -1
 var avatar_owner_peer_id: int = -1
 # How many Overlords are scrying the Avatar right now
 var watcher_count: int = 0
-# peer_id -> global camera position of each active scryer
+## Peers looking through a Palantir right now (GDD §8 "Seen by all"). Kept by
+## the host and mirrored to every peer.
+var watchers: Array[int] = []
+# peer_id -> global camera position of each active scryer (remote ones only)
 var watcher_positions: Dictionary[int, Vector3] = {}
 # peer_id -> faction id (GameConstants.Faction). Populated by lobby at match start.
 # MVP: everyone is Undead (GDD §1).
@@ -132,37 +133,59 @@ func _announce_win(peer_id: int) -> void:
 func _announce_draw() -> void:
 	game_drawn.emit()
 
-@rpc("any_peer", "reliable")
-func request_add_watcher() -> void:
-	if not multiplayer.is_server():
-		request_add_watcher.rpc_id(1)
-		return
-	_set_watcher_count.rpc(watcher_count + 1)
+func is_watching(peer_id: int) -> bool:
+	return peer_id in watchers
 
-@rpc("any_peer", "reliable")
-func request_remove_watcher() -> void:
+@rpc("any_peer", "call_local", "reliable")
+func request_set_watching(watching: bool) -> void:
+	## A peer starts or stops looking through a Palantir. Routed to the host,
+	## which keeps the list and mirrors it to everyone.
 	if not multiplayer.is_server():
-		request_remove_watcher.rpc_id(1)
+		request_set_watching.rpc_id(1, watching)
 		return
-	_set_watcher_count.rpc(max(0, watcher_count - 1))
+	var sender := multiplayer.get_remote_sender_id()
+	if sender == 0:
+		sender = 1
+	var list: Array[int] = watchers.duplicate()
+	if watching and sender not in list:
+		list.append(sender)
+	elif not watching:
+		list.erase(sender)
+	_sync_watchers.rpc(list)
 
 @rpc("authority", "call_local", "reliable")
-func _set_watcher_count(count: int) -> void:
-	watcher_count = count
-	watcher_count_changed.emit(count)
+func _sync_watchers(list: Array) -> void:
+	# Untyped over the wire; copied (call_local hands us the sender's array).
+	watchers.clear()
+	for pid in list:
+		watchers.append(int(pid))
+	for pid in watcher_positions.keys():
+		if pid not in watchers:
+			watcher_positions.erase(pid)
+	watcher_count = watchers.size()
+	watcher_count_changed.emit(watcher_count)
+	watcher_positions_changed.emit()
 
 @rpc("any_peer", "unreliable")
 func update_watcher_position(pos: Vector3) -> void:
 	## Called by scrying peers every frame to broadcast their camera position.
+	## Late packets from someone who stopped watching are dropped.
 	var sender := multiplayer.get_remote_sender_id()
 	if sender == 0:
 		sender = multiplayer.get_unique_id()
+	if sender not in watchers:
+		return
 	watcher_positions[sender] = pos
 	watcher_positions_changed.emit()
 
-func remove_watcher_position(peer_id: int) -> void:
-	watcher_positions.erase(peer_id)
-	watcher_positions_changed.emit()
+func get_paladin_voice_peers() -> Array[int]:
+	## Everyone who hears the Paladin's channel (GDD §8: "every player sees and
+	## hears him live, and the viewers hear each other"): the Palantir viewers
+	## plus whoever drives him.
+	var out: Array[int] = watchers.duplicate()
+	if avatar_peer_id > 0 and avatar_peer_id not in out:
+		out.append(avatar_peer_id)
+	return out
 
 @rpc("any_peer", "reliable")
 func deliver_mirror_message(
@@ -340,6 +363,7 @@ func reset() -> void:
 	avatar_peer_id = -1
 	avatar_owner_peer_id = -1
 	watcher_count = 0
+	watchers.clear()
 	watcher_positions.clear()
 	player_factions.clear()
 	player_names.clear()

@@ -1,8 +1,6 @@
 extends PlayerState
 
 func tick(delta: float, tick: int, is_fresh: bool) -> void:
-	if try_enter_channel():
-		return
 	if try_roll():
 		return
 	rotate_player_model(delta)

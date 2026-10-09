@@ -14,11 +14,13 @@ var player: AvatarActor:
 func get_movement_input() -> Vector2:
 	return player.avatar_input.input_dir
 
+## Run, jump, attack and roll are gated by the Paladin's control tier
+## (AvatarActor.can_use, GDD §8 "some actions are locked at first").
 func get_run() -> bool:
-	return player.avatar_input.run_input
+	return player.avatar_input.run_input and player.can_use(AvatarActor.ACTION_RUN)
 
 func get_jump() -> bool:
-	return player.avatar_input.jump_input
+	return player.avatar_input.jump_input and player.can_use(AvatarActor.ACTION_JUMP)
 
 func get_attack() -> bool:
 	return player.avatar_input.attack_input
@@ -47,21 +49,13 @@ func move_horizontal(delta: float, speed: float = WALK_SPEED) -> void:
 		actor.velocity.x = move_toward(actor.velocity.x, 0, speed)
 		actor.velocity.z = move_toward(actor.velocity.z, 0, speed)
 
-## Transition into ChannelState if a capture channel just started. Call at the
-## top of tick() in any state that should yield to channeling (IdleState,
-## MoveState, JumpState, FallState). AttackState intentionally skips this —
-## attacks are commitment-based and finish before the channel takes over.
-func try_enter_channel() -> bool:
-	if player.active_channel != null and player.active_channel.is_active():
-		state_machine.transition(&"ChannelState")
-		return true
-	return false
-
 ## Transition into RollState if the roll input is held OR was buffered within
 ## the input-queue window. Routes via Actor.try_transition so action_locked
 ## states can still be Roll-cancelled when RollState is in their
 ## cancel_whitelist. Returns true if the roll went through.
 func try_roll() -> bool:
+	if not player.can_use(AvatarActor.ACTION_ROLL):
+		return false
 	if not (get_roll() or player.avatar_input.consume_if_buffered(&"roll")):
 		return false
 	return actor.try_transition(&"RollState")
@@ -70,6 +64,8 @@ func try_roll() -> bool:
 ## Used by IdleState/MoveState — call at the top of tick() so a press queued
 ## during a locked attack fires the next swing immediately on recovery.
 func try_attack() -> bool:
+	if not player.can_use(AvatarActor.ACTION_ATTACK):
+		return false
 	if not (get_attack() or player.avatar_input.consume_if_buffered(&"primary_ability")):
 		return false
 	return actor.try_transition(&"AttackState")

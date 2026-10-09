@@ -92,7 +92,6 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 		var dmg := int(base_dmg * hurtbox.get_damage_multiplier())
 		if other is AvatarActor:
 			other.incoming_damage += dmg
-			other.last_damage_source_peer = minion.owner_peer_id
 			if other.controlling_peer_id > 0 and other.controlling_peer_id != multiplayer.get_unique_id():
 				other.apply_incoming_damage.rpc_id(other.controlling_peer_id, dmg, minion.owner_peer_id)
 		else:
