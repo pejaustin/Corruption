@@ -547,6 +547,8 @@ Test: `tools/tests/test_treasure.tscn`.
 
 ### Interactable focus — raycast-pull, not poll-push
 
+**Advisor placement (Austin, 2026-10-09):** the advisor no longer follows the overlord. When the overlord is within `STATION_RANGE` (advisor_placement.gd) of any `Interactable` in his tower he walks to a navmesh spot beside it, off the map floor's square plus a margin, clear of the overlord-station line, and faces the overlord; otherwise he stays put (or goes home if he is on the floor). `scenes/actors/minion/advisor_placement.gd` + `advisor_idle_state.gd`/`advisor_follow_state.gd`; spacing numbers are `PLACEHOLDER: tuning` consts.
+
 Interactables (war table, palantir, altar, summoning circle, advisor handoff, gem, gem site, mirror, etc.) all extend `Interactable` (Area3D, `scenes/interactibles/interactable.gd`). Focus is driven from the **player side**, not from each interactable.
 
 Each local player rig (`OverlordActor`, `AvatarActor`) carries:

@@ -9,6 +9,7 @@ extends Node
 
 const WORLD: String = "res://scenes/world/world.tscn"
 const Driver := preload("res://tools/playtest/input_driver.gd")
+const Placement := preload("res://scenes/actors/minion/advisor_placement.gd")
 
 var failures: int = 0
 var steps: int = 0
@@ -88,10 +89,23 @@ func _play() -> void:
 	await drv.walk_to(_stand_off(player.global_position, cp, 1.9), 0.25)
 	aimed = await drv.aim_at(cp + Vector3(0, 0.05, 0))
 	drv.say("aimed at the Chapel marker: %s" % aimed)
+	await drv.seconds(3.0)  # let the advisor walk to his spot
+	var adv0 := _my_advisor(mm)
+	step(adv0 != null and not Placement.on_floor(floor_map, adv0.global_position), "the advisor is off the map floor while I stand at it")
+	step(not drv.prompt().to_lower().contains("advisor"), "aiming at the Chapel marker does not hit the advisor (prompt: %s)" % drv.prompt())
 	await drv.screenshot("03_aim_chapel")
 	await drv.press_action(&"interaction")
 	step(player.is_holding_order(), "E on the Chapel puts a scroll in hand")
 	await drv.screenshot("04_scroll_in_hand")
+
+	# 3b. Stand at the desk: the advisor should come to stand beside it, off the floor.
+	var desk := floor_map.get_parent().get_node("Desk") as Node3D
+	await drv.walk_to(_stand_off(player.global_position, desk.global_position, 2.2), 0.4, 40.0)
+	await drv.seconds(12.0)
+	var adv1 := _my_advisor(mm)
+	var dd := Vector2(adv1.global_position.x - desk.global_position.x, adv1.global_position.z - desk.global_position.z).length()
+	step(dd < 4.0 and not Placement.on_floor(floor_map, adv1.global_position), "the advisor stands near the desk (%.1f m), off the floor" % dd)
+	await drv.screenshot("08_advisor_at_desk")
 
 	# 4. Take it to the advisor.
 	var advisor: MinionActor = null
@@ -156,6 +170,12 @@ func _play() -> void:
 	await drv.aim_at(floor_map.global_position + Vector3(0, 0, 0))
 	await drv.seconds(INK_WAIT)
 	await drv.screenshot("07_ink_on_floor")
+
+func _my_advisor(mm: MinionManager) -> MinionActor:
+	for m in mm.get_minions_for_player(1):
+		if m.minion_trait == &"advisor":
+			return m
+	return null
 
 const INK_WAIT: float = 3.5
 
