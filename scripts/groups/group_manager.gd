@@ -348,6 +348,8 @@ func _note_points(g: UnitGroup) -> void:
 			continue
 		if _flat(p.global_position - c) <= DISCOVER_RADIUS:
 			g.discovered_points.append(p.point_id)
+	for r in resources_near(c):
+		g.seen_resources[r["site"]] = int(r["pile"])
 
 func make_report(g: UnitGroup) -> Dictionary:
 	## A group's report, emptying its log: what a courier or the group itself
@@ -356,7 +358,7 @@ func make_report(g: UnitGroup) -> Dictionary:
 		"groups": [snapshot(g)],
 		"sightings": g.take_log(),
 		"points": g.take_points(),
-		"resources": resources_near(get_centroid(g)),
+		"resources": g.take_resources(),
 	}
 
 func resources_near(pos: Vector3) -> Array:

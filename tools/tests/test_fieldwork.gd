@@ -17,6 +17,10 @@ func run_tests() -> void:
 	await seconds(8.0)  # Let the host bake the world navmesh.
 	var g := gm.get_groups_for(1)[0]
 
+	# The village's soldiers would fight the group; this test is about carrying.
+	for m in mm.get_all_minions():
+		if m.minion_type_id == &"holy_knight":
+			mm.despawn_minion(m)
 	# The dead.
 	var villager := _first_human(&"SettlementSE", false)
 	check(villager != null, "the south-east village has villagers")
@@ -37,7 +41,8 @@ func run_tests() -> void:
 	check(mm.get_treasury(1) > 0, "hauled goods reach the treasury (%d)" % mm.get_treasury(1))
 	check(KnowledgeManager.local_model().ledger.has(&"MineSE"), "the ledger has a report on the mine")
 
-	# A live captive for a thrall.
+	# A live captive for a thrall (earlier fighting may have thinned the village).
+	_add_villagers(world, 2)
 	(world.get_node("SiteChapel") as CorruptionSite).debug_give_to(1)
 	_order(g, &"SettlementSE", OrderGoal.Goal.CAPTURE)
 	await _until(func() -> bool: return _count_type(1, &"thrall") > 0, 300.0)
@@ -48,10 +53,17 @@ func run_tests() -> void:
 	g = _group_at_home()
 	_order(g, &"SettlementSE", OrderGoal.Goal.OFFER, &"spare")
 	var noble := _first_human(&"SettlementSE", true)
+	if noble == null:
+		# The earlier fighting may have killed the village's noble: it gets another.
+		var village := world.get_node("World/Places/SettlementSE") as Node3D
+		var nid := mm.spawn_neutral_minion(village.global_position + Vector3.UP, &"noble", village.global_position)
+		noble = mm.get_minion_by_id(nid)
+		noble.settlement_name = &"SettlementSE"
 	await _until(func() -> bool: return noble and noble.owner_peer_id == 1, 300.0)
 	check(noble != null and noble.owner_peer_id == 1, "goods and a promise buy the noble")
 
 	# Breaking the promise.
+	_add_villagers(world, 1)
 	var other := _first_human(&"SettlementSE", false)
 	if other:
 		other.last_hit_by = 1
@@ -60,6 +72,14 @@ func run_tests() -> void:
 	check(noble != null and noble.owner_peer_id == -1, "killing their people turns the noble back")
 	Engine.time_scale = 1.0
 	KnowledgeManager.INSTANT_COMMANDS = false
+
+func _add_villagers(world: Node, n: int) -> void:
+	var village := world.get_node("World/Places/SettlementSE") as Node3D
+	for i in n:
+		var id := mm.spawn_neutral_minion(village.global_position + Vector3(i, 1, 0), &"villager", village.global_position)
+		var m := mm.get_minion_by_id(id)
+		if m:
+			m.settlement_name = &"SettlementSE"
 
 func _order(g: UnitGroup, point: StringName, goal: int, promise: StringName = &"") -> void:
 	var p := MapPoint.find(get_tree(), point)

@@ -33,6 +33,8 @@ var stall_timer: float = 0.0
 var field_log: Dictionary[int, Dictionary] = {}
 ## Map points passed close enough to put on the map.
 var discovered_points: Array[StringName] = []
+## Resource locations passed since the last report: site name -> pile last seen.
+var seen_resources: Dictionary[StringName, int] = {}
 ## Set when the group has a courier-on-attack capability (ticket #544; how it
 ## is unlocked is Austin's call). The first hit sends a runner home.
 var auto_courier: bool = false
@@ -66,4 +68,12 @@ func take_log() -> Array:
 func take_points() -> Array[StringName]:
 	var out := discovered_points.duplicate()
 	discovered_points.clear()
+	return out
+
+func take_resources() -> Array:
+	## What the group saw at resource locations, as report entries, emptied.
+	var out: Array = []
+	for site in seen_resources:
+		out.append({"site": site, "pile": seen_resources[site]})
+	seen_resources.clear()
 	return out

@@ -74,7 +74,8 @@ func _capture(g: UnitGroup) -> bool:
 	var dest := _destination(g)
 	var humans: Array[Node3D] = []
 	for m in mm.get_all_minions():
-		if m.is_human and m.owner_peer_id <= 0 and m.can_take_damage() and _flat(m.global_position - dest) <= WORK_RADIUS:
+		# Nobles are bought, not taken.
+		if m.is_human and not m.is_noble and m.owner_peer_id <= 0 and m.can_take_damage() and _flat(m.global_position - dest) <= WORK_RADIUS:
 			humans.append(m)
 	var all_carry := true
 	var any_captive := false
@@ -165,6 +166,7 @@ func _offer(g: UnitGroup) -> bool:
 func _on_order_changed(g: UnitGroup) -> void:
 	for m in _gm().get_members(g):
 		m.capture_mode = false
+		m.parley_mode = g.get_goal() == OrderGoal.Goal.OFFER
 	if g.get_goal() != OrderGoal.Goal.OFFER:
 		return
 	# Goods for an offer come from the treasury: those at home load up.

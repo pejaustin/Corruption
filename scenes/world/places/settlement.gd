@@ -77,9 +77,10 @@ func _physics_process(delta: float) -> void:
 func nobles_of(peer_id: int) -> Array[MinionActor]:
 	var out: Array[MinionActor] = []
 	var mm := _mm()
-	for id in _people:
-		var m := mm.get_minion_by_id(id) if mm else null
-		if m and m.is_noble and m.owner_peer_id == peer_id:
+	if mm == null:
+		return out
+	for m in mm.get_all_minions():
+		if m.is_noble and m.settlement_name == StringName(name) and m.owner_peer_id == peer_id:
 			out.append(m)
 	return out
 

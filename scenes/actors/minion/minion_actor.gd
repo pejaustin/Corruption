@@ -44,6 +44,9 @@ var captive_type: StringName = &""
 ## Host-only: set while its group is out to take captives: blows against
 ## humans stop short of killing.
 var capture_mode: bool = false
+## Host-only: set while its group carries an offer to a noble, who is not
+## attacked.
+var parley_mode: bool = false
 ## The settlement a human belongs to (Settlement node name), for promises.
 var settlement_name: StringName = &""
 var _carry_visual: MeshInstance3D
@@ -266,6 +269,11 @@ func _refresh_visual_range_overlay() -> void:
 func _on_visual_range_toggled(visible: bool) -> void:
 	if _visual_range_overlay and is_instance_valid(_visual_range_overlay):
 		_visual_range_overlay.visible = visible
+
+func is_hostile_to(other: Actor) -> bool:
+	if parley_mode and other is MinionActor and (other as MinionActor).is_noble:
+		return false
+	return super(other)
 
 func get_allegiance() -> int:
 	## Owned units fight for their owner; unowned ones (humans, the good
