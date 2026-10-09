@@ -442,7 +442,7 @@ layout are unconfirmed (#606). See `art/world/README.md`.
 north. Ground = `geo` (2000 x 2000 m); forests = `elder wood`, `northwood`; water = `Pale River`, `The Still Lake`; **every
 empty is a POI marker** (his spellings, e.g. `Avequel'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
 to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend`. Placeholder textures come from
-`tools/blender/texture_austin_map.py` (geometry untouched, checksummed). POI files with no marker yet: `northwood`, `old_gate`,
+`tools/blender/texture_austin_map.py`; the ground's texture choice is his vertex paint (`Splat` layer, `add_splat.py`, README "Painting the ground"); geometry untouched, checksummed. POI files with no marker yet: `northwood`, `old_gate`,
 `elder_woods`, `holy_site`, `graveyard`. No tower slots, roads or scale figure in his file.
 
 ### Resource-driven data (Tier 4 refactor)

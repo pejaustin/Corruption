@@ -26,7 +26,7 @@ meshes get `forest_placeholder` (`leaf_pine` darkened, PLACEHOLDER: no forest te
 mesh are identical before/after; the script prints `GEOMETRY_UNCHANGED True`). His untouched file is
 `source/reference/corruption-map-original.blend`; the earlier generated blockout is
 `source/world_landscape_generated_placeholder.blend` (the generators `build_*.py` / `world_data.py` still use its old names).
-The texturing is a Blender shader mix; for Godot it will need baking or a matching shader (#605).
+The ground's texture choice is now vertex-painted (see "Painting the ground"); the old height / slope rule is gone.
 Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds temporary markers and labels, not saved).
 
 ## Godot export (`tools/blender/export_landscape.py`)
@@ -38,10 +38,13 @@ The glb holds every mesh and every empty (POI markers keep Austin's spellings as
 materials by name.
 
 - **Materials:** Blender's node trees do not survive glTF, so `world_landscape.glb.import` maps the three names to
-  `materials/ground_placeholder.tres` (shader `shaders/world_ground.gdshader`: world-space 8 m tiles, nearest, sea / shore /
-  snow heights and slope rock, times `Col`), `water_placeholder.tres` and `forest_placeholder.tres` (StandardMaterial3D,
-  world triplanar, nearest). The shader's heights are absolute (sea -17.898, shore -4.519, snow 108.127: the script prints
-  them); recompute them if his vertical scale changes.
+  `materials/ground_placeholder.tres` (shader `shaders/world_ground.gdshader`: world-space 8 m tiles, nearest, the `Splat`
+  layer picks the texture, times the `Col` tint), `water_placeholder.tres` and `forest_placeholder.tres`
+  (StandardMaterial3D, world triplanar, nearest).
+- **Ground layers in Godot:** the glTF importer only maps `COLOR_0` to `COLOR`, so on `geo` the export script (in memory,
+  never saved) writes `Splat` as `COLOR_0` and `Col` as UV (r, g) + UV2 (b), dropping `geo`'s `UVMap` / `WorldUV` from the
+  export (the shader tiles by world position). The shader reads `COLOR.rgb` and `vec3(UV, UV2.x)`. Optional 2nd arg to
+  the script = a scratch `.glb` path.
 - **Collision:** only `geo`, set in the `.glb.import` (`PATH:geo`: generate physics, static body, trimesh), not by renaming.
   Forests and water are flat patches and have none.
 - **Scene:** `scenes/world/open_world/open_world.tscn` (a `NavigationRegion3D` around the glb, sun, sky, fog; all
@@ -52,6 +55,21 @@ materials by name.
   `import/blender/enabled=false` under `[filesystem]` in `project.godot` for the import, then revert it.
 - **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world.tscn SHOT_FAR=6000
   SHOTS="overview:0,2900,0:0,0,0:50" godot --path . res://tools/shots/shot.tscn`.
+
+## Painting the ground
+
+`geo` has two colour layers (Object Data > Color Attributes; click a layer to make it active):
+
+- **`Splat`** picks the texture. **PLACEHOLDER mapping** (Austin has not chosen the textures): black = grass, **red = rock,
+  green = dirt, blue = sand**. A channel counts as painted at 50% or more (hard edge, no blend); grass is what no channel
+  claims; if channels overlap, sand beats dirt beats rock. Paint pure red / green / blue; erase with black.
+- **`Col`** is the tint / shading multiplied over the texture (white = untouched).
+
+To paint: select `geo`, Vertex Paint mode (Ctrl+Tab), click `Splat` in Color Attributes (it is the active layer; `Col` is
+only the display layer), pick a colour, brush. Material Preview shows the textures live. Then save and run
+`export_landscape.py` (above). `tools/blender/add_splat.py` created `Splat` seeded from the old look (rock on the old steep
+faces, sand in the old shore band, grass elsewhere; the old sea-water and snow bands have no channel, so they became sand
+and grass) and rebuilt the `ground_placeholder` material; re-running keeps your paint, `--reseed` overwrites it.
 
 ## Files
 

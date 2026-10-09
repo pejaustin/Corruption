@@ -51,7 +51,7 @@ if len(args) > 2 and args[2] == "poi":
 else:
     # Austin's map (2026-10-09, +Y north). Every empty is a POI marker: temporary coloured markers + name labels are
     # added here for the render only and are NOT saved to the file.
-    load(os.path.join(root, "art/world/source/world_landscape.blend"))
+    load(os.environ.get("PREVIEW_BLEND") or os.path.join(root, "art/world/source/world_landscape.blend"))
     sc = bpy.context.scene
     sun = bpy.data.objects.new("rsun", bpy.data.lights.new("rsun", "SUN"))
     sun.data.energy = 4.0

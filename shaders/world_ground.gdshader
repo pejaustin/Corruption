@@ -1,23 +1,23 @@
-// PLACEHOLDER: stand-in ground look, not designed by Austin. Mirrors the Blender placeholder texturing in
-// tools/blender/texture_austin_map.py: world-space planar UV (one 32 px tile = 8 m, nearest), grass base,
-// sand below `shore_height`, water texture below `sea_height`, snow above `snow_height`, rock where the slope
-// (1 - |normal.y|) exceeds `rock_slope`, all multiplied by the vertex colour (Blender `Col`).
-// Heights are the absolute world heights the Blender script derives from fractions 0.206 / 0.268 / 0.79 of geo's
-// world height range (-62.352 .. 153.444 m); recompute them if Austin changes the ground's vertical scale.
+// PLACEHOLDER: the splat channel -> texture mapping is a stand-in (Austin has not chosen the textures):
+// red = rock, green = dirt, blue = sand, black / no channel = grass. Keep in sync with tools/blender/add_splat.py.
+// Ground splat texturing for Austin's vertex-painted map (art/world/README.md, "Painting the ground").
+// Two Blender colour layers reach this shader through the glTF importer, which maps only COLOR_0 to COLOR
+// (tools/blender/export_landscape.py repacks them in memory):
+//   COLOR.rgb = `Splat`  (which texture)
+//   UV, UV2.x = `Col`    (tint / shading, rgb = UV.x, UV.y, UV2.x)
+// Textures are world-space planar (one 32 px tile = tile_metres, nearest). A channel counts as painted at >= 0.5 (hard
+// edge, no blend, keeps the nearest-filtered pixels crisp); if several are painted, sand beats dirt beats rock; grass is
+// whatever no channel claims (the remainder).
 shader_type spatial;
 render_mode diffuse_lambert, specular_disabled;
 
 uniform sampler2D grass_tex : source_color, filter_nearest, repeat_enable;
 uniform sampler2D rock_tex : source_color, filter_nearest, repeat_enable;
+uniform sampler2D dirt_tex : source_color, filter_nearest, repeat_enable;
 uniform sampler2D sand_tex : source_color, filter_nearest, repeat_enable;
-uniform sampler2D snow_tex : source_color, filter_nearest, repeat_enable;
-uniform sampler2D water_tex : source_color, filter_nearest, repeat_enable;
 
 uniform float tile_metres = 8.0; // PLACEHOLDER: one texture tile in metres
-uniform float sea_height = -17.8983; // PLACEHOLDER: world y below which the water texture shows
-uniform float shore_height = -4.5190; // PLACEHOLDER: world y below which sand shows
-uniform float snow_height = 108.1265; // PLACEHOLDER: world y above which snow shows
-uniform float rock_slope = 0.30; // PLACEHOLDER: slope (1 - |normal.y|) above which rock shows
+uniform float splat_threshold = 0.5; // PLACEHOLDER: a channel at or above this counts as painted
 
 varying vec3 world_pos;
 
@@ -27,14 +27,12 @@ void vertex() {
 
 void fragment() {
 	vec2 uv = world_pos.xz / tile_metres;
+	vec3 s = COLOR.rgb;
 	vec3 c = texture(grass_tex, uv).rgb;
-	c = mix(c, texture(sand_tex, uv).rgb, step(world_pos.y, shore_height));
-	c = mix(c, texture(water_tex, uv).rgb, step(world_pos.y, sea_height));
-	c = mix(c, texture(snow_tex, uv).rgb, step(snow_height, world_pos.y));
-	// the engine's NORMAL is already correct for the ground's non-uniform scale; back to world space
-	vec3 world_normal = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	float slope = 1.0 - abs(world_normal.y);
-	c = mix(c, texture(rock_tex, uv).rgb, step(rock_slope, slope));
-	ALBEDO = c * COLOR.rgb;
+	c = mix(c, texture(rock_tex, uv).rgb, step(splat_threshold, s.r));
+	c = mix(c, texture(dirt_tex, uv).rgb, step(splat_threshold, s.g));
+	c = mix(c, texture(sand_tex, uv).rgb, step(splat_threshold, s.b));
+	vec3 tint = vec3(UV, UV2.x);
+	ALBEDO = c * tint;
 	ROUGHNESS = 1.0;
 }
