@@ -189,6 +189,8 @@ func _check_combat_components() -> void:
 		missing.append("Hurtbox")
 	if missing.is_empty():
 		return
+	# Dev diagnostic only: made when a component is missing, so there is nothing
+	# to author (the fix is adding the missing component to the scene).
 	var warning := Label3D.new()
 	warning.name = "_MissingComponentWarning"
 	warning.text = "⚠ Missing: %s" % ", ".join(missing)

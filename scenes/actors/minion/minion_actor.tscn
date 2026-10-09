@@ -7,12 +7,28 @@
 [ext_resource type="Script" uid="uid://bwxume2kqi83t" path="res://scenes/actors/minion/states/chase_state.gd" id="5_r2q84"]
 [ext_resource type="Script" uid="uid://mc37sb6ml8ea" path="res://scenes/actors/minion/states/jump_state.gd" id="6_m8qn8"]
 [ext_resource type="Script" path="res://scenes/actors/minion/states/retreat_state.gd" id="7_retreat"]
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/visual_range_overlay.tscn" id="8_range"]
+
+; Debug ring showing the minion's aggro radius, in its faction colour (the script
+; draws the circle's line geometry from the radius and tints this material).
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aggro"]
+resource_local_to_scene = true
+shading_mode = 0
+no_depth_test = true
+
+; PLACEHOLDER: art — a box on the back while carrying; the script tints it by what it is.
+[sub_resource type="BoxMesh" id="BoxMesh_carry"]
+size = Vector3(0.5, 0.3, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_carry"]
+resource_local_to_scene = true
 
 [node name="MinionActor" unique_id=336466554 instance=ExtResource("1_e3vac")]
 collision_layer = 128
 script = ExtResource("2_irlat")
 minion_type = null
 stagger_invulnerable = false
+visual_range_overlay_scene = ExtResource("8_range")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." index="2" unique_id=990365429]
 target_desired_distance = 1.5
@@ -45,3 +61,16 @@ metadata/_custom_type_script = "uid://usyufdtn83hc"
 [node name="RetreatState" type="Node" parent="RewindableStateMachine"]
 script = ExtResource("7_retreat")
 animation_name = "large-male/Run"
+
+[node name="AggroRing" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+visible = false
+material_override = SubResource("StandardMaterial3D_aggro")
+cast_shadow = 0
+
+[node name="CarryVisual" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+visible = false
+material_override = SubResource("StandardMaterial3D_carry")
+mesh = SubResource("BoxMesh_carry")

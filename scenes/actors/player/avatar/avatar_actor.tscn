@@ -13,6 +13,10 @@
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
 [ext_resource type="Script" path="res://scripts/interaction_focus.gd" id="13_focus"]
 [ext_resource type="Script" path="res://scenes/actors/player/avatar/avatar_ai.gd" id="14_ai"]
+[ext_resource type="Script" path="res://scripts/avatar_abilities.gd" id="15_abilities"]
+[ext_resource type="Script" path="res://scenes/actors/player/avatar/paladin_hold.gd" id="16_hold"]
+[ext_resource type="Script" path="res://scenes/actors/player/avatar/paladin_voice.gd" id="17_voice"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/watcher_orb.tscn" id="18_orb"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
 radius = 0.2
@@ -22,9 +26,12 @@ height = 1.9326172
 radius = 0.4
 height = 3.0
 
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_voice"]
+
 [node name="AvatarActor" unique_id=1811865404 instance=ExtResource("1_base")]
 collision_layer = 5
 script = ExtResource("6_avatar")
+watcher_orb_scene = ExtResource("18_orb")
 
 [node name="Avatar" parent="Model" index="0" unique_id=1068379943 instance=ExtResource("3_afwa1")]
 
@@ -102,5 +109,34 @@ path_max_distance = 3.0
 
 [node name="AvatarAI" type="Node" parent="." index="11" unique_id=1422890772]
 script = ExtResource("14_ai")
+
+[node name="AvatarAbilities" type="Node" parent="." index="12"]
+unique_name_in_owner = true
+script = ExtResource("15_abilities")
+
+; Takeover, overpower and hold (host-authoritative).
+[node name="PaladinHold" type="Node" parent="." index="13"]
+unique_name_in_owner = true
+script = ExtResource("16_hold")
+
+; Live voice among Palantir viewers and his controller.
+[node name="PaladinVoice" type="Node" parent="." index="14"]
+unique_name_in_owner = true
+script = ExtResource("17_voice")
+
+[node name="Mic" type="AudioStreamPlayer" parent="PaladinVoice" index="0"]
+stream = SubResource("AudioStreamMicrophone_voice")
+bus = &"PaladinMic"
+
+; PLACEHOLDER: wording — flashed when he refuses an order he resists.
+[node name="ResistLabel" type="Label3D" parent="." index="15"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+visible = false
+billboard = 1
+modulate = Color(1, 0.9, 0.5, 1)
+outline_size = 8
+text = "He resists"
+font_size = 32
 
 [editable path="Model/Avatar"]

@@ -13,7 +13,8 @@ var _overlord_active: bool = true
 ## appears in your hand"), empty when holding nothing. Local to its owner:
 ## { group_ids, believed, route_points, route, dest_point, dest_kind }.
 var held_order: Dictionary = {}
-var _scroll_visual: MeshInstance3D
+
+@onready var _scroll_visual: MeshInstance3D = %HeldScroll
 
 ## Public accessor for the player's visual model. Use this instead of
 ## get_node("Model") so consumers don't depend on child naming.
@@ -87,27 +88,9 @@ func is_holding_order() -> bool:
 	return not held_order.is_empty()
 
 func _show_scroll(show: bool) -> void:
-	## PLACEHOLDER: art — a rolled scroll held at the bottom right of the view.
-	if _scroll_visual == null and show:
-		var cam := _camera_input.camera_3d if _camera_input else null
-		if cam == null:
-			return
-		_scroll_visual = MeshInstance3D.new()
-		_scroll_visual.name = "HeldScroll"
-		var mesh := CylinderMesh.new()
-		mesh.top_radius = 0.03
-		mesh.bottom_radius = 0.03
-		mesh.height = 0.28
-		_scroll_visual.mesh = mesh
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color(0.9, 0.84, 0.66)
-		_scroll_visual.material_override = mat
-		_scroll_visual.position = Vector3(0.22, -0.2, -0.45)
-		_scroll_visual.rotation = Vector3(0.3, 0.0, 1.2)
-		_scroll_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		cam.add_child(_scroll_visual)
-	if _scroll_visual:
-		_scroll_visual.visible = show
+	## PLACEHOLDER: art — the rolled scroll (HeldScroll under the camera in
+	## overlord_actor.tscn) is only shown or hidden.
+	_scroll_visual.visible = show
 
 func _unhandled_input(event: InputEvent) -> void:
 	if multiplayer.get_unique_id() != str(name).to_int() or not _overlord_active:

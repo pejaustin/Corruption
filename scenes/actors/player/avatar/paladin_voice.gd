@@ -2,7 +2,7 @@ class_name PaladinVoice extends Node
 
 ## Live voice around the Paladin (GDD §8 "Seen by all", Q19; ticket #558):
 ## everyone looking through a Palantir and whoever drives him hear each other,
-## with no distance falloff. A child of AvatarActor (added in code).
+## with no distance falloff. A child of AvatarActor (in avatar_actor.tscn, with its Mic player).
 ##
 ## Same approach as the mirror's live calls (scripts/interactibles/mirror.gd):
 ## the microphone plays into a muted bus with an AudioEffectCapture; captured
@@ -19,12 +19,13 @@ const CHUNK_SECONDS: float = 0.1
 const PLAYBACK_BUFFER_SECONDS: float = 0.5
 
 var _capture: AudioEffectCapture
-var _mic_player: AudioStreamPlayer
 var _speaking: bool = false
 var _out: PackedFloat32Array = PackedFloat32Array()
 var _players: Dictionary[int, AudioStreamPlayer] = {}
 var _player_rates: Dictionary[int, int] = {}
 var _queues: Dictionary[int, PackedFloat32Array] = {}
+
+@onready var _mic_player: AudioStreamPlayer = $Mic
 
 func _ready() -> void:
 	_setup_mic_bus()
@@ -46,6 +47,8 @@ func is_speaking() -> bool:
 	return _speaking
 
 func _setup_mic_bus() -> void:
+	# Data-only: the shared PaladinMic audio bus lives in the AudioServer, not the
+	# scene tree; the Mic player that records into it is authored in avatar_actor.tscn.
 	var idx := AudioServer.get_bus_index(MIC_BUS)
 	if idx < 0:
 		idx = AudioServer.bus_count
@@ -58,11 +61,6 @@ func _setup_mic_bus() -> void:
 		var fx := AudioServer.get_bus_effect(idx, i)
 		if fx is AudioEffectCapture:
 			_capture = fx
-	_mic_player = AudioStreamPlayer.new()
-	_mic_player.name = "Mic"
-	_mic_player.stream = AudioStreamMicrophone.new()
-	_mic_player.bus = MIC_BUS
-	add_child(_mic_player)
 
 func _set_speaking(on: bool) -> void:
 	_speaking = on

@@ -13,6 +13,13 @@ const COLLISION_MASK_WORLD: int = 1
 const COLLISION_MASK_MOVEMENT: int = COLLISION_MASK_WORLD
 const DEATH_CLEANUP_TIME: float = 1.5
 const INTERPOLATION_SPEED: float = 10.0
+## PLACEHOLDER: art — the carried box's tint by what it is.
+const CARRY_COLORS: Dictionary[StringName, Color] = {
+	&"body": Color(0.5, 0.45, 0.4),
+	&"captive": Color(0.9, 0.7, 0.6),
+	&"goods": Color(0.85, 0.7, 0.2),
+	&"relic": Color(1.0, 0.85, 0.2),
+}
 
 signal minion_died(minion: MinionActor)
 
@@ -25,6 +32,8 @@ signal minion_died(minion: MinionActor)
 ## Placeholder: will eventually be driven by model-scene animation triggers that
 ## toggle hitbox/invulnerability windows frame-by-frame.
 @export var stagger_invulnerable: bool = false
+## Instanced for units whose type has a courier visual range (a debug overlay).
+@export var visual_range_overlay_scene: PackedScene
 
 var owner_peer_id: int = -1
 ## The unit group this unit marches with (GroupManager); -1 = none.
@@ -49,7 +58,6 @@ var capture_mode: bool = false
 var parley_mode: bool = false
 ## The settlement a human belongs to (Settlement node name), for promises.
 var settlement_name: StringName = &""
-var _carry_visual: MeshInstance3D
 var minion_type_id: StringName = &""
 var minion_trait: StringName = &""
 var waypoint: Vector3 = Vector3.ZERO
@@ -139,9 +147,8 @@ var _target_pos: Vector3
 var _target_rot: float
 
 var _minion_manager: Node
-var _aggro_ring: MeshInstance3D
 ## Translucent sphere visualization of `courier_visual_range`, toggleable via
-## DebugManager.show_courier_visual_range. Built lazily in apply_type when the
+## DebugManager.show_courier_visual_range. Instanced lazily in apply_type when the
 ## type has a non-zero range (so non-couriers don't carry the overhead).
 var _visual_range_overlay: MeshInstance3D
 ## Throttle for the host-side observation sweep — runs every OBSERVE_INTERVAL
@@ -153,6 +160,8 @@ const OBSERVE_INTERVAL: float = 0.25
 const OBSERVE_RADIUS: float = 12.0
 var _observe_timer: float = 0.0
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
+@onready var _aggro_ring: MeshInstance3D = %AggroRing
+@onready var _carry_visual: MeshInstance3D = %CarryVisual
 
 func _ready() -> void:
 	super()
@@ -172,21 +181,16 @@ func _ready() -> void:
 		nav_agent.max_speed = move_speed
 
 func _setup_aggro_ring() -> void:
-	_aggro_ring = MeshInstance3D.new()
-	_aggro_ring.name = "AggroRing"
-	_aggro_ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(_aggro_ring)
 	_aggro_ring.visible = DebugManager.show_aggro_rings
 	DebugManager.aggro_rings_toggled.connect(_on_aggro_rings_toggled)
 	_refresh_aggro_ring()
 
 func _on_aggro_rings_toggled(new_visible: bool) -> void:
-	if _aggro_ring:
-		_aggro_ring.visible = new_visible
+	_aggro_ring.visible = new_visible
 
 func _refresh_aggro_ring() -> void:
 	if _aggro_ring == null:
-		return
+		return  # apply_type() ran before the unit entered the tree; _ready() redraws
 	var segments: int = 48
 	var verts := PackedVector3Array()
 	for i in segments + 1:
@@ -195,13 +199,11 @@ func _refresh_aggro_ring() -> void:
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts
+	# Data-only: the circle's line geometry depends on this unit's aggro radius;
+	# the node and its material are authored in minion_actor.tscn.
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINE_STRIP, arrays)
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = get_faction_color()
-	mat.no_depth_test = true
-	mesh.surface_set_material(0, mat)
+	(_aggro_ring.material_override as StandardMaterial3D).albedo_color = get_faction_color()
 	_aggro_ring.mesh = mesh
 
 func _on_velocity_computed(safe_vel: Vector3) -> void:
@@ -247,23 +249,12 @@ func _refresh_visual_range_overlay() -> void:
 			_visual_range_overlay = null
 		return
 	if _visual_range_overlay == null:
-		_visual_range_overlay = MeshInstance3D.new()
-		_visual_range_overlay.name = "VisualRangeOverlay"
-		_visual_range_overlay.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_visual_range_overlay = visual_range_overlay_scene.instantiate() as MeshInstance3D
 		add_child(_visual_range_overlay)
 		DebugManager.courier_visual_range_toggled.connect(_on_visual_range_toggled)
-	var mesh := SphereMesh.new()
+	var mesh := _visual_range_overlay.mesh as SphereMesh
 	mesh.radius = courier_visual_range
 	mesh.height = courier_visual_range * 2.0
-	mesh.radial_segments = 32
-	mesh.rings = 16
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.6, 0.85, 1.0, 0.18)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mesh.surface_set_material(0, mat)
-	_visual_range_overlay.mesh = mesh
 	_visual_range_overlay.visible = DebugManager.show_courier_visual_range
 
 func _on_visual_range_toggled(visible: bool) -> void:
@@ -312,20 +303,11 @@ func set_carrying(kind: StringName, amount: int = 0) -> void:
 	carrying = kind
 	carry_amount = amount
 	if kind == &"":
-		if _carry_visual:
-			_carry_visual.visible = false
+		_carry_visual.visible = false
 		return
-	# PLACEHOLDER: art — a box on the back, tinted by what it is.
-	if _carry_visual == null:
-		_carry_visual = MeshInstance3D.new()
-		var box := BoxMesh.new()
-		box.size = Vector3(0.5, 0.3, 0.3)
-		_carry_visual.mesh = box
-		_carry_visual.position = Vector3(0, 2.0, 0)
-		_carry_visual.material_override = StandardMaterial3D.new()
-		add_child(_carry_visual)
-	var colors := {&"body": Color(0.5, 0.45, 0.4), &"captive": Color(0.9, 0.7, 0.6), &"goods": Color(0.85, 0.7, 0.2), &"relic": Color(1.0, 0.85, 0.2)}
-	(_carry_visual.material_override as StandardMaterial3D).albedo_color = colors.get(kind, Color.WHITE)
+	# PLACEHOLDER: art — the box on the back (CarryVisual in minion_actor.tscn),
+	# tinted by what it is.
+	(_carry_visual.material_override as StandardMaterial3D).albedo_color = CARRY_COLORS.get(kind, Color.WHITE)
 	_carry_visual.visible = true
 
 func _die() -> void:

@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: art — a ghostly orb at a remote viewer's scry camera; the script
+; tints it with the viewer's colour. One is instanced per viewer.
+
+[sub_resource type="SphereMesh" id="SphereMesh_orb"]
+radius = 0.25
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_orb"]
+resource_local_to_scene = true
+transparency = 1
+shading_mode = 0
+emission_enabled = true
+emission_energy_multiplier = 2.0
+
+[node name="WatcherOrb" type="MeshInstance3D"]
+top_level = true
+material_override = SubResource("StandardMaterial3D_orb")
+cast_shadow = 0
+mesh = SubResource("SphereMesh_orb")

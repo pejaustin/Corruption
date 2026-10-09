@@ -19,6 +19,15 @@
 radius = 0.4
 height = 2.8598633
 
+; PLACEHOLDER: art — a rolled scroll held at the bottom right of the view.
+[sub_resource type="CylinderMesh" id="CylinderMesh_scroll"]
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.28
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_scroll"]
+albedo_color = Color(0.9, 0.84, 0.66, 1)
+
 [node name="OverlordActor" unique_id=1513668585 node_paths=PackedStringArray("_player_input", "_camera_input") instance=ExtResource("1_base")]
 collision_layer = 5
 collision_mask = 5
@@ -114,6 +123,15 @@ shape = SubResource("CapsuleShape3D_overlord_hurt")
 script = ExtResource("13_focus")
 raycast = NodePath("../CameraInput/CameraMount/CameraRot/Camera3D/InteractionRayCast")
 owner_actor = NodePath("..")
+
+; The scroll of orders, shown while the overlord holds an order (OverlordActor.hold_order).
+[node name="HeldScroll" type="MeshInstance3D" parent="CameraInput/CameraMount/CameraRot/Camera3D" index="3"]
+unique_name_in_owner = true
+transform = Transform3D(0.362358, -0.932039, 0, 0.890411, 0.346174, -0.29552, 0.275436, 0.107084, 0.955336, 0.22, -0.2, -0.45)
+visible = false
+material_override = SubResource("StandardMaterial3D_scroll")
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_scroll")
 
 [editable path="Model/Lich"]
 [editable path="Model/Lich/RootNode/Lich-applying"]

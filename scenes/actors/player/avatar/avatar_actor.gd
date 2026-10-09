@@ -37,11 +37,8 @@ const CONTROL_LEVEL_MAX: int = 4
 ## faction's priests and soldiers (Q18).
 const RESIST_GOOD_BELOW_LEVEL: int = 3
 ## PLACEHOLDER: wording — the flash shown when he resists a strike.
-const RESIST_TEXT: String = "He resists"
 ## PLACEHOLDER: tuning — seconds the resist flash stays up.
 const RESIST_FLASH_SECONDS: float = 1.2
-const RESIST_FLASH_HEIGHT: float = 2.8
-const RESIST_FLASH_COLOR: Color = Color(1.0, 0.9, 0.5)
 ## PLACEHOLDER: tuning — seconds he lies at zero HP before getting up.
 const RECOVER_DELAY: float = 5.0
 ## PLACEHOLDER: tuning — fraction of max HP he gets up with after zero HP.
@@ -50,21 +47,16 @@ const RECOVER_HP_FRACTION: float = 0.25
 ## abilities, whoever owns him. PLACEHOLDER: which abilities he has (#582).
 const ABILITY_PROFILE_FACTION: int = GameConstants.Faction.UNDEATH
 ## PLACEHOLDER: art direction — viewers are translucent spheres in their seat colour.
-const WATCHER_ORB_RADIUS: float = 0.25
 const WATCHER_ORB_ALPHA: float = 0.45
-const WATCHER_ORB_EMISSION_ENERGY: float = 2.0
+
+## Instanced once per remote viewer (tinted in their seat colour).
+@export var watcher_orb_scene: PackedScene
 
 var controlling_peer_id: int = -1
 ## Legacy flag kept for old test harnesses (activate/deactivate). In play the
 ## Paladin is never dormant: unowned, he serves the good faction.
 var is_dormant: bool = false
 var god_mode: bool = false
-# Faction abilities
-var abilities: AvatarAbilities
-## Takeover, overpower and hold (host-authoritative).
-var hold: PaladinHold
-## Live voice among Palantir viewers and his controller.
-var voice: PaladinVoice
 
 var _watcher_orbs: Dictionary[int, MeshInstance3D] = {}
 ## Host: HP to set inside the next rollback tick (recovery, owner change).
@@ -73,30 +65,26 @@ var _pending_hp: int = -1
 ## Host: healing to apply inside the next rollback tick (AvatarAI regeneration).
 var _pending_heal: int = 0
 var _recover_scheduled: bool = false
-var _resist_label: Label3D
 var _resist_timer: float = 0.0
 
 @onready var avatar_input: AvatarInput = $AvatarInput
 @onready var avatar_camera: AvatarCamera = $AvatarCamera
 @onready var watcher_label: Label3D = $WatcherLabel
 @onready var avatar_ai: AvatarAI = $AvatarAI
+## Faction abilities.
+@onready var abilities: AvatarAbilities = %AvatarAbilities
+## Takeover, overpower and hold (host-authoritative).
+@onready var hold: PaladinHold = %PaladinHold
+## Live voice among Palantir viewers and his controller.
+@onready var voice: PaladinVoice = %PaladinVoice
+@onready var _resist_label: Label3D = %ResistLabel
 
 func _ready() -> void:
 	super()
 	GameState.watcher_count_changed.connect(_on_watcher_count_changed)
 	GameState.avatar_owner_changed.connect(_on_avatar_owner_changed)
 	_update_watcher_label(0)
-	abilities = AvatarAbilities.new()
-	abilities.name = "AvatarAbilities"
-	add_child(abilities)
 	abilities.setup(self, ABILITY_PROFILE_FACTION)
-	hold = PaladinHold.new()
-	hold.name = "PaladinHold"
-	add_child(hold)
-	voice = PaladinVoice.new()
-	voice.name = "PaladinVoice"
-	add_child(voice)
-	_build_resist_label()
 
 func _process(delta: float) -> void:
 	_update_watcher_orbs()
@@ -297,39 +285,17 @@ func _update_watcher_orbs() -> void:
 		_watcher_orbs[peer_id].global_position = positions[peer_id]
 
 func _create_watcher_orb(peer_id: int) -> MeshInstance3D:
-	var orb := MeshInstance3D.new()
+	## One orb per viewer: an instance of the authored watcher_orb.tscn, tinted.
+	var orb := watcher_orb_scene.instantiate() as MeshInstance3D
 	orb.name = "WatcherOrb%d" % peer_id
-	orb.top_level = true
-	var sphere := SphereMesh.new()
-	sphere.radius = WATCHER_ORB_RADIUS
-	sphere.height = WATCHER_ORB_RADIUS * 2.0
-	orb.mesh = sphere
 	var color := GameState.get_player_color(peer_id)
-	var mat := StandardMaterial3D.new()
+	var mat := orb.material_override as StandardMaterial3D
 	mat.albedo_color = Color(color.r, color.g, color.b, WATCHER_ORB_ALPHA)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.emission_enabled = true
 	mat.emission = color
-	mat.emission_energy_multiplier = WATCHER_ORB_EMISSION_ENERGY
-	orb.material_override = mat
-	orb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(orb)
 	return orb
 
 # --- Resist feedback ---
-
-func _build_resist_label() -> void:
-	_resist_label = Label3D.new()
-	_resist_label.name = "ResistLabel"
-	_resist_label.text = RESIST_TEXT
-	_resist_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_resist_label.modulate = RESIST_FLASH_COLOR
-	_resist_label.outline_size = 8
-	_resist_label.font_size = 32
-	_resist_label.position = Vector3(0, RESIST_FLASH_HEIGHT, 0)
-	_resist_label.visible = false
-	add_child(_resist_label)
 
 @rpc("authority", "call_local", "reliable")
 func _flash_resistance() -> void:
