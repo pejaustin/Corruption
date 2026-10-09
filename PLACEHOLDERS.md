@@ -22,6 +22,9 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Seat colours (one per tower) and the good faction's colour | How players tell each other apart | `scripts/game_constants.gd` `SEAT_COLORS`, `GOOD_COLOR` | — |
 | Site marker (stone disc + tinted crystal) and the beacon (a coloured column of light) | Site and beacon art | `scenes/sites/corruption_site.gd` | #553 |
 | Desk look (box table and red book) | Desk and book art | `scenes/interactibles/desk.tscn` | #570 |
+| Balcony look (stone post and brass spyglass) | Balcony art | `scenes/interactibles/balcony.tscn` | — |
+| Balcony wording ("Press E to look out", "E / Q to return") | The balcony's UI copy | `scripts/interactibles/balcony.gd` | — |
+| Sky, sun and moon colours, night light and ambient levels | Day/night look | `scripts/day_night.gd` | #574 |
 | Ruined tower = hidden roof pieces, revealed as sites are held | Tower restoration stages | `scenes/world/env/tower.gd` | #567 |
 | Map floor illustration (parchment + terrain contours), point discs, chess pieces, ink ribbons | Map art | `scenes/map/` | #534, #538 |
 | Held scroll (a cylinder at the corner of the view); advisor subtitles and choice panel | Scroll and dialogue look | `overlord_actor.gd`, `scenes/ui/advisor_dialogue.gd` | — |
@@ -60,11 +63,14 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Unclaimed Paladin goes home below 50% HP (stays until whole), regenerates 5 HP/s within 6 m of the city centre | `scenes/actors/player/avatar/avatar_ai.gd` `RECOVER_BELOW_FRACTION`, `RECOVER_RADIUS`, `REGEN_PER_SECOND` |
 | Control levels 1–4 (1 + AVATAR_CONTROL sites held, capped at 4); resist flash 1.2 s | `avatar_actor.gd` `CONTROL_LEVEL_MAX`, `RESIST_FLASH_SECONDS` |
 | Palantir voice ~11 kHz in 0.1 s packets | `scenes/actors/player/avatar/paladin_voice.gd` `VOICE_RATE`, `CHUNK_SECONDS` |
+| Balcony: lookout 5 m above and 3 m out from the post, 90° view, 1500 m far plane, mouse speed 0.004, pitch -60..40° | `scripts/interactibles/balcony.gd` consts |
+| Day/night: a day lasts 600 s, starts at 0.4, resync every 10 s; night light energy 0.25 (day 1.0), night ambient 0.9 | `scripts/day_night.gd` consts |
 
 ## Rules standing in for open questions (GDD §11)
 
 | Rule | Open question | Where | Ticket |
 |---|---|---|---|
+| Day and night are flavour only: only light and sky read the clock | Whether day/night changes play | `scripts/day_night.gd` | #574 |
 | A sacked tower is only flagged (`CorruptionSite.sacked`); it spawns nothing yet | What the tower spawns after a sack, and how often | `scenes/sites/corruption_site.gd` | #577 |
 | Contested takeover of the Paladin: the player with the most troop strength near him progresses, a tie freezes everyone; his company (troops of his own allegiance) present freezes it | How a contested takeover works (Q14) | `paladin_hold.gd` `_tick_takeover` | #573 |
 | Control tiers: level 1 walk; 2 + attack; 3 + run, roll, jump; 4 + abilities. Below level 3 he refuses to strike the good faction | Which actions unlock when, and when resistance ends (Q18) | `avatar_actor.gd` `CONTROL_UNLOCKS`, `RESIST_GOOD_BELOW_LEVEL` | #582 |

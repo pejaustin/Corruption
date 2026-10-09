@@ -50,7 +50,7 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 - [ ] 5 Goods
 - [x] 6 The Paladin (takeover, overpower, hold, zero-HP wipe, control tiers + resistance, unclaimed AI, watcher orbs + voice; no good-faction army follows him yet; multi-peer voice untested)
 - [ ] 7 Endgame
-- [ ] 8 Tower stations
+- [ ] 8 Tower stations (done: desk with books, balcony, day / night; left: treasure room)
 - [x] 9 Mirror
 - [ ] 10 Getting better
 

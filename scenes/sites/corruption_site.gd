@@ -278,6 +278,7 @@ func _build_marker() -> void:
 	beam.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	beam.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	beam.cull_mode = BaseMaterial3D.CULL_DISABLED
+	beam.disable_fog = true  # stays readable from the balcony, day or night
 	_beacon.material_override = beam
 	_beacon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_beacon.visible = false
