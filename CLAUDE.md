@@ -445,6 +445,21 @@ UI: tabs for "All" (newest first, ticks as mm:ss), one per record `kind` in `Wor
 `WorldModel.notes`. It claims the modal lock, frees the mouse, disables the rig's `PlayerInput`, refreshes on
 `record_added`, and closes on Esc / E / Q (E/Q ignored while typing in Notes). Test: `tools/tests/test_desk.tscn`.
 
+### Mirror (GDD §10, `scripts/interactibles/mirror.gd`)
+
+Live calls and recorded messages; each tower's mirror belongs to `Tower.owner_peer_id` and only its owner uses it. E at your
+mirror -> pick a rival (A/D) -> E **rings** their mirror (`GameState.mirror_ring`); their mirror glows and chimes (stand-in
+look/sound, `_setup_ring_effects`) until they answer with E, you hang up (E/Q), or `RING_TIMEOUT` passes. Answered: `State.LIVE`,
+both mirrors show the other player's ghost on `mirror_stage.tscn`, driven by streamed pose frames (`GameState.mirror_live_pose`,
+unreliable, `LIVE_POSE_RATE`) plus voice chunks (`mirror_live_audio`, int16, downsampled); E on either side ends it
+(`mirror_call_end`). Unanswered or busy: the caller is told and it falls straight into `RECORDING` (10 s max) -> `PREVIEW` ->
+`deliver_mirror_message` as before. CALLING/LIVE/RECORDING/PREVIEW hold the modal lock so E works while looking away.
+**Poses are skeleton data, not animation names:** `MirrorCodec` (`scripts/mirror_codec.gd`) packs the model's root transform
+relative to the mirror plus every `Skeleton3D` bone rotation (int16 quaternion) into one `PackedByteArray` frame;
+`MirrorMessage` stores recorded frames as `pose_data` / `pose_frame_size`. The ghost's AnimationPlayer is stopped and
+`MirrorCodec.apply_pose` writes the bones. All RPCs are `rpc_id` to the target peer; the sender id comes from
+`get_remote_sender_id()`. Test: `tools/tests/test_mirror.tscn` (offline; real two-peer streaming is untested).
+
 ### Interactable focus — raycast-pull, not poll-push
 
 Interactables (war table, palantir, altar, summoning circle, advisor handoff, gem, gem site, mirror, etc.) all extend `Interactable` (Area3D, `scenes/interactibles/interactable.gd`). Focus is driven from the **player side**, not from each interactable.
