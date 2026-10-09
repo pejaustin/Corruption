@@ -30,7 +30,7 @@ const ROUTE_COLOR: Color = Color(0.25, 0.2, 0.16, 0.6)
 const STEP_RADIUS: float = 0.45
 ## Seconds for a sent order's route to darken in ink (ticket #538).
 const INK_SECONDS: float = 3.0
-## Reports older than this (seconds) mark a piece with "?".
+## Reports older than this (seconds) make a piece "old news" (never missing).
 const STALE_SECONDS: float = 90.0
 ## Enemy sightings closer than this (world metres) share one piece.
 const ENEMY_CLUSTER: float = 15.0
@@ -187,8 +187,7 @@ func finish_at(point: MapPoint) -> void:
 	route.append(point.global_position)
 	var believed: Dictionary = {}
 	for gid in selected_groups:
-		var entry: Dictionary = model().believed_groups.get(gid, {})
-		believed[gid] = entry.get("pos", Vector3.ZERO)
+		believed[gid] = model().group_position(gid, KnowledgeManager.current_tick())
 	route_points.append(point.point_id)
 	player.hold_order({
 		"group_ids": selected_groups.duplicate(),
@@ -316,8 +315,12 @@ func _sync_pieces() -> void:
 		piece.stale = (tick - int(e.get("tick", tick))) / rate > STALE_SECONDS
 		piece.selected = gid in selected_groups
 		piece.status = e.get("status", &"")
+		piece.belief = m.piece_state(gid)
+		if gid == KnowledgeManager.AVATAR_ID:
+			piece.belief = &"confirmed"
 		if carried_piece != key:
-			piece.position = world_to_floor(m.piece_position(key, e.get("pos", Vector3.ZERO)))
+			var at: Vector3 = m.group_position(gid, tick) if gid != KnowledgeManager.AVATAR_ID else e.get("pos", Vector3.ZERO)
+			piece.position = world_to_floor(m.piece_position(key, at))
 		piece.refresh()
 	for cluster in _enemy_clusters(m):
 		var key: int = -1000000 - int(cluster["id"])
@@ -377,7 +380,7 @@ func _update_draft_line() -> void:
 		for gid in selected_groups:
 			var e: Dictionary = m.believed_groups.get(gid, {})
 			if not e.is_empty():
-				pts.append(world_to_floor(m.piece_position(gid, e.get("pos", Vector3.ZERO))))
+				pts.append(world_to_floor(m.piece_position(gid, m.group_position(gid, KnowledgeManager.current_tick()))))
 				break
 	for pid in path_points:
 		var marker: MapPointMarker = _markers.get(pid)
@@ -395,7 +398,7 @@ func _sync_ink() -> void:
 	var wanted: Dictionary[int, bool] = {}
 	for cmd in m.orders:
 		var o: Dictionary = m.orders[cmd]
-		if o.get("stage", &"") not in [&"dispatched", &"delivered"]:
+		if o.get("stage", &"") not in [&"dispatched", &"delivered"] or int(o.get("goal", 0)) == OrderGoal.Goal.CHECK:
 			continue
 		if _superseded(m, int(cmd)):
 			continue
@@ -420,7 +423,7 @@ func _superseded(m: WorldModel, cmd: int) -> bool:
 	for other in m.orders:
 		if int(other) <= cmd:
 			continue
-		if m.orders[other].get("stage", &"") not in [&"dispatched", &"delivered"]:
+		if m.orders[other].get("stage", &"") not in [&"dispatched", &"delivered"] or int(m.orders[other].get("goal", 0)) == OrderGoal.Goal.CHECK:
 			continue
 		for g in m.orders[other].get("group_ids", []):
 			if g in groups:

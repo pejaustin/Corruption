@@ -16,6 +16,10 @@ extends MinionState
 ## Arrival tolerance at a stop (wider than the nav agent's own).
 const DELIVERY_DISTANCE: float = 4.0
 
+## PLACEHOLDER: tuning, not designed — at each search stop the courier waits
+## this fraction of its usual wait.
+const SEARCH_WAIT_FRACTION: float = 0.5
+
 var _wait_remaining: float = -1.0
 
 func enter(_previous_state: RewindableState, _tick: int) -> void:
@@ -40,7 +44,7 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		if _head_leg_done():
 			_advance()
 			return
-		_wait_remaining = minion.courier_wait_seconds
+		_wait_remaining = minion.courier_wait_seconds * (SEARCH_WAIT_FRACTION if minion.delivery_legs[0].get("searching", false) else 1.0)
 		return
 	_attempt_delivery()
 	if _head_leg_done():
@@ -48,6 +52,8 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		return
 	_wait_remaining -= delta
 	if _wait_remaining <= 0.0:
+		if _begin_search():
+			return
 		_record_failures()
 		_advance()
 
@@ -67,6 +73,20 @@ func _tick_scouting_or_home() -> void:
 	else:
 		minion.waypoint = minion.scout_route[0]
 
+func _begin_search() -> bool:
+	## The group is not where the map put it: look at the next place along its
+	## route (a short search, then the failure is reported).
+	var leg: Dictionary = minion.delivery_legs[0]
+	var look: Array = leg.get("search", [])
+	if look.is_empty():
+		return false
+	minion.waypoint = look.pop_front()
+	leg["search"] = look
+	leg["searching"] = true
+	_wait_remaining = -1.0
+	state_machine.transition(&"ChaseState")
+	return true
+
 func _attempt_delivery() -> void:
 	var gm := _gm()
 	if gm == null:
@@ -81,9 +101,10 @@ func _attempt_delivery() -> void:
 		if gid == GroupManager.AVATAR_GROUP_ID:
 			var avatar := _find_commandable_avatar()
 			if avatar and actor.global_position.distance_squared_to(avatar.global_position) <= range_sq:
-				gm.set_order(gid, sub.get("order", {}))
+				if not sub.get("order", {}).get("check", false):
+					gm.set_order(gid, sub.get("order", {}))
 				sub["done"] = true
-				_note_order(sub, &"delivered")
+				_note_order(sub, _done_stage(sub))
 			continue
 		var group := gm.get_group(gid)
 		if group == null or group.owner_peer_id != minion.owner_peer_id:
@@ -92,11 +113,16 @@ func _attempt_delivery() -> void:
 			if actor.global_position.distance_squared_to(m.global_position) <= range_sq:
 				# The report is taken before the new order: it tells you how the
 				# group was when the courier found it.
-				_merge_report(gm.make_report(group))
-				gm.set_order(gid, sub.get("order", {}))
+				_merge_report(gm.make_report(group), int(sub.get("cmd_id", -1)))
+				if not sub.get("order", {}).get("check", false):
+					gm.set_order(gid, sub.get("order", {}))
 				sub["done"] = true
-				_note_order(sub, &"delivered")
+				_note_order(sub, _done_stage(sub))
 				break
+
+func _done_stage(sub: Dictionary) -> StringName:
+	## A check reads the group's report and leaves its orders alone.
+	return &"checked" if sub.get("order", {}).get("check", false) else &"delivered"
 
 func _head_leg_done() -> bool:
 	for sub in minion.delivery_legs[0].get("sub_orders", []):
@@ -122,7 +148,11 @@ func _note_order(sub: Dictionary, stage: StringName) -> void:
 	orders.append({"cmd_id": int(sub.get("cmd_id", -1)), "stage": stage})
 	minion.carried_report["orders"] = orders
 
-func _merge_report(part: Dictionary) -> void:
+func _merge_report(part: Dictionary, before_cmd: int = -1) -> void:
+	## `before_cmd`: the order about to be handed over; the snapshot shows the
+	## group as it was before that order, and says so.
+	for g in part.get("groups", []):
+		g["before_cmd"] = before_cmd
 	for key in ["groups", "sightings", "points"]:
 		var into: Array = minion.carried_report.get(key, [])
 		into.append_array(part.get(key, []))

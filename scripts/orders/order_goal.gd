@@ -20,6 +20,7 @@ enum Goal {
 	OFFER,
 	SCOUT,
 	RETRIEVE,
+	CHECK,
 }
 
 ## PLACEHOLDER: wording, not written by Austin — what the advisor calls each goal.
@@ -33,6 +34,7 @@ const NAMES: Dictionary[int, String] = {
 	Goal.OFFER: "Take an offer to the noble",
 	Goal.SCOUT: "Send a courier to look and come back",
 	Goal.RETRIEVE: "Bring back what lies here",
+	Goal.CHECK: "Check that my orders were followed",
 }
 
 ## Goals a unit group can be given at a destination of `kind` (MapPoint.Kind).
@@ -53,6 +55,8 @@ static func goals_for(kind: int, has_groups: bool) -> Array[int]:
 			out.append(Goal.CAPTURE)
 			out.append(Goal.OFFER)
 	out.append(Goal.GATHER_DEAD)
+	# Austin, 2026-10-09: always possible, for any group, so none is ever beyond reach.
+	out.append(Goal.CHECK)
 	return out
 
 static func name_of(goal: int) -> String:

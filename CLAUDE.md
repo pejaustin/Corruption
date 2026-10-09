@@ -450,6 +450,21 @@ draw.
   `GameState.get_route_point_bonus`), E on a point = destination → a scroll in hand (`OverlordActor.held_order`, Q
   tears it up) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and dispatches. Sent orders
   darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tools/tests/test_orders.tscn`.
+- **Expected state (Austin, 2026-10-09):** a unit that leaves the tower's range never becomes unorderable or "stale".
+  `request_dispatch` gives each ordered group a `WorldModel.expectations[gid]` (path = where the map had it + the
+  route; position walks the path at `EXPECTED_SPEED` from the order, clamped at the destination). The piece stands at
+  `WorldModel.group_position` and is drawn translucent (`MapPiece.belief` = `&"expected"`). It becomes `&"missing"`
+  (grey, "?") only when information contradicts: a courier fails to find the group where expected and along its route
+  (`failures` in the report -> `mark_missing`). A report on the route confirms it (`&"confirmed"`, re-anchored; looks
+  confirmed `CONFIRMED_SECONDS`, then extrapolates again); a report far off the route or with a different goal
+  replaces the expectation with what was seen; "arrived" or "came home" ends it. Age alone never marks a piece
+  missing (`stale` only adds "old news" to the prompt). Couriers go to `group_position` (the old code used the last
+  report, so a group that had left the gate was never found, the order never arrived, and the map showed it at the
+  gate forever), then search `COURIER_SEARCH_POINTS` places along the route (`CourierArrivalState._begin_search`)
+  before failing. A courier snapshot taken as an order is handed over carries `before_cmd` so the group's old goal is
+  not read as a contradiction. `OrderGoal.Goal.CHECK` ("Check that my orders were followed", offered for any group
+  scroll) sends a courier to the expected positions to take reports with `order.check = true`: no `set_order`, no
+  expectation change, stage `&"checked"`. Own pieces are always selectable (`is_mine`).
 
 ### Desk (`scripts/interactibles/desk.gd`)
 

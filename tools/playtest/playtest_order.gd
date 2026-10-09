@@ -170,6 +170,14 @@ func _play() -> void:
 	await drv.aim_at(floor_map.global_position + Vector3(0, 0, 0))
 	await drv.seconds(INK_WAIT)
 	await drv.screenshot("07_ink_on_floor")
+	# The piece stands where the order says it should be, drawn as expected.
+	var g_id: int = model.orders[cmd]["group_ids"][0]
+	var exp_piece: MapPiece = floor_map._pieces.get(g_id)
+	step(exp_piece != null and exp_piece.is_mine() and exp_piece.belief != &"missing", "the group's piece is mine and not missing (%s)" % [exp_piece.belief if exp_piece else &"none"])
+	if exp_piece:
+		await drv.aim_at(exp_piece.global_position)
+		await drv.seconds(0.5)
+		await drv.screenshot("10_expected_piece")
 
 func _my_advisor(mm: MinionManager) -> MinionActor:
 	for m in mm.get_minions_for_player(1):

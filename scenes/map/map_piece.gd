@@ -3,7 +3,12 @@ class_name MapPiece extends Interactable
 ## A chess piece on the map floor: one of your groups (or the Paladin, if you
 ## hold him) where the last report put it, or enemy units your people saw.
 ## E selects your own pieces for an order; left mouse picks any piece up to
-## move it by hand (GDD Q10). A "?" marks a stale report.
+## move it by hand (GDD Q10). Every own piece stays selectable whatever its
+## state. `belief`: &"confirmed" (normal), &"expected" (an order was sent; the
+## piece stands where it should be by now; drawn translucent) or &"missing"
+## (information contradicted the expectation; a "?" and grey). Age alone only
+## makes a piece "old news" in its prompt (Austin, 2026-10-09).
+## PLACEHOLDER: the expected and missing looks.
 ## PLACEHOLDER: art — a primitive chess piece tinted by owner.
 
 var floor_map: MapFloor
@@ -12,6 +17,7 @@ var owner_peer_id: int = -1
 var group_id: int = 0
 var count: int = 1
 var stale: bool = false
+var belief: StringName = &"confirmed"
 var selected: bool = false
 var status: StringName = &""
 var is_avatar: bool = false
@@ -70,11 +76,16 @@ func refresh() -> void:
 	var color := GameState.get_player_color(owner_peer_id)
 	if selected:
 		color = color.lightened(0.5)
+	if belief == &"missing":
+		color = color.lerp(Color(0.5, 0.5, 0.5), 0.7)
+	elif belief == &"expected":
+		color.a = 0.5
+	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if belief == &"expected" else BaseMaterial3D.TRANSPARENCY_DISABLED
 	_mat.albedo_color = color
 	_mat.emission_enabled = selected
 	_mat.emission = color
 	var text := ("PALADIN" if is_avatar else str(count))
-	if stale:
+	if belief == &"missing":
 		text += " ?"
 	_label.text = text
 
@@ -85,13 +96,22 @@ func get_prompt_text() -> String:
 	if floor_map.carried_piece == key:
 		return "[LMB] put it down"
 	var who := "the Paladin" if is_avatar else ("your group %d" % group_id if is_mine() else "%d of %s" % [count, GameState.get_player_name(owner_peer_id)])
-	var lines := "%s%s%s" % [who, (" (%s)" % status) if status != &"" and is_mine() else "", " — old news" if stale else ""]
+	var lines := "%s%s%s" % [who, (" (%s)" % status) if status != &"" and is_mine() else "", _belief_note()]
 	if is_mine():
 		var player := floor_map.local_player()
 		if player and player.is_holding_order():
 			return lines
 		return "%s\n[E] %s   [LMB] move by hand" % [lines, "deselect" if selected else "select"]
 	return "%s\n[LMB] move by hand" % lines
+
+func _belief_note() -> String:
+	# PLACEHOLDER: wording.
+	match belief:
+		&"expected":
+			return " (should be here by now)"
+		&"missing":
+			return " (missing: nobody has found them)"
+	return " — old news" if stale else ""
 
 func get_prompt_color() -> Color:
 	return Color(1, 1, 0.6) if is_mine() else Color(0.9, 0.8, 0.8)

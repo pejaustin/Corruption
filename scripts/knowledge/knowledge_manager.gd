@@ -31,6 +31,9 @@ const AVATAR_ID: int = GroupManager.AVATAR_GROUP_ID
 const AVATAR_SIGHT_INTERVAL: float = 0.5
 ## Units within this distance of the Paladin are seen by his controller.
 const AVATAR_SIGHT_RADIUS: float = 30.0
+## PLACEHOLDER: tuning, not designed — how many other places a courier looks
+## along a group's route before it reports the group missing.
+const COURIER_SEARCH_POINTS: int = 3
 
 var _models: Dictionary[int, WorldModel] = {}
 var _next_command_id: int = 1
@@ -124,6 +127,7 @@ func _apply_report(report: Dictionary) -> void:
 		model.update_group(g, tick, source)
 	for gid in report.get("lost_groups", []):
 		model.believed_groups.erase(int(gid))
+		model.expectations.erase(int(gid))
 	for s in report.get("sightings", []):
 		if int(s.get("owner_peer_id", -1)) == multiplayer.get_unique_id():
 			continue
@@ -134,6 +138,11 @@ func _apply_report(report: Dictionary) -> void:
 		if not model.is_point_known(id):
 			model.known_points[id] = true
 			new_points.append(id)
+	for f in report.get("failures", []):
+		# The courier looked where the map put them, and along their route.
+		var fg := int(f.get("group_id", -1))
+		if fg in model.believed_groups or fg in model.expectations:
+			model.mark_missing(fg, tick)
 	for r in report.get("resources", []):
 		model.ledger[StringName(r.get("site", &""))] = {"pile": int(r.get("pile", 0)), "tick": tick}
 	for rec in report.get("records", []):
@@ -190,7 +199,7 @@ func _report_lines(report: Dictionary, new_points: Array[StringName]) -> Array[S
 			names.append(_point_name(p))
 		out.append("New places for the map: %s." % ", ".join(names))
 	for f in report.get("failures", []):
-		out.append("Could not find group %d where you thought it was." % int(f.get("group_id", 0)))
+		out.append("Could not find group %d where you thought it was, nor along its route." % int(f.get("group_id", 0)))
 	return out
 
 func _point_name(point_id: StringName) -> String:
@@ -244,6 +253,26 @@ func request_dispatch(order: Dictionary) -> int:
 	var entry := order.duplicate(true)
 	entry["cmd_id"] = cmd_id
 	var model := local_model()
+	var tick := current_tick()
+	var goal := int(order.get("goal", OrderGoal.Goal.GO_HERE))
+	# Where the map puts each group now (the expectation, else the last
+	# report): that is where the courier goes first, and where it looks next.
+	var believed: Dictionary = {}
+	var search: Dictionary = {}
+	for gid in order.get("group_ids", []):
+		var g := int(gid)
+		if g == AVATAR_ID:
+			believed[g] = (order.get("believed", {}) as Dictionary).get(g, Vector3.ZERO)
+			continue
+		believed[g] = model.group_position(g, tick)
+		search[g] = model.search_points(g, tick, COURIER_SEARCH_POINTS)
+	entry["believed"] = believed
+	entry["search"] = search
+	for gid in order.get("group_ids", []):
+		var g := int(gid)
+		if g == AVATAR_ID or goal == OrderGoal.Goal.CHECK:
+			continue
+		model.expect(g, cmd_id, believed[g], order.get("route", []), goal, StringName(order.get("dest_point", &"")), tick)
 	model.orders[cmd_id] = {
 		"group_ids": order.get("group_ids", []), "route_points": order.get("route_points", []),
 		"dest_point": order.get("dest_point", &""), "goal": order.get("goal", OrderGoal.Goal.GO_HERE),
@@ -273,6 +302,7 @@ func _dispatch(peer_id: int, order: Dictionary) -> void:
 		"route": order.get("route", []), "route_points": order.get("route_points", []),
 		"dest_point": order.get("dest_point", &""), "goal": order.get("goal", OrderGoal.Goal.GO_HERE),
 		"promise": order.get("promise", &""), "issued_tick": current_tick(),
+		"check": int(order.get("goal", 0)) == OrderGoal.Goal.CHECK,
 	}
 	var group_ids: Array = order.get("group_ids", [])
 	if INSTANT_COMMANDS:
@@ -287,11 +317,16 @@ func _dispatch(peer_id: int, order: Dictionary) -> void:
 	if gate == null:
 		_dispatch_result(peer_id, cmd_id, &"refused", -1)
 		return
-	var believed: Dictionary = order.get("believed", {})
+	var believed_at: Dictionary = order.get("believed", {})
 	var legs: Array[Dictionary] = []
 	for gid in group_ids:
+		var source: Vector3 = believed_at.get(gid, believed_at.get(int(gid), gate.global_position))
+		var look: Array = []
+		for sp in (order.get("search", {}) as Dictionary).get(int(gid), []):
+			if (sp as Vector3).distance_to(source) > 8.0:
+				look.append(sp)
 		legs.append({
-			"source_pos": believed.get(gid, believed.get(int(gid), gate.global_position)),
+			"source_pos": source, "search": look,
 			"sub_orders": [{"group_id": int(gid), "order": core, "cmd_id": cmd_id}],
 		})
 	legs = _order_legs_greedy(gate.global_position, legs)

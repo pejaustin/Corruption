@@ -100,6 +100,7 @@ func snapshot(group: UnitGroup) -> Dictionary:
 	## What a report says about a group.
 	return {
 		"id": group.id,
+		"obs_tick": NetworkTime.tick,
 		"pos": get_centroid(group),
 		"count": get_members(group).size(),
 		"status": group.status,
