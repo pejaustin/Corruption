@@ -79,6 +79,8 @@ func _ask_general(dialogue: AdvisorDialogue) -> void:
 	actions.append(_repeat_news)
 	labels.append("Train a new courier (takes one courier and one of the troops here).")
 	actions.append(func() -> void: KnowledgeManager.request_train_courier())
+	labels.append("Have a leader teach another group (both are busy a while).")
+	actions.append(func() -> void: KnowledgeManager.request_teach())
 	labels.append("Nothing.")
 	actions.append(func() -> void: pass)
 	dialogue.ask("My lord?", labels, actions)

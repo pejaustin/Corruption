@@ -12,6 +12,10 @@ var leader_id: int = -1
 ## Leader experience; maneuvers learned (MANEUVERS are Austin's, ticket #581).
 var experience: float = 0.0
 var maneuvers: Array[StringName] = []
+## Seconds left teaching or being taught (both groups are busy and can't be
+## ordered); the maneuver being passed on.
+var busy_seconds: float = 0.0
+var teaching_maneuver: StringName = &""
 
 ## Current order: { route: Array[Vector3], route_points: Array[StringName],
 ## dest_point: StringName, goal: int (OrderGoal.Goal), issued_tick: int }.

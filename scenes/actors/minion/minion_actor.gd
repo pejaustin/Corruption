@@ -324,7 +324,7 @@ func set_carrying(kind: StringName, amount: int = 0) -> void:
 		_carry_visual.position = Vector3(0, 2.0, 0)
 		_carry_visual.material_override = StandardMaterial3D.new()
 		add_child(_carry_visual)
-	var colors := {&"body": Color(0.5, 0.45, 0.4), &"captive": Color(0.9, 0.7, 0.6), &"goods": Color(0.85, 0.7, 0.2)}
+	var colors := {&"body": Color(0.5, 0.45, 0.4), &"captive": Color(0.9, 0.7, 0.6), &"goods": Color(0.85, 0.7, 0.2), &"relic": Color(1.0, 0.85, 0.2)}
 	(_carry_visual.material_override as StandardMaterial3D).albedo_color = colors.get(kind, Color.WHITE)
 	_carry_visual.visible = true
 

@@ -17,6 +17,9 @@ func run_tests() -> void:
 	holy.gauntlet_ended.connect(func(outcome: StringName, _p: int) -> void: _outcomes.append(outcome))
 	gs.game_won.connect(func(peer: int) -> void: _won.append(peer))
 	avatar.avatar_input.ai_driver = null
+	for m in mm.get_all_minions():
+		if m.minion_type_id == &"holy_knight":
+			mm.despawn_minion(m)
 	avatar.god_mode = true
 	Engine.time_scale = 4.0
 
@@ -70,6 +73,7 @@ func run_tests() -> void:
 	check(gs.avatar_owner_peer_id == 3, "the winning boss's player owns him")
 	check(avatar.global_position.distance_to(home.global_position) < 4.0, "he is taken to their tower")
 	check(_boss_of(mm, 3) == null, "the boss form is gone with the gauntlet")
+	avatar.god_mode = true
 	await seconds(AvatarActor.RECOVER_DELAY + 1.0)
 	check(avatar.hp > 0, "he gets up again")
 

@@ -41,6 +41,7 @@ func _ready() -> void:
 	gm.goal_handlers[OrderGoal.Goal.CAPTURE] = _capture
 	gm.goal_handlers[OrderGoal.Goal.HAUL] = _haul
 	gm.goal_handlers[OrderGoal.Goal.OFFER] = _offer
+	gm.goal_handlers[OrderGoal.Goal.RETRIEVE] = _retrieve
 	gm.group_order_changed.connect(_on_order_changed)
 	gm.group_returned_home.connect(_unload)
 
@@ -125,6 +126,26 @@ func _haul(g: UnitGroup) -> bool:
 			m.waypoint = site.global_position
 	return all_carry or site.get_pile() <= 0 or _timed_out(g)
 
+func _retrieve(g: UnitGroup) -> bool:
+	## Bring a relic home: the nearest unit takes it up where it lies.
+	for m in _gm().get_members(g):
+		if m.carrying == &"relic":
+			return true
+	var place := RelicPlace.near(get_tree(), _destination(g), WORK_RADIUS)
+	if place == null or not place.available:
+		g.order["report_lines"] = ["PLACEHOLDER: There was nothing there to bring back."]
+		return true
+	var carrier := _nearest(place.global_position, _gm().get_members(g)) as MinionActor
+	if carrier == null:
+		return true
+	if _flat(carrier.global_position - place.global_position) > PICKUP_DISTANCE + place.radius * 0.5:
+		carrier.waypoint = place.global_position
+		return _timed_out(g)
+	var index := place.take()
+	if index >= 0:
+		_mm().set_carry(carrier, &"relic", index)
+	return true
+
 func _offer(g: UnitGroup) -> bool:
 	var mm := _mm()
 	var dest := _destination(g)
@@ -189,6 +210,7 @@ func _unload(g: UnitGroup) -> void:
 	var bodies := 0
 	var goods := 0
 	var thralls := 0
+	var relics: Array[int] = []
 	var at_chapel := _held_chapel(peer, _gm().get_centroid(g), 25.0) != null
 	for m in _gm().get_members(g):
 		match m.carrying:
@@ -196,6 +218,8 @@ func _unload(g: UnitGroup) -> void:
 				bodies += 1
 			&"goods":
 				goods += m.carry_amount
+			&"relic":
+				relics.append(m.carry_amount)
 			&"captive":
 				if at_chapel:
 					mm.spawn_unit_for_peer(peer, &"thrall", m.global_position + Vector3(1, 0.5, 0))
@@ -216,8 +240,16 @@ func _unload(g: UnitGroup) -> void:
 		lines.append("PLACEHOLDER: %d goods carried into the treasure room." % goods)
 	if thralls > 0:
 		lines.append("PLACEHOLDER: %d captives dominated at the chapel." % thralls)
+	var records: Array = []
+	for index in relics:
+		var relic := Relic.at(index)
+		if relic == null:
+			continue
+		relic.apply(peer, g)
+		lines.append("PLACEHOLDER: The group brought home %s." % relic.display_name)
+		records.append({"kind": &"relic", "title": relic.display_name, "text": relic.description})
 	if not lines.is_empty():
-		KnowledgeManager.deliver_report(peer, {"source": &"returned", "lines": lines})
+		KnowledgeManager.deliver_report(peer, {"source": &"returned", "lines": lines, "records": records})
 
 static func on_unit_died(m: MinionActor) -> void:
 	## Host-only, from MinionActor._die.
@@ -231,6 +263,8 @@ static func on_unit_died(m: MinionActor) -> void:
 	match m.carrying:
 		&"body", &"captive":
 			mm.spawn_body(m.global_position)
+		&"relic":
+			RelicPlace.restore(m.get_tree(), m.carry_amount)
 		&"goods":
 			# Stolen: a rival who struck the carrier picks the goods up.
 			for other in mm.get_minions_for_player(m.last_hit_by):

@@ -19,6 +19,7 @@ enum Goal {
 	GATHER_DEAD,
 	OFFER,
 	SCOUT,
+	RETRIEVE,
 }
 
 ## PLACEHOLDER: wording, not written by Austin — what the advisor calls each goal.
@@ -31,6 +32,7 @@ const NAMES: Dictionary[int, String] = {
 	Goal.GATHER_DEAD: "Carry the dead home",
 	Goal.OFFER: "Take an offer to the noble",
 	Goal.SCOUT: "Send a courier to look and come back",
+	Goal.RETRIEVE: "Bring back what lies here",
 }
 
 ## Goals a unit group can be given at a destination of `kind` (MapPoint.Kind).
@@ -44,6 +46,7 @@ static func goals_for(kind: int, has_groups: bool) -> Array[int]:
 	match kind:
 		MapPoint.Kind.SITE:
 			out.append(Goal.CORRUPT)
+			out.append(Goal.RETRIEVE)  # PLACEHOLDER: relics lie at sites (#580)
 		MapPoint.Kind.RESOURCE:
 			out.append(Goal.HAUL)
 		MapPoint.Kind.SETTLEMENT, MapPoint.Kind.CITY:
@@ -61,4 +64,4 @@ static func holds_ground(goal: int) -> bool:
 
 ## Goals that end with the group walking home.
 static func returns_home(goal: int) -> bool:
-	return goal in [Goal.ASSESS, Goal.HAUL, Goal.CAPTURE, Goal.GATHER_DEAD, Goal.OFFER, Goal.SCOUT]
+	return goal in [Goal.ASSESS, Goal.HAUL, Goal.CAPTURE, Goal.GATHER_DEAD, Goal.OFFER, Goal.SCOUT, Goal.RETRIEVE]

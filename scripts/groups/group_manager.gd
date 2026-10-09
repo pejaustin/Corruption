@@ -37,6 +37,11 @@ const DISCOVER_RADIUS: float = 25.0
 const HOME_REPORT_INTERVAL: float = 2.0
 ## Reserved group id for the Paladin when he takes orders like a group.
 const AVATAR_GROUP_ID: int = -100
+## PLACEHOLDER: tuning, not designed — a kill earns experience for the nearest
+## group of the killer's within this distance.
+const KILL_CREDIT_RADIUS: float = 25.0
+
+signal maneuver_learned(group: UnitGroup, maneuver_id: StringName)
 
 ## Hooks for goals implemented by other systems (haul, capture, gather the
 ## dead, offer). Callable(group: UnitGroup) -> bool: true when done and the
@@ -168,6 +173,10 @@ func set_order(group_id: int, order: Dictionary) -> void:
 	var g := get_group(group_id)
 	if g == null:
 		return
+	if g.busy_seconds > 0.0:
+		KnowledgeManager.deliver_report(g.owner_peer_id, {"source": &"training",
+			"lines": ["PLACEHOLDER: Group %d is busy teaching and cannot take orders yet." % g.id]})
+		return
 	g.clear_order()
 	g.order = order.duplicate(true)
 	g.status = &"moving"
@@ -211,6 +220,13 @@ func _tick_group(g: UnitGroup, dt: float) -> void:
 		if m._state_machine.state == &"AttackState":
 			fighting = true
 			break
+	if fighting:
+		_gain_experience(g, Training.XP_PER_FIGHT_SECOND * dt)
+	if g.busy_seconds > 0.0:
+		g.busy_seconds -= dt
+		if g.busy_seconds <= 0.0:
+			_finish_teaching(g)
+		return
 	if not g.has_order():
 		g.status = &"fighting" if fighting else (g.status if g.status in [&"teaching", &"training"] else &"holding")
 		return
@@ -393,6 +409,7 @@ func _report_groups_at_home() -> void:
 # --- Deaths and succession ---
 
 func _on_minion_died(minion: MinionActor) -> void:
+	_credit_kill(minion)
 	var g := get_group(minion.group_id)
 	if g == null:
 		return
@@ -415,6 +432,101 @@ func _succeed_leader(g: UnitGroup) -> void:
 			kept.append(m)
 	g.maneuvers = kept
 	g.experience *= Training.SUCCESSION_KEEP_EXPERIENCE
+
+# --- Experience, maneuvers and teaching (GDD §5, Q35/Q36) ---
+
+func _credit_kill(dead: MinionActor) -> void:
+	## The killer's nearest group, if one was close, earns its leader experience.
+	var killer := dead.last_hit_by
+	if killer <= 0 or killer == dead.owner_peer_id:
+		return
+	var best: UnitGroup = null
+	var best_d := KILL_CREDIT_RADIUS
+	for g in get_groups_for(killer):
+		var c := get_centroid(g)
+		if c == Vector3.INF:
+			continue
+		var d := _flat(c - dead.global_position)
+		if d <= best_d:
+			best_d = d
+			best = g
+	if best:
+		_gain_experience(best, Training.XP_PER_KILL)
+
+func _gain_experience(g: UnitGroup, amount: float) -> void:
+	g.experience += amount
+	for m in Maneuver.all():
+		if g.experience >= m.experience_required and m.id not in g.maneuvers:
+			_learn(g, m.id)
+
+func _learn(g: UnitGroup, maneuver_id: StringName) -> void:
+	var m := Maneuver.find(maneuver_id)
+	if m == null or maneuver_id in g.maneuvers:
+		return
+	g.maneuvers.append(maneuver_id)
+	maneuver_learned.emit(g, maneuver_id)
+	KnowledgeManager.deliver_report(g.owner_peer_id, {"source": &"training",
+		"lines": ["PLACEHOLDER: The leader of group %d learned %s." % [g.id, m.display_name]],
+		"records": [{"kind": &"maneuver", "title": m.display_name,
+			"text": "PLACEHOLDER: Learned by the leader of group %d. %s" % [g.id, m.description]}]})
+
+func groups_at_home(peer_id: int) -> Array[UnitGroup]:
+	## Groups standing idle at their tower gate.
+	var out: Array[UnitGroup] = []
+	var mm := _mm()
+	var gate := mm.get_courier_spawn_for(peer_id) if mm else null
+	if gate == null:
+		return out
+	for g in get_groups_for(peer_id):
+		var c := get_centroid(g)
+		if g.has_order() or g.busy_seconds > 0.0 or g.status == &"training" or c == Vector3.INF:
+			continue
+		if _flat(c - gate.global_position) <= MinionManager.MUSTER_RADIUS:
+			out.append(g)
+	return out
+
+func begin_teaching(peer_id: int) -> bool:
+	## Host-only (advisor option). The best-taught leader at home teaches one
+	## maneuver to the group at home that knows the fewest of his; both groups
+	## are busy for Training.TEACHING_SECONDS. PLACEHOLDER: the advisor picks
+	## the pair; choosing them by hand is not built.
+	var home := groups_at_home(peer_id)
+	home.sort_custom(func(a: UnitGroup, b: UnitGroup) -> bool:
+		if a.maneuvers.size() != b.maneuvers.size():
+			return a.maneuvers.size() > b.maneuvers.size()
+		return a.experience > b.experience)
+	for teacher in home:
+		if teacher.maneuvers.is_empty():
+			break
+		var student: UnitGroup = null
+		var lesson: StringName = &""
+		for other in home:
+			if other == teacher:
+				continue
+			for mid in teacher.maneuvers:
+				if mid not in other.maneuvers:
+					if student == null or other.maneuvers.size() < student.maneuvers.size():
+						student = other
+						lesson = mid
+					break
+		if student:
+			teacher.busy_seconds = Training.TEACHING_SECONDS
+			student.busy_seconds = Training.TEACHING_SECONDS
+			teacher.status = &"teaching"
+			student.status = &"teaching"
+			student.teaching_maneuver = lesson
+			KnowledgeManager.deliver_report(peer_id, {"source": &"training",
+				"lines": ["PLACEHOLDER: The leader of group %d begins teaching group %d." % [teacher.id, student.id]]})
+			return true
+	KnowledgeManager.deliver_report(peer_id, {"source": &"training",
+		"lines": ["PLACEHOLDER: There is no leader here with something to teach another group."]})
+	return false
+
+func _finish_teaching(g: UnitGroup) -> void:
+	g.status = &"holding"
+	if g.teaching_maneuver != &"":
+		_learn(g, g.teaching_maneuver)
+		g.teaching_maneuver = &""
 
 # --- Helpers ---
 

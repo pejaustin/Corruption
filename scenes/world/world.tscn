@@ -24,6 +24,9 @@
 [ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="24_settlement"]
 [ext_resource type="Script" path="res://scenes/world/places/resource_site.gd" id="25_resource"]
 [ext_resource type="Script" path="res://scenes/world/places/holy_site.gd" id="26_holy"]
+[ext_resource type="Script" path="res://scenes/world/places/relic_place.gd" id="27_relicplace"]
+[ext_resource type="Resource" path="res://data/relics/placeholder_a.tres" id="28_relic_a"]
+[ext_resource type="Resource" path="res://data/relics/placeholder_b.tres" id="29_relic_b"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="23_daynight"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
@@ -308,6 +311,18 @@ soldiers = 0
 
 [node name="HolySite" type="Node3D" parent="World/Places" unique_id=1301301506]
 script = ExtResource("26_holy")
+
+; PLACEHOLDER: where relics lie, and which (tickets #580, #584)
+
+[node name="RelicAvatarSite" type="Node3D" parent="World/Places"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21, 0, 33.5)
+script = ExtResource("27_relicplace")
+relic = ExtResource("28_relic_a")
+
+[node name="RelicBossSite" type="Node3D" parent="World/Places"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.6, 0, -37.7)
+script = ExtResource("27_relicplace")
+relic = ExtResource("29_relic_b")
 
 [node name="MineSE" type="Node3D" parent="World/Places" unique_id=1301301504]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0, 75)

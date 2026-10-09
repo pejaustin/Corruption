@@ -136,6 +136,8 @@ func _apply_report(report: Dictionary) -> void:
 			new_points.append(id)
 	for r in report.get("resources", []):
 		model.ledger[StringName(r.get("site", &""))] = {"pile": int(r.get("pile", 0)), "tick": tick}
+	for rec in report.get("records", []):
+		model.add_record(StringName(rec.get("kind", &"report")), String(rec.get("title", "")), String(rec.get("text", "")), tick)
 	for o in report.get("orders", []):
 		var cmd := int(o.get("cmd_id", -1))
 		if cmd in model.orders:
@@ -445,6 +447,24 @@ func request_train_courier() -> void:
 func _request_train_rpc() -> void:
 	if multiplayer.is_server():
 		_train_courier(multiplayer.get_remote_sender_id())
+
+func request_teach() -> void:
+	## Owner-local (advisor option): a leader at home teaches another group;
+	## both are busy until it's done.
+	if multiplayer.is_server():
+		_teach(multiplayer.get_unique_id())
+	else:
+		_request_teach_rpc.rpc_id(1)
+
+@rpc("any_peer", "reliable")
+func _request_teach_rpc() -> void:
+	if multiplayer.is_server():
+		_teach(multiplayer.get_remote_sender_id())
+
+func _teach(peer_id: int) -> void:
+	var gm := _gm()
+	if gm:
+		gm.begin_teaching(peer_id)
 
 func can_train_courier(peer_id: int) -> bool:
 	return get_couriers_home(peer_id) > 0 and _unit_at_home(peer_id) != null
