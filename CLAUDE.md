@@ -437,10 +437,13 @@ filtered textures. Austin edits the .blends by hand from here; `tools/blender/bu
 overwrites hand edits, so don't re-run it casually. The four towers are left unplaced (`tower_slot_1..4`). Names and
 layout are unconfirmed (#606). See `art/world/README.md`.
 
-**Update 2026-10-09:** `source/world_landscape.blend` is now AUSTIN'S hand-made map (`corruption-map.blend`: one 2000 x 2000 m
-ground mesh, `Plane`), with placeholder textures added by `tools/blender/texture_austin_map.py` (geometry untouched; his
-original is `source/reference/corruption-map-original.blend`; the generated blockout is `world_landscape_generated_placeholder.blend`).
-It has no `poi_` markers, tower slots, roads, rivers or scale figure.
+**Update 2026-10-09 (second version):** `source/world_landscape.blend` is AUSTIN'S hand-made map (original:
+`source/reference/corruption-map-original.blend`; generated blockout: `world_landscape_generated_placeholder.blend`). +Y is
+north. Ground = `geo` (2000 x 2000 m); forests = `elder wood`, `northwood`; water = `Pale River`, `The Still Lake`; **every
+empty is a POI marker** (his spellings, e.g. `Avegual'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
+to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend`. Placeholder textures come from
+`tools/blender/texture_austin_map.py` (geometry untouched, checksummed). POI files with no marker yet: `northwood`, `old_gate`,
+`elder_woods`, `holy_site`, `graveyard`. No tower slots, roads or scale figure in his file.
 
 ### Resource-driven data (Tier 4 refactor)
 

@@ -1,21 +1,33 @@
 # World blockout (PLACEHOLDER)
 
 A placeholder world so the real one can be sculpted by hand. Nothing here is Austin's design: the layout is read by
-eye off his sketch (`source/reference/world-sketch-original.jpg`), the shapes are stand-ins, and the place-name
-spellings are unconfirmed (ticket #606). The pipeline is in the doc "Corruption open world: Blender to Godot plan".
+eye off his sketch (`source/reference/world-sketch-original.jpg`), the shapes are stand-ins, and the old place-name
+spellings were unconfirmed (ticket #606; Austin's spellings on his markers are now authoritative). The pipeline is in the doc "Corruption open world: Blender to Godot plan".
 
-## Austin's map (2026-10-09)
+## Austin's map (2026-10-09, second version)
 
-`source/world_landscape.blend` is now **Austin's own hand-made map** (`corruption-map.blend`), not the generated blockout.
-It is one ground mesh, `Plane` (52 x 52 vertices, scaled to 2000 x 2000 m, heights -21 m to +51 m, 1 unit = 1 m), saved in
-Edit Mode. Nothing else: no `poi_<name>` markers, `tower_slot_1..4`, roads, rivers, forests or scale figure (they were not
-added to his file). I only added placeholder texturing (`tools/blender/texture_austin_map.py`): material
-`ground_placeholder` (grass; sand below z = -1.5 m; water texture below z = -6 m, the low basins; snow above 36 m; rock where
-the world-space slope exceeds 0.30), all Closest-filtered `textures/*.png` loaded by relative path, tinted by a new `Col` vertex
-colour; a new `WorldUV` UV layer (world-space planar, one 32 px tile = 8 m) drives it. His `UVMap`, vertex positions, name and
-transform are unchanged (vertex checksum identical before/after). His untouched file is `source/reference/corruption-map-original.blend`;
-the earlier generated blockout is `source/world_landscape_generated_placeholder.blend` (the POI files still match that one).
+`source/world_landscape.blend` is **Austin's own hand-made map** (`corruption-map.blend`), not the generated blockout.
+**+Y is north** (he rotated it); 1 unit = 1 m. His objects, spelled as he typed them:
+
+- **Ground:** `geo`, the terrain mesh (52 x 52 grid, 2000 x 2000 m, z scale 3).
+- **Forest areas:** `elder wood`, `northwood` (any mesh with `wood` in its name is a forest).
+- **Water:** `Pale River` (river), `The Still Lake` (lake) (any mesh with `river` or `lake` in its name is water).
+- **POI markers: every empty in the landscape file is a POI marker.** Its snake_case name (lowercase, spaces to `_`,
+  apostrophes dropped: `Avegual'la` -> `avegualla`, `Naf Ishun` -> `naf_ishun`, `Hell's Mouth` -> `hells_mouth`) is its POI
+  file `pois/<snake>.blend`. Markers: `Ale Bend`, `Avegual'la`, `Entbridge`, `far harbor`, `Forest Ruins`, `Hell's Mouth`,
+  `Hopes Gate`, `Lastford`, `Mountain Pass`, `Naf Ishun`, `Teshfield`, `Valley Cross`, `Veilton`.
+
+I only added placeholder texturing (`tools/blender/texture_austin_map.py`): `geo` gets `ground_placeholder` (grass; sand below
+26.8% of the height range; water texture below 20.6%; snow above 79%; rock where the world-space slope exceeds 0.30, all as
+fractions of the range so they follow his vertical scale); the water meshes get `water_placeholder` (water texture); the forest
+meshes get `forest_placeholder` (`leaf_pine` darkened, PLACEHOLDER: no forest texture exists). All textures are 32 px
+`textures/*.png`, Closest-filtered, loaded by relative path, on a new world-space `WorldUV` layer (one tile = 8 m) with a new
+`Col` vertex colour. His `UVMap`s, vertices, names, transforms and object list are unchanged (vertex + matrix checksums of every
+mesh are identical before/after; the script prints `GEOMETRY_UNCHANGED True`). His untouched file is
+`source/reference/corruption-map-original.blend`; the earlier generated blockout is
+`source/world_landscape_generated_placeholder.blend` (the generators `build_*.py` / `world_data.py` still use its old names).
 The texturing is a Blender shader mix; for Godot it will need baking or a matching shader (#605).
+Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds temporary markers and labels, not saved).
 
 ## Files
 
@@ -23,8 +35,9 @@ The texturing is a Blender shader mix; for Godot it will need baking or a matchi
 |---|---|
 | `source/world_landscape.blend` | The whole landscape in ONE file, 1 unit = 1 m. Faceted ground, flat sea, rivers/lakes (flat water strips in carved channels), roads, forests (linked tree instances), `poi_<name>` markers, `tower_slot_1..4`, the sketch under the ground, a 1.8 m figure. `source/.gdignore` keeps Godot from importing it; tiles come from the export script (#605). |
 | `props.blend` | Shared prop library: `tree_cone`, `tree_lollipop`, `rock`, `ruin_wall`, `fence`, `grave_marker` (collections, marked as assets). Landscape and POI files **link** these (File > Link / Asset Browser), never copy. |
-| `pois/<name>.blend` | One per sketch place: `avequalla`, `nofishun`, `northwood`, `old_gate`, `teshfield`, `veilton`, `valley_cross`, `hopes_gates`, `alebend`, `entwar`, `elder_woods`, `lastford`, `hells_mouth`, `unnamed_harbour`. |
-| `pois/_template.blend`, `holy_site.blend`, `graveyard.blend` | Starters: duplicate `_template` for a new kind; the other two are generic holy-site and graveyard starters. |
+| `pois/<snake_name>.blend` | One per POI marker in Austin's map: `ale_bend`, `avegualla`, `entbridge`, `far_harbor`, `forest_ruins`, `hells_mouth`, `hopes_gate`, `lastford`, `mountain_pass`, `naf_ishun`, `teshfield`, `valley_cross`, `veilton`. `forest_ruins` and `mountain_pass` are fresh copies of `_template`; the rest were renamed from the earlier placeholder spellings (`avequalla`, `nofishun`, `hopes_gates`, `entwar`, `unnamed_harbour`, `alebend`). |
+| `pois/northwood`, `old_gate`, `elder_woods` | **No marker yet** in Austin's map (kept from the sketch; `northwood` and `elder wood` exist as forest meshes only). |
+| `pois/_template.blend`, `holy_site.blend`, `graveyard.blend` | Starters (also no marker): duplicate `_template` for a new kind; the other two are generic holy-site and graveyard starters. |
 | `textures/*.png` | 32 px tiling pixel textures (grass, rock, sand, dirt, snow, ash, water, stone, roof, plaster, wood, bark, leaves, lava, canvas). Nearest filtering; vertex colour (`Col`) tints and shades them. |
 
 ## The world
