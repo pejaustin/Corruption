@@ -83,6 +83,17 @@ custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 text = "ADD CPU"
 
+; The host picks the match pace; clients see it (the script shows one of the two).
+[node name="PaceSelector" type="OptionButton" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="PaceLabel" type="Label" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
 [node name="StartButton" type="Button" parent="VBoxContainer/ButtonRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 0)

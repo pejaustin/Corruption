@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scenes/actors/player/avatar/paladin_hold.gd" id="16_hold"]
 [ext_resource type="Script" path="res://scenes/actors/player/avatar/paladin_voice.gd" id="17_voice"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/watcher_orb.tscn" id="18_orb"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/paladin_voice_player.tscn" id="19_vp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
 radius = 0.2
@@ -123,6 +124,7 @@ script = ExtResource("16_hold")
 [node name="PaladinVoice" type="Node" parent="." index="14"]
 unique_name_in_owner = true
 script = ExtResource("17_voice")
+voice_player_scene = ExtResource("19_vp")
 
 [node name="Mic" type="AudioStreamPlayer" parent="PaladinVoice" index="0"]
 stream = SubResource("AudioStreamMicrophone_voice")

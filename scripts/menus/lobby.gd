@@ -25,14 +25,14 @@ var player_ready: Dictionary[int, bool] = {}
 @onready var _player_count_label: Label = %PlayerCount
 @onready var _status_label: Label = %StatusLabel
 @onready var _start_button: Button = %StartButton
+@onready var _pace_selector: OptionButton = %PaceSelector
+@onready var _pace_label: Label = %PaceLabel
 @onready var _add_cpu_button: Button = %AddCpuButton
 @onready var _back_button: Button = %BackButton
 @onready var _host_ip_label: Label = %HostIPLabel
 
 var _panels: Dictionary[int, PlayerPanel] = {}
 var match_pace: int = MatchConfig.Pace.NORMAL
-var _pace_selector: OptionButton
-var _pace_label: Label
 
 func _ready() -> void:
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -45,7 +45,7 @@ func _ready() -> void:
 	_start_button.visible = multiplayer.is_server()
 	_add_cpu_button.visible = multiplayer.is_server()
 	_host_ip_label.visible = multiplayer.is_server()
-	_build_pace_controls()
+	_setup_pace_controls()
 
 	if multiplayer.is_server():
 		_connect_upnp_label()
@@ -371,22 +371,16 @@ func _begin_game() -> void:
 
 # --- match pace ---
 
-func _build_pace_controls() -> void:
-	## Built in code next to the Start button: host gets a picker, clients a label.
-	var row := _start_button.get_parent()
+func _setup_pace_controls() -> void:
+	## Both controls are authored beside the Start button: the host gets the
+	## picker, clients a label.
 	if multiplayer.is_server():
-		_pace_selector = OptionButton.new()
-		_pace_selector.name = "PaceSelector"
 		for pace in MatchConfig.PACE_NAMES:
 			_pace_selector.add_item("Pace: %s" % MatchConfig.PACE_NAMES[pace], pace)
 		_pace_selector.item_selected.connect(_on_pace_selected)
-		row.add_child(_pace_selector)
-		row.move_child(_pace_selector, _start_button.get_index())
+		_pace_selector.visible = true
 	else:
-		_pace_label = Label.new()
-		_pace_label.name = "PaceLabel"
-		row.add_child(_pace_label)
-		row.move_child(_pace_label, _start_button.get_index())
+		_pace_label.visible = true
 	_show_pace()
 
 func _on_pace_selected(index: int) -> void:
@@ -400,9 +394,9 @@ func _set_pace(pace: int) -> void:
 	_show_pace()
 
 func _show_pace() -> void:
-	if _pace_selector:
+	if _pace_selector.visible:
 		_pace_selector.select(_pace_selector.get_item_index(match_pace))
-	if _pace_label:
+	if _pace_label.visible:
 		_pace_label.text = "Pace: %s" % MatchConfig.PACE_NAMES.get(match_pace, "?")
 
 # --- back ---

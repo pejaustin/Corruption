@@ -214,6 +214,30 @@ GDScript looks like Python but isn't. These are the substitutions LLMs most ofte
 - `@warning_ignore` is **banned** unless the line above states, in a comment, exactly why the warning is a false positive.
 - Use `assert()` for preconditions in development builds.
 
+### 5.7 Editor-first — nodes live in scenes, not in code
+
+Austin's rule (2026-10-09): "Nodes should never need to be created from code unless they are explicitly a dynamic
+asset, i.e. new troops being made from corpses."
+
+**Editor-first: never construct nodes in code unless they are genuinely dynamic; dynamic things instantiate authored scenes.**
+
+- Everything static (looks, meshes, lights, collision shapes, UI panels/labels/buttons, camera rigs, child helper
+  nodes, audio players) is a node in a `.tscn` (or a `.tres`), so it can be seen and edited in the Godot editor. Code
+  finds it with `%UniqueName` or an `@export` reference and only drives its properties (text, colour, visibility).
+- Dynamic things (units, bodies, a piece per reported group, a marker per known point, a crate per good, a button per
+  choice) are created with `PackedScene.instantiate()`. The scene is authored, internals and all; hand the scene to the
+  script with an `@export var thing_scene: PackedScene` set in the owning `.tscn`. Never `Node.new()` plus
+  `add_child()` plus property setup.
+- A material or mesh that code mutates per instance (tint by owner, size by radius) is a `sub_resource` with
+  `resource_local_to_scene = true`, so each instance gets its own copy.
+- Node-typed `@export`s in a hand-written `.tscn` need `node_paths=PackedStringArray("name")` on the node line, or
+  they load as `null`.
+- Data-only objects may be built in code (RefCounted/Resource data, `Image`/`ImageTexture` from terrain,
+  `ImmediateMesh`/`ArrayMesh` line geometry refilled from data, `AudioStreamGenerator`, `AudioServer` buses, typed
+  Dictionaries). Say why in a one-line comment.
+- Tools (shot rig, playtests, tests, `scripts/build/`) may build nodes. The audit of every construction site and its
+  verdict is `docs/technical/editor-first-audit.md`.
+
 ---
 
 ## 6. Scenes (`.tscn` files) — handle with care

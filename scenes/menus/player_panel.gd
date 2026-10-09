@@ -72,13 +72,9 @@ func update_view(
 	_remove_button.visible = is_cpu and is_host
 
 	var color: Color = seat_color
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(color.r, color.g, color.b, 0.25)
-	style.corner_radius_top_left = 4
-	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_left = 4
-	style.corner_radius_bottom_right = 4
-	add_theme_stylebox_override("panel", style)
+	# The panel's StyleBoxFlat (local to the scene) is authored in player_panel.tscn;
+	# only the seat tint changes.
+	(get_theme_stylebox("panel") as StyleBoxFlat).bg_color = Color(color.r, color.g, color.b, 0.25)
 
 	_suppress_signals = false
 

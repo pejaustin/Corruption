@@ -18,6 +18,9 @@ const VOICE_RATE: int = 11025
 const CHUNK_SECONDS: float = 0.1
 const PLAYBACK_BUFFER_SECONDS: float = 0.5
 
+## Instanced per remote speaker.
+@export var voice_player_scene: PackedScene
+
 var _capture: AudioEffectCapture
 var _speaking: bool = false
 var _out: PackedFloat32Array = PackedFloat32Array()
@@ -107,9 +110,8 @@ func _receive_voice(pcm: PackedByteArray, sample_rate: int) -> void:
 func _start_player(sender: int, sample_rate: int) -> void:
 	var player: AudioStreamPlayer = _players.get(sender, null)
 	if player == null:
-		player = AudioStreamPlayer.new()
+		player = voice_player_scene.instantiate() as AudioStreamPlayer
 		player.name = "Voice%d" % sender
-		player.bus = "Master"
 		add_child(player)
 		_players[sender] = player
 	var generator := AudioStreamGenerator.new()
