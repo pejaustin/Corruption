@@ -101,67 +101,80 @@ layout_mode = 2
 text = "Debug"
 horizontal_alignment = 1
 
-[node name="BtnSpawnDummy" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnSpawnDummy" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Add Dummy Player"
 
-[node name="BtnGodMode" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnGodMode" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle God Mode"
 
-[node name="BtnKillAvatar" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnKillAvatar" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Kill Avatar"
 
-[node name="BtnSpawnEnemy" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnSpawnEnemy" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Spawn Enemy at Camera"
 
-[node name="BtnSpawnMinion" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnSpawnMinion" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Spawn Minion at Camera"
 
-[node name="BtnAddCorruption" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnTakeSite" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
-text = "+10 Corruption"
+text = "Take Nearest Site"
 
-[node name="BtnCycleFaction" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnAddRemains" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
-text = "Cycle Faction"
+text = "+1 Remains at Tower"
 
-[node name="BtnAggroRings" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnAggroRings" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Aggro Rings"
 
-[node name="BtnCombatBoxes" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnCombatBoxes" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Combat Boxes"
 
-[node name="BtnCourierVisualRange" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnCourierVisualRange" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Courier Visual Range"
 
-[node name="BtnInstantCommands" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnInstantCommands" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Instant Commands"
 
-[node name="BtnBroadcastRange" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnBroadcastRange" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Toggle Infinite Broadcast"
 
-[node name="BtnOrderAvatar" type="Button" parent="DebugPanel/Margin/VBox" unique_name_in_owner=true]
+[node name="BtnOrderAvatar" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Order Avatar to Camera"
@@ -175,8 +188,8 @@ text = "Order Avatar to Camera"
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnKillAvatar" to="." method="_on_kill_avatar_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnEnemy" to="." method="_on_spawn_enemy_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnSpawnMinion" to="." method="_on_spawn_minion_pressed"]
-[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAddCorruption" to="." method="_on_add_corruption_pressed"]
-[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCycleFaction" to="." method="_on_cycle_faction_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnTakeSite" to="." method="_on_take_site_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAddRemains" to="." method="_on_add_remains_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnAggroRings" to="." method="_on_aggro_rings_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCombatBoxes" to="." method="_on_combat_boxes_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnCourierVisualRange" to="." method="_on_courier_visual_range_pressed"]

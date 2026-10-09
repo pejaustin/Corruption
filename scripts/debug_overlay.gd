@@ -35,14 +35,6 @@ func _process(delta: float) -> void:
 	lines.append("  Connected peers: %s" % str(multiplayer.get_peers()))
 	lines.append("")
 
-	# Faction enum values
-	lines.append("[b]Factions[/b]")
-	for faction in GameConstants.Faction.values():
-		var name = GameConstants.faction_names[faction]
-		var color = GameConstants.faction_colors[faction]
-		lines.append("  %d = [color=#%s]%s[/color]" % [faction, color.to_html(false), name])
-	lines.append("")
-
 	# Game state
 	lines.append("[b]Game State[/b]")
 	var owner_txt = str(GameState.avatar_owner_peer_id) if GameState.has_avatar_owner() else "[color=#888888]neutral[/color]"
@@ -64,14 +56,14 @@ func _process(delta: float) -> void:
 	else:
 		lines.append("  Avatar Entity: [color=#ff4444]NOT FOUND[/color]")
 
-	# Neutral minion count (formerly "enemies")
+	# Good-faction units (humans, soldiers)
 	var mm_dbg = get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
 	var enemy_count := 0
 	if mm_dbg:
 		for m in mm_dbg.get_all_minions():
 			if m.owner_peer_id == -1:
 				enemy_count += 1
-	lines.append("  Enemies alive: %d" % enemy_count)
+	lines.append("  Good-faction units: %d" % enemy_count)
 	lines.append("")
 
 	# Players in game
@@ -88,78 +80,39 @@ func _process(delta: float) -> void:
 		lines.append("  (no spawn point found)")
 	lines.append("")
 
-	# Corruption scores (regen from held gem sites only; max = Σ held-site contributions)
-	lines.append("[b]Corruption[/b]")
-	if GameState.corruption.size() > 0:
-		for pid in GameState.corruption:
-			var score = GameState.corruption[pid]
-			var marker = " (YOU)" if pid == peer_id else ""
-			lines.append("  Peer %d: %.1f / %.1f max%s" % [pid, score, GameState.get_max_corruption(pid), marker])
-		lines.append("  Total: %.1f" % GameState.get_total_corruption())
-	else:
-		lines.append("  (none yet — capture a gem site, or +10 Corruption in pause menu)")
-	lines.append("")
-
-	# Minions
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	if mm:
-		lines.append("[b]Minions[/b]")
-		var all_minions = mm.get_all_minions()
-		lines.append("  Total: %d" % all_minions.size())
-		var my_minions = mm.get_minion_count(peer_id)
-		var my_res = mm.get_resources(peer_id)
-		lines.append("  Mine: %d/%d | Resources: %.0f" % [my_minions, MinionManager.MAX_MINIONS_PER_PLAYER, my_res])
-		lines.append("")
-
-	# Gem sites (the only corruption source)
-	var sites = get_tree().get_nodes_in_group(&"gem_sites")
+	# Corruption sites (each grants a capability; there is no score)
+	var sites := GameState.get_all_sites()
 	if sites.size() > 0:
-		var held := 0
-		for site in sites:
-			if site is GemSite and site.state == GemSite.SiteState.CAPTURED:
-				held += 1
-		lines.append("[b]Gem Sites[/b]")
-		lines.append("  Held: %d / %d" % [held, sites.size()])
+		lines.append("[b]Corruption Sites[/b]")
+		for node in sites:
+			var site := node as CorruptionSite
+			if site == null:
+				continue
+			var holder := "neutral" if site.holder_peer_id == -1 else GameState.get_player_name(site.holder_peer_id)
+			var extra := ""
+			if site.unusable:
+				extra = " [UNUSABLE]"
+			elif site.permanent and site.sacked:
+				extra = " [SACKED]"
+			elif not site.is_held() and site.progress > 0.0:
+				extra = " (%d%% → %s)" % [int(site.progress * 100), GameState.get_player_name(site.progress_peer_id)]
+			lines.append("  %s: %s%s" % [site.get_display_name(), holder, extra])
 		lines.append("")
 
-	# Guardian Boss
-	var boss = get_tree().current_scene.get_node_or_null("World/GuardianBoss")
-	if boss and boss is GuardianBoss:
-		var debuff = int(boss._get_corruption_debuff() * 100)
-		var boss_hp_color = "00ff00" if boss.hp > boss.max_hp_effective * 0.5 else ("ffaa00" if boss.hp > boss.max_hp_effective * 0.25 else "ff4444")
-		lines.append("[b]Guardian Boss[/b]")
-		lines.append("  HP: [color=#%s]%d / %d[/color] (Debuff: %d%%)" % [boss_hp_color, boss.hp, boss.max_hp_effective, debuff])
-		lines.append("  Damage: %d" % boss.get_attack_damage())
-		lines.append("")
-
-	# Boss Manager
-	var bm = get_tree().current_scene.get_node_or_null("BossManager")
-	if bm:
-		lines.append("[b]Boss Phase[/b]")
-		lines.append("  Phase: %s" % bm.get_phase_name())
-		lines.append("")
-
-	# Divine Intervention
-	var di = get_tree().current_scene.get_node_or_null("DivineIntervention")
-	if di:
-		lines.append("[b]Divine Intervention[/b]")
-		if di._triggered:
-			lines.append("  [color=#ff4444]TRIGGERED — GAME OVER[/color]")
-		elif di.is_warning():
-			lines.append("  [color=#ffaa00]WARNING: %.0fs remaining![/color]" % di.get_time_remaining())
-		elif di._active:
-			lines.append("  Active (timer: %.0f / %.0f)" % [di._timer, DivineIntervention.GRACE_PERIOD])
-		else:
-			lines.append("  Inactive (waiting for first gem capture)")
-		lines.append("")
-
-	# Faction
+	# Units
+	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
 	if mm:
-		var my_faction = mm._get_player_faction(peer_id)
-		var fname = GameConstants.faction_names.get(my_faction, "Unknown")
-		var fcolor = GameConstants.faction_colors.get(my_faction, Color.WHITE)
-		lines.append("[b]My Faction[/b]")
-		lines.append("  [color=#%s]%s[/color] (F9 to swap)" % [fcolor.to_html(false), fname])
+		lines.append("[b]Units[/b]")
+		lines.append("  Total: %d | Mine: %d | Remains at my tower: %d" % [
+			mm.get_all_minions().size(), mm.get_minion_count(peer_id), mm.get_remains(peer_id)])
+		lines.append("")
+
+	# Good faction growth (the draw clock)
+	var gf := get_tree().current_scene.get_node_or_null("GoodFaction") as GoodFaction
+	if gf:
+		lines.append("[b]Good Faction[/b]")
+		lines.append("  Growth step %d / %d | next in %.0fs | thresholds x%.2f" % [
+			GoodFaction.step, GoodFaction.DRAW_AT_STEP, gf.get_time_to_next_step(), GoodFaction.threshold_scale()])
 		lines.append("")
 
 	# Debug info

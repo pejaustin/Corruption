@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SiteType" format=3]
+
+[ext_resource type="Script" path="res://scripts/sites/site_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"avatar_site"
+display_name = "PLACEHOLDER: Avatar-control site (unnamed)"
+capability = &"avatar_control"
+size = 0
+strength_threshold = 3.0
+corrupt_seconds = 60.0
+slip_seconds = 180.0
+purify_seconds = 45.0

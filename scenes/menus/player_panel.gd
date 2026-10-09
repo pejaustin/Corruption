@@ -27,6 +27,7 @@ func _ready() -> void:
 	_remove_button.pressed.connect(_on_remove_pressed)
 
 func update_view(
+	seat_color: Color,
 	peer_id: int,
 	display_name: String,
 	faction: int,
@@ -57,7 +58,7 @@ func update_view(
 		_faction_selector.add_item(GameConstants.faction_names[faction], faction)
 		current_index = idx
 	_faction_selector.selected = current_index
-	_faction_selector.disabled = not editable
+	_faction_selector.disabled = not editable or available_factions.size() <= 1
 
 	if is_cpu:
 		_ready_button.text = "CPU"
@@ -70,7 +71,7 @@ func update_view(
 
 	_remove_button.visible = is_cpu and is_host
 
-	var color: Color = GameConstants.faction_colors[faction]
+	var color: Color = seat_color
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(color.r, color.g, color.b, 0.25)
 	style.corner_radius_top_left = 4

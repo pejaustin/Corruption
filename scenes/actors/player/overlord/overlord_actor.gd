@@ -15,6 +15,14 @@ var _overlord_active: bool = true
 func get_model() -> Node3D:
 	return _model
 
+## The dark lord himself fights for his own seat. He isn't a combatant: units
+## that reach a tower sack it (CorruptionSite, GDD §7) rather than kill him.
+func get_allegiance() -> int:
+	return str(name).to_int()
+
+func can_take_damage() -> bool:
+	return false
+
 func _enter_tree() -> void:
 	_player_input.set_multiplayer_authority(str(name).to_int())
 	_camera_input.set_multiplayer_authority(str(name).to_int())

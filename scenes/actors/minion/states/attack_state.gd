@@ -99,10 +99,4 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 			# Minions don't have a RollbackSynchronizer draining incoming_damage,
 			# so apply the hit directly on the host. HP is broadcast to clients
 			# via MinionManager._sync_minion_actor.
-			var killed := other.hp - dmg <= 0
 			other.take_damage(dmg)
-			# Raise-dead: if this hit killed the victim, flag for skeleton raise
-			if minion.minion_trait == &"raise_dead" and killed:
-				var mm := actor.get_tree().current_scene.get_node_or_null("MinionManager")
-				if mm and mm.has_method("raise_dead_at"):
-					mm.raise_dead_at(minion.owner_peer_id, minion.faction, other.global_position)

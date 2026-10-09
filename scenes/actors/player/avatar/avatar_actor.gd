@@ -41,6 +41,10 @@ func _ready() -> void:
 	abilities.name = "AvatarAbilities"
 	add_child(abilities)
 
+## The Paladin fights for whoever holds him; unheld, for the good faction.
+func get_allegiance() -> int:
+	return GameState.avatar_owner_peer_id if GameState.has_avatar_owner() else GameConstants.GOOD_SIDE
+
 # --- Combat overrides ---
 
 func can_take_damage() -> bool:

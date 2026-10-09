@@ -13,26 +13,31 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Target platforms:** Desktop
 - **Entry scene:** `scenes/world/world.tscn` (loaded as `NetworkManager.GAME_SCENE`; project main scene is `scenes/menus/main_menu.tscn`)
 - **Key autoloads:** `NetworkManager`, `DebugManager`, plus netfox autoloads (`NetworkTime`, `NetworkRollback`, etc.)
-- **Game constants:** `scripts/game_constants.gd` — Factions enum, MAX_PLAYERS, faction names/colors
+- **Game constants:** `scripts/game_constants.gd` — Factions enum, MAX_PLAYERS, GOOD_SIDE, seat colours; match pace in `scripts/match_config.gd`
 - **Full overview:** `docs/one-pager.md`
 
 ---
 
 ## 2. How to run, lint, and validate
 
-TBD
+- **Run:** open `project.godot` in Godot 4.6 and press F5 (main menu → host → lobby → start).
+- **Headless tests** (`tools/tests/`): each test is a small scene that loads the real world as an offline host and
+  exits with the number of failed checks, e.g. `godot --headless --path . res://tools/tests/test_sites.tscn`.
+  A fresh clone needs the editor opened once first (netfox autoload UIDs and the import cache).
+- **World navmesh:** `world.tscn` ships without baked polygons (lost in the terrain swap); `WorldNavBaker` bakes it on
+  the host at load. Baking it in the editor (Terrain3D → Bake NavMesh) and saving makes that a no-op.
 
 
 ### Debug Access
-- **F3** — Toggle debug overlay (network, players, factions, FPS, corruption, gem sites, minions, boss)
+- **F3** — Toggle debug overlay (network, players, FPS, corruption sites, units, good-faction growth)
 - **Esc** — Open in-game pause menu. All debug actions live in the Debug panel on the right:
   - Add Dummy Player (host)
   - Toggle God Mode
   - Kill Avatar (host)
   - Spawn Enemy at Camera (host) — spawns at wherever the crosshair pointed when you paused
   - Spawn Minion at Camera (host) — same
-  - +10 Corruption (host)
-  - Cycle Faction (host)
+  - Take Nearest Site (host) — hands the corruption site nearest the camera to you
+  - +1 Remains at Tower (host) — a body to raise at your summoning circle
   - Order Avatar to Camera (host) — move order for the released (AI-driven) avatar, same routing as war-table orders
   - Toggle Aggro Rings (shows each minion's aggro radius, faction-colored)
 
@@ -380,9 +385,12 @@ When making changes:
 - `docs/technical/netfox-reference.md` — Project-specific netfox + RPC cheat sheet. Read before any networking change (see § 4).
 - `docs/Corruption_GDD_v0.1.md` — Original GDD (reference, superseded by modular docs)
 
-### Current State (Tiers 0-3 complete; MVP push)
+### Current state
 
-Tiers 0-3 are playable. Tier 4 scripts are implemented (boss sequence, upgrade altars, abilities); BossManager + DivineIntervention were placed in `world.tscn` 2026-06-10. Current focus is the Path-to-MVP roadmap (`docs/technical/mvp-roadmap.md`). Eldritch ritual stations were CUT 2026-06-10 (code + data deleted); AstralProjection is deferred — MVP uses a HUD boss notification + Palantir scrying instead.
+The game is being rebuilt to the GDD v2 (`docs/GDD.md`) on branch `gdd-v2-overhaul`; plan and status in
+`docs/technical/gdd-v2-overhaul.md`. Removed as superseded: the summoning currency, the upgrade altar, the numeric
+corruption score, divine intervention, the scripted Guardian/Seraph bosses and the Gem, AstralProjection, Avatar
+hold-E site capture, and the four-faction picker.
 
 ### Resource-driven data (Tier 4 refactor)
 
@@ -391,16 +399,24 @@ Gameplay data lives in `.tres` files under `res://data/`, authored as custom `Re
 | Resource class | Script | Directory | Purpose |
 |---|---|---|---|
 | `AbilityData` | `scripts/ability_data.gd` | `data/abilities/` | Avatar ability stats + effect scene |
-| `UpgradeData` | `scripts/upgrade_data.gd` | `data/upgrades/` | Upgrade altar catalog (5 entries) |
+| `SiteType` | `scripts/sites/site_type.gd` | `data/sites/` | Corruption site types: capability, threshold, timings |
 | `MinionType` | `scripts/minion_type.gd` | `data/minions/` | Minion/enemy stats (incl. bosses) |
 
 ### Ability architecture
 
 Each avatar ability is an `AbilityEffect` subclass (scripts/abilities/<id>_effect.gd) attached to a scene (`scenes/abilities/<id>.tscn`). `AvatarAbilities` instances the scene, calls `activate()`, and aggregates combat queries (damage multiplier, lifesteal, invisibility, channel state) across the `Array[AbilityEffect] _active`. To end an ability early, call `abilities.cancel(&"ability_id")`.
 
-### Boss sequence
+### Corruption sites (GDD §7)
 
-`BossManager` (scripts/boss_manager.gd) exports `initial_boss: GuardianBoss`, `seraph_scene: PackedScene` (defaults to `corrupted_seraph.tscn`), and `seraph_spawn_point: Node3D`. Phase 2's `CorruptedSeraph` is an inherited scene of `guardian_boss.tscn` with a different `MinionType` — no runtime `set_script()` tricks.
+Corruption is not a resource: there is no score. `CorruptionSite` (`scenes/sites/corruption_site.gd`, group
+`&"corruption_sites"`) is host-authoritative presence capture: allied strength inside `radius` (each unit's
+`MinionType.strength`; the Paladin counts `AVATAR_STRENGTH`) must meet the type's threshold, then progress runs at
+`strength / threshold` speed. Contested (two sides present) freezes it; a rival undoes your progress before adding
+theirs; the good faction alone purifies; nobody present slips it back. Holding a site grants its `SiteType.capability`
+(`SiteCapability` constants) — ask `GameState.has_capability(peer, cap)` / `count_capability`. Each tower has a
+permanent `TowerSite` held by its owner (sackable, never lost). `GameState.site_changed` fires on every peer (beacons,
+tower restoration). `GoodFaction` (world node) raises every threshold over time, darkens sites and ends the match in a
+draw.
 
 ### Information-warfare layer (`KnowledgeManager` autoload)
 
@@ -442,27 +458,19 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 
 ### Per-peer game state APIs (`GameState`)
 
-- `GameState.get_faction(peer_id)` — authoritative lookup (checks overrides, then player_factions, falls back to round-robin). Use this instead of any per-manager faction resolution.
-- `GameState.set_faction_override(peer_id, faction)` / `clear_faction_override(peer_id)` — for debug swap.
-- `GameState.get_upgrade_level(peer_id, kind)` / `add_upgrade(peer_id, kind)` — upgrade state lives on GameState, not on nodes' metadata.
-- `GameState.get_corruption(peer_id)` / `add_corruption(peer_id, amount)` / `get_max_corruption(peer_id)` / `get_highest_corruption_peer()` / `get_total_corruption()` — **Corruption** is the single per-player score (formerly "influence"; the grid territory system was removed 2026-06-05). Sourced ONLY from held GemSites: each adds `max_corruption_contribution` to the holder's max and regens 0.5/s toward it (ceiling + regen — sites never deplete). The total debuffs the GuardianBoss; zero held sites runs the DivineIntervention loss timer (group `gem_sites`). (It no longer gates Avatar succession — see avatar possession below; Phase D will feed the upkeep gauge from it.)
-- `GameState.avatar_owner_peer_id` (owner, -1 = neutral/unowned) and `GameState.avatar_peer_id` (controller, -1 = released/AI-driven) — **the Avatar is a minion optionally controlled directly by the player with power over it.** Claim at a tower station = own + possess; Q releases control (the AI drives, `AvatarAI`) while keeping ownership; ownership moves ONLY on combat defeat (killer's owner takes it; neutral kill → unowned) or the future Phase D upkeep gauge. `request_claim_avatar()` / `request_recall_avatar()` validate on the host. Design: `docs/systems/avatar-possession.md`.
+- **Allegiance, not faction, decides hostility.** `Actor.get_allegiance()` is the owning peer id (minions:
+  `owner_peer_id`; the Paladin: his owner; overlords: themselves) or `GameConstants.GOOD_SIDE` (-1) for the good
+  faction. MVP: every player is Undead (`PLAYABLE_FACTIONS = [UNDEATH]`), so factions only pick rosters and art.
+- `GameState.get_player_color(peer)` — seat colour (by tower slot); `get_player_name(peer)`.
+- `GameState.get_held_sites(peer)` / `count_held_sites(peer)` / `has_capability(peer, cap)` — see Corruption sites.
+- `GameState.match_pace` (`MatchConfig.Pace`, picked by the host in the lobby) scales unit speed and the good
+  faction's growth clock.
+- `GameState.avatar_owner_peer_id` (-1 = the good faction has him) and `avatar_peer_id` (controller, -1 = AI-driven).
+  `request_possess_avatar()` (owner only) / `request_recall_avatar()`; `set_avatar_owner(peer)` on the host.
+- Summoning costs remains, not currency: `MinionManager.get_remains(peer)` / `add_remains` /
+  `request_raise_from_remains(type)`; `spawn_unit_for_peer(peer, type, pos)` for system spawns.
 
-### What's built (Tiers 0-3)
+### What's built
 
-- P2P lobby with faction selection (4 factions)
-- Avatar possession (ownership/control split — claim to own+possess, Q to release to AI), 3rd-person combat
-- AvatarAI: released avatar aggros, fights, follows war-table/debug move orders (host-driven input through rollback)
-- Avatar as war-table pawn (reserved `AVATAR_ID`, owner-only selection, courier-delivered orders)
-- Neutral enemies with AI (patrol, aggro, attack)
-- Animation-driven hitboxes, host-authoritative combat sync
-- Neutral enemies spawned/synced through MinionManager (`spawn_neutral_minion`, NEUTRAL faction — there is no separate EnemyManager)
-- Corruption tracking (per-peer, gem-site sourced ONLY) with debug overlay
-- MinionManager: spawning, AI (NavigationAgent3D), commands, sync
-- GemSite capture points (contest-gated Avatar capture; a held site raises the holder's max corruption and regens toward it — sites never deplete; hostiles near the site block capture, friendlies never required)
-- Hostile takeover (minion kills Avatar → its owner gains avatar OWNERSHIP; neutral kill → unowned, claimable)
-- GuardianBoss (debuffed by total corruption, defeat to win)
-- AstralProjection spectator overlay for boss fights (scene built; DEFERRED from MVP — HUD scry notification instead)
-
-#### What needs editor setup
-See the "Editor TODO" section in `docs/technical/build-phases.md` (BossManager + DivineIntervention landed 2026-06-10; AstralProjection deferred).
+The GDD v2 overhaul is in progress on branch `gdd-v2-overhaul`; its phase list and status are in
+`docs/technical/gdd-v2-overhaul.md`, and every stand-in is in `PLACEHOLDERS.md`.

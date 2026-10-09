@@ -4,19 +4,20 @@
 [ext_resource type="PackedScene" uid="uid://cys03q34jt762" path="res://scenes/menus/in_game_menu.tscn" id="2_umvgx"]
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="3_mxkvs"]
 [ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_m114p"]
-[ext_resource type="PackedScene" uid="uid://bssmtoaigx5kj" path="res://scenes/interactibles/gem.tscn" id="5_71ii3"]
 [ext_resource type="PackedScene" uid="uid://bt4ygfe5wcduv" path="res://scenes/actors/minion/types/holy_knight.tscn" id="5_umvgx"]
 [ext_resource type="PackedScene" uid="uid://bblv3fe3c2a5k" path="res://scenes/actors/minion/minion_rally_point.tscn" id="6_bt7bg"]
-[ext_resource type="PackedScene" uid="uid://c7jx3mdfg6m53" path="res://scenes/actors/enemy/guardian/guardian_boss.tscn" id="6_mxkvs"]
 [ext_resource type="Terrain3DMaterial" uid="uid://bpw8ev0lcs1gg" path="res://assets/world/env/world_terrain_materials.tres" id="9_mxkvs"]
 [ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="9_t634p"]
 [ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="10_6hctx"]
 [ext_resource type="Terrain3DAssets" uid="uid://lbx5l2n1geta" path="res://assets/world/env/world_terrain_assets.tres" id="10_m114p"]
 [ext_resource type="Shader" uid="uid://bmai62r5iaiaf" path="res://shaders/ps1_pixelated_postprocess.gdshader" id="11_mxkvs"]
 [ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="12_xq18t"]
-[ext_resource type="PackedScene" uid="uid://btgemsite0001" path="res://scenes/interactibles/gem_site.tscn" id="15_mxkvs"]
-[ext_resource type="Script" uid="uid://bgoeynarsj04b" path="res://scripts/divine_intervention.gd" id="16_71ii3"]
-[ext_resource type="Script" uid="uid://c7wcmc4wx6utp" path="res://scripts/boss_manager.gd" id="16_m114p"]
+[ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="15_mxkvs"]
+[ext_resource type="Resource" path="res://data/sites/corrupted_chapel.tres" id="17_chapel"]
+[ext_resource type="Resource" path="res://data/sites/avatar_site.tres" id="18_avsite"]
+[ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="19_bosite"]
+[ext_resource type="Script" path="res://scripts/good_faction.gd" id="16_71ii3"]
+[ext_resource type="Script" path="res://scripts/world_nav_baker.gd" id="20_navbake"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -104,13 +105,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.689358, 1.2452855, 1.17454
 [node name="HolyKnight3" parent="World/Enemies" unique_id=1874871507 instance=ExtResource("5_umvgx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2547507, 1.2452855, 1.1745405)
 
-[node name="GuardianBoss" parent="World/Enemies" unique_id=895488463 instance=ExtResource("6_mxkvs")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1.4137335, -7.108248)
-
 [node name="Interactables" type="Node3D" parent="World" unique_id=2028170528]
-
-[node name="Gem" parent="World/Interactables" unique_id=2072783906 instance=ExtResource("5_71ii3")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.238, 0)
 
 [node name="Markers" type="Node3D" parent="World" unique_id=1288722471]
 
@@ -137,6 +132,10 @@ collision_mode = 4
 top_level = true
 metadata/_edit_lock_ = true
 
+[node name="NavBaker" type="Node" parent="World/Nav" unique_id=1201201201 node_paths=PackedStringArray("terrain")]
+script = ExtResource("20_navbake")
+terrain = NodePath("../Terrain3D")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1495107198]
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=1565447642]
@@ -157,30 +156,21 @@ visible = false
 [node name="MinionManager" type="Node" parent="." unique_id=172942630]
 script = ExtResource("12_xq18t")
 
-[node name="GemSite" parent="." unique_id=1560168247 instance=ExtResource("15_mxkvs")]
+[node name="SiteChapel" parent="." unique_id=1560168247 instance=ExtResource("15_mxkvs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.05959, 0.2057867, 3.4718819)
-site_name = "Gem Site"
-corruption_per_second = 0.5
-max_corruption_contribution = 7.0
-contest_radius = 8.0
+; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
+site_type = ExtResource("17_chapel")
 
-[node name="GemSite2" parent="." unique_id=514881128 instance=ExtResource("15_mxkvs")]
+[node name="SiteAvatar" parent="." unique_id=514881128 instance=ExtResource("15_mxkvs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.964947, 2.5435352, 30.530106)
-site_name = "Gem Site"
-corruption_per_second = 0.5
-max_corruption_contribution = 7.0
-contest_radius = 8.0
+; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
+site_type = ExtResource("18_avsite")
 
-[node name="GemSite3" parent="." unique_id=1825113212 instance=ExtResource("15_mxkvs")]
+[node name="SiteBoss" parent="." unique_id=1825113212 instance=ExtResource("15_mxkvs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.587875, -0.12130451, -40.711487)
-site_name = "Gem Site"
-corruption_per_second = 0.5
-max_corruption_contribution = 7.0
-contest_radius = 8.0
+; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
+site_type = ExtResource("19_bosite")
 
-[node name="DivineIntervention" type="Node" parent="." unique_id=93009679]
+[node name="GoodFaction" type="Node" parent="." unique_id=93009679]
 script = ExtResource("16_71ii3")
 
-[node name="BossManager" type="Node" parent="." unique_id=971969176]
-script = ExtResource("16_m114p")
-initial_boss = NodePath("../World/Enemies/GuardianBoss")

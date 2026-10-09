@@ -14,7 +14,9 @@ class_name MinionType extends Resource
 @export var hp: int = 40
 @export var damage: int = 10
 @export var speed: float = 3.5
-@export var cost: int = 8
+## How much this unit counts toward a corruption site's strength threshold
+## (GDD §7, Q11). Couriers, advisors and haulers never count.
+@export var strength: float = 1.0
 
 @export_group("Combat Tuning")
 @export var aggro_radius: float = 8.0

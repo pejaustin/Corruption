@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SiteType" format=3]
+
+[ext_resource type="Script" path="res://scripts/sites/site_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_site"
+display_name = "PLACEHOLDER: Boss-form site (unnamed)"
+capability = &"boss_power"
+size = 1
+strength_threshold = 6.0
+corrupt_seconds = 120.0
+slip_seconds = 240.0
+purify_seconds = 60.0

@@ -8,8 +8,8 @@ extends Control
 @onready var _btn_kill_avatar: Button = %BtnKillAvatar
 @onready var _btn_spawn_enemy: Button = %BtnSpawnEnemy
 @onready var _btn_spawn_minion: Button = %BtnSpawnMinion
-@onready var _btn_add_corruption: Button = %BtnAddCorruption
-@onready var _btn_cycle_faction: Button = %BtnCycleFaction
+@onready var _btn_take_site: Button = %BtnTakeSite
+@onready var _btn_add_remains: Button = %BtnAddRemains
 @onready var _btn_aggro_rings: Button = %BtnAggroRings
 @onready var _btn_combat_boxes: Button = %BtnCombatBoxes
 @onready var _btn_order_avatar: Button = %BtnOrderAvatar
@@ -79,10 +79,10 @@ func _refresh_button_states() -> void:
 		_btn_spawn_enemy.disabled = not is_host
 	if _btn_spawn_minion:
 		_btn_spawn_minion.disabled = not is_host
-	if _btn_add_corruption:
-		_btn_add_corruption.disabled = not is_host
-	if _btn_cycle_faction:
-		_btn_cycle_faction.disabled = not is_host
+	if _btn_take_site:
+		_btn_take_site.disabled = not is_host
+	if _btn_add_remains:
+		_btn_add_remains.disabled = not is_host
 	if _btn_order_avatar:
 		_btn_order_avatar.disabled = not is_host
 
@@ -122,12 +122,12 @@ func _on_spawn_minion_pressed() -> void:
 	DebugManager.spawn_minion_at_camera()
 	close()
 
-func _on_add_corruption_pressed() -> void:
-	DebugManager.add_corruption_to_self()
+func _on_take_site_pressed() -> void:
+	DebugManager.take_nearest_site()
 	close()
 
-func _on_cycle_faction_pressed() -> void:
-	DebugManager.cycle_faction()
+func _on_add_remains_pressed() -> void:
+	DebugManager.add_remains_to_self()
 	close()
 
 func _on_aggro_rings_pressed() -> void:

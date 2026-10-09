@@ -10,7 +10,6 @@ faction = 1
 hp = 100
 damage = 30
 speed = 2.5
-cost = 25
 aggro_radius = 8.0
 attack_range = 2.2
 attack_cooldown = 2.0

@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/sites/corruption_site.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/sites/corrupted_chapel.tres" id="2_type"]
+
+[node name="CorruptionSite" type="Node3D"]
+script = ExtResource("1_script")
+site_type = ExtResource("2_type")

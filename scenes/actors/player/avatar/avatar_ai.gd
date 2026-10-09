@@ -91,7 +91,7 @@ func _update_target() -> void:
 		return
 	var best_dist := AGGRO_RADIUS
 	for minion in mm.get_all_minions():
-		if not FactionRelations.is_hostile(_avatar.faction, minion.faction):
+		if not _avatar.is_hostile_to(minion):
 			continue
 		if not minion.can_take_damage():
 			continue

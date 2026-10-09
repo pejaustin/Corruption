@@ -25,7 +25,6 @@ extends Node3D
 ##   2 — spawn a Demonic Imp (enemy, owner -1) at a random point
 ##   3 — spawn a Nature/Fey Sprite (enemy) at a random point
 ##   4 — spawn an Eldritch Cultist (enemy) at a random point
-##   F — cycle your overlord's faction (UNDEATH→DEMONIC→NATURE_FEY→ELDRITCH)
 ##   K — kill the nearest minion to the overlord, skipping the Advisor
 ##   Shift+K — same, including the Advisor (advisor-death test)
 ##   R — reset: despawn all minions, respawn from StartingMinionSpec children
@@ -43,12 +42,6 @@ extends Node3D
 ## debug marker at the projected world point (click→world mapping check).
 
 const LOCAL_PEER_ID: int = 1
-const FACTION_CYCLE: Array[int] = [
-	GameConstants.Faction.UNDEATH,
-	GameConstants.Faction.DEMONIC,
-	GameConstants.Faction.NATURE_FEY,
-	GameConstants.Faction.ELDRITCH,
-]
 ## Hotkey-spawn IDs live above MinionManager's _next_minion_id counter so the
 ## two streams can't collide (manager starts at 1; we start at 10000).
 const SPAWN_ID_BASE: int = 10000
@@ -159,8 +152,6 @@ func _unhandled_input(event: InputEvent) -> void:
 				_spawn_minion(&"sprite", GameConstants.Faction.NATURE_FEY, -1, _random_playspace_point())
 			KEY_4:
 				_spawn_minion(&"cultist", GameConstants.Faction.ELDRITCH, -1, _random_playspace_point())
-			KEY_F:
-				_cycle_own_faction()
 			KEY_K:
 				# Plain K skips the Advisor — on the platform it is always the
 				# nearest minion to the overlord, so without the filter K could
@@ -234,12 +225,6 @@ func _drop_debug_marker(world_pos: Vector3) -> void:
 
 # --- Hotkey handlers ---
 
-func _cycle_own_faction() -> void:
-	var current: int = GameState.get_faction(LOCAL_PEER_ID)
-	var idx: int = FACTION_CYCLE.find(current)
-	var next: int = FACTION_CYCLE[(idx + 1) % FACTION_CYCLE.size()]
-	GameState.set_faction_override(LOCAL_PEER_ID, next)
-
 func _kill_nearest_to_overlord(include_advisor: bool = false) -> void:
 	if minion_manager == null or overlord == null:
 		return
@@ -285,7 +270,7 @@ func _refresh_status() -> void:
 		count_str += "%s:%d  " % [GameConstants.faction_names.get(f, "?"), counts[f]]
 	if count_str == "":
 		count_str = "(none)"
-	status_label.text = "War Table Test — real systems, full-scale 300x300 field\nYou are peer %d, faction: %s\nMinions: %s\n\n[Esc] release/recapture mouse  [Shift+Esc] quit\n[1] spawn Skeleton (yours)\n[2] spawn Imp (Demonic, neutral owner)\n[3] spawn Sprite (Nature/Fey)\n[4] spawn Cultist (Eldritch)\n[F] cycle your faction\n[K] kill nearest minion (skips Advisor; Shift+K includes)\n[R] reset to authored starting state\n[I] dispatch info-courier to a random point\n[V] courier visual-range sphere\n[H] time scale: %.0fx\n[T] INSTANT_COMMANDS: %s\n[B] INFINITE_BROADCAST_RANGE: %s\n[M] SHOW_REALITY (war table debug overlay): %s\n\nAim and press E: piece → select (stacks open ghost popup),\nmap → draft, Paper → ready, Advisor → dispatch, Reset → wipe drafts.\n" % [
+	status_label.text = "War Table Test — real systems, full-scale 300x300 field\nYou are peer %d, faction: %s\nMinions: %s\n\n[Esc] release/recapture mouse  [Shift+Esc] quit\n[1] spawn Skeleton (yours)\n[2] spawn Imp (Demonic, neutral owner)\n[3] spawn Sprite (Nature/Fey)\n[4] spawn Cultist (Eldritch)\n[K] kill nearest minion (skips Advisor; Shift+K includes)\n[R] reset to authored starting state\n[I] dispatch info-courier to a random point\n[V] courier visual-range sphere\n[H] time scale: %.0fx\n[T] INSTANT_COMMANDS: %s\n[B] INFINITE_BROADCAST_RANGE: %s\n[M] SHOW_REALITY (war table debug overlay): %s\n\nAim and press E: piece → select (stacks open ghost popup),\nmap → draft, Paper → ready, Advisor → dispatch, Reset → wipe drafts.\n" % [
 		LOCAL_PEER_ID,
 		my_faction_name,
 		count_str,

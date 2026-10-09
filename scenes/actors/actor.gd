@@ -41,12 +41,18 @@ func get_stagger_duration() -> float:
 func can_take_damage() -> bool:
 	return hp > 0
 
-# --- Faction / Perception ---
+# --- Allegiance / Perception ---
+
+## Whose side this actor fights for: a player's peer id, or
+## GameConstants.GOOD_SIDE for the good faction. Hostility is by allegiance,
+## not faction — in the MVP every player is Undead (GDD §1).
+func get_allegiance() -> int:
+	return GameConstants.GOOD_SIDE
 
 func is_hostile_to(other: Actor) -> bool:
 	if other == null or other == self:
 		return false
-	return FactionRelations.is_hostile(faction, other.faction)
+	return get_allegiance() != other.get_allegiance()
 
 func can_see(other: Actor) -> bool:
 	if other == null or not is_instance_valid(other):

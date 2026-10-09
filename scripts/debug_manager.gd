@@ -234,9 +234,7 @@ func spawn_minion_at_camera() -> void:
 	spawn_pos.y += 0.5  # clear the surface so the body settles instead of clipping
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
 	if mm:
-		var my_id = multiplayer.get_unique_id()
-		mm.resources[my_id] = mm.resources.get(my_id, 0.0) + 25
-		mm.request_summon_minion("", spawn_pos)
+		mm.spawn_unit_for_peer(multiplayer.get_unique_id(), &"", spawn_pos)
 		print("[Debug] Spawned minion at (%.1f, %.1f, %.1f)" % [spawn_pos.x, spawn_pos.y, spawn_pos.z])
 	else:
 		print("[Debug] MinionManager not found")
@@ -259,30 +257,38 @@ func order_avatar_to_camera() -> void:
 	else:
 		print("[Debug] Avatar (or its AI) not found")
 
-func add_corruption_to_self() -> void:
+func take_nearest_site() -> void:
+	## Hands the corruption site nearest the camera to the local peer.
 	if not multiplayer.is_server():
-		print("[Debug] Only the host can set corruption")
+		print("[Debug] Only the host can hand out sites")
 		return
-	var my_id = multiplayer.get_unique_id()
-	GameState.add_corruption(my_id, 10.0)
-	print("[Debug] Added 10 corruption to peer %d (total: %.1f)" % [my_id, GameState.get_corruption(my_id)])
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	var best: CorruptionSite = null
+	var best_d := INF
+	for node in GameState.get_all_sites():
+		var site := node as CorruptionSite
+		if site == null or site.permanent:
+			continue
+		var d := site.global_position.distance_to(camera.global_position)
+		if d < best_d:
+			best_d = d
+			best = site
+	if best == null:
+		print("[Debug] No corruption site found")
+		return
+	best.debug_give_to(multiplayer.get_unique_id())
+	print("[Debug] Gave %s to peer %d" % [best.get_display_name(), multiplayer.get_unique_id()])
 
-func cycle_faction() -> void:
+func add_remains_to_self() -> void:
 	if not multiplayer.is_server():
-		print("[Debug] Only the host can swap factions")
+		print("[Debug] Only the host can add remains")
 		return
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	if not mm:
-		print("[Debug] MinionManager not found")
-		return
-	var my_id = multiplayer.get_unique_id()
-	var current = mm._get_player_faction(my_id)
-	var playable = GameConstants.PLAYABLE_FACTIONS
-	var cur_idx = playable.find(current)
-	var next_faction = playable[(cur_idx + 1) % playable.size()] if cur_idx >= 0 else playable[0]
-	GameState.set_faction_override(my_id, next_faction)
-	var name = GameConstants.faction_names.get(next_faction, "Unknown")
-	print("[Debug] Faction swapped to %s (%d)" % [name, next_faction])
+	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
+	if mm:
+		mm.add_remains(multiplayer.get_unique_id(), 1)
+		print("[Debug] +1 remains at your tower (%d)" % mm.get_remains(multiplayer.get_unique_id()))
 
 func _get_multiplayer_manager() -> MultiplayerManager:
 	var scene = get_tree().current_scene

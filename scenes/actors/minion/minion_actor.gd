@@ -73,6 +73,8 @@ var attack_cooldown: float = 1.5
 var attack_range: float = 1.8
 var aggro_radius: float = 8.0
 var max_hp_value: int = 40
+## Counts toward corruption-site strength thresholds (MinionType.strength).
+var strength: float = 1.0
 ## Resolved from MinionType — read by states (MinionState._check_retreat) and
 ## RetreatState. Defaults keep legacy minions retreat-immune.
 var can_retreat: bool = false
@@ -186,11 +188,12 @@ func apply_type(mtype: MinionType) -> void:
 	max_hp_value = mtype.hp
 	hp = mtype.hp
 	attack_damage = mtype.damage
-	move_speed = mtype.speed
+	move_speed = mtype.speed * MatchConfig.unit_speed_multiplier()
 	attack_cooldown = mtype.attack_cooldown
 	attack_range = mtype.attack_range
 	aggro_radius = mtype.aggro_radius
 	minion_trait = mtype.trait_tag
+	strength = mtype.strength
 	can_retreat = mtype.can_retreat
 	retreat_hp_threshold = mtype.retreat_hp_threshold
 	courier_visual_range = mtype.courier_visual_range
@@ -230,6 +233,11 @@ func _on_visual_range_toggled(visible: bool) -> void:
 	if _visual_range_overlay and is_instance_valid(_visual_range_overlay):
 		_visual_range_overlay.visible = visible
 
+func get_allegiance() -> int:
+	## Owned units fight for their owner; unowned ones (humans, the good
+	## faction's soldiers) for the good faction.
+	return owner_peer_id if owner_peer_id > 0 else GameConstants.GOOD_SIDE
+
 func get_max_hp() -> int:
 	return max_hp_value
 
@@ -247,7 +255,7 @@ func can_take_damage() -> bool:
 	return hp > 0
 
 func get_faction_color() -> Color:
-	return GameConstants.faction_colors.get(faction, Color.WHITE)
+	return GameState.get_player_color(get_allegiance())
 
 func _die() -> void:
 	super()

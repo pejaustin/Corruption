@@ -3,7 +3,9 @@ extends Control
 
 ## Lobby scene shown after the host or a client establishes a connection.
 ## Manages name/faction/ready state across peers and gates a synchronized
-## game start. CPU slots are host-controlled bots that fill empty seats —
+## game start. MVP: everyone plays Undead (GDD §1), so the faction picker shows
+## only Undead; per-player faction ids stay so more factions can come later.
+## The host picks the match pace (MatchConfig, GDD Q31). CPU slots are host-controlled bots that fill empty seats —
 ## on START they're spawned as dummy players (see DebugManager.spawn_lobby_cpus)
 ## and inherit the lobby's chosen faction + name via GameState.
 
@@ -28,6 +30,9 @@ var player_ready: Dictionary[int, bool] = {}
 @onready var _host_ip_label: Label = %HostIPLabel
 
 var _panels: Dictionary[int, PlayerPanel] = {}
+var match_pace: int = MatchConfig.Pace.NORMAL
+var _pace_selector: OptionButton
+var _pace_label: Label
 
 func _ready() -> void:
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -40,6 +45,7 @@ func _ready() -> void:
 	_start_button.visible = multiplayer.is_server()
 	_add_cpu_button.visible = multiplayer.is_server()
 	_host_ip_label.visible = multiplayer.is_server()
+	_build_pace_controls()
 
 	if multiplayer.is_server():
 		_connect_upnp_label()
@@ -85,10 +91,7 @@ func _erase_seat(peer_id: int) -> void:
 	player_names.erase(peer_id)
 	player_ready.erase(peer_id)
 
-func _first_available_faction(taken: Array) -> int:
-	for f in GameConstants.PLAYABLE_FACTIONS:
-		if f not in taken:
-			return f
+func _first_available_faction(_taken: Array) -> int:
 	return GameConstants.PLAYABLE_FACTIONS[0]
 
 # --- helpers ---
@@ -103,13 +106,9 @@ func _can_edit(peer_id: int) -> bool:
 		return true
 	return false
 
-func _faction_available_for(peer_id: int, faction: int) -> bool:
-	if faction not in GameConstants.PLAYABLE_FACTIONS:
-		return false
-	for pid in player_factions:
-		if pid != peer_id and player_factions[pid] == faction:
-			return false
-	return true
+func _faction_available_for(_peer_id: int, faction: int) -> bool:
+	# Several players may share a faction (MVP: all Undead).
+	return faction in GameConstants.PLAYABLE_FACTIONS
 
 func _next_cpu_id() -> int:
 	var i: int = 0
@@ -265,6 +264,7 @@ func _request_sync() -> void:
 	if sender == 0:
 		sender = 1
 	_sync_all_state.rpc_id(sender, player_factions, player_names, player_ready)
+	_set_pace.rpc_id(sender, match_pace)
 
 @rpc("authority", "call_local", "reliable")
 func _sync_all_state(factions: Dictionary, names: Dictionary, ready: Dictionary) -> void:
@@ -314,6 +314,7 @@ func _refresh_ui() -> void:
 			if _faction_available_for(pid, f):
 				available.append(f)
 		panel.update_view(
+			GameConstants.SEAT_COLORS[seats.find(pid) % GameConstants.SEAT_COLORS.size()],
 			pid,
 			player_names.get(pid, ""),
 			player_factions.get(pid, GameConstants.PLAYABLE_FACTIONS[0]),
@@ -361,11 +362,48 @@ func _on_start_pressed() -> void:
 	DebugManager.pending_cpu_ids = cpu_seats
 	GameState.sync_player_factions.rpc(player_factions)
 	GameState.sync_player_names.rpc(player_names)
+	GameState.sync_match_pace.rpc(match_pace)
 	_begin_game.rpc()
 
 @rpc("authority", "call_local", "reliable")
 func _begin_game() -> void:
 	NetworkManager.load_game_scene()
+
+# --- match pace ---
+
+func _build_pace_controls() -> void:
+	## Built in code next to the Start button: host gets a picker, clients a label.
+	var row := _start_button.get_parent()
+	if multiplayer.is_server():
+		_pace_selector = OptionButton.new()
+		_pace_selector.name = "PaceSelector"
+		for pace in MatchConfig.PACE_NAMES:
+			_pace_selector.add_item("Pace: %s" % MatchConfig.PACE_NAMES[pace], pace)
+		_pace_selector.item_selected.connect(_on_pace_selected)
+		row.add_child(_pace_selector)
+		row.move_child(_pace_selector, _start_button.get_index())
+	else:
+		_pace_label = Label.new()
+		_pace_label.name = "PaceLabel"
+		row.add_child(_pace_label)
+		row.move_child(_pace_label, _start_button.get_index())
+	_show_pace()
+
+func _on_pace_selected(index: int) -> void:
+	if not multiplayer.is_server():
+		return
+	_set_pace.rpc(_pace_selector.get_item_id(index))
+
+@rpc("authority", "call_local", "reliable")
+func _set_pace(pace: int) -> void:
+	match_pace = pace
+	_show_pace()
+
+func _show_pace() -> void:
+	if _pace_selector:
+		_pace_selector.select(_pace_selector.get_item_index(match_pace))
+	if _pace_label:
+		_pace_label.text = "Pace: %s" % MatchConfig.PACE_NAMES.get(match_pace, "?")
 
 # --- back ---
 

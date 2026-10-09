@@ -3,9 +3,7 @@ extends SceneTree
 func _init() -> void:
 	var paths := [
 		"res://scenes/interactibles/war_table.tscn",
-		"res://scenes/interactibles/gem_site.tscn",
-		"res://scenes/actors/enemy/guardian/guardian_boss.tscn",
-		"res://scenes/astral_projection.tscn",
+		"res://scenes/sites/corruption_site.tscn",
 	]
 	var any_fail := false
 	for p in paths:
