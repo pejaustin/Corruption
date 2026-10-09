@@ -242,13 +242,17 @@ func apply_type(mtype: MinionType) -> void:
 
 func _refresh_visual_range_overlay() -> void:
 	## Tear down or rebuild the translucent visual-range sphere whenever
-	## courier_visual_range changes. Non-couriers (range = 0) get nothing.
-	if courier_visual_range <= 0.0:
+	## courier_visual_range changes. Only couriers get one: MinionType gives
+	## every unit a default range, so the range alone doesn't say "courier".
+	if courier_visual_range <= 0.0 or minion_trait not in KnowledgeManager.COURIER_TRAITS:
 		if _visual_range_overlay and is_instance_valid(_visual_range_overlay):
 			_visual_range_overlay.queue_free()
 			_visual_range_overlay = null
 		return
 	if _visual_range_overlay == null:
+		if visual_range_overlay_scene == null:
+			push_warning("[MinionActor] %s has no visual_range_overlay_scene set" % name)
+			return
 		_visual_range_overlay = visual_range_overlay_scene.instantiate() as MeshInstance3D
 		add_child(_visual_range_overlay)
 		DebugManager.courier_visual_range_toggled.connect(_on_visual_range_toggled)
