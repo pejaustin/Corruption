@@ -21,6 +21,8 @@ const FORMATION_SPACING: float = 1.6
 ## rank behind. Front rank sits at the click point; trailing ranks fall
 ## back toward the squad's centroid.
 const FORMATION_WIDTH: int = 4
+## Units raised or spawned this close to their tower muster at its gate.
+const MUSTER_RADIUS: float = 60.0
 
 var _next_minion_id: int = 1
 var _minions_node: Node3D
@@ -172,6 +174,7 @@ func _give_starting_forces(peer_id: int) -> void:
 	if spawn == null:
 		return
 	_started_peers[peer_id] = true
+	KnowledgeManager.give_starting_couriers(peer_id)
 	for i in MatchConfig.STARTING_GROUP_SIZE:
 		var offset := Vector3(float(i % 2) * FORMATION_SPACING, 0.5, float(i / 2) * FORMATION_SPACING)
 		spawn_unit_for_peer(peer_id, &"", spawn.global_position + offset)
@@ -333,30 +336,27 @@ func request_raise_from_remains(type_id: String = "") -> void:
 	_sync_remains.rpc(sender, get_remains(sender) - 1)
 
 func spawn_unit_for_peer(peer_id: int, type_id: StringName, pos: Vector3) -> int:
-	## Host-only. Spawns one of this player's units at `pos` and sends it to
-	## muster at their rally point. Empty type_id = the faction's default unit.
-	## Returns the new unit's id, or -1.
+	## Host-only. Spawns one of this player's units at `pos`. Near the tower it
+	## musters at the tower gate with the group waiting there; elsewhere it
+	## forms its own group where it stands. Empty type_id = the faction's
+	## default unit. Returns the new unit's id, or -1.
 	if not multiplayer.is_server():
 		return -1
 	var faction: int = _get_player_faction(peer_id)
 	var mtype: MinionType = _resolve_minion_type(faction, type_id)
 	if mtype == null:
 		return -1
-	var initial_waypoint := pos
-	var rally := get_rally_point_for(peer_id)
-	if rally:
-		initial_waypoint = rally.global_position
 	var id := _next_minion_id
 	_next_minion_id += 1
-	_spawn_minion_rpc.rpc(id, peer_id, faction, pos, String(mtype.id), initial_waypoint)
-	# Slot the muster around the rally so new units spread out instead of
-	# orbiting one shared waypoint.
-	if rally:
-		var mustered: Array[MinionActor] = []
-		for m in get_minions_for_player(peer_id):
-			if m.waypoint.distance_to(rally.global_position) < FORMATION_SPACING * FORMATION_WIDTH:
-				mustered.append(m)
-		_assign_formation_waypoints(mustered, rally.global_position)
+	_spawn_minion_rpc.rpc(id, peer_id, faction, pos, String(mtype.id), pos)
+	var unit := get_minion_by_id(id)
+	var gm := get_tree().current_scene.get_node_or_null("GroupManager") as GroupManager
+	if unit == null or gm == null:
+		return id
+	var group := gm.join_home_group(peer_id, unit)
+	var gate := get_courier_spawn_for(peer_id)
+	if gate and Vector2(pos.x - gate.global_position.x, pos.z - gate.global_position.z).length() <= MUSTER_RADIUS:
+		_assign_formation_waypoints(gm.get_members(group), gate.global_position)
 	return id
 
 @rpc("authority", "call_local", "reliable")
@@ -554,9 +554,19 @@ func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringNa
 	if minion:
 		minion.sync_from_server(pos, rot_y, new_state, new_hp)
 
+func despawn_minion(minion: MinionActor) -> void:
+	## Host-only: remove a unit that left play without dying (a courier home,
+	## a trainee turned courier). Groups still drop it.
+	if not multiplayer.is_server():
+		return
+	minion_died.emit(minion)
+	_remove_minion.rpc(minion.name.to_int())
+
 func notify_minion_died(minion: MinionActor) -> void:
 	if not multiplayer.is_server():
 		return
+	if minion.minion_trait in KnowledgeManager.COURIER_TRAITS:
+		KnowledgeManager.courier_lost(minion, minion.last_hit_by)
 	minion_died.emit(minion)
 	var id := minion.name.to_int()
 	KnowledgeManager.notify_minion_removed(id)

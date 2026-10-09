@@ -18,6 +18,8 @@
 [ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="19_bosite"]
 [ext_resource type="Script" path="res://scripts/good_faction.gd" id="16_71ii3"]
 [ext_resource type="Script" path="res://scripts/world_nav_baker.gd" id="20_navbake"]
+[ext_resource type="Script" path="res://scenes/map/map_point.gd" id="21_mappoint"]
+[ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="22_groups"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -107,6 +109,178 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2547507, 1.2452855, 1.17454
 
 [node name="Interactables" type="Node3D" parent="World" unique_id=2028170528]
 
+[node name="MapPoints" type="Node3D" parent="World" unique_id=1301301300]
+; PLACEHOLDER: the first map's points, names and links, not designed (ticket #584)
+
+[node name="TowerEast" type="Marker3D" parent="World/MapPoints" unique_id=1301301301]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"TowerEast"
+display_name = "Tower (east)"
+kind = 6
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadEast")])
+tower_slot = 0
+
+[node name="TowerSouth" type="Marker3D" parent="World/MapPoints" unique_id=1301301302]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"TowerSouth"
+display_name = "Tower (south)"
+kind = 6
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadSouth")])
+tower_slot = 1
+
+[node name="TowerWest" type="Marker3D" parent="World/MapPoints" unique_id=1301301303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"TowerWest"
+display_name = "Tower (west)"
+kind = 6
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadWest")])
+tower_slot = 2
+
+[node name="TowerNorth" type="Marker3D" parent="World/MapPoints" unique_id=1301301304]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"TowerNorth"
+display_name = "Tower (north)"
+kind = 6
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadNorth")])
+tower_slot = 3
+
+[node name="RoadEast" type="Marker3D" parent="World/MapPoints" unique_id=1301301305]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"RoadEast"
+display_name = "East road"
+kind = 0
+known_at_start = true
+links = Array[NodePath]([NodePath("../TowerEast"), NodePath("../Chapel"), NodePath("../SettlementSE"), NodePath("../Ford")])
+
+[node name="RoadSouth" type="Marker3D" parent="World/MapPoints" unique_id=1301301306]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 70)
+script = ExtResource("21_mappoint")
+point_id = &"RoadSouth"
+display_name = "South road"
+kind = 0
+known_at_start = true
+links = Array[NodePath]([NodePath("../TowerSouth"), NodePath("../AvatarSite"), NodePath("../SettlementSE"), NodePath("../Crossing")])
+
+[node name="RoadWest" type="Marker3D" parent="World/MapPoints" unique_id=1301301307]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -85, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"RoadWest"
+display_name = "West road"
+kind = 0
+known_at_start = true
+links = Array[NodePath]([NodePath("../TowerWest"), NodePath("../City"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Crossing")])
+
+[node name="RoadNorth" type="Marker3D" parent="World/MapPoints" unique_id=1301301308]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -65)
+script = ExtResource("21_mappoint")
+point_id = &"RoadNorth"
+display_name = "North road"
+kind = 0
+known_at_start = true
+links = Array[NodePath]([NodePath("../TowerNorth"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Ford")])
+
+[node name="Chapel" type="Marker3D" parent="World/MapPoints" unique_id=1301301309]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, 3.5)
+script = ExtResource("21_mappoint")
+point_id = &"Chapel"
+display_name = "Chapel"
+kind = 4
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../City")])
+target = NodePath("../../../SiteChapel")
+
+[node name="AvatarSite" type="Marker3D" parent="World/MapPoints" unique_id=1301301310]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21, 0, 30.5)
+script = ExtResource("21_mappoint")
+point_id = &"AvatarSite"
+display_name = "Site (south)"
+kind = 4
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../City")])
+target = NodePath("../../../SiteAvatar")
+
+[node name="BossSite" type="Marker3D" parent="World/MapPoints" unique_id=1301301311]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.6, 0, -40.7)
+script = ExtResource("21_mappoint")
+point_id = &"BossSite"
+display_name = "Site (north-west)"
+kind = 4
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadWest"), NodePath("../RoadNorth"), NodePath("../City")])
+target = NodePath("../../../SiteBoss")
+
+[node name="City" type="Marker3D" parent="World/MapPoints" unique_id=1301301312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("21_mappoint")
+point_id = &"City"
+display_name = "City"
+kind = 3
+known_at_start = true
+links = Array[NodePath]([NodePath("../Chapel"), NodePath("../AvatarSite"), NodePath("../BossSite"), NodePath("../RoadWest")])
+
+[node name="SettlementSE" type="Marker3D" parent="World/MapPoints" unique_id=1301301313]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 55)
+script = ExtResource("21_mappoint")
+point_id = &"SettlementSE"
+display_name = "Village (south-east)"
+kind = 2
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadSouth"), NodePath("../MineSE")])
+
+[node name="SettlementNW" type="Marker3D" parent="World/MapPoints" unique_id=1301301314]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65, 0, -60)
+script = ExtResource("21_mappoint")
+point_id = &"SettlementNW"
+display_name = "Village (north-west)"
+kind = 2
+known_at_start = true
+links = Array[NodePath]([NodePath("../RoadWest"), NodePath("../RoadNorth"), NodePath("../MineNW")])
+
+[node name="MineSE" type="Marker3D" parent="World/MapPoints" unique_id=1301301315]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0, 75)
+script = ExtResource("21_mappoint")
+point_id = &"MineSE"
+display_name = "Mine (south-east)"
+kind = 5
+known_at_start = true
+links = Array[NodePath]([NodePath("../SettlementSE")])
+
+[node name="MineNW" type="Marker3D" parent="World/MapPoints" unique_id=1301301316]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -90)
+script = ExtResource("21_mappoint")
+point_id = &"MineNW"
+display_name = "Mine (north-west)"
+kind = 5
+known_at_start = true
+links = Array[NodePath]([NodePath("../SettlementNW")])
+
+[node name="Ford" type="Marker3D" parent="World/MapPoints" unique_id=1301301317]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 0, -45)
+script = ExtResource("21_mappoint")
+point_id = &"Ford"
+display_name = "Ford"
+kind = 1
+known_at_start = false
+links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadNorth")])
+
+[node name="Crossing" type="Marker3D" parent="World/MapPoints" unique_id=1301301318]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 70)
+script = ExtResource("21_mappoint")
+point_id = &"Crossing"
+display_name = "Crossing"
+kind = 1
+known_at_start = false
+links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../RoadWest")])
+
 [node name="Markers" type="Node3D" parent="World" unique_id=1288722471]
 
 [node name="MinionRallyPoint" parent="World/Markers" unique_id=1014142531 instance=ExtResource("6_bt7bg")]
@@ -170,6 +344,9 @@ site_type = ExtResource("18_avsite")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.587875, -0.12130451, -40.711487)
 ; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
 site_type = ExtResource("19_bosite")
+
+[node name="GroupManager" type="Node" parent="." unique_id=1301301400]
+script = ExtResource("22_groups")
 
 [node name="GoodFaction" type="Node" parent="." unique_id=93009679]
 script = ExtResource("16_71ii3")

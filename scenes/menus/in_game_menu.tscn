@@ -171,7 +171,7 @@ text = "Toggle Instant Commands"
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_sdrml")
-text = "Toggle Infinite Broadcast"
+text = "Toggle Read Captured Couriers"
 
 [node name="BtnOrderAvatar" type="Button" parent="DebugPanel/Margin/VBox"]
 unique_name_in_owner = true

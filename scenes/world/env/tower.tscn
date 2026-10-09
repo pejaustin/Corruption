@@ -4,9 +4,7 @@
 [ext_resource type="Script" uid="uid://bos2fmmk4jaaw" path="res://scenes/world/env/tower.gd" id="1_ewiun"]
 [ext_resource type="PackedScene" uid="uid://8mbjo354k5p" path="res://assets/world/env/mod-castle/Walls/Railing&Fences/Railing_Corner_1.fbx" id="2_1p88i"]
 [ext_resource type="PackedScene" uid="uid://byks2n5lgat5u" path="res://assets/world/env/mod-castle/Walls/Railing&Fences/Railing_x1.fbx" id="3_2mnic"]
-[ext_resource type="Script" uid="uid://cii5qfapbe5tc" path="res://scripts/interactibles/war_table_range.gd" id="4_wtrange"]
 [ext_resource type="PackedScene" uid="uid://rwydltwig77s" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x2.fbx" id="4_xd411"]
-[ext_resource type="PackedScene" uid="uid://btwart0000001" path="res://scenes/interactibles/war_table.tscn" id="4_yjlt3"]
 [ext_resource type="PackedScene" uid="uid://m8hq7ma6lnc2" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Corner_Full.fbx" id="5_r4tnh"]
 [ext_resource type="PackedScene" uid="uid://dxk4j5sckqia8" path="res://assets/world/env/mod-castle/Walls/Walls_Short/Wall_Short_x1.fbx" id="6_5dhyi"]
 [ext_resource type="PackedScene" uid="uid://bpu5gh4vbgaep" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Large_Gate.fbx" id="7_3o7cy"]
@@ -32,6 +30,7 @@
 [ext_resource type="PackedScene" uid="uid://c8uteh2tyq2lx" path="res://scenes/interactibles/palantir.tscn" id="27_k0irn"]
 [ext_resource type="PackedScene" uid="uid://d24db7jslh5tl" path="res://scenes/actors/minion/minion_spawn_point.tscn" id="31_8uuiu"]
 [ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="40_site"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_floor.tscn" id="42_mapfloor"]
 [ext_resource type="PackedScene" path="res://scenes/interactibles/desk.tscn" id="42_desk"]
 [ext_resource type="Resource" path="res://data/sites/tower.tres" id="41_towertype"]
 [ext_resource type="Script" uid="uid://hthsj34lyade" path="res://scenes/world/env/jumpable_link.gd" id="33_7a0l1"]
@@ -43,15 +42,6 @@ size = Vector3(18.3266, 0.997826, 4.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_k0irn"]
 size = Vector3(0.5, 5, 9.5)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n8gnn"]
-transparency = 1
-cull_mode = 2
-shading_mode = 0
-albedo_color = Color(0.95, 0.75, 0.2, 0.08)
-
-[sub_resource type="BoxMesh" id="BoxMesh_sernp"]
-size = Vector3(300, 20, 300)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_courier_zone"]
 radius = 5.41
@@ -109,20 +99,6 @@ shape = ExtResource("26_6guij")
 [node name="Table" parent="." unique_id=1695499807 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, -1.82887)
 
-[node name="WarTable" parent="." unique_id=2096886964 instance=ExtResource("4_yjlt3")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7241616, 39.362465, -5.3953505)
-map_world_size = Vector2(300, 300)
-map_world_center = Vector3(0, 0, 0)
-
-[node name="WarTableRange" type="MeshInstance3D" parent="." unique_id=1099551217 node_paths=PackedStringArray("war_table")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
-visible = false
-material_override = SubResource("StandardMaterial3D_n8gnn")
-mesh = SubResource("BoxMesh_sernp")
-script = ExtResource("4_wtrange")
-war_table = NodePath("../WarTable")
-color = Color(0.95, 0.75, 0.2, 0.08)
-
 [node name="AvatarClaim" parent="." unique_id=1313280762 instance=ExtResource("16_7wf5u")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5264935, 39.29396, 0.83745)
 
@@ -152,6 +128,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 39.4, -6)
 
 [node name="MinionSpawnPoint" parent="." unique_id=1793453589 instance=ExtResource("31_8uuiu")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3415604, 40.38556, 10.8646965)
+
+[node name="MapFloor" parent="." unique_id=1793453602 instance=ExtResource("42_mapfloor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.42, 0)
 
 [node name="TowerSite" parent="." unique_id=1793453601 instance=ExtResource("40_site")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.609, 1, -0.9840002)

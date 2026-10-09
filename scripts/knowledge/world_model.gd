@@ -1,90 +1,77 @@
 class_name WorldModel extends RefCounted
 
-## An overlord's belief about the battlefield — lossy, delayed, possibly false.
-## Rendered by the War Table. Mutated by the KnowledgeManager, never read by the
-## simulation.
-##
-## Every entry is timestamped so staleness can be visualized and decay rules
-## applied later. With INFINITE_BROADCAST_RANGE=true the model ends up a 1:1
-## mirror of truth; once the flag flips off, entries start going stale and the
-## asymmetry appears.
+## One player's belief about the world — lossy, late, possibly wrong (GDD §1:
+## "none of the genre's free information exists"). Lives on that player's own
+## machine and is only ever changed by reports (KnowledgeManager): what the
+## tower sees at its gate, what couriers and returning groups bring home, and
+## the beacons everyone sees in the sky. Never read by the simulation.
 
 signal record_added(entry: Dictionary)
+signal changed
 
-## minion_id -> { pos: Vector3, owner_peer_id: int, faction: int, last_updated_tick: int, source: StringName }
-var believed_friendly_minions: Dictionary[int, Dictionary] = {}
-var believed_enemy_minions: Dictionary[int, Dictionary] = {}
-
-## peer_id -> { pos: Vector3, last_updated_tick: int }
-var believed_avatar_positions: Dictionary[int, Dictionary] = {}
-
-## gem_id -> { capture_progress: float, owner: int, last_updated_tick: int }
-var believed_gem_states: Dictionary[StringName, Dictionary] = {}
-
-## command_id -> {
-##   stage: StringName,         # &"draft" before handoff, &"dispatched" after
-##   spawn_pos: Vector3,         # tower spawn — where the courier originates
-##   source_pos: Vector3,        # believed location of the selected minions
-##   target_pos: Vector3,        # where those minions are ordered to go
-##   minion_ids: Array[int],     # the specific minions the courier carries orders for
-##   courier_id: int,            # -1 while a draft, real minion id once dispatched
-##   issued_tick: int,
-## }
-var pending_commands: Dictionary[int, Dictionary] = {}
-
-## Reports brought home by couriers when their targeted minions weren't at
-## the believed source location. Each entry: {tick, leg_source, minion_ids,
-## target_pos, courier_id}. Read by HUD code (or the war table) to surface
-## "your orders for these minions weren't delivered" to the overlord. Stored
-## in arrival order, never trimmed automatically.
-var failure_messages: Array[Dictionary] = []
+## group id -> { id, pos: Vector3, count: int, status: StringName, goal: int,
+##   dest_point: StringName, leader_id: int, experience: float,
+##   maneuvers: Array, tick: int, source: StringName }
+## GroupManager.AVATAR_GROUP_ID is the Paladin when this player holds him.
+var believed_groups: Dictionary[int, Dictionary] = {}
+## unit id -> { pos: Vector3, owner_peer_id: int, faction: int, tick: int }
+## Units of rivals and of the good faction seen by your people.
+var believed_enemies: Dictionary[int, Dictionary] = {}
+## Map points this player has on their map (GDD Q3).
+var known_points: Dictionary[StringName, bool] = {}
+## site node name -> { holder: int, tick: int }. Beacons are seen by all.
+var believed_sites: Dictionary[StringName, Dictionary] = {}
+## Orders this player has sent: cmd id -> { group_ids: Array[int],
+##   route_points: Array[StringName], dest_point: StringName, goal: int,
+##   stage: StringName (&"requested", &"dispatched", &"delivered", &"undelivered",
+##   &"lost", &"refused"), courier_id: int, tick: int }
+var orders: Dictionary[int, Dictionary] = {}
+## Pieces moved by hand on the map floor to guess or plan (GDD Q10): group id
+## (or enemy unit id, negated - 1000000) -> world position. Cleared by asking
+## the advisor to update the map.
+var piece_overrides: Dictionary[int, Vector3] = {}
+## Couriers waiting at the tower (mirrored from the host).
+var couriers_home: int = 0
+## The advisor's most recent report lines.
+var last_report_lines: Array[String] = []
 
 ## What this player has on record (GDD §2 "Desk with books", Q37): leaders'
-## maneuvers, relics held, what's been learned. Appended by systems as reports
-## arrive; read by the desk. Each entry:
+## maneuvers, relics held, what's been learned. Each entry:
 ##   { kind: StringName (&"report", &"group", &"relic", &"site", ...),
 ##     title: String, text: String, tick: int }
 var records: Array[Dictionary] = []
 ## The player's own free notes, written at the desk. Local to this peer.
 var notes: String = ""
 
-
 func add_record(kind: StringName, title: String, text: String, tick: int) -> void:
 	var entry := {"kind": kind, "title": title, "text": text, "tick": tick}
 	records.append(entry)
 	record_added.emit(entry)
 
-func update_minion_sighting(
-	minion_id: int,
-	pos: Vector3,
-	owner_peer_id: int,
-	faction: int,
-	tick: int,
-	is_friendly: bool,
-	source: StringName = &"broadcast",
-) -> void:
-	var entry: Dictionary = {
-		"pos": pos,
-		"owner_peer_id": owner_peer_id,
-		"faction": faction,
-		"last_updated_tick": tick,
-		"source": source,
+func is_point_known(point_id: StringName) -> bool:
+	return known_points.get(point_id, false)
+
+func update_group(entry: Dictionary, tick: int, source: StringName) -> void:
+	var gid := int(entry.get("id", -1))
+	var e := entry.duplicate(true)
+	e["tick"] = tick
+	e["source"] = source
+	if int(e.get("count", 1)) <= 0:
+		believed_groups.erase(gid)
+		return
+	believed_groups[gid] = e
+
+func update_enemy(entry: Dictionary) -> void:
+	var uid := int(entry.get("id", -1))
+	believed_enemies[uid] = {
+		"pos": entry.get("pos", Vector3.ZERO),
+		"owner_peer_id": int(entry.get("owner_peer_id", -1)),
+		"faction": int(entry.get("faction", GameConstants.Faction.NEUTRAL)),
+		"tick": int(entry.get("observed_tick", 0)),
 	}
-	if is_friendly:
-		believed_friendly_minions[minion_id] = entry
-		believed_enemy_minions.erase(minion_id)
-	else:
-		believed_enemy_minions[minion_id] = entry
-		believed_friendly_minions.erase(minion_id)
 
-func forget_minion(minion_id: int) -> void:
-	believed_friendly_minions.erase(minion_id)
-	believed_enemy_minions.erase(minion_id)
+func forget_enemy(unit_id: int) -> void:
+	believed_enemies.erase(unit_id)
 
-func all_believed_minions() -> Array[Dictionary]:
-	var out: Array[Dictionary] = []
-	for entry in believed_friendly_minions.values():
-		out.append(entry)
-	for entry in believed_enemy_minions.values():
-		out.append(entry)
-	return out
+func piece_position(key: int, believed: Vector3) -> Vector3:
+	return piece_overrides.get(key, believed)

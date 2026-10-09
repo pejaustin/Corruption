@@ -26,6 +26,8 @@ var _target: MinionActor = null
 var _waypoint: Vector3 = Vector3.ZERO
 var _has_waypoint: bool = false
 var _repath_timer: float = 0.0
+## Remaining points of a courier-delivered route, walked in order.
+var _route: Array[Vector3] = []
 
 func _ready() -> void:
 	var input: AvatarInput = get_node("../AvatarInput")
@@ -47,8 +49,19 @@ func command_move(pos: Vector3) -> void:
 	_waypoint = pos
 	_has_waypoint = true
 
+func command_route(route: Array) -> void:
+	## Courier-delivered order: walk the route's points in order (GDD §8: "Left
+	## alone, he follows orders, moves with armies").
+	_route.clear()
+	for p in route:
+		_route.append(p)
+	if _route.is_empty():
+		return
+	command_move(_route.pop_front())
+
 func clear_orders() -> void:
 	_has_waypoint = false
+	_route.clear()
 	_target = null
 
 func drive(input: AvatarInput) -> void:
@@ -73,6 +86,8 @@ func drive(input: AvatarInput) -> void:
 		var dist := _flat_distance(_waypoint)
 		if dist <= ARRIVE_RADIUS:
 			_has_waypoint = false
+			if not _route.is_empty():
+				command_move(_route.pop_front())
 			return
 		_steer_toward(_waypoint, input)
 		input.run_input = dist > RUN_DISTANCE

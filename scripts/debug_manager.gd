@@ -42,21 +42,19 @@ func toggle_courier_visual_range() -> void:
 	print("[Debug] Courier visual range: %s" % ("ON" if show_courier_visual_range else "OFF"))
 
 func toggle_instant_commands() -> void:
-	## Flips KnowledgeManager.INSTANT_COMMANDS. With it ON, war-table dispatch
-	## bypasses the courier loop entirely and minions snap to their orders;
-	## with it OFF (default for "real" play) every order has to ride a courier.
+	## Flips KnowledgeManager.INSTANT_COMMANDS: ON, the advisor's orders reach
+	## groups at once instead of riding a courier.
 	KnowledgeManager.INSTANT_COMMANDS = not KnowledgeManager.INSTANT_COMMANDS
 	print("[Debug] INSTANT_COMMANDS: %s" % ("ON" if KnowledgeManager.INSTANT_COMMANDS else "OFF"))
 
-func toggle_infinite_broadcast_range() -> void:
-	## Flips KnowledgeManager.INFINITE_BROADCAST_RANGE. ON = every minion
-	## continuously updates every overlord's WorldModel (debug-friendly,
-	## belief == truth). OFF = the production information-warfare model where
-	## sightings only reach a peer's WorldModel when within BROADCAST_RANGE
-	## of one of their friendly minions; out-of-range pieces go stale and
-	## eventually pick up a "?" badge on the table.
-	KnowledgeManager.INFINITE_BROADCAST_RANGE = not KnowledgeManager.INFINITE_BROADCAST_RANGE
-	print("[Debug] INFINITE_BROADCAST_RANGE: %s" % ("ON" if KnowledgeManager.INFINITE_BROADCAST_RANGE else "OFF"))
+func toggle_read_couriers() -> void:
+	## Host: lets the local player read captured couriers' papers (the unlock
+	## itself is Austin's to design, ticket #543).
+	if not multiplayer.is_server():
+		return
+	var me := multiplayer.get_unique_id()
+	KnowledgeManager.can_read_couriers[me] = not KnowledgeManager.can_read_couriers.get(me, false)
+	print("[Debug] Read captured couriers: %s" % ("ON" if KnowledgeManager.can_read_couriers[me] else "OFF"))
 
 func add_dummy_player() -> void:
 	if not multiplayer.is_server():

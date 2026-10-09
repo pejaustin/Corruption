@@ -9,6 +9,11 @@ class_name OverlordActor extends PlayerActor
 @export var _camera_input: CameraInput
 
 var _overlord_active: bool = true
+## The scroll of orders in this overlord's hand (GDD §3: "a scroll of orders
+## appears in your hand"), empty when holding nothing. Local to its owner:
+## { group_ids, believed, route_points, route, dest_point, dest_kind }.
+var held_order: Dictionary = {}
+var _scroll_visual: MeshInstance3D
 
 ## Public accessor for the player's visual model. Use this instead of
 ## get_node("Model") so consumers don't depend on child naming.
@@ -65,3 +70,50 @@ func _set_model_layer(layer: int) -> void:
 		if node is VisualInstance3D:
 			node.set_layer_mask_value(layer, true)
 			node.set_layer_mask_value(other_layer, false)
+
+# --- The scroll of orders (held item) ---
+
+func hold_order(order: Dictionary) -> void:
+	held_order = order.duplicate(true)
+	_show_scroll(true)
+
+func take_order() -> Dictionary:
+	var order := held_order
+	held_order = {}
+	_show_scroll(false)
+	return order
+
+func is_holding_order() -> bool:
+	return not held_order.is_empty()
+
+func _show_scroll(show: bool) -> void:
+	## PLACEHOLDER: art — a rolled scroll held at the bottom right of the view.
+	if _scroll_visual == null and show:
+		var cam := _camera_input.camera_3d if _camera_input else null
+		if cam == null:
+			return
+		_scroll_visual = MeshInstance3D.new()
+		_scroll_visual.name = "HeldScroll"
+		var mesh := CylinderMesh.new()
+		mesh.top_radius = 0.03
+		mesh.bottom_radius = 0.03
+		mesh.height = 0.28
+		_scroll_visual.mesh = mesh
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.9, 0.84, 0.66)
+		_scroll_visual.material_override = mat
+		_scroll_visual.position = Vector3(0.22, -0.2, -0.45)
+		_scroll_visual.rotation = Vector3(0.3, 0.0, 1.2)
+		_scroll_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		cam.add_child(_scroll_visual)
+	if _scroll_visual:
+		_scroll_visual.visible = show
+
+func _unhandled_input(event: InputEvent) -> void:
+	if multiplayer.get_unique_id() != str(name).to_int() or not _overlord_active:
+		return
+	# Q tears up the scroll in hand.
+	if event.is_action_pressed("cancel") and is_holding_order() and not Interactable.has_modal():
+		take_order()
+		KnowledgeManager.advisor_spoke.emit("PLACEHOLDER: You tear up the orders.")
+		get_viewport().set_input_as_handled()

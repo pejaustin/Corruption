@@ -98,6 +98,8 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 		if target == null or target == actor:
 			continue
 		var final_damage := int(base_final * hurtbox.get_damage_multiplier())
+		if target is MinionActor:
+			(target as MinionActor).last_hit_by = actor.get_allegiance()
 		target.take_damage(final_damage)
 		if lifesteal:
 			var heal := int(final_damage * LIFESTEAL_RATIO)

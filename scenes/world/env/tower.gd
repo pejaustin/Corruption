@@ -27,7 +27,7 @@ var rally_point: MinionRallyPoint
 ## war-table handoffs.
 var advisor: MinionActor
 ## Peer this tower belongs to. Set by bind_advisor (which runs on every client
-## via the same RPC that binds the rally point). The WarTable child uses this
+## via the same RPC that binds the rally point). The MapFloor child uses this
 ## to gate rendering + interactivity so each overlord only sees / acts on
 ## their own table — foreign tables stay inert in the local client.
 var owner_peer_id: int = -1

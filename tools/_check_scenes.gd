@@ -2,7 +2,7 @@ extends SceneTree
 
 func _init() -> void:
 	var paths := [
-		"res://scenes/interactibles/war_table.tscn",
+		"res://scenes/map/map_floor.tscn",
 		"res://scenes/sites/corruption_site.tscn",
 	]
 	var any_fail := false

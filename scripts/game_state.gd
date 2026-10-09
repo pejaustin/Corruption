@@ -47,6 +47,8 @@ var player_names: Dictionary[int, String] = {}
 # peer_id -> tower slot (0..MAX_PLAYERS-1). Set on every peer when the host
 # binds towers (MinionManager._bind_rally_rpc). Drives seat colours.
 var player_slots: Dictionary[int, int] = {}
+## peer_id -> extra route points an order may carry (order granularity, Q2).
+var route_point_bonus: Dictionary[int, int] = {}
 ## Match pace (MatchConfig.Pace), chosen by the host in the lobby.
 var match_pace: int = MatchConfig.Pace.NORMAL
 
@@ -321,6 +323,13 @@ func sync_player_names(names: Dictionary) -> void:
 func sync_match_pace(pace: int) -> void:
 	match_pace = pace
 
+func get_route_point_bonus(peer_id: int) -> int:
+	return route_point_bonus.get(peer_id, 0)
+
+@rpc("authority", "call_local", "reliable")
+func add_route_point_bonus(peer_id: int, amount: int) -> void:
+	route_point_bonus[peer_id] = get_route_point_bonus(peer_id) + amount
+
 func get_player_name(peer_id: int) -> String:
 	if peer_id < 0:
 		return "the good faction"
@@ -335,4 +344,5 @@ func reset() -> void:
 	player_factions.clear()
 	player_names.clear()
 	player_slots.clear()
+	route_point_bonus.clear()
 	match_pace = MatchConfig.Pace.NORMAL

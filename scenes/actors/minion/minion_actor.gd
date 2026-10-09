@@ -27,6 +27,10 @@ signal minion_died(minion: MinionActor)
 @export var stagger_invulnerable: bool = false
 
 var owner_peer_id: int = -1
+## The unit group this unit marches with (GroupManager); -1 = none.
+var group_id: int = -1
+## Owner of whoever last hurt this unit (for capture and kill credit).
+var last_hit_by: int = -1
 var minion_type_id: StringName = &""
 var minion_trait: StringName = &""
 var waypoint: Vector3 = Vector3.ZERO
@@ -51,6 +55,18 @@ var return_pos: Vector3 = Vector3.INF
 ## target_pos, leg_source}. Reported to KnowledgeManager on home arrival so
 ## the overlord knows their belief was stale and which orders went undelivered.
 var delivery_failures: Array[Dictionary] = []
+## Courier-only: points to walk through and back when sent alone to look
+## ("send a courier to look and come back").
+var scout_route: Array = []
+## Courier-only: the report it is carrying home (group snapshots, sightings,
+## points), filled in at each stop.
+var carried_report: Dictionary = {}
+## Courier-only: the orders it carries, readable by a captor (GDD Q4).
+var carried_orders: Array = []
+## Map points this unit passed close to (couriers report them on return).
+var discovered_points: Array[StringName] = []
+## Courier-only: sent home by its group on attack rather than from the tower.
+var is_runner: bool = false
 ## Mirrored from MinionType — read by courier_arrival_state to decide visibility
 ## and loiter time at each leg's source. Default zero (non-courier minions).
 var courier_visual_range: float = 0.0
@@ -257,6 +273,13 @@ func can_take_damage() -> bool:
 func get_faction_color() -> Color:
 	return GameState.get_player_color(get_allegiance())
 
+func take_damage(amount: int) -> void:
+	if multiplayer.is_server() and can_take_damage() and group_id >= 0:
+		var gm := _group_manager()
+		if gm:
+			gm.notify_member_hit(self)
+	super(amount)
+
 func _die() -> void:
 	super()
 	_death_timer = 0.0
@@ -273,9 +296,9 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		apply_gravity(delta)
 
-	# Only retreat-capable minions accumulate a field log — non-retreaters
-	# never make the trip home, so the log would be wasted CPU.
-	if can_retreat:
+	# Every owned unit watches; what it sees reaches its owner only when a
+	# courier or the unit itself gets home (GDD §4).
+	if owner_peer_id > 0:
 		_observe_timer += delta
 		if _observe_timer >= OBSERVE_INTERVAL:
 			_observe_timer = 0.0
@@ -292,13 +315,16 @@ func _physics_process(delta: float) -> void:
 	# Before despawning, flush any accumulated delivery_failures into the
 	# owner's WorldModel so the overlord gets a "missing" report for orders
 	# the courier couldn't deliver.
-	if return_zone != null and is_instance_valid(return_zone) and delivery_legs.is_empty():
+	if return_zone != null and is_instance_valid(return_zone) and delivery_legs.is_empty() and scout_route.is_empty():
 		if return_zone.overlaps_body(self):
 			if not delivery_failures.is_empty():
-				KnowledgeManager.notify_delivery_failures(owner_peer_id, delivery_failures)
+				var failures: Array = carried_report.get("failures", [])
+				failures.append_array(delivery_failures)
+				carried_report["failures"] = failures
 				delivery_failures.clear()
-			if _minion_manager and _minion_manager.has_method("notify_minion_died"):
-				_minion_manager.notify_minion_died(self)
+			KnowledgeManager.courier_arrived_home(self)
+			if _minion_manager and _minion_manager.has_method("despawn_minion"):
+				_minion_manager.despawn_minion(self)
 				return
 
 	_state_machine._rollback_tick(delta, 0, true)
@@ -348,40 +374,50 @@ func _interpolate_client(delta: float) -> void:
 	rotation.y = lerp_angle(rotation.y, _target_rot, INTERPOLATION_SPEED * delta)
 
 func _observe() -> void:
-	## Host-only. Sweep nearby actors and stash a sighting per hostile into
-	## _field_log so RetreatState can flush it to the owner's WorldModel on
-	## arrival home. Friendlies are intentionally not logged — the WorldModel's
-	## live broadcast path already covers your own units when in range.
+	## Host-only. Note every hostile or neutral unit (and the Paladin) nearby,
+	## and any map point passed close by. A grouped unit writes into its
+	## group's log; couriers keep their own. It all reaches the owner only when
+	## someone gets home with it (GDD §4).
 	if owner_peer_id < 0:
-		return  # neutral / world enemies have nothing to report
+		return
 	var observed_tick: int = KnowledgeManager.current_tick()
+	var gm := _group_manager()
 	for node in get_tree().get_nodes_in_group(&"actors"):
 		var other := node as Node3D
 		if other == null or other == self:
 			continue
 		if global_position.distance_to(other.global_position) > OBSERVE_RADIUS:
 			continue
-		var observed_id: int = -1
-		var observed_owner: int = -1
-		var observed_faction: int = GameConstants.Faction.NEUTRAL
+		var entry: Dictionary = {}
 		if other is MinionActor:
 			var mo: MinionActor = other
-			if mo.owner_peer_id == owner_peer_id:
-				continue  # ignore friendlies
-			observed_id = mo.name.to_int()
-			observed_owner = mo.owner_peer_id
-			observed_faction = mo.faction
+			if mo.owner_peer_id == owner_peer_id or mo.minion_trait == &"advisor":
+				continue
+			entry = {"id": mo.name.to_int(), "pos": mo.global_position, "owner_peer_id": mo.owner_peer_id,
+				"faction": mo.faction, "type_id": mo.minion_type_id, "observed_tick": observed_tick}
+		elif other is AvatarActor:
+			var av: AvatarActor = other
+			if GameState.is_avatar_owner(owner_peer_id):
+				continue
+			entry = {"id": KnowledgeManager.AVATAR_ID, "pos": av.global_position,
+				"owner_peer_id": GameState.avatar_owner_peer_id, "faction": av.faction,
+				"type_id": &"paladin", "observed_tick": observed_tick}
 		else:
-			# Avatar / other non-minion actors aren't logged to _field_log
-			# yet; the WorldModel's avatar slot is a separate concern.
 			continue
-		_field_log[observed_id] = {
-			"id": observed_id,
-			"pos": other.global_position,
-			"owner_peer_id": observed_owner,
-			"faction": observed_faction,
-			"observed_tick": observed_tick,
-		}
+		if group_id >= 0 and gm:
+			gm.log_sighting(group_id, entry)
+		else:
+			_field_log[int(entry["id"])] = entry
+	if minion_trait in KnowledgeManager.COURIER_TRAITS:
+		for p in MapPoint.all_points(get_tree()):
+			if p.point_id in discovered_points:
+				continue
+			if Vector2(p.global_position.x - global_position.x, p.global_position.z - global_position.z).length() <= GroupManager.DISCOVER_RADIUS:
+				discovered_points.append(p.point_id)
+
+func _group_manager() -> GroupManager:
+	var scene := get_tree().current_scene
+	return scene.get_node_or_null("GroupManager") as GroupManager if scene else null
 
 func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
 	_target_pos = pos

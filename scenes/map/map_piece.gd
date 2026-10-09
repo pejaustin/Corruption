@@ -1,0 +1,113 @@
+class_name MapPiece extends Interactable
+
+## A chess piece on the map floor: one of your groups (or the Paladin, if you
+## hold him) where the last report put it, or enemy units your people saw.
+## E selects your own pieces for an order; left mouse picks any piece up to
+## move it by hand (GDD Q10). A "?" marks a stale report.
+## PLACEHOLDER: art — a primitive chess piece tinted by owner.
+
+var floor_map: MapFloor
+var key: int = 0
+var owner_peer_id: int = -1
+var group_id: int = 0
+var count: int = 1
+var stale: bool = false
+var selected: bool = false
+var status: StringName = &""
+var is_avatar: bool = false
+
+var _mat: StandardMaterial3D
+var _label: Label3D
+
+static func create(map: MapFloor, piece_key: int, owner: int, avatar: bool) -> MapPiece:
+	var p := MapPiece.new()
+	p.floor_map = map
+	p.key = piece_key
+	p.owner_peer_id = owner
+	p.is_avatar = avatar
+	p.name = "Piece_%d" % absi(piece_key)
+	p.collision_layer = Interactable.INTERACTABLE_LAYER
+	p.collision_mask = 0
+	p.monitoring = false
+	var scale := 1.6 if avatar else 1.0
+	var shape := CollisionShape3D.new()
+	var cyl := CylinderShape3D.new()
+	cyl.radius = 0.14 * scale
+	cyl.height = 0.5 * scale
+	shape.shape = cyl
+	shape.position = Vector3(0, 0.25 * scale, 0)
+	p.add_child(shape)
+	p._mat = StandardMaterial3D.new()
+	var base := MeshInstance3D.new()
+	var body := CylinderMesh.new()
+	body.top_radius = 0.06 * scale
+	body.bottom_radius = 0.12 * scale
+	body.height = 0.3 * scale
+	base.mesh = body
+	base.position = Vector3(0, 0.15 * scale, 0)
+	base.material_override = p._mat
+	p.add_child(base)
+	var head := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.07 * scale
+	sphere.height = 0.14 * scale
+	head.mesh = sphere
+	head.position = Vector3(0, 0.36 * scale, 0)
+	head.material_override = p._mat
+	p.add_child(head)
+	p._label = Label3D.new()
+	p._label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	p._label.font_size = 40
+	p._label.pixel_size = 0.004
+	p._label.position = Vector3(0, 0.6 * scale, 0)
+	p.add_child(p._label)
+	return p
+
+func is_mine() -> bool:
+	return owner_peer_id == multiplayer.get_unique_id() and group_id != 0
+
+func refresh() -> void:
+	var color := GameState.get_player_color(owner_peer_id)
+	if selected:
+		color = color.lightened(0.5)
+	_mat.albedo_color = color
+	_mat.emission_enabled = selected
+	_mat.emission = color
+	var text := ("PALADIN" if is_avatar else str(count))
+	if stale:
+		text += " ?"
+	_label.text = text
+
+func get_prompt_text() -> String:
+	# PLACEHOLDER: wording.
+	if floor_map == null or not floor_map.is_active_for_local_peer():
+		return ""
+	if floor_map.carried_piece == key:
+		return "[LMB] put it down"
+	var who := "the Paladin" if is_avatar else ("your group %d" % group_id if is_mine() else "%d of %s" % [count, GameState.get_player_name(owner_peer_id)])
+	var lines := "%s%s%s" % [who, (" (%s)" % status) if status != &"" and is_mine() else "", " — old news" if stale else ""]
+	if is_mine():
+		var player := floor_map.local_player()
+		if player and player.is_holding_order():
+			return lines
+		return "%s\n[E] %s   [LMB] move by hand" % [lines, "deselect" if selected else "select"]
+	return "%s\n[LMB] move by hand" % lines
+
+func get_prompt_color() -> Color:
+	return Color(1, 1, 0.6) if is_mine() else Color(0.9, 0.8, 0.8)
+
+func _on_interact() -> void:
+	if not is_mine():
+		return
+	var player := floor_map.local_player()
+	if player and player.is_holding_order():
+		return
+	floor_map.toggle_group(group_id)
+
+func _unhandled_input(event: InputEvent) -> void:
+	super(event)
+	if not _is_focused or floor_map == null:
+		return
+	if event.is_action_pressed("primary_ability") and floor_map.carried_piece == 0:
+		floor_map.pick_up(key)
+		get_viewport().set_input_as_handled()

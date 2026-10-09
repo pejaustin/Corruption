@@ -12,6 +12,8 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Which site type stands where, and how many | The first map's sites | `scenes/world/world.tscn` (`SiteChapel`, `SiteAvatar`, `SiteBoss`) | #584 |
 | Good-faction growth flavour lines | Flavour moments as the good faction grows | `scripts/good_faction.gd` `FLAVOUR_LINES` | #562 |
 | Which undead the summoning circle raises, one body each | Unit types and their cost in remains | `scripts/interactibles/summoning_circle.gd` | — |
+| The first map: 18 points (4 towers, 4 roads, the 3 sites, the city, 2 villages, 2 mines, an unknown ford and crossing), their labels and links | The first map's points, settlements, sites and city | `scenes/world/world.tscn` `World/MapPoints` | #584 |
+| Advisor lines: goal names, questions, report sentences, dispatch/refusal lines | The advisor's voice | `scripts/orders/order_goal.gd`, `scripts/interactibles/advisor_handoff.gd`, `scripts/knowledge/knowledge_manager.gd` | #585 |
 
 ## Art and look
 
@@ -21,6 +23,8 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Site marker (stone disc + tinted crystal) and the beacon (a coloured column of light) | Site and beacon art | `scenes/sites/corruption_site.gd` | #553 |
 | Desk look (box table and red book) | Desk and book art | `scenes/interactibles/desk.tscn` | #570 |
 | Ruined tower = hidden roof pieces, revealed as sites are held | Tower restoration stages | `scenes/world/env/tower.gd` | #567 |
+| Map floor illustration (parchment + terrain contours), point discs, chess pieces, ink ribbons | Map art | `scenes/map/` | #534, #538 |
+| Held scroll (a cylinder at the corner of the view); advisor subtitles and choice panel | Scroll and dialogue look | `overlord_actor.gd`, `scenes/ui/advisor_dialogue.gd` | — |
 | Mirror ring: a pulsing purple halo quad plus light, and a synthesized two-tone chime | How a ringing mirror looks and sounds (Q34: "chimes or glows") | `scripts/interactibles/mirror.gd` `_setup_ring_effects`, `_make_chime` | #569 |
 | Mirror prompt and notice text ("Press E to call", "No answer. Recording a message.", "Line busy.", "Call ended.", ...) | The mirror's UI wording | `scripts/interactibles/mirror.gd` `get_prompt_text` and call handlers | #569 |
 
@@ -35,7 +39,10 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Value | Where |
 |---|---|
 | Pace presets: unit speed ×1.0 / ×0.4; good-faction growth every 360 s / 1200 s | `scripts/match_config.gd` |
-| Starting group size 4; starting couriers 2 | `scripts/match_config.gd` |
+| Starting group size 4; starting couriers 2; 3 route points per order | `scripts/match_config.gd` |
+| Assessing groups watch 20 s; stuck after 8 s without progress | `scripts/groups/group_manager.gd` |
+| Courier training 90 s; teaching 120 s; successor keeps each maneuver at 50% and half the experience | `scripts/groups/training.gd` |
+| Ink takes 3 s to darken; pieces show "?" after 90 s | `scenes/map/map_floor.gd` |
 | Site thresholds, corrupt / slip / purify times per type | `data/sites/*.tres` |
 | The Paladin counts as 12 troops at a site | `scenes/sites/corruption_site.gd` `AVATAR_STRENGTH` |
 | Beacon lasts 20 s | `scenes/sites/corruption_site.gd` `BEACON_SECONDS` |

@@ -99,4 +99,5 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 			# Minions don't have a RollbackSynchronizer draining incoming_damage,
 			# so apply the hit directly on the host. HP is broadcast to clients
 			# via MinionManager._sync_minion_actor.
+			other.last_hit_by = minion.owner_peer_id
 			other.take_damage(dmg)

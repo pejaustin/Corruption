@@ -42,16 +42,16 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 
 ## Status
 
-- [ ] 0 Foundation
-- [ ] 1 Corruption sites
-- [ ] 2 Information
-- [ ] 3 Map and orders
+- [x] 0 Foundation
+- [x] 1 Corruption sites
+- [x] 2 Information
+- [x] 3 Map and orders
 - [ ] 4 Troops and humans
 - [ ] 5 Goods
 - [ ] 6 The Paladin
 - [ ] 7 Endgame
 - [ ] 8 Tower stations
-- [ ] 9 Mirror
+- [x] 9 Mirror
 - [ ] 10 Getting better
 
 ## Checking it

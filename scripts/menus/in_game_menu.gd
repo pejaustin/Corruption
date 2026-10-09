@@ -143,7 +143,7 @@ func _on_instant_commands_pressed() -> void:
 	DebugManager.toggle_instant_commands()
 
 func _on_broadcast_range_pressed() -> void:
-	DebugManager.toggle_infinite_broadcast_range()
+	DebugManager.toggle_read_couriers()
 
 func _on_order_avatar_pressed() -> void:
 	DebugManager.order_avatar_to_camera()

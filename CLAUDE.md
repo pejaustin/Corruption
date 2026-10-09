@@ -418,25 +418,27 @@ permanent `TowerSite` held by its owner (sackable, never lost). `GameState.site_
 tower restoration). `GoodFaction` (world node) raises every threshold over time, darkens sites and ends the match in a
 draw.
 
-### Information-warfare layer (`KnowledgeManager` autoload)
+### Information, orders and groups (GDD §3–§5)
 
-The War Table renders an overlord's **belief**, not truth. Each peer has a `WorldModel` (per-peer dict of believed minion sightings, timestamped) maintained by the `KnowledgeManager` autoload at `scripts/knowledge/`. War Table commands route through `KnowledgeManager.issue_move_command(peer_id, minion_ids: Array[int], target_pos)` — note the **selection-based** signature: a draft is for a specific set of minion ids, not "everything you own." Minion deaths fan out via `KnowledgeManager.notify_minion_removed(id)`.
-
-The table uses a **two-click flow**: click a friendly piece on the diorama to toggle it in `WarTable._selected_minion_ids`, click empty map to submit. With `INSTANT_COMMANDS=false`, the submit records a draft entry (`stage`, `spawn_pos`, `source_pos`, `target_pos`, `minion_ids`, `courier_id`); E at the Advisor (`advisor_handoff.gd`) dispatches a real Courier per draft, which travels to the believed source, sets each delivery target's waypoint to `target_pos`, then walks home and despawns.
-
-Two feature flags gate the "full information-warfare" behavior so the rest of the game keeps playing during iteration. Both are `static var` (runtime-mutable, e.g. test harnesses can A/B-toggle without restarting). **Both default `false` (the canonical "real game" behavior); flip ON for debug shortcuts:**
-- `INFINITE_BROADCAST_RANGE: bool = false` — ON: every minion updates every model every tick (belief ≈ truth). OFF: broadcast-range gating, beliefs go stale.
-- `INSTANT_COMMANDS: bool = false` — ON: commands apply immediately (selected ids' waypoints set directly, no courier loop). OFF: orders ride the draft → Paper → Advisor → Courier pipeline.
-
-**The Avatar is a war-table pawn too** (reserved id `KnowledgeManager.AVATAR_ID = -100`): while owned and alive it enters WorldModels like a minion sighting (owner always sees it; rivals by broadcast range), renders as an oversized "AVATAR" piece, and is selectable/commandable only by its owner. Order delivery routes to `AvatarAI.command_move` — via `KnowledgeManager.request_avatar_move` (instant path) or the courier's arrival state (courier path) — never to a `MinionActor` waypoint. See `docs/systems/avatar-possession.md`.
-
-`WarTable` (script `scripts/interactibles/war_table.gd`, `class_name WarTable`) exports `map_world_size: Vector2` and `map_world_center: Vector3` directly on the interactable; the setters tunnel to the `Map` child's `WarTableMap` so per-tower regions are configured next to the rest of the table's setup. `WarTableMap` still owns `table_surface_size` and the piece spawner. `WarTableRange` is a `@tool` MeshInstance3D that draws a semi-transparent BoxMesh at the map's effective region so designers can see it in both editor and play.
-
-Isolated iteration harness: `scenes/test/war_table_test.tscn` — runs the **real** `OverlordActor`, `WarTable.tscn`, `MinionManager`, and `MinionActor`s, single-peer via `OfflineMultiplayerPeer`. Edits to `war_table.tscn` propagate. Starter minions are authored as `StartingMinionSpec` Marker3D children under `World/StartingMinions` — set `type_id`/`faction`/`owner_peer_id` in the inspector and the controller spawns one real `MinionActor` per spec on `_ready`. Hotkeys `1`–`4` spawn factioned minions, `F` cycles your faction, `K`/`R` kill/reset, `T`/`B` toggle the flags above, `Esc` releases mouse, `Shift+Esc` quits.
-
-Minion-vs-minion physical collision is intentionally OFF (`minion_actor.gd:COLLISION_MASK_MOVEMENT = COLLISION_MASK_WORLD`); the `NavigationAgent3D`'s RVO avoidance handles spacing instead. This sidesteps the cluster-stop bug where the first minion to reach a shared waypoint would park and physically block late arrivers from finishing their nav path.
-
-Full design: `docs/systems/war-table.md`.
+- **No free information.** Each player's `WorldModel` (`scripts/knowledge/world_model.gd`, on their own machine) changes
+  only through `KnowledgeManager` reports: groups at their own tower gate (live), couriers and groups coming home,
+  beacons (`site_changed`, seen by all), and what the Paladin's controller sees. The simulation never reads it.
+- **Groups** (`scripts/groups/`): every player unit is in a `UnitGroup` (host-side, `GroupManager` node in the world).
+  Orders go to groups: walk the route's points, then the goal (`OrderGoal`): hold (`GO_HERE`, `CORRUPT`), watch and
+  come home (`ASSESS`), or a registered `goal_handlers` callable (haul, capture, the dead, offers). A group that can't
+  reach its next point stops (`status = &"stuck"`) until new orders. Units log sightings into their group's log; a
+  report is `GroupManager.make_report(group)`.
+- **Couriers**: a pool per player (`KnowledgeManager.get_couriers_home`, starting `MatchConfig.STARTING_COURIERS`).
+  `request_dispatch(order)` (owner) → host spawns a courier that visits each group's believed position, hands over the
+  order, takes the group's report, walks any scouting route, and reports at home (`courier_arrived_home`). Couriers
+  killed by a rival count as captured (`courier_lost`; readable with `can_read_couriers`). Groups with
+  `auto_courier` send a runner home on the first hit. Training: `request_train_courier()`.
+- **The map floor** (`scenes/map/`, `MapFloor` in each tower, 14 m on the hall floor): `MapPoint` markers authored under
+  `World/MapPoints` (known at start or discovered by reports), `MapPiece` chess pieces from beliefs (E select, LMB move
+  by hand), walking over points records the route (limit `MatchConfig.STARTING_ROUTE_POINTS` +
+  `GameState.get_route_point_bonus`), E on a point = destination → a scroll in hand (`OverlordActor.held_order`, Q
+  tears it up) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and dispatches. Sent orders
+  darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tools/tests/test_orders.tscn`.
 
 ### Desk (`scripts/interactibles/desk.gd`)
 
