@@ -98,11 +98,37 @@ func click(button: MouseButton = MOUSE_BUTTON_LEFT) -> void:
 		await frames(2)
 
 func look(dx: float, dy: float) -> void:
+	## Mouse motion when the mouse is captured. A headless run never gets a
+	## captured mouse (CameraInput then ignores motion), so the same look is
+	## sent through the right-stick actions, which drive the same rotation.
+	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		await _look_with_stick(dx * MOUSE_SENS, dy * MOUSE_SENS)
+		return
 	var ev := InputEventMouseMotion.new()
 	ev.relative = Vector2(dx, dy)
 	ev.position = get_viewport().get_visible_rect().size * 0.5
 	Input.parse_input_event(ev)
 	await get_tree().process_frame
+
+func _look_with_stick(yaw_rad: float, pitch_rad: float) -> void:
+	# CameraInput turns total * 5 * delta radians per frame from camera_* actions.
+	var per_unit: float = CameraInput.CAMERA_JOYSTICK_ROTATION_SPEED * maxf(get_process_delta_time(), 0.001)
+	var sx := clampf(yaw_rad / per_unit, -1.0, 1.0)
+	var sy := clampf(pitch_rad / per_unit, -1.0, 1.0)
+	_stick(&"camera_right", &"camera_left", sx)
+	_stick(&"camera_down", &"camera_up", sy)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_stick(&"camera_right", &"camera_left", 0.0)
+	_stick(&"camera_down", &"camera_up", 0.0)
+
+func _stick(pos: StringName, neg: StringName, v: float) -> void:
+	for pair in [[pos, maxf(v, 0.0)], [neg, maxf(-v, 0.0)]]:
+		var ev := InputEventAction.new()
+		ev.action = pair[0]
+		ev.pressed = pair[1] > 0.0
+		ev.strength = pair[1]
+		Input.parse_input_event(ev)
 
 # --- Aiming and walking ---
 

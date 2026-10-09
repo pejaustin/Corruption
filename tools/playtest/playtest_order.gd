@@ -184,8 +184,10 @@ func _play() -> void:
 	step(pal != null, "my tower has a Palantir")
 	if pal == null:
 		return
-	await drv.walk_to(_stand_off(player.global_position, pal.global_position, 1.5), 0.3, 40.0)
-	await drv.aim_at(pal.global_position)
+	await _climb_stairs(floor_map.get_parent() as Node3D, pal)
+	var arrived: bool = await drv.walk_to(_stand_off(player.global_position, pal.global_position, 1.5), 0.3, 40.0)
+	var looked: bool = await drv.aim_at(pal.global_position)
+	drv.say("at the Palantir: arrived %s, aimed %s, pos %s, Palantir %s" % [arrived, looked, player.global_position, pal.global_position])
 	step(drv.prompt().to_lower().contains("scry"), "the Palantir offers scrying (prompt: %s)" % drv.prompt())
 	await drv.press_action(&"interaction")
 	await drv.seconds(0.6)
@@ -194,6 +196,27 @@ func _play() -> void:
 	await drv.screenshot("11_palantir_scry")
 	await drv.press_action(&"cancel")
 	step(pal.get("_is_scrying") == false, "Q returns from the Palantir")
+
+func _climb_stairs(tower: Node3D, pal: Node3D) -> void:
+	## The Palantir is on the tower's second floor. Walk to the foot of the
+	## stair slope (tower-local x 11, z -10.75), up it toward -x, and jump the
+	## lip at the top, all with held keys.
+	var player := drv.player as Node3D
+	var foot: Vector3 = tower.to_global(Vector3(11.0, 0.0, -10.75))
+	await drv.walk_to(Vector2(foot.x, foot.z), 0.4, 40.0)
+	var top: Vector3 = tower.to_global(Vector3(-4.6, 0.0, -10.75))
+	await drv.aim_at(Vector3(top.x, drv.camera.global_position.y, top.z))
+	drv.hold_action(&"forward")
+	var waited := 0.0
+	while not (player.global_position.y > pal.global_position.y - 2.0 and (player as CharacterBody3D).is_on_floor()) and waited < 15.0:
+		var to_top := Vector2(top.x - player.global_position.x, top.z - player.global_position.z)
+		if to_top.length() < 2.5:
+			await drv.press_action(&"jump", 0.1)  # the slope ends in a small lip
+		await drv.seconds(0.3)
+		waited += 0.3
+	drv.release_all()
+	await drv.seconds(0.5)
+	drv.say("upstairs at y %.1f (Palantir y %.1f)" % [player.global_position.y, pal.global_position.y])
 
 func _my_advisor(mm: MinionManager) -> MinionActor:
 	for m in mm.get_minions_for_player(1):

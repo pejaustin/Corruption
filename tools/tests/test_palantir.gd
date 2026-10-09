@@ -67,6 +67,8 @@ func _aim_at(player: OverlordActor, cam: Camera3D, pal: Node3D) -> void:
 		drv.name = "Driver"
 		add_child(drv)
 	drv.bind(player, cam)
+	if pal.global_position.y - player.global_position.y > 3.0:
+		await _climb_to_level_of(player, pal)
 	var here := Vector2(player.global_position.x, player.global_position.z)
 	var there := Vector2(pal.global_position.x, pal.global_position.z)
 	var stand := there - (there - here).normalized() * 1.5
@@ -74,6 +76,27 @@ func _aim_at(player: OverlordActor, cam: Camera3D, pal: Node3D) -> void:
 	check(arrived, "walked up to the Palantir")
 	await drv.aim_at(pal.global_position)
 	await frames(5)
+
+func _climb_to_level_of(player: OverlordActor, pal: Node3D) -> void:
+	## The Palantir stands on the tower's second floor (Austin's placement).
+	## This test is about interacting, not the stairs: put the overlord on that
+	## floor, a few metres from it.
+	var space := player.get_world_3d().direct_space_state
+	var dirs := [Vector3(0, 0, -1), Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(-1, 0, 0)]
+	for d in dirs:
+		var probe: Vector3 = pal.global_position + d * 3.0
+		var query := PhysicsRayQueryParameters3D.create(probe + Vector3.UP * 1.0, probe + Vector3.DOWN * 4.0, 1)
+		query.exclude = [player.get_rid()]
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			continue
+		var xform := player.global_transform
+		xform.origin = hit.position + Vector3.UP * 1.0
+		player.pin_transform(xform)
+		await frames(10)
+		player.unpin_transform()
+		await frames(20)
+		return
 
 func _press_e() -> void:
 	await _press("interaction")
