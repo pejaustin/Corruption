@@ -386,14 +386,115 @@ func _resolve_minion_type(faction: int, type_id: StringName) -> MinionType:
 
 # --- Neutral spawns (world enemies like zombies, guardian boss) ---
 
-func spawn_neutral_minion(pos: Vector3, type_id: StringName = &"neutral_zombie", waypoint: Vector3 = Vector3.INF) -> void:
+func spawn_neutral_minion(pos: Vector3, type_id: StringName = &"neutral_zombie", waypoint: Vector3 = Vector3.INF) -> int:
 	## Host-only. Spawns a good-faction NPC (owner_peer_id = -1, faction = NEUTRAL).
 	if not multiplayer.is_server():
-		return
+		return -1
 	var id := _next_minion_id
 	_next_minion_id += 1
 	var wp := waypoint if waypoint != Vector3.INF else pos
 	_spawn_minion_rpc.rpc(id, -1, GameConstants.Faction.NEUTRAL, pos, String(type_id), wp)
+	return id
+
+# --- Ownership changes (bought nobles, thralls) ---
+
+func set_unit_owner(minion: MinionActor, peer_id: int) -> void:
+	## Host-only: a unit changes sides (a bought noble joins you, or defects).
+	if not multiplayer.is_server():
+		return
+	_set_unit_owner_rpc.rpc(minion.name.to_int(), peer_id)
+	var gm := get_tree().current_scene.get_node_or_null("GroupManager") as GroupManager
+	if gm == null:
+		return
+	var old := gm.get_group(minion.group_id)
+	if old:
+		old.member_ids.erase(minion.name.to_int())
+	minion.group_id = -1
+	if peer_id > 0:
+		gm.join_home_group(peer_id, minion)
+
+@rpc("authority", "call_local", "reliable")
+func _set_unit_owner_rpc(id: int, peer_id: int) -> void:
+	var m := get_minion_by_id(id)
+	if m == null:
+		return
+	m.owner_peer_id = peer_id
+	m.faction = _get_player_faction(peer_id) if peer_id > 0 else GameConstants.Faction.NEUTRAL
+
+# --- Carrying (bodies, captives, goods) ---
+
+func set_carry(minion: MinionActor, kind: StringName, amount: int = 0) -> void:
+	## Host-only. What a unit carries, mirrored to every peer for its look.
+	if not multiplayer.is_server():
+		return
+	_set_carry_rpc.rpc(minion.name.to_int(), kind, amount)
+
+@rpc("authority", "call_local", "reliable")
+func _set_carry_rpc(id: int, kind: StringName, amount: int) -> void:
+	var m := get_minion_by_id(id)
+	if m:
+		m.set_carrying(kind, amount)
+
+# --- Bodies (GDD §5: undead are raised from the bodies of killed humans) ---
+
+var _bodies: Dictionary[int, Body] = {}
+var _next_body_id: int = 1
+
+func spawn_body(pos: Vector3) -> void:
+	## Host-only.
+	if not multiplayer.is_server():
+		return
+	var id := _next_body_id
+	_next_body_id += 1
+	_spawn_body_rpc.rpc(id, pos)
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_body_rpc(id: int, pos: Vector3) -> void:
+	var body := Body.new()
+	body.body_id = id
+	body.name = "Body%d" % id
+	if _minions_node:
+		_minions_node.get_parent().add_child(body)
+	body.global_position = pos
+	_bodies[id] = body
+
+func take_body(body: Body) -> void:
+	## Host-only: someone picked it up.
+	if multiplayer.is_server() and body.body_id in _bodies:
+		_remove_body_rpc.rpc(body.body_id)
+
+@rpc("authority", "call_local", "reliable")
+func _remove_body_rpc(id: int) -> void:
+	var body: Body = _bodies.get(id)
+	_bodies.erase(id)
+	if body and is_instance_valid(body):
+		body.queue_free()
+
+func get_bodies() -> Array[Body]:
+	var out: Array[Body] = []
+	for b in _bodies.values():
+		if is_instance_valid(b):
+			out.append(b)
+	return out
+
+# --- Treasury (GDD §6: the treasure room shows the tower's holdings exactly) ---
+
+## peer_id -> goods held at that player's tower.
+var treasury: Dictionary[int, int] = {}
+signal treasury_changed(peer_id: int, amount: int)
+
+func get_treasury(peer_id: int) -> int:
+	return treasury.get(peer_id, 0)
+
+func add_treasury(peer_id: int, amount: int) -> void:
+	## Host-only.
+	if multiplayer.is_server():
+		_sync_treasury.rpc(peer_id, maxi(0, get_treasury(peer_id) + amount))
+
+@rpc("authority", "call_local", "reliable")
+func _sync_treasury(peer_id: int, amount: int) -> void:
+	treasury[peer_id] = amount
+	treasury_changed.emit(peer_id, amount)
 
 func spawn_named_minion_for_peer(peer_id: int, type_id: StringName, pos: Vector3, waypoint: Vector3 = Vector3.INF) -> int:
 	## Host-only. Spawns a specific minion type for a specific owner — used by

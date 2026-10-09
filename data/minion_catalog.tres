@@ -18,6 +18,11 @@
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/courier_actor.tscn" id="17_courier"]
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/scout_actor.tscn" id="18_scout"]
 
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/villager.tscn" id="20_villager"]
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/noble.tscn" id="21_noble"]
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/thrall.tscn" id="22_thrall"]
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/holy_knight.tscn" id="23_knight"]
+
 [resource]
 script = ExtResource("1_script")
-scenes = Array[PackedScene]([ExtResource("2_skeleton"), ExtResource("3_ghoul"), ExtResource("4_wraith"), ExtResource("5_imp"), ExtResource("6_hellhound"), ExtResource("7_pit_fiend"), ExtResource("8_sprite"), ExtResource("9_treant"), ExtResource("10_wisp"), ExtResource("11_cultist"), ExtResource("12_eye_horror"), ExtResource("13_shoggoth"), ExtResource("14_zombie"), ExtResource("16_advisor"), ExtResource("17_courier"), ExtResource("18_scout")])
+scenes = Array[PackedScene]([ExtResource("2_skeleton"), ExtResource("3_ghoul"), ExtResource("4_wraith"), ExtResource("5_imp"), ExtResource("6_hellhound"), ExtResource("7_pit_fiend"), ExtResource("8_sprite"), ExtResource("9_treant"), ExtResource("10_wisp"), ExtResource("11_cultist"), ExtResource("12_eye_horror"), ExtResource("13_shoggoth"), ExtResource("14_zombie"), ExtResource("16_advisor"), ExtResource("17_courier"), ExtResource("18_scout"), ExtResource("20_villager"), ExtResource("21_noble"), ExtResource("22_thrall"), ExtResource("23_knight")])

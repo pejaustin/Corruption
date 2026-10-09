@@ -40,17 +40,36 @@ func _ask_goal(dialogue: AdvisorDialogue) -> void:
 	var labels: Array[String] = []
 	var actions: Array[Callable] = []
 	for goal in goals:
+		# Captives are only worth taking with a corrupted chapel to bring them to.
+		if goal == OrderGoal.Goal.CAPTURE and not GameState.has_capability(get_local_peer_id(), SiteCapability.DOMINATE_THRALLS):
+			continue
 		labels.append(OrderGoal.name_of(goal))
-		actions.append(_dispatch.bind(player, goal))
+		if goal == OrderGoal.Goal.OFFER:
+			actions.append(_ask_promise.bind(dialogue, player))
+		else:
+			actions.append(_dispatch.bind(player, goal, &""))
 	labels.append("Not yet.")
 	actions.append(func() -> void: pass)
 	var dest := MapPoint.find(get_tree(), StringName(order.get("dest_point", &"")))
 	var who := "a courier" if groups.is_empty() else ("%d group%s" % [groups.size(), "" if groups.size() == 1 else "s"])
 	dialogue.ask("Orders for %s to %s. What are they to do?" % [who, dest.get_label() if dest else "?"], labels, actions)
 
-func _dispatch(player: OverlordActor, goal: int) -> void:
+func _ask_promise(dialogue: AdvisorDialogue, player: OverlordActor) -> void:
+	## GDD Q23: a noble is bought with goods plus a promise, such as sparing
+	## their settlement or assassinating a rival.
+	var labels: Array[String] = ["Promise to spare their settlement.", "Promise to assassinate a rival.", "Not yet."]
+	var actions: Array[Callable] = [
+		_dispatch.bind(player, OrderGoal.Goal.OFFER, &"spare"),
+		_dispatch.bind(player, OrderGoal.Goal.OFFER, &"assassinate"),
+		func() -> void: pass,
+	]
+	dialogue.ask.call_deferred("And what do we promise them?", labels, actions)
+
+func _dispatch(player: OverlordActor, goal: int, promise: StringName) -> void:
 	var order := player.take_order()
 	order["goal"] = goal
+	if promise != &"":
+		order["promise"] = promise
 	KnowledgeManager.request_dispatch(order)
 
 func _ask_general(dialogue: AdvisorDialogue) -> void:

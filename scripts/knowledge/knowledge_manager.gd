@@ -134,6 +134,8 @@ func _apply_report(report: Dictionary) -> void:
 		if not model.is_point_known(id):
 			model.known_points[id] = true
 			new_points.append(id)
+	for r in report.get("resources", []):
+		model.ledger[StringName(r.get("site", &""))] = {"pile": int(r.get("pile", 0)), "tick": tick}
 	for o in report.get("orders", []):
 		var cmd := int(o.get("cmd_id", -1))
 		if cmd in model.orders:
@@ -268,7 +270,7 @@ func _dispatch(peer_id: int, order: Dictionary) -> void:
 	var core := {
 		"route": order.get("route", []), "route_points": order.get("route_points", []),
 		"dest_point": order.get("dest_point", &""), "goal": order.get("goal", OrderGoal.Goal.GO_HERE),
-		"issued_tick": current_tick(),
+		"promise": order.get("promise", &""), "issued_tick": current_tick(),
 	}
 	var group_ids: Array = order.get("group_ids", [])
 	if INSTANT_COMMANDS:

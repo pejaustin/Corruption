@@ -30,6 +30,9 @@ func load_world() -> Node:
 	var world: Node = (load(WORLD) as PackedScene).instantiate()
 	get_tree().root.add_child(world)
 	get_tree().current_scene = world
+	# The real game starts netfox's clock when a match begins; actors' display
+	# states (and so their animations, attacks included) only advance with it.
+	NetworkTime.start()  # Warns and no-ops if already running.
 	await frames(30)
 	return world
 

@@ -34,6 +34,9 @@ func _bake(region: NavigationRegion3D) -> void:
 	nav_mesh.cell_height = runtime_cell_size * 0.5
 	NavigationServer3D.map_set_cell_size(region.get_navigation_map(), runtime_cell_size)
 	NavigationServer3D.map_set_cell_height(region.get_navigation_map(), runtime_cell_size * 0.5)
+	# The towers' own navmeshes are baked on a finer grid; a wider margin lets
+	# their edges join the coarser world mesh so units can walk out of them.
+	NavigationServer3D.map_set_edge_connection_margin(region.get_navigation_map(), runtime_cell_size * 2.0)
 	nav_mesh.filter_baking_aabb = bake_area
 	var source := NavigationMeshSourceGeometryData3D.new()
 	NavigationServer3D.parse_source_geometry_data(nav_mesh, source, region)

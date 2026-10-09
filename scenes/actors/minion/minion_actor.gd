@@ -31,6 +31,22 @@ var owner_peer_id: int = -1
 var group_id: int = -1
 ## Owner of whoever last hurt this unit (for capture and kill credit).
 var last_hit_by: int = -1
+## Mirrored from MinionType: a living human / a noble (GDD §5).
+var is_human: bool = false
+var is_noble: bool = false
+## What this unit carries: &"" nothing, &"body", &"captive" (a live human —
+## hurt the carrier and you hurt them), &"goods" (carry_amount of them).
+var carrying: StringName = &""
+var carry_amount: int = 0
+## Host-only: a carried captive's remaining health and unit type.
+var captive_hp: int = 0
+var captive_type: StringName = &""
+## Host-only: set while its group is out to take captives: blows against
+## humans stop short of killing.
+var capture_mode: bool = false
+## The settlement a human belongs to (Settlement node name), for promises.
+var settlement_name: StringName = &""
+var _carry_visual: MeshInstance3D
 var minion_type_id: StringName = &""
 var minion_trait: StringName = &""
 var waypoint: Vector3 = Vector3.ZERO
@@ -210,6 +226,8 @@ func apply_type(mtype: MinionType) -> void:
 	aggro_radius = mtype.aggro_radius
 	minion_trait = mtype.trait_tag
 	strength = mtype.strength
+	is_human = mtype.is_human
+	is_noble = mtype.is_noble
 	can_retreat = mtype.can_retreat
 	retreat_hp_threshold = mtype.retreat_hp_threshold
 	courier_visual_range = mtype.courier_visual_range
@@ -274,13 +292,37 @@ func get_faction_color() -> Color:
 	return GameState.get_player_color(get_allegiance())
 
 func take_damage(amount: int) -> void:
-	if multiplayer.is_server() and can_take_damage() and group_id >= 0:
-		var gm := _group_manager()
-		if gm:
-			gm.notify_member_hit(self)
+	if multiplayer.is_server() and can_take_damage():
+		FieldWork.on_carrier_hit(self, amount)
+		if group_id >= 0:
+			var gm := _group_manager()
+			if gm:
+				gm.notify_member_hit(self)
 	super(amount)
 
+func set_carrying(kind: StringName, amount: int = 0) -> void:
+	carrying = kind
+	carry_amount = amount
+	if kind == &"":
+		if _carry_visual:
+			_carry_visual.visible = false
+		return
+	# PLACEHOLDER: art — a box on the back, tinted by what it is.
+	if _carry_visual == null:
+		_carry_visual = MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(0.5, 0.3, 0.3)
+		_carry_visual.mesh = box
+		_carry_visual.position = Vector3(0, 2.0, 0)
+		_carry_visual.material_override = StandardMaterial3D.new()
+		add_child(_carry_visual)
+	var colors := {&"body": Color(0.5, 0.45, 0.4), &"captive": Color(0.9, 0.7, 0.6), &"goods": Color(0.85, 0.7, 0.2)}
+	(_carry_visual.material_override as StandardMaterial3D).albedo_color = colors.get(kind, Color.WHITE)
+	_carry_visual.visible = true
+
 func _die() -> void:
+	if multiplayer.is_server():
+		FieldWork.on_unit_died(self)
 	super()
 	_death_timer = 0.0
 	collision_layer = 0

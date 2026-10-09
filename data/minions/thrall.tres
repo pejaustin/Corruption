@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MinionType" format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"thrall"
+display_name = "PLACEHOLDER: Thrall"
+faction = 0
+hp = 30
+damage = 8
+speed = 3.0
+aggro_radius = 8.0
+trait_tag = &"thrall"
+is_human = false
+is_noble = false

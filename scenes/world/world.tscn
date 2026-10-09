@@ -20,6 +20,9 @@
 [ext_resource type="Script" path="res://scripts/world_nav_baker.gd" id="20_navbake"]
 [ext_resource type="Script" path="res://scenes/map/map_point.gd" id="21_mappoint"]
 [ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="22_groups"]
+[ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="23_fieldwork"]
+[ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="24_settlement"]
+[ext_resource type="Script" path="res://scenes/world/places/resource_site.gd" id="25_resource"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -281,6 +284,32 @@ kind = 1
 known_at_start = false
 links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../RoadWest")])
 
+[node name="Places" type="Node3D" parent="World" unique_id=1301301500]
+; PLACEHOLDER: settlements, their people and the mines, not designed (tickets #584, #586)
+
+[node name="SettlementSE" type="Node3D" parent="World/Places" unique_id=1301301501]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 55)
+script = ExtResource("24_settlement")
+
+[node name="SettlementNW" type="Node3D" parent="World/Places" unique_id=1301301502]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65, 0, -60)
+script = ExtResource("24_settlement")
+
+[node name="City" type="Node3D" parent="World/Places" unique_id=1301301503]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("24_settlement")
+radius = 12.0
+villagers = 3
+soldiers = 0
+
+[node name="MineSE" type="Node3D" parent="World/Places" unique_id=1301301504]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0, 75)
+script = ExtResource("25_resource")
+
+[node name="MineNW" type="Node3D" parent="World/Places" unique_id=1301301505]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -90)
+script = ExtResource("25_resource")
+
 [node name="Markers" type="Node3D" parent="World" unique_id=1288722471]
 
 [node name="MinionRallyPoint" parent="World/Markers" unique_id=1014142531 instance=ExtResource("6_bt7bg")]
@@ -347,6 +376,9 @@ site_type = ExtResource("19_bosite")
 
 [node name="GroupManager" type="Node" parent="." unique_id=1301301400]
 script = ExtResource("22_groups")
+
+[node name="FieldWork" type="Node" parent="." unique_id=1301301401]
+script = ExtResource("23_fieldwork")
 
 [node name="GoodFaction" type="Node" parent="." unique_id=93009679]
 script = ExtResource("16_71ii3")

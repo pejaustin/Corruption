@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: art — a skeleton stands in for a thrall
+
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/skeleton_actor.tscn" id="1_base"]
+[ext_resource type="Resource" path="res://data/minions/thrall.tres" id="2_type"]
+
+[node name="Thrall" instance=ExtResource("1_base")]
+minion_type = ExtResource("2_type")

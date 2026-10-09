@@ -49,7 +49,7 @@ var _tick_timer: float = 0.0
 var _home_report_timer: float = 0.0
 
 func _ready() -> void:
-	var mm := _mm()
+	var mm := get_parent().get_node_or_null("MinionManager") as MinionManager
 	if mm:
 		mm.minion_died.connect(_on_minion_died)
 
@@ -244,6 +244,8 @@ func _tick_group(g: UnitGroup, dt: float) -> void:
 		g.stall_timer = 0.0
 		if not _reachable(members[0], centroid, wp):
 			_halt(g)
+		else:
+			_send_to_waypoint(g)  # Re-issue: members may have given up on a stale path.
 
 func _arrive(g: UnitGroup) -> void:
 	if g.order.get("homeward", false):
@@ -279,7 +281,9 @@ func _head_home(g: UnitGroup) -> void:
 	back.reverse()
 	if not back.is_empty():
 		back.pop_front()  # Already standing at the destination.
-	if home:
+	if g.order.has("home_override"):
+		back.append(g.order["home_override"])
+	elif home:
 		back.append(home.global_position)
 	var order := g.order.duplicate(true)
 	order["route"] = back
@@ -352,7 +356,19 @@ func make_report(g: UnitGroup) -> Dictionary:
 		"groups": [snapshot(g)],
 		"sightings": g.take_log(),
 		"points": g.take_points(),
+		"resources": resources_near(get_centroid(g)),
 	}
+
+func resources_near(pos: Vector3) -> Array:
+	## What the ledger learns: the goods piled at resource locations nearby.
+	var out: Array = []
+	if pos == Vector3.INF:
+		return out
+	for n in get_tree().get_nodes_in_group(ResourceSite.GROUP):
+		var r := n as ResourceSite
+		if r and _flat(r.global_position - pos) <= DISCOVER_RADIUS:
+			out.append({"site": StringName(r.name), "pile": r.get_pile()})
+	return out
 
 func _deliver_home_report(g: UnitGroup) -> void:
 	var report := make_report(g)

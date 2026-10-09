@@ -30,6 +30,9 @@ var orders: Dictionary[int, Dictionary] = {}
 ## (or enemy unit id, negated - 1000000) -> world position. Cleared by asking
 ## the advisor to update the map.
 var piece_overrides: Dictionary[int, Vector3] = {}
+## The ledger (GDD §6): resource site name -> { pile: int, tick: int }, the
+## latest reports of goods held elsewhere.
+var ledger: Dictionary[StringName, Dictionary] = {}
 ## Couriers waiting at the tower (mirrored from the host).
 var couriers_home: int = 0
 ## The advisor's most recent report lines.

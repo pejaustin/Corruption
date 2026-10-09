@@ -22,7 +22,7 @@ func get_roster() -> Array[MinionType]:
 	var faction := GameState.get_faction(multiplayer.get_unique_id())
 	var out: Array[MinionType] = []
 	for mt in FactionData.get_minion_roster(faction):
-		if mt.trait_tag in CorruptionSite.NON_COMBAT_TRAITS:
+		if mt.trait_tag in CorruptionSite.NON_COMBAT_TRAITS or mt.trait_tag == &"thrall":
 			continue
 		out.append(mt)
 	return out
