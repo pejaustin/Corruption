@@ -24,6 +24,16 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Headless tests** (`tools/tests/`): each test is a small scene that loads the real world as an offline host and
   exits with the number of failed checks, e.g. `godot --headless --path . res://tools/tests/test_sites.tscn`.
   A fresh clone needs the editor opened once first (netfox autoload UIDs and the import cache).
+- **Input playtests** (`tools/playtest/`): play the game like a person, not by calling its functions.
+  `input_driver.gd` pushes real `InputEvent`s through `Input.parse_input_event()` (actions, keys, mouse look, the
+  interaction raycast) and has `walk_to`, `aim_at`, `press_action`, `key`, `look`, `click` and `screenshot`, logging
+  the on-screen prompt at each step. `playtest_order.tscn` plays the order loop: select your group's piece on the map
+  floor (E), walk over the East road, E on the Chapel, hand the scroll to the advisor, pick "Corrupt the site" with
+  the 1-9 key, wait for the courier's report. It prints `ok`/`FAIL` per step and `[playtest] N steps, M failed`, and
+  exits with the failure count. Run it windowed (needs a display and GPU; screenshots go to `$PLAYTEST_DIR`, default
+  `/tmp/claude-1000/playtest`): `godot --path . --resolution 1280x720 res://tools/playtest/playtest_order.tscn`.
+  Without Vulkan add `--rendering-driver opengl3 --rendering-method gl_compatibility`. Stand about 1.9 m back from
+  floor markers: the overlord's camera is 2.3 m up and cannot look down past 70 degrees.
 - **World navmesh:** `world.tscn` ships without baked polygons (lost in the terrain swap); `WorldNavBaker` bakes it on
   the host at load. Baking it in the editor (Terrain3D → Bake NavMesh) and saving makes that a no-op.
 
