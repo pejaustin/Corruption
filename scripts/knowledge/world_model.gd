@@ -9,6 +9,8 @@ class_name WorldModel extends RefCounted
 ## mirror of truth; once the flag flips off, entries start going stale and the
 ## asymmetry appears.
 
+signal record_added(entry: Dictionary)
+
 ## minion_id -> { pos: Vector3, owner_peer_id: int, faction: int, last_updated_tick: int, source: StringName }
 var believed_friendly_minions: Dictionary[int, Dictionary] = {}
 var believed_enemy_minions: Dictionary[int, Dictionary] = {}
@@ -36,6 +38,21 @@ var pending_commands: Dictionary[int, Dictionary] = {}
 ## "your orders for these minions weren't delivered" to the overlord. Stored
 ## in arrival order, never trimmed automatically.
 var failure_messages: Array[Dictionary] = []
+
+## What this player has on record (GDD §2 "Desk with books", Q37): leaders'
+## maneuvers, relics held, what's been learned. Appended by systems as reports
+## arrive; read by the desk. Each entry:
+##   { kind: StringName (&"report", &"group", &"relic", &"site", ...),
+##     title: String, text: String, tick: int }
+var records: Array[Dictionary] = []
+## The player's own free notes, written at the desk. Local to this peer.
+var notes: String = ""
+
+
+func add_record(kind: StringName, title: String, text: String, tick: int) -> void:
+	var entry := {"kind": kind, "title": title, "text": text, "tick": tick}
+	records.append(entry)
+	record_added.emit(entry)
 
 func update_minion_sighting(
 	minion_id: int,
