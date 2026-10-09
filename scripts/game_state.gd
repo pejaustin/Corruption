@@ -21,6 +21,13 @@ signal site_changed(site: Node, old_holder: int, new_holder: int, first_taken: b
 ## Fired on every peer when a capture channel starts (CaptureChannel.broadcast).
 signal capture_broadcast(peer_id: int, faction: int, duration: float)
 signal mirror_message_received(message: MirrorMessage)
+## Mirror calls (GDD §10). Each fires only on the peer the call is addressed to.
+signal mirror_ring_received(caller_id: int)
+signal mirror_ring_cancelled(caller_id: int)
+signal mirror_ring_answered(answerer_id: int, accepted: bool)
+signal mirror_call_ended(peer_id: int)
+signal mirror_live_pose_received(sender_id: int, frame: PackedByteArray)
+signal mirror_live_audio_received(sender_id: int, pcm: PackedByteArray, sample_rate: int)
 
 # The Avatar (the Paladin) can be owned by a player and, separately, driven
 # directly by them (docs/systems/avatar-possession.md).
@@ -159,8 +166,8 @@ func remove_watcher_position(peer_id: int) -> void:
 func deliver_mirror_message(
 	sender_id: int,
 	recipient_id: int,
-	ghost_xforms: Array,
-	anim_states: PackedStringArray,
+	pose_data: PackedByteArray,
+	pose_frame_size: int,
 	pose_sample_rate: float,
 	audio_data: PackedByteArray,
 	audio_sample_rate: int,
@@ -173,14 +180,58 @@ func deliver_mirror_message(
 	var msg := MirrorMessage.new()
 	msg.sender_peer_id = sender_id
 	msg.recipient_peer_id = recipient_id
-	for x in ghost_xforms:
-		msg.ghost_xforms.append(x)
-	msg.anim_states = anim_states
+	msg.pose_data = pose_data
+	msg.pose_frame_size = pose_frame_size
 	msg.pose_sample_rate = pose_sample_rate
 	msg.audio_data = audio_data
 	msg.audio_sample_rate = audio_sample_rate
 	msg.duration = duration
 	mirror_message_received.emit(msg)
+
+# Mirror calls. Every call is sent with rpc_id straight to the peer it is for;
+# the sender id is taken from the RPC itself (never trusted from an argument).
+
+@rpc("any_peer", "reliable")
+func mirror_ring(recipient_id: int) -> void:
+	## Caller rings the recipient's mirror.
+	if multiplayer.get_unique_id() != recipient_id:
+		return
+	mirror_ring_received.emit(multiplayer.get_remote_sender_id())
+
+@rpc("any_peer", "reliable")
+func mirror_ring_cancel(recipient_id: int) -> void:
+	## Caller gave up (hung up or timed out); the recipient's mirror stops ringing.
+	if multiplayer.get_unique_id() != recipient_id:
+		return
+	mirror_ring_cancelled.emit(multiplayer.get_remote_sender_id())
+
+@rpc("any_peer", "reliable")
+func mirror_ring_reply(caller_id: int, accepted: bool) -> void:
+	## Recipient answers (true) or is busy (false); arrives on the caller.
+	if multiplayer.get_unique_id() != caller_id:
+		return
+	mirror_ring_answered.emit(multiplayer.get_remote_sender_id(), accepted)
+
+@rpc("any_peer", "reliable")
+func mirror_call_end(peer_id: int) -> void:
+	## Either side ends a live call.
+	if multiplayer.get_unique_id() != peer_id:
+		return
+	mirror_call_ended.emit(multiplayer.get_remote_sender_id())
+
+@rpc("any_peer", "unreliable")
+func mirror_live_pose(peer_id: int, frame: PackedByteArray) -> void:
+	## One MirrorCodec pose frame of a live call; lost packets are simply skipped.
+	if multiplayer.get_unique_id() != peer_id:
+		return
+	mirror_live_pose_received.emit(multiplayer.get_remote_sender_id(), frame)
+
+@rpc("any_peer", "unreliable")
+func mirror_live_audio(peer_id: int, pcm: PackedByteArray, sample_rate: int) -> void:
+	## One chunk of live voice (int16 mono at `sample_rate`).
+	if multiplayer.get_unique_id() != peer_id:
+		return
+	mirror_live_audio_received.emit(multiplayer.get_remote_sender_id(), pcm, sample_rate)
 
 # --- Corruption sites ---
 
