@@ -179,6 +179,12 @@ layout_mode = 2
 theme = ExtResource("2_sdrml")
 text = "Order Avatar to Camera"
 
+[node name="BtnGivePaladin" type="Button" parent="DebugPanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_sdrml")
+text = "Give Me the Paladin"
+
 [connection signal="pressed" from="GridContainer/Resume" to="." method="_on_resume_pressed"]
 [connection signal="pressed" from="GridContainer/MainMenu" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="GridContainer/Quit" to="." method="_on_quit_pressed"]
@@ -196,3 +202,4 @@ text = "Order Avatar to Camera"
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnInstantCommands" to="." method="_on_instant_commands_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnBroadcastRange" to="." method="_on_broadcast_range_pressed"]
 [connection signal="pressed" from="DebugPanel/Margin/VBox/BtnOrderAvatar" to="." method="_on_order_avatar_pressed"]
+[connection signal="pressed" from="DebugPanel/Margin/VBox/BtnGivePaladin" to="." method="_on_give_paladin_pressed"]

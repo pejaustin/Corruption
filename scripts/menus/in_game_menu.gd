@@ -13,6 +13,7 @@ extends Control
 @onready var _btn_aggro_rings: Button = %BtnAggroRings
 @onready var _btn_combat_boxes: Button = %BtnCombatBoxes
 @onready var _btn_order_avatar: Button = %BtnOrderAvatar
+@onready var _btn_give_paladin: Button = %BtnGivePaladin
 
 func _ready() -> void:
 	visible = false
@@ -85,6 +86,8 @@ func _refresh_button_states() -> void:
 		_btn_add_remains.disabled = not is_host
 	if _btn_order_avatar:
 		_btn_order_avatar.disabled = not is_host
+	if _btn_give_paladin:
+		_btn_give_paladin.disabled = not is_host
 
 func _on_resume_pressed() -> void:
 	close()
@@ -147,4 +150,8 @@ func _on_broadcast_range_pressed() -> void:
 
 func _on_order_avatar_pressed() -> void:
 	DebugManager.order_avatar_to_camera()
+	close()
+
+func _on_give_paladin_pressed() -> void:
+	DebugManager.give_paladin_to_self()
 	close()

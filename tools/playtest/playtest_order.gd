@@ -179,6 +179,22 @@ func _play() -> void:
 		await drv.seconds(0.5)
 		await drv.screenshot("10_expected_piece")
 
+	# 11. Walk to the Palantir, look in (E), and see the Paladin.
+	var pal := floor_map.get_parent().get_node_or_null("Palantir") as Interactable
+	step(pal != null, "my tower has a Palantir")
+	if pal == null:
+		return
+	await drv.walk_to(_stand_off(player.global_position, pal.global_position, 1.5), 0.3, 40.0)
+	await drv.aim_at(pal.global_position)
+	step(drv.prompt().to_lower().contains("scry"), "the Palantir offers scrying (prompt: %s)" % drv.prompt())
+	await drv.press_action(&"interaction")
+	await drv.seconds(0.6)
+	step(pal.get("_is_scrying") == true, "E at the Palantir starts scrying")
+	step(drv.prompt().contains("Q to return"), "the scry prompt offers the way back (prompt: %s)" % drv.prompt())
+	await drv.screenshot("11_palantir_scry")
+	await drv.press_action(&"cancel")
+	step(pal.get("_is_scrying") == false, "Q returns from the Palantir")
+
 func _my_advisor(mm: MinionManager) -> MinionActor:
 	for m in mm.get_minions_for_player(1):
 		if m.minion_trait == &"advisor":

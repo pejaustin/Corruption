@@ -120,7 +120,7 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4.38
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 41.371777, 0)
 
 [node name="Palantir" parent="." unique_id=1536666789 instance=ExtResource("27_k0irn")]
-transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 48.999214, 1.0485661)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 41, -8)
 
 [node name="Desk" parent="." unique_id=1793453701 instance=ExtResource("42_desk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 39.4, -6)

@@ -237,6 +237,15 @@ func spawn_minion_at_camera() -> void:
 	else:
 		print("[Debug] MinionManager not found")
 
+func give_paladin_to_self() -> void:
+	## Hands the Paladin to the local (host) player so possession can be tried at
+	## once: scry at a Palantir, press E again to take control.
+	if not multiplayer.is_server():
+		print("[Debug] Only the host can hand out the Paladin")
+		return
+	GameState.set_avatar_owner(multiplayer.get_unique_id())
+	print("[Debug] The Paladin is yours; scry at a Palantir and press E to take control")
+
 func order_avatar_to_camera() -> void:
 	## Phase B test hook: sends the released (AI-driven) avatar a move order to
 	## where the crosshair pointed when the menu opened — same entry point the
