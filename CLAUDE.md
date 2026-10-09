@@ -390,7 +390,8 @@ When making changes:
 The game is being rebuilt to the GDD v2 (`docs/GDD.md`) on branch `gdd-v2-overhaul`; plan and status in
 `docs/technical/gdd-v2-overhaul.md`. Removed as superseded: the summoning currency, the upgrade altar, the numeric
 corruption score, divine intervention, the scripted Guardian/Seraph bosses and the Gem, AstralProjection, Avatar
-hold-E site capture, and the four-faction picker.
+hold-E site capture (`CaptureChannel` / `ChannelState`), the `AvatarClaim` tower station, the Paladin passing to whoever
+lands the killing blow, and the four-faction picker.
 
 ### Resource-driven data (Tier 4 refactor)
 
@@ -462,6 +463,31 @@ relative to the mirror plus every `Skeleton3D` bone rotation (int16 quaternion) 
 `MirrorCodec.apply_pose` writes the bones. All RPCs are `rpc_id` to the target peer; the sender id comes from
 `get_remote_sender_id()`. Test: `tools/tests/test_mirror.tscn` (offline; real two-peer streaming is untested).
 
+### The Paladin (GDD §8, `scenes/actors/player/avatar/`)
+
+One shared `AvatarActor` (`World/Avatar`), always awake: unowned he fights for the good faction. Children added in code:
+- **`PaladinHold`** (`paladin_hold.gd`, host-authoritative, synced): *takeover* — while his HP is at or below
+  `TAKEOVER_HP_FRACTION`, player troop strength within `TAKEOVER_RADIUS` (same counting as `CorruptionSite`) that meets
+  `TAKEOVER_THRESHOLD` builds that player's `takeover[peer]`; his company present freezes it; contested = most strength
+  wins, ties freeze (stand-in for #573). *Overpower* — a Palantir viewer with more `AVATAR_CONTROL` sites than his owner
+  calls `request_overpower()`; it runs while they keep looking. *Hold* — `hold` (0..1) fades over `HOLD_SECONDS` unless
+  he is inside one of his owner's held sites (towers count); at 0 the good faction has him back.
+- **Zero HP** (`AvatarActor._die`): owner → -1 (controller dropped), no teleport; after `RECOVER_DELAY` he gets up in
+  place at `RECOVER_HP_FRACTION`. HP changes from outside combat (recovery, regen, a new owner's full heal) are queued
+  in `_pending_hp` / `heal()` and applied inside his `_rollback_tick` on the host, or netfox restores the old value.
+- **Control tiers** (`get_control_level` = 1 + owner's `AVATAR_CONTROL` sites, capped; unowned = max): `can_use(action)`
+  gates run/jump/roll/attack in `PlayerState` and abilities in `AvatarActor` + `AvatarAbilities` (host).
+  `strike(target, dmg)` is the one place his blows land; below `RESIST_GOOD_BELOW_LEVEL` it refuses good-faction targets
+  (`resisted` signal + a "He resists" flash). Table: `CONTROL_UNLOCKS` (stand-in for #582).
+- **`AvatarAI`** drives him whenever nobody does: owned, it follows courier routes and fights within his tiers;
+  unowned, below `RECOVER_BELOW_FRACTION` it walks him to the city centre (`holy_site` group node, else the origin) and
+  regenerates him there, and at full strength hunts the nearest held non-tower site.
+- **Palantir** (`scripts/interactibles/palantir.gd`): anyone scries (E, Q to leave); the owner presses E while scrying
+  to possess; others may E to overpower. Viewers are seat-coloured orbs at their cameras (`_update_watcher_orbs`).
+- **`PaladinVoice`** (`paladin_voice.gd`): proximity-free voice among `get_paladin_voice_peers()`, the mirror's
+  capture-bus + `MirrorCodec` approach (bus `PaladinMic`). Real multi-peer voice is untested.
+- Test: `tools/tests/test_paladin.tscn` (starts `NetworkTime` so his rollback tick runs).
+
 ### Interactable focus — raycast-pull, not poll-push
 
 Interactables (war table, palantir, altar, summoning circle, advisor handoff, gem, gem site, mirror, etc.) all extend `Interactable` (Area3D, `scenes/interactibles/interactable.gd`). Focus is driven from the **player side**, not from each interactable.
@@ -490,7 +516,11 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - `GameState.match_pace` (`MatchConfig.Pace`, picked by the host in the lobby) scales unit speed and the good
   faction's growth clock.
 - `GameState.avatar_owner_peer_id` (-1 = the good faction has him) and `avatar_peer_id` (controller, -1 = AI-driven).
-  `request_possess_avatar()` (owner only) / `request_recall_avatar()`; `set_avatar_owner(peer)` on the host.
+  `request_possess_avatar()` (owner only, from a Palantir) / `request_recall_avatar()` (Q in his body);
+  `set_avatar_owner(peer)` on the host (also drops the controller). Ownership moves only through `PaladinHold` and
+  zero HP; see "The Paladin".
+- Palantir viewers: `GameState.request_set_watching(bool)` (host keeps `watchers`, mirrored to all), `is_watching`,
+  `watcher_positions` (remote viewers' cameras), `get_paladin_voice_peers()` (viewers + controller).
 - Summoning costs remains, not currency: `MinionManager.get_remains(peer)` / `add_remains` /
   `request_raise_from_remains(type)`; `spawn_unit_for_peer(peer, type, pos)` for system spawns.
 

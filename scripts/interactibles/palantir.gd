@@ -1,154 +1,175 @@
 extends Interactable
 
-## Palantir scrying orb. Overlord interacts to enter scrying mode:
-## Camera warps to a 3rd-person view orbiting the Avatar.
-## A greybox cube appears at the scry camera position visible to the Avatar.
-## Press Q to return to Overlord mode.
-
-var _is_scrying := false
-var _scry_camera: Camera3D
-var _scry_cube: MeshInstance3D
-var _scry_pivot: Node3D
-var _overlord_camera: Camera3D
+## Palantir scrying orb (GDD §8). Any player at any Palantir can look in and
+## see the Paladin live (a 3rd-person camera orbiting him); every viewer shows
+## up to the others as a ghostly orb where their camera is, and viewers and his
+## controller hear each other (PaladinVoice).
+##
+## It is also where you drive him. While looking in:
+## - his owner presses E to take direct control (Q in his body lets go and
+##   puts them back at the tower);
+## - a player with more AVATAR_CONTROL sites than his owner presses E to begin
+##   overpowering him (PaladinHold), which runs while they keep looking.
+## Q stops looking.
 
 const SCRY_DISTANCE: float = 6.0
 const SCRY_HEIGHT: float = 3.0
+const SCRY_PIVOT_HEIGHT: float = 1.5
 const CAMERA_MOUSE_ROTATION_SPEED: float = 0.005
 const CAMERA_JOYSTICK_ROTATION_SPEED: float = 5.0
 const CAMERA_X_ROT_MIN: float = deg_to_rad(-70)
 const CAMERA_X_ROT_MAX: float = deg_to_rad(60)
+## Seconds between prompt refreshes while looking in (hold / overpower readouts).
+const PROMPT_REFRESH_SECONDS: float = 0.25
+const PROMPT_COLOR: Color = Color(0.5, 0.8, 1)
+
+var _is_scrying: bool = false
+var _scry_camera: Camera3D
+var _scry_pivot: Node3D
+var _overlord_camera: Camera3D
+var _scrying_player: OverlordActor
+var _prompt_timer: float = 0.0
 
 func _interactable_ready() -> void:
-	GameState.avatar_changed.connect(func(_o, _n): _on_avatar_changed())
-
-func get_prompt_text() -> String:
-	if _is_scrying:
-		return "Q to return"
-	elif is_overlord_in_range():
-		return "Press E to scry"
-	return "Palantir"
-
-func get_prompt_color() -> Color:
-	return Color(0.5, 0.8, 1)
-
-func _on_interact() -> void:
-	if _is_scrying:
-		return  # Use Q to exit, not E
-	if not is_overlord_in_range():
-		return
-	_start_scrying()
+	GameState.avatar_changed.connect(_on_avatar_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_scrying:
-		# Q to exit scrying
 		if event.is_action_pressed("cancel"):
-			_stop_scrying()
+			_stop_scrying(true)
 			get_viewport().set_input_as_handled()
 			return
-		# Mouse look while scrying
+		if event.is_action_pressed("interaction"):
+			_on_scry_interact()
+			get_viewport().set_input_as_handled()
+			return
 		if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			_rotate_scry_camera(event.relative * CAMERA_MOUSE_ROTATION_SPEED)
 			get_viewport().set_input_as_handled()
 		return
-	# Delegate to base class for focus-based interact
 	super(event)
 
 func _process(delta: float) -> void:
 	super(delta)
-	if _is_scrying and _scry_pivot:
-		var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-		if avatar and avatar is AvatarActor:
-			_scry_pivot.global_position = avatar.global_position + Vector3(0, 1.5, 0)
+	if not _is_scrying or _scry_pivot == null:
+		return
+	var avatar := _find_avatar()
+	if avatar:
+		_scry_pivot.global_position = avatar.global_position + Vector3(0, SCRY_PIVOT_HEIGHT, 0)
+	var joy_input := Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
+	if joy_input != Vector2.ZERO:
+		_rotate_scry_camera(joy_input * CAMERA_JOYSTICK_ROTATION_SPEED * delta)
+	if _scry_camera:
+		# Everyone else draws this viewer's orb here.
+		GameState.update_watcher_position.rpc(_scry_camera.global_position)
+	_prompt_timer -= delta
+	if _prompt_timer <= 0.0:
+		_prompt_timer = PROMPT_REFRESH_SECONDS
+		_refresh_prompt()
 
-		# Joystick camera
-		var joy_input = Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
-		if joy_input != Vector2.ZERO:
-			_rotate_scry_camera(joy_input * CAMERA_JOYSTICK_ROTATION_SPEED * delta)
+func get_prompt_text() -> String:
+	# PLACEHOLDER: wording — every Palantir prompt below.
+	if not _is_scrying:
+		if is_overlord_in_range():
+			return "Press E to scry"
+		return "Palantir"
+	var me := get_local_peer_id()
+	var hold := _find_hold()
+	if GameState.is_avatar_owner(me):
+		var pct := roundi((hold.hold if hold else 1.0) * 100.0)
+		return "The Paladin is yours (hold %d%%). E to take control, Q to return" % pct
+	if hold and hold.overpower.has(me):
+		return "Overpowering him: %d%%. Q to return" % roundi(hold.get_overpower(me) * 100.0)
+	if hold and hold.can_overpower(me):
+		return "E to overpower his hold, Q to return"
+	return "Q to return"
 
-		# Broadcast camera position to all peers
-		if _scry_camera:
-			GameState.update_watcher_position.rpc(_scry_camera.global_position)
+func get_prompt_color() -> Color:
+	return PROMPT_COLOR
+
+func _on_interact() -> void:
+	if _is_scrying or not is_overlord_in_range():
+		return
+	if get_overlord_peer_id() != get_local_peer_id():
+		return
+	_start_scrying()
+
+func _on_scry_interact() -> void:
+	var me := get_local_peer_id()
+	if GameState.is_avatar_owner(me):
+		if not GameState.has_avatar():
+			# Stop looking first (gives the overlord back), then take him; the
+			# avatar_changed handler swaps the overlord out for his body.
+			_stop_scrying(true)
+			GameState.request_possess_avatar()
+		return
+	var hold := _find_hold()
+	if hold and hold.can_overpower(me) and not hold.overpower.has(me):
+		hold.request_overpower()
+		_refresh_prompt()
 
 func _rotate_scry_camera(move: Vector2) -> void:
 	if not _scry_pivot:
 		return
 	_scry_pivot.rotate_y(-move.x)
-	var cam_rot = _scry_pivot.get_node("CamRot")
-	cam_rot.rotation.x = clamp(cam_rot.rotation.x + (-1 * move.y), CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX)
+	var cam_rot := _scry_pivot.get_node("CamRot") as Node3D
+	cam_rot.rotation.x = clampf(cam_rot.rotation.x - move.y, CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX)
 
 func _start_scrying() -> void:
-	var avatar = get_tree().current_scene.get_node_or_null("World/Avatar")
-	if not avatar or not avatar is AvatarActor:
+	var avatar := _find_avatar()
+	if avatar == null:
 		return
-
 	_is_scrying = true
-	# Pin the player's gaze to us so the prompt and Q-input stay routed here
-	# even though the camera is now a separate scry rig.
+	# Pin the player's gaze to us so the prompt and E/Q stay routed here even
+	# though the camera is now a separate scry rig.
 	_claim_modal()
+	_scrying_player = _player_in_range
+	if _scrying_player:
+		_scrying_player.set_overlord_active(false)
+		_overlord_camera = _scrying_player._camera_input.camera_3d
 
-	# Disable Overlord input and save camera reference
-	var player = _player_in_range
-	if player:
-		player.set_overlord_active(false)
-		_overlord_camera = player._camera_input.camera_3d
-
-	# Build scry rig: pivot -> cam_rot -> camera + cube
 	_scry_pivot = Node3D.new()
 	_scry_pivot.name = "ScryPivot"
-
-	var cam_rot = Node3D.new()
+	var cam_rot := Node3D.new()
 	cam_rot.name = "CamRot"
 	_scry_pivot.add_child(cam_rot)
-
 	_scry_camera = Camera3D.new()
 	_scry_camera.name = "ScryCamera"
 	_scry_camera.position = Vector3(0, SCRY_HEIGHT, SCRY_DISTANCE)
 	cam_rot.add_child(_scry_camera)
-
-	# Greybox cube visible to the Avatar player
-	_scry_cube = MeshInstance3D.new()
-	_scry_cube.name = "ScryCube"
-	var box = BoxMesh.new()
-	box.size = Vector3(0.5, 0.5, 0.5)
-	_scry_cube.mesh = box
-	var mat = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.6, 0.6, 0.8, 0.7)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_scry_cube.set_surface_override_material(0, mat)
-	_scry_camera.add_child(_scry_cube)
-
 	get_tree().current_scene.add_child(_scry_pivot)
-	_scry_pivot.global_position = avatar.global_position + Vector3(0, 1.5, 0)
+	_scry_pivot.global_position = avatar.global_position + Vector3(0, SCRY_PIVOT_HEIGHT, 0)
+	_scry_camera.current = true
+	GameState.request_set_watching(true)
+	_refresh_prompt()
 
-	# Only make current on the local scrying peer
-	var peer_id = _player_in_range.name.to_int()
-	if multiplayer.get_unique_id() == peer_id:
-		_scry_camera.current = true
-
-	GameState.request_add_watcher.rpc_id(1)
-
-func _stop_scrying() -> void:
+func _stop_scrying(restore_overlord: bool) -> void:
+	if not _is_scrying:
+		return
 	_is_scrying = false
 	_release_modal()
-
-	# Re-enable Overlord
-	if _player_in_range:
-		_player_in_range.set_overlord_active(true)
-	elif _overlord_camera:
-		_overlord_camera.current = true
-
+	if restore_overlord:
+		if _scrying_player and is_instance_valid(_scrying_player):
+			_scrying_player.set_overlord_active(true)
+		elif _overlord_camera and is_instance_valid(_overlord_camera):
+			_overlord_camera.current = true
+	_scrying_player = null
 	_overlord_camera = null
-
 	if _scry_pivot and is_instance_valid(_scry_pivot):
 		_scry_pivot.queue_free()
-		_scry_pivot = null
-		_scry_camera = null
-		_scry_cube = null
+	_scry_pivot = null
+	_scry_camera = null
+	GameState.request_set_watching(false)
+	_refresh_prompt()
 
-	var my_peer = multiplayer.get_unique_id()
-	GameState.remove_watcher_position(my_peer)
-	GameState.request_remove_watcher.rpc_id(1)
+func _on_avatar_changed(_old: int, new_peer: int) -> void:
+	# Taking direct control replaces the scry camera with his own.
+	if _is_scrying and new_peer == get_local_peer_id():
+		_stop_scrying(false)
 
-func _on_avatar_changed() -> void:
-	if _is_scrying and not GameState.has_avatar():
-		_stop_scrying()
+func _find_avatar() -> AvatarActor:
+	return get_tree().current_scene.get_node_or_null(^"World/Avatar") as AvatarActor
+
+func _find_hold() -> PaladinHold:
+	var avatar := _find_avatar()
+	return avatar.hold if avatar else null

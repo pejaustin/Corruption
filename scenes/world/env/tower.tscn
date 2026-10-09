@@ -17,7 +17,6 @@
 [ext_resource type="PackedScene" uid="uid://8s2o06xp3yxg" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x1.fbx" id="14_8uuiu"]
 [ext_resource type="PackedScene" uid="uid://c5qqggnx1tr6r" path="res://assets/world/env/mod-castle/Walls/Foundations/Foundation_Full_x1.fbx" id="15_ewiun"]
 [ext_resource type="PackedScene" uid="uid://c8oyl07nm7034" path="res://assets/world/env/mod-castle/Props/Decoration/Table.fbx" id="16_7a0l1"]
-[ext_resource type="PackedScene" uid="uid://bcibq63u7cpy0" path="res://scenes/interactibles/avatar_claim.tscn" id="16_7wf5u"]
 [ext_resource type="PackedScene" uid="uid://bi7aggwvrj1rs" path="res://assets/world/env/table.blend" id="17_yjlt3"]
 [ext_resource type="PackedScene" uid="uid://2oeb3dq7s4o2" path="res://scenes/interactibles/mirror.tscn" id="19_eoso1"]
 [ext_resource type="PackedScene" uid="uid://tvs3gfeui36j" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Gate_Bars.fbx" id="20_2mnic"]
@@ -98,9 +97,6 @@ shape = ExtResource("26_6guij")
 
 [node name="Table" parent="." unique_id=1695499807 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, -1.82887)
-
-[node name="AvatarClaim" parent="." unique_id=1313280762 instance=ExtResource("16_7wf5u")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5264935, 39.29396, 0.83745)
 
 [node name="Table2" parent="." unique_id=736994958 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, 5.67113)

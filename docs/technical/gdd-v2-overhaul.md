@@ -48,7 +48,7 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 - [x] 3 Map and orders
 - [ ] 4 Troops and humans
 - [ ] 5 Goods
-- [ ] 6 The Paladin
+- [x] 6 The Paladin (takeover, overpower, hold, zero-HP wipe, control tiers + resistance, unclaimed AI, watcher orbs + voice; no good-faction army follows him yet; multi-peer voice untested)
 - [ ] 7 Endgame
 - [ ] 8 Tower stations
 - [x] 9 Mirror

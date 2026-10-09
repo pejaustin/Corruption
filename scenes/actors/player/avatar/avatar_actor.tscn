@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar_camera.tscn" id="7_camera"]
 [ext_resource type="Script" uid="uid://dsexvs6cjukd6" path="res://scripts/avatar_input.gd" id="8_input"]
 [ext_resource type="Script" uid="uid://cxpclo6q7yoem" path="res://scenes/actors/player/states/attack_state.gd" id="9_attack"]
-[ext_resource type="Script" uid="uid://54xejhc45eci" path="res://scenes/actors/player/states/channel_state.gd" id="10_channel"]
 [ext_resource type="PackedScene" uid="uid://dyl7bol73bpei" path="res://scenes/ui/avatar_hud.tscn" id="11_hud"]
 [ext_resource type="Script" uid="uid://du8oa62cayfhx" path="res://scenes/actors/player/states/roll_state.gd" id="12_f2kxo"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
@@ -74,11 +73,7 @@ script = ExtResource("9_attack")
 use_animation_keys = true
 animation_name = "large-male/Attack"
 
-[node name="ChannelState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=919482196]
-script = ExtResource("10_channel")
-animation_name = "large-male/Channeling"
-
-[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8" unique_id=1033644063]
+[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=1033644063]
 script = ExtResource("12_f2kxo")
 animation_name = "large-male/Crouch"
 
