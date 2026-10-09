@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scripts/interactibles/balcony.gd" id="2_balcony"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_balcony"]
+size = Vector3(1.6, 1.6, 1.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_post"]
+size = Vector3(0.5, 1.0, 0.5)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_glass"]
+top_radius = 0.06
+bottom_radius = 0.09
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stone"]
+albedo_color = Color(0.45, 0.45, 0.48, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brass"]
+albedo_color = Color(0.75, 0.6, 0.2, 1)
+
+[node name="Balcony" instance=ExtResource("1_base")]
+script = ExtResource("2_balcony")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_balcony")
+
+[node name="Post" type="MeshInstance3D" parent="Model" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_stone")
+
+[node name="Spyglass" type="MeshInstance3D" parent="Model" index="1"]
+transform = Transform3D(0, 0, -1, -0.94, 0.34, 0, 0.34, 0.94, 0, -0.1, 1.1, 0)
+mesh = SubResource("CylinderMesh_glass")
+surface_material_override/0 = SubResource("StandardMaterial3D_brass")

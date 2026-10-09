@@ -20,6 +20,7 @@
 [ext_resource type="Script" path="res://scripts/world_nav_baker.gd" id="20_navbake"]
 [ext_resource type="Script" path="res://scenes/map/map_point.gd" id="21_mappoint"]
 [ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="22_groups"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="23_daynight"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -347,6 +348,9 @@ site_type = ExtResource("19_bosite")
 
 [node name="GroupManager" type="Node" parent="." unique_id=1301301400]
 script = ExtResource("22_groups")
+
+[node name="DayNight" type="Node" parent="."]
+script = ExtResource("23_daynight")
 
 [node name="GoodFaction" type="Node" parent="." unique_id=93009679]
 script = ExtResource("16_71ii3")

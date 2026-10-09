@@ -18,6 +18,18 @@ func _run() -> void:
 	get_tree().current_scene = world
 	var settle := float(OS.get_environment("SHOT_SETTLE")) if OS.get_environment("SHOT_SETTLE") != "" else 3.0
 	await get_tree().create_timer(settle).timeout
+	# Optional: SHOT_GIVE_SITE=SiteChapel hands that site to peer 1 so its beacon shows;
+	# SHOT_TIME=0.9 sets the time of day (0 = midnight, 0.5 = noon).
+	var give: String = OS.get_environment("SHOT_GIVE_SITE")
+	if give != "":
+		var site: Node = world.get_node_or_null(give)
+		if site != null and site.has_method("debug_give_to"):
+			site.call("debug_give_to", 1)
+	var time_env: String = OS.get_environment("SHOT_TIME")
+	if time_env != "":
+		var clock: Node = world.get_node_or_null("DayNight")
+		if clock != null:
+			clock.call("set_time", float(time_env))
 	var cam := Camera3D.new()
 	cam.far = 2000.0
 	get_tree().root.add_child(cam)

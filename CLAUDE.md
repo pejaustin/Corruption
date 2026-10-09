@@ -447,6 +447,18 @@ UI: tabs for "All" (newest first, ticks as mm:ss), one per record `kind` in `Wor
 `WorldModel.notes`. It claims the modal lock, frees the mouse, disables the rig's `PlayerInput`, refreshes on
 `record_added`, and closes on Esc / E / Q (E/Q ignored while typing in Notes). Test: `tools/tests/test_desk.tscn`.
 
+### Balcony and day/night (`scripts/interactibles/balcony.gd`, `scripts/day_night.gd`)
+
+`Balcony` is one per tower (`tower.tscn`, on the west balcony, hall floor), owner-only like the desk. E takes the camera to
+a code-built lookout (`LookoutPivot` -> `LookoutPitch` -> `LookoutCamera`, 90 deg, far 1500) five metres above the post,
+facing the map centre; mouse or right stick turns it, E / Q returns. It claims the modal lock and calls
+`set_overlord_active(false)` / `PlayerInput.input_enabled`, restoring both on close. Beacons (`CorruptionSite`) are
+unshaded with `disable_fog`, so they read from there day or night. `DayNight` (`world.tscn`, one node) is the host's clock
+(`time_of_day` 0 = midnight, 0.5 = noon, `DAY_SECONDS` long), pushed to clients with a reliable RPC on connect and every
+`SYNC_SECONDS`; it rotates `World/Atmosphere/DirectionalLight3D` (a moon by night) and tints light, sky and ambient.
+**Flavour only** until the open question (#574) says otherwise. Tests: `tools/tests/test_balcony.tscn`. Shot rig:
+`SHOT_GIVE_SITE=SiteChapel SHOT_TIME=0.95` in `tools/shots/shot.gd`.
+
 ### Mirror (GDD §10, `scripts/interactibles/mirror.gd`)
 
 Live calls and recorded messages; each tower's mirror belongs to `Tower.owner_peer_id` and only its owner uses it. E at your
