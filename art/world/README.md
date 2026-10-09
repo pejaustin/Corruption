@@ -4,6 +4,19 @@ A placeholder world so the real one can be sculpted by hand. Nothing here is Aus
 eye off his sketch (`source/reference/world-sketch-original.jpg`), the shapes are stand-ins, and the place-name
 spellings are unconfirmed (ticket #606). The pipeline is in the doc "Corruption open world: Blender to Godot plan".
 
+## Austin's map (2026-10-09)
+
+`source/world_landscape.blend` is now **Austin's own hand-made map** (`corruption-map.blend`), not the generated blockout.
+It is one ground mesh, `Plane` (52 x 52 vertices, scaled to 400 x 400 m, heights -21 m to +51 m, 1 unit = 1 m), saved in
+Edit Mode. Nothing else: no `poi_<name>` markers, `tower_slot_1..4`, roads, rivers, forests or scale figure (they were not
+added to his file). I only added placeholder texturing (`tools/blender/texture_austin_map.py`): material
+`ground_placeholder` (grass; sand below z = -1.5 m; water texture below z = -6 m, the low basins; snow above 36 m; rock where
+the world-space slope exceeds 0.30), all Closest-filtered `textures/*.png` loaded by relative path, tinted by a new `Col` vertex
+colour; a new `WorldUV` UV layer (world-space planar, one 32 px tile = 8 m) drives it. His `UVMap`, vertex positions, name and
+transform are unchanged (vertex checksum identical before/after). His untouched file is `source/reference/corruption-map-original.blend`;
+the earlier generated blockout is `source/world_landscape_generated_placeholder.blend` (the POI files still match that one).
+The texturing is a Blender shader mix; for Godot it will need baking or a matching shader (#605).
+
 ## Files
 
 | File | What |

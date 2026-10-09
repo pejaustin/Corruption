@@ -23,6 +23,7 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | What | Stands in for | Where | Ticket |
 |---|---|---|---|
 | World blockout: the whole landscape (heights, mountains, rivers, roads, forests, coast), the stand-in shape of every place, the props and the 32 px textures, all read off the sketch by eye | The world's real geography and art | `art/world/` (see its README), generators in `tools/blender/` | #604 |
+| Textures on Austin's hand-made map (`Plane`): grass / rock (steep) / sand (shore) / water (low basins) / snow (high) by slope and height, nearest-filtered, thresholds and 8 m tile size are guesses | His real ground art | `art/world/source/world_landscape.blend`, `tools/blender/texture_austin_map.py` | #604 |
 | World size, 2000 m x 1500 m | The real world scale, decided by the scale test | `tools/blender/world_data.py` `WORLD_W/WORLD_H`, `world_root` in `world_landscape.blend` | #603 |
 | Place-name spellings on the `poi_<name>` markers and `pois/*.blend` file names (e.g. `avequalla`, `hopes_gates`, `unnamed_harbour`) | The confirmed names of the places | `art/world/pois/`, `tools/blender/world_data.py` | #606 |
 | Tower slots 1-4, unplaced just outside the west edge | Where Austin puts the four towers | `tower_slot_1..4` in `world_landscape.blend` | #604 |

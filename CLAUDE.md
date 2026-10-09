@@ -437,6 +437,11 @@ filtered textures. Austin edits the .blends by hand from here; `tools/blender/bu
 overwrites hand edits, so don't re-run it casually. The four towers are left unplaced (`tower_slot_1..4`). Names and
 layout are unconfirmed (#606). See `art/world/README.md`.
 
+**Update 2026-10-09:** `source/world_landscape.blend` is now AUSTIN'S hand-made map (`corruption-map.blend`: one 400 x 400 m
+ground mesh, `Plane`), with placeholder textures added by `tools/blender/texture_austin_map.py` (geometry untouched; his
+original is `source/reference/corruption-map-original.blend`; the generated blockout is `world_landscape_generated_placeholder.blend`).
+It has no `poi_` markers, tower slots, roads, rivers or scale figure.
+
 ### Resource-driven data (Tier 4 refactor)
 
 Gameplay data lives in `.tres` files under `res://data/`, authored as custom `Resource` subclasses. Code references them via `@export` — never by string path or metadata. Dictionaries of magic strings were replaced with typed fields during the Tier 4 refactor; prefer that pattern for new systems.
