@@ -8,12 +8,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import script_args
 root = script_args()[0]
 TILE_M = 8.0                      # PLACEHOLDER: one 32 px texture tile = 8 m (0.25 m per texel)
-SEA, SHORE, SNOW, SLOPE = -6.0, -1.5, 36.0, 0.30   # PLACEHOLDER thresholds (world z in m; slope = 1 - normal.z)
+# PLACEHOLDER thresholds, as fractions of the map's height range so they follow
+# Austin's vertical scale (sea / shore / snow line; slope = 1 - normal.z).
+SEA_F, SHORE_F, SNOW_F, SLOPE = 0.206, 0.268, 0.79, 0.30
 ob = bpy.data.objects["Plane"]; me = ob.data
 # his file was saved in Edit Mode: leave it (writes the edit-mesh back; no geometry change)
 bpy.context.view_layer.objects.active = ob
 if ob.mode != "OBJECT": bpy.ops.object.mode_set(mode="OBJECT")
 mw = np.array(ob.matrix_world)
+_wz = [(ob.matrix_world @ v.co).z for v in me.vertices]
+_zmin, _zmax = min(_wz), max(_wz)
+SEA, SHORE, SNOW = (_zmin + f * (_zmax - _zmin) for f in (SEA_F, SHORE_F, SNOW_F))
+print("THRESHOLDS", SEA, SHORE, SNOW)
 _a = np.empty(len(me.vertices)*3); me.vertices.foreach_get("co", _a); print("CHK_BEFORE", _a.reshape(-1,3).sum(), np.abs(_a).sum(), len(me.vertices), len(me.polygons))
 # 1. world-space planar UVs (new layer, existing UVMap kept)
 n = len(me.vertices)
