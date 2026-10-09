@@ -7,7 +7,7 @@ spellings are unconfirmed (ticket #606). The pipeline is in the doc "Corruption 
 ## Austin's map (2026-10-09)
 
 `source/world_landscape.blend` is now **Austin's own hand-made map** (`corruption-map.blend`), not the generated blockout.
-It is one ground mesh, `Plane` (52 x 52 vertices, scaled to 400 x 400 m, heights -21 m to +51 m, 1 unit = 1 m), saved in
+It is one ground mesh, `Plane` (52 x 52 vertices, scaled to 1000 x 1000 m, heights -21 m to +51 m, 1 unit = 1 m), saved in
 Edit Mode. Nothing else: no `poi_<name>` markers, `tower_slot_1..4`, roads, rivers, forests or scale figure (they were not
 added to his file). I only added placeholder texturing (`tools/blender/texture_austin_map.py`): material
 `ground_placeholder` (grass; sand below z = -1.5 m; water texture below z = -6 m, the low basins; snow above 36 m; rock where
