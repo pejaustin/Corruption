@@ -78,3 +78,10 @@ sketch coordinates, rivers, roads, mountains and forests). `render_previews.py` 
 ## Not here yet
 
 Tile export and `_far` copies (#605), the scale test (#603), final names (#606), and any real art.
+
+## Tower locations (Austin, 2026-10-09)
+
+The four towers stand at **Hell's Mouth**, **Avequal'la** (marker spelled `Avegual'la`), **Naf Ishun**, and
+**inside the Elder Wood, atop the hill**. The first three use their markers in `world_landscape.blend`. The Elder Wood
+tower has no marker yet: the highest ground inside the wood's footprint is about (137, -765, 32 m), near its western
+edge; Austin places the marker on the hill he means.
