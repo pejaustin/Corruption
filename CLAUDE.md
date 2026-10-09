@@ -437,7 +437,7 @@ filtered textures. Austin edits the .blends by hand from here; `tools/blender/bu
 overwrites hand edits, so don't re-run it casually. The four towers are left unplaced (`tower_slot_1..4`). Names and
 layout are unconfirmed (#606). See `art/world/README.md`.
 
-**Update 2026-10-09:** `source/world_landscape.blend` is now AUSTIN'S hand-made map (`corruption-map.blend`: one 1000 x 1000 m
+**Update 2026-10-09:** `source/world_landscape.blend` is now AUSTIN'S hand-made map (`corruption-map.blend`: one 2000 x 2000 m
 ground mesh, `Plane`), with placeholder textures added by `tools/blender/texture_austin_map.py` (geometry untouched; his
 original is `source/reference/corruption-map-original.blend`; the generated blockout is `world_landscape_generated_placeholder.blend`).
 It has no `poi_` markers, tower slots, roads, rivers or scale figure.
