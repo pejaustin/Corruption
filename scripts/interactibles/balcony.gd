@@ -7,14 +7,8 @@ class_name Balcony extends Interactable
 ## It claims the modal lock and pauses the rig's input while you look out.
 ## Flavour only: nothing here changes play.
 ## PLACEHOLDER: the balcony look (a stone post and a spyglass), the lookout's
-## spot and every number and string below.
+## spot (balcony.tscn) and every number and string below.
 
-## PLACEHOLDER: tuning — where the lookout sits, relative to this station.
-const LOOKOUT_OFFSET: Vector3 = Vector3(-3.0, 5.0, 0.0)
-## PLACEHOLDER: tuning — wide view and a far plane long enough for beacons over
-## sites ~150 m away.
-const LOOKOUT_FOV: float = 90.0
-const LOOKOUT_FAR: float = 1500.0
 const MOUSE_ROTATION_SPEED: float = 0.004
 const JOYSTICK_ROTATION_SPEED: float = 3.0
 const PITCH_MIN: float = deg_to_rad(-60.0)
@@ -25,12 +19,11 @@ const PROMPT_CLOSE: String = "E / Q to return"
 
 var _open: bool = false
 var _player: OverlordActor = null
-var _pivot: Node3D = null
-var _pitch: Node3D = null
-var _camera: Camera3D = null
 
-func _interactable_ready() -> void:
-	_build_lookout()
+## The lookout rig (position, field of view and far plane) is authored in balcony.tscn.
+@onready var _pivot: Node3D = %LookoutPivot
+@onready var _pitch: Node3D = %LookoutPitch
+@onready var _camera: Camera3D = %LookoutCamera
 
 func get_prompt_text() -> String:
 	if _open:
@@ -112,20 +105,6 @@ func _process(delta: float) -> void:
 func _exit_tree() -> void:
 	if _open:
 		close_lookout()
-
-func _build_lookout() -> void:
-	_pivot = Node3D.new()
-	_pivot.name = "LookoutPivot"
-	_pivot.position = LOOKOUT_OFFSET
-	add_child(_pivot)
-	_pitch = Node3D.new()
-	_pitch.name = "LookoutPitch"
-	_pivot.add_child(_pitch)
-	_camera = Camera3D.new()
-	_camera.name = "LookoutCamera"
-	_camera.fov = LOOKOUT_FOV
-	_camera.far = LOOKOUT_FAR
-	_pitch.add_child(_camera)
 
 func _face_towards(world_point: Vector3) -> void:
 	## Yaw the lookout to face a point (the map centre) and level the pitch.

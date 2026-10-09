@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: look — one record in the desk book: a heading and its text.
+
+[node name="DeskEntry" type="VBoxContainer"]
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_font_sizes/font_size = 20
+
+[node name="Text" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3

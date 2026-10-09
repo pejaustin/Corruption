@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+; The palantir's scrying camera: orbits the Paladin. The pivot is moved onto him
+; and turned with the mouse; the camera sits behind and above (CamRot pitches it).
+; Instanced when someone looks in and freed when they stop.
+; PLACEHOLDER: tuning — the orbit distance and height.
+
+[node name="ScryPivot" type="Node3D"]
+
+[node name="CamRot" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="ScryCamera" type="Camera3D" parent="CamRot"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 6)

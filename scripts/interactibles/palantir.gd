@@ -12,8 +12,6 @@ extends Interactable
 ##   overpowering him (PaladinHold), which runs while they keep looking.
 ## Q stops looking.
 
-const SCRY_DISTANCE: float = 6.0
-const SCRY_HEIGHT: float = 3.0
 const SCRY_PIVOT_HEIGHT: float = 1.5
 const CAMERA_MOUSE_ROTATION_SPEED: float = 0.005
 const CAMERA_JOYSTICK_ROTATION_SPEED: float = 5.0
@@ -22,6 +20,9 @@ const CAMERA_X_ROT_MAX: float = deg_to_rad(60)
 ## Seconds between prompt refreshes while looking in (hold / overpower readouts).
 const PROMPT_REFRESH_SECONDS: float = 0.25
 const PROMPT_COLOR: Color = Color(0.5, 0.8, 1)
+
+## The scrying camera rig (orbit distance and height are authored in it), instanced per look.
+@export var scry_rig_scene: PackedScene
 
 var _is_scrying: bool = false
 var _scry_camera: Camera3D
@@ -112,7 +113,7 @@ func _rotate_scry_camera(move: Vector2) -> void:
 	if not _scry_pivot:
 		return
 	_scry_pivot.rotate_y(-move.x)
-	var cam_rot := _scry_pivot.get_node("CamRot") as Node3D
+	var cam_rot := _scry_pivot.get_node(^"%CamRot") as Node3D
 	cam_rot.rotation.x = clampf(cam_rot.rotation.x - move.y, CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX)
 
 func _start_scrying() -> void:
@@ -128,15 +129,8 @@ func _start_scrying() -> void:
 		_scrying_player.set_overlord_active(false)
 		_overlord_camera = _scrying_player._camera_input.camera_3d
 
-	_scry_pivot = Node3D.new()
-	_scry_pivot.name = "ScryPivot"
-	var cam_rot := Node3D.new()
-	cam_rot.name = "CamRot"
-	_scry_pivot.add_child(cam_rot)
-	_scry_camera = Camera3D.new()
-	_scry_camera.name = "ScryCamera"
-	_scry_camera.position = Vector3(0, SCRY_HEIGHT, SCRY_DISTANCE)
-	cam_rot.add_child(_scry_camera)
+	_scry_pivot = scry_rig_scene.instantiate() as Node3D
+	_scry_camera = _scry_pivot.get_node(^"%ScryCamera") as Camera3D
 	get_tree().current_scene.add_child(_scry_pivot)
 	_scry_pivot.global_position = avatar.global_position + Vector3(0, SCRY_PIVOT_HEIGHT, 0)
 	_scry_camera.current = true

@@ -36,3 +36,18 @@ surface_material_override/0 = SubResource("StandardMaterial3D_stone")
 transform = Transform3D(0, 0, -1, -0.94, 0.34, 0, 0.34, 0.94, 0, -0.1, 1.1, 0)
 mesh = SubResource("CylinderMesh_glass")
 surface_material_override/0 = SubResource("StandardMaterial3D_brass")
+
+; The lookout rig: turned with the mouse while the balcony is open.
+; PLACEHOLDER: tuning — where the lookout sits, the wide view and a far plane
+; long enough for beacons over sites ~150 m away.
+[node name="LookoutPivot" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 5, 0)
+
+[node name="LookoutPitch" type="Node3D" parent="LookoutPivot"]
+unique_name_in_owner = true
+
+[node name="LookoutCamera" type="Camera3D" parent="LookoutPivot/LookoutPitch"]
+unique_name_in_owner = true
+fov = 90.0
+far = 1500.0

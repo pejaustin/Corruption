@@ -1,0 +1,46 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/advisor_dialogue.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/advisor_option_button.tscn" id="2_option"]
+
+; PLACEHOLDER: wording and look — the advisor's character is Austin's (#585).
+
+[node name="AdvisorDialogue" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1_script")
+option_button_scene = ExtResource("2_option")
+
+[node name="Subtitle" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = -1
+anchor_left = 0.15
+anchor_top = 0.82
+anchor_right = 0.85
+anchor_bottom = 0.95
+theme_override_colors/font_color = Color(0.95, 0.9, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = -1
+anchor_left = 0.3
+anchor_top = 0.45
+anchor_right = 0.7
+anchor_bottom = 0.8
+
+[node name="Box" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="Question" type="Label" parent="Panel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Options" type="VBoxContainer" parent="Panel/Box"]
+unique_name_in_owner = true
+layout_mode = 2

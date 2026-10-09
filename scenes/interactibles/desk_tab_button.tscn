@@ -1,0 +1,36 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: look — one tab on the desk book (the selected tab shows paper).
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab"]
+bg_color = Color(0.78, 0.68, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_selected"]
+bg_color = Color(0.93, 0.87, 0.72, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+
+[node name="DeskTabButton" type="Button"]
+focus_mode = 0
+theme_override_colors/font_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_colors/font_pressed_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_colors/font_hover_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tab")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_selected")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_tab_selected")
+toggle_mode = true

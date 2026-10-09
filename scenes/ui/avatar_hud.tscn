@@ -60,3 +60,27 @@ offset_right = -40.0
 offset_bottom = -40.0
 grow_horizontal = 0
 grow_vertical = 0
+
+; Your hold on him (PaladinHold.hold), above the health bar (GDD §8 Q15).
+[node name="HoldBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+mouse_filter = 2
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -76.0
+offset_right = 280.0
+offset_bottom = -66.0
+max_value = 1.0
+step = 0.001
+show_percentage = false
+
+; PLACEHOLDER: wording — label on the hold bar.
+[node name="HoldLabel" type="Label" parent="HoldBar"]
+layout_mode = 0
+offset_top = -26.0
+offset_right = 40.0
+offset_bottom = -3.0
+mouse_filter = 2
+text = "Hold"

@@ -8,6 +8,22 @@
 height = 2.887085
 radius = 2.6015625
 
+; PLACEHOLDER: art direction — the stand-in ring look: a pulsing coloured halo
+; quad and light on the mirror (the script drives their alpha and energy).
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ring"]
+resource_local_to_scene = true
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.7, 0.5, 1, 0)
+
+[sub_resource type="QuadMesh" id="QuadMesh_ring"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_ring")
+size = Vector2(1.8, 2.8)
+
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_mir"]
+
 [node name="Mirror" unique_id=1255271881 instance=ExtResource("1_base")]
 script = ExtResource("2_mir")
 
@@ -19,3 +35,32 @@ shape = SubResource("CylinderShape3D_mir")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0445547, 1.535213, 1.207143)
 size = Vector2(1.5, 2.5)
 cull_mask = 1048571
+
+[node name="RingGlow" type="MeshInstance3D" parent="Model/Mirror3D" index="0"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.02)
+visible = false
+mesh = SubResource("QuadMesh_ring")
+
+[node name="RingLight" type="OmniLight3D" parent="Model/Mirror3D" index="1"]
+unique_name_in_owner = true
+visible = false
+light_color = Color(0.7, 0.5, 1, 1)
+light_energy = 0.0
+omni_range = 5.0
+
+; PLACEHOLDER: art direction — the stand-in chime is two synthesized sine tones
+; (the script fills in the stream).
+[node name="ChimePlayer" type="AudioStreamPlayer3D" parent="Model/Mirror3D" index="2"]
+unique_name_in_owner = true
+volume_db = -6.0206
+
+; Records the local player's voice onto the MirrorMic bus.
+[node name="MicPlayer" type="AudioStreamPlayer" parent="." index="2"]
+unique_name_in_owner = true
+stream = SubResource("AudioStreamMicrophone_mir")
+bus = &"MirrorMic"
+
+; Plays a message's or a caller's voice (the script supplies the generator stream).
+[node name="PlaybackPlayer" type="AudioStreamPlayer" parent="." index="3"]
+unique_name_in_owner = true

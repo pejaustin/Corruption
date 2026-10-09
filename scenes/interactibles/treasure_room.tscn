@@ -1,8 +1,20 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/interactibles/treasure_room.gd" id="1_room"]
-
-; PLACEHOLDER: art and layout — the crates are drawn by the script
+[ext_resource type="PackedScene" path="res://scenes/interactibles/crate.tscn" id="2_crate"]
 
 [node name="TreasureRoom" type="Node3D"]
 script = ExtResource("1_room")
+crate_scene = ExtResource("2_crate")
+
+; PLACEHOLDER: art and layout — a crate per good is instanced under here, stacked by the script
+[node name="Crates" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+; PLACEHOLDER: wording and spot — the plaque says the exact number of goods
+[node name="Plaque" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 2.2, 0)
+billboard = 1
+outline_size = 8
+font_size = 48

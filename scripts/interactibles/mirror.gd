@@ -35,19 +35,17 @@ const NOTICE_SECONDS: float = 5.0
 const RING_CHIME_INTERVAL: float = 2.0
 ## PLACEHOLDER: tuning. Glow pulses per second while the mirror rings.
 const RING_PULSE_HZ: float = 1.0
-## PLACEHOLDER: art direction. Stand-in ring look: a coloured halo quad and light.
+## PLACEHOLDER: art direction. Stand-in ring look: a coloured halo quad and light
+## (authored in mirror.tscn; the pulse only drives their alpha and energy).
 const RING_GLOW_COLOR: Color = Color(0.7, 0.5, 1.0)
-const RING_GLOW_MARGIN: float = 0.3
 const RING_GLOW_MAX_ALPHA: float = 0.45
 const RING_LIGHT_ENERGY: float = 2.5
-const RING_LIGHT_RANGE: float = 5.0
 ## PLACEHOLDER: art direction. Stand-in chime: two synthesized sine tones.
 const CHIME_RATE: int = 22050
 const CHIME_SECONDS: float = 0.7
 const CHIME_HZ_LOW: float = 880.0
 const CHIME_HZ_HIGH: float = 1320.0
 const CHIME_DECAY: float = 5.0
-const CHIME_VOLUME: float = 0.5
 
 enum State { IDLE, SELECTING, CALLING, LIVE, RECORDING, PREVIEW, PLAYING }
 
@@ -72,7 +70,6 @@ var _record_sample_timer: float = 0.0
 var _record_duration: float = 0.0
 
 # Audio capture
-var _mic_player: AudioStreamPlayer
 var _audio_capture: AudioEffectCapture
 var _mic_bus_idx: int = -1
 
@@ -81,7 +78,6 @@ var _play_message: MirrorMessage = null
 var _play_stage: Node3D = null
 var _play_ghost: Node3D = null
 var _play_skeleton: Skeleton3D = null
-var _play_audio_player: AudioStreamPlayer
 var _play_audio_samples: PackedFloat32Array
 var _play_audio_pos: int = 0
 var _play_timer: float = 0.0
@@ -106,13 +102,16 @@ var _live_audio_out: PackedFloat32Array = PackedFloat32Array()
 var _live_audio_rate: int = 0
 var _local_skeleton: Skeleton3D = null
 
-# Ring effects (built in code)
-var _ring_glow: MeshInstance3D
-var _ring_glow_material: StandardMaterial3D
-var _ring_light: OmniLight3D
-var _chime_player: AudioStreamPlayer3D
+# Ring effects (nodes authored in mirror.tscn)
 var _chime_timer: float = 0.0
 var _ring_phase: float = 0.0
+
+@onready var _mic_player: AudioStreamPlayer = %MicPlayer
+@onready var _play_audio_player: AudioStreamPlayer = %PlaybackPlayer
+@onready var _ring_glow: MeshInstance3D = %RingGlow
+@onready var _ring_glow_material: StandardMaterial3D = (_ring_glow.mesh as QuadMesh).material as StandardMaterial3D
+@onready var _ring_light: OmniLight3D = %RingLight
+@onready var _chime_player: AudioStreamPlayer3D = %ChimePlayer
 
 func _interactable_ready() -> void:
 	GameState.mirror_message_received.connect(_on_message_received)
@@ -124,7 +123,7 @@ func _interactable_ready() -> void:
 	GameState.mirror_live_audio_received.connect(_on_live_audio_received)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	_setup_mic_bus()
-	_setup_ring_effects()
+	_chime_player.stream = _make_chime()
 	call_deferred("_setup_mirror3d")
 
 func _setup_mirror3d() -> void:
@@ -133,14 +132,12 @@ func _setup_mirror3d() -> void:
 		_mirror3d = model.get_node_or_null("Mirror3D")
 	if not _mirror3d:
 		push_warning("Mirror: Mirror3D child not found under Model on %s" % get_path())
-		_attach_ring_effects()
 		return
-	_attach_ring_effects()
-	var quad_size: Vector2 = _mirror3d.size
-	(_ring_glow.mesh as QuadMesh).size = quad_size + Vector2.ONE * RING_GLOW_MARGIN
 	print("Mirror: Mirror3D resolved at %s" % _mirror3d.get_path())
 
 func _setup_mic_bus() -> void:
+	# Data-only: the shared MirrorMic audio bus and its effects live in the
+	# AudioServer, not the scene tree; the players that use it are in mirror.tscn.
 	var existing_idx = AudioServer.get_bus_index("MirrorMic")
 	if existing_idx != -1:
 		_mic_bus_idx = existing_idx
@@ -167,43 +164,6 @@ func _setup_mic_bus() -> void:
 		var capture = AudioEffectCapture.new()
 		AudioServer.add_bus_effect(_mic_bus_idx, capture)
 		_audio_capture = capture
-
-	_mic_player = AudioStreamPlayer.new()
-	_mic_player.stream = AudioStreamMicrophone.new()
-	_mic_player.bus = "MirrorMic"
-	add_child(_mic_player)
-
-	_play_audio_player = AudioStreamPlayer.new()
-	add_child(_play_audio_player)
-
-func _setup_ring_effects() -> void:
-	## PLACEHOLDER: art direction. A pulsing halo, a light and a synthesized chime
-	## stand in for "their mirror chimes or glows" (Q34) until there is real art/audio.
-	_ring_glow_material = StandardMaterial3D.new()
-	_ring_glow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_ring_glow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_ring_glow_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_ring_glow_material.albedo_color = Color(RING_GLOW_COLOR, 0.0)
-	var quad := QuadMesh.new()
-	quad.material = _ring_glow_material
-	_ring_glow = MeshInstance3D.new()
-	_ring_glow.mesh = quad
-	_ring_glow.visible = false
-	_ring_glow.position = Vector3(0.0, 0.0, -0.02)
-	_ring_light = OmniLight3D.new()
-	_ring_light.light_color = RING_GLOW_COLOR
-	_ring_light.omni_range = RING_LIGHT_RANGE
-	_ring_light.light_energy = 0.0
-	_ring_light.visible = false
-	_chime_player = AudioStreamPlayer3D.new()
-	_chime_player.stream = _make_chime()
-	_chime_player.volume_db = linear_to_db(CHIME_VOLUME)
-
-func _attach_ring_effects() -> void:
-	## Hang the effects under the Model's Mirror3D (or under us if it is missing).
-	var host: Node3D = _mirror3d if _mirror3d else self
-	for n in [_ring_glow, _ring_light, _chime_player]:
-		host.add_child(n)
 
 func _make_chime() -> AudioStreamWAV:
 	var count: int = int(CHIME_RATE * CHIME_SECONDS)

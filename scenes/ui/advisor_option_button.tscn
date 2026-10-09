@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+; One numbered answer in the advisor's question; AdvisorDialogue instances one
+; per choice and sets its text.
+
+[node name="AdvisorOptionButton" type="Button"]
+alignment = 0

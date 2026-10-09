@@ -2,6 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
 [ext_resource type="Script" path="res://scripts/interactibles/desk.gd" id="2_desk"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/desk_tab_button.tscn" id="3_tab"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/desk_entry.tscn" id="4_entry"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_desk"]
 size = Vector3(2.4, 1.6, 1.4)
@@ -21,8 +23,30 @@ albedo_color = Color(0.32, 0.2, 0.12, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_book"]
 albedo_color = Color(0.5, 0.1, 0.12, 1)
 
+; PLACEHOLDER: look — the book's paper, ink and sizes.
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+bg_color = Color(0.93, 0.87, 0.72, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.16, 0.1, 0.06, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_notes"]
+bg_color = Color(0.93, 0.87, 0.72, 1)
+
 [node name="Desk" instance=ExtResource("1_base")]
 script = ExtResource("2_desk")
+tab_button_scene = ExtResource("3_tab")
+entry_scene = ExtResource("4_entry")
 
 [node name="CollisionShape3D" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
@@ -57,3 +81,69 @@ surface_material_override/0 = SubResource("StandardMaterial3D_wood")
 transform = Transform3D(0.94, 0, 0.34, 0, 1, 0, -0.34, 0, 0.94, 0.2, 0.925, 0)
 mesh = SubResource("BoxMesh_book")
 surface_material_override/0 = SubResource("StandardMaterial3D_book")
+
+; The open book: hidden until E at your own desk.
+[node name="BookLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Panel" type="PanelContainer" parent="BookLayer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -260.0
+offset_right = 380.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(760, 520)
+theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+
+[node name="Column" type="VBoxContainer" parent="BookLayer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Tabs" type="HBoxContainer" parent="BookLayer/Panel/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Scroll" type="ScrollContainer" parent="BookLayer/Panel/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Body" type="VBoxContainer" parent="BookLayer/Panel/Column/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Entries" type="VBoxContainer" parent="BookLayer/Panel/Column/Scroll/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EmptyLabel" type="Label" parent="BookLayer/Panel/Column/Scroll/Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.3, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "Nothing written here yet."
+
+; PLACEHOLDER: wording — the notes hint.
+[node name="NotesEdit" type="TextEdit" parent="BookLayer/Panel/Column/Scroll/Body"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(716, 430)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_colors/font_placeholder_color = Color(0.4, 0.3, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_notes")
+theme_override_styles/focus = SubResource("StyleBoxFlat_notes")
+placeholder_text = "Write your own notes here."
+wrap_mode = 1

@@ -5,28 +5,24 @@ class_name Ledger extends Interactable
 ## each with how long ago it was written, plus what the tower holds right now.
 ## Owner-only. E opens it, E / Q closes; it takes the modal lock and pauses the
 ## rig's input while open, like the desk.
-## PLACEHOLDER: the look (a box and a red slab), every string and number below.
+## PLACEHOLDER: the look (a box and a red slab, authored in ledger.tscn), every string and number below.
 
-const PANEL_SIZE: Vector2 = Vector2(560.0, 420.0)
-const PAGE_MARGIN: int = 18
 const SECONDS_PER_MINUTE: int = 60
-const PAPER_COLOR: Color = Color(0.93, 0.87, 0.72)
-const INK_COLOR: Color = Color(0.16, 0.1, 0.06)
-const DIM_COLOR: Color = Color(0.4, 0.3, 0.2)
-const TITLE_SIZE: int = 22
-const BODY_SIZE: int = 17
 # PLACEHOLDER: wording
 const PROMPT_OPEN: String = "Press E to read the ledger"
 const PROMPT_CLOSE: String = "E / Q to close"
-const TITLE_TEXT: String = "Ledger"
 const HELD_FORMAT: String = "In the treasure room: %d"
 const ENTRY_FORMAT: String = "%s: %d goods, written %s ago"
 const EMPTY_TEXT: String = "No report of goods held elsewhere."
 
+## A line of the page, instanced per line.
+@export var line_scene: PackedScene
+
 var _open: bool = false
 var _player: OverlordActor = null
-var _layer: CanvasLayer = null
-var _body: VBoxContainer = null
+
+@onready var _layer: CanvasLayer = %LedgerLayer
+@onready var _lines: VBoxContainer = %Lines
 
 func get_prompt_text() -> String:
 	if _open:
@@ -55,7 +51,7 @@ func open_ledger(player: OverlordActor) -> void:
 	_claim_modal()
 	_set_player_input(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	_build_ui()
+	_layer.visible = true
 	refresh()
 	_refresh_prompt()
 
@@ -63,10 +59,8 @@ func close_ledger() -> void:
 	if not _open:
 		return
 	_open = false
-	if _layer != null:
-		_layer.queue_free()
-		_layer = null
-	_body = null
+	_layer.visible = false
+	_clear_lines()
 	_release_modal()
 	_set_player_input(true)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -99,16 +93,18 @@ func format_age(tick: int) -> String:
 	return "%02d:%02d" % [total / SECONDS_PER_MINUTE, total % SECONDS_PER_MINUTE]
 
 func refresh() -> void:
-	if not _open or _body == null:
+	if not _open:
 		return
-	for c in _body.get_children():
-		_body.remove_child(c)
-		c.queue_free()
-	_body.add_child(_make_label(TITLE_TEXT, TITLE_SIZE, INK_COLOR))
+	_clear_lines()
 	for line in get_lines():
-		var l := _make_label(line, BODY_SIZE, INK_COLOR)
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_body.add_child(l)
+		var l := line_scene.instantiate() as Label
+		l.text = line
+		_lines.add_child(l)
+
+func _clear_lines() -> void:
+	for c in _lines.get_children():
+		_lines.remove_child(c)
+		c.queue_free()
 
 func _site_name(site: StringName) -> String:
 	var point := MapPoint.find(get_tree(), site)
@@ -160,31 +156,3 @@ func _set_player_input(enabled: bool) -> void:
 	for c in _player.get_children():
 		if c is PlayerInput:
 			(c as PlayerInput).input_enabled = enabled
-
-func _build_ui() -> void:
-	_layer = CanvasLayer.new()
-	_layer.name = "LedgerLayer"
-	add_child(_layer)
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = PAPER_COLOR
-	style.border_color = INK_COLOR
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(6)
-	style.set_content_margin_all(PAGE_MARGIN)
-	panel.add_theme_stylebox_override(&"panel", style)
-	panel.custom_minimum_size = PANEL_SIZE
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_KEEP_SIZE)
-	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_layer.add_child(panel)
-	_body = VBoxContainer.new()
-	_body.add_theme_constant_override(&"separation", 10)
-	panel.add_child(_body)
-
-func _make_label(text: String, size: int, color: Color) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.add_theme_font_size_override(&"font_size", size)
-	l.add_theme_color_override(&"font_color", color)
-	return l

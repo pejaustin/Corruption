@@ -5,37 +5,35 @@ class_name Desk extends Interactable
 ## (newest first) and a final Notes page bound to WorldModel.notes. The book is
 ## the only UI; it takes the modal lock, frees the mouse and pauses the rig's
 ## input while open, and refreshes live when a record arrives.
-## PLACEHOLDER: the desk look (a box table and a box book) and every string below.
+## PLACEHOLDER: the desk look (a box table and a box book, authored in desk.tscn)
+## and every string below.
 
 const PAGE_ALL: StringName = &"all"
 const PAGE_NOTES: StringName = &"notes"
-const BOOK_SIZE: Vector2 = Vector2(760.0, 520.0)
-const PAGE_MARGIN: int = 18
 const SECONDS_PER_MINUTE: int = 60
-const PAPER_COLOR: Color = Color(0.93, 0.87, 0.72)
-const TAB_COLOR: Color = Color(0.78, 0.68, 0.5)
-const INK_COLOR: Color = Color(0.16, 0.1, 0.06)
-const DIM_COLOR: Color = Color(0.4, 0.3, 0.2)
-const TITLE_SIZE: int = 20
-const BODY_SIZE: int = 16
-const NOTES_SIZE: int = 18
 # PLACEHOLDER: wording
 const PROMPT_OPEN: String = "Press E to open the book"
 const PROMPT_CLOSE: String = "E / Q to close"
 const TAB_ALL: String = "All"
 const TAB_NOTES: String = "Notes"
-const EMPTY_TEXT: String = "Nothing written here yet."
-const NOTES_HINT: String = "Write your own notes here."
+
+## Scenes instanced into the book: a tab per page and an entry per record.
+@export var tab_button_scene: PackedScene
+@export var entry_scene: PackedScene
 
 var _open: bool = false
 var _page: StringName = PAGE_ALL
 var _player: OverlordActor = null
 var _model: WorldModel = null
-var _layer: CanvasLayer = null
-var _tabs: HBoxContainer = null
-var _body: VBoxContainer = null
-var _scroll: ScrollContainer = null
-var _notes_edit: TextEdit = null
+
+@onready var _layer: CanvasLayer = %BookLayer
+@onready var _tabs: HBoxContainer = %Tabs
+@onready var _entries: VBoxContainer = %Entries
+@onready var _empty_label: Label = %EmptyLabel
+@onready var _notes_edit: TextEdit = %NotesEdit
+
+func _interactable_ready() -> void:
+	_notes_edit.text_changed.connect(_save_notes)
 
 func get_prompt_text() -> String:
 	if _open:
@@ -70,7 +68,7 @@ func open_book(player: OverlordActor) -> void:
 	_claim_modal()
 	_set_player_input(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	_build_ui()
+	_layer.visible = true
 	_model.record_added.connect(_on_record_added)
 	_refresh()
 	_refresh_prompt()
@@ -82,10 +80,8 @@ func close_book() -> void:
 	_open = false
 	if _model != null and _model.record_added.is_connected(_on_record_added):
 		_model.record_added.disconnect(_on_record_added)
-	if _layer != null:
-		_layer.queue_free()
-		_layer = null
-	_notes_edit = null
+	_layer.visible = false
+	_clear_page()
 	_release_modal()
 	_set_player_input(true)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -105,15 +101,14 @@ func get_page() -> StringName:
 func get_shown_titles() -> Array[String]:
 	## Titles of the record entries on the current page, in shown order.
 	var out: Array[String] = []
-	if _body == null:
-		return out
-	for c in _body.get_children():
+	for c in _entries.get_children():
 		if c.has_meta(&"record_title"):
 			out.append(str(c.get_meta(&"record_title")))
 	return out
 
 func get_notes_edit() -> TextEdit:
-	return _notes_edit
+	## The notes page's editor, or null while another page is shown.
+	return _notes_edit if _notes_edit.visible else null
 
 func format_tick(tick: int) -> String:
 	## Match time as mm:ss from a network tick.
@@ -135,7 +130,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _input(event: InputEvent) -> void:
 	if not _open:
 		return
-	var typing: bool = _notes_edit != null and _notes_edit.has_focus()
+	var typing: bool = _notes_edit.visible and _notes_edit.has_focus()
 	var is_esc: bool = event is InputEventKey and (event as InputEventKey).pressed \
 		and (event as InputEventKey).keycode == KEY_ESCAPE
 	var is_close: bool = event.is_action_pressed("interaction") or event.is_action_pressed("cancel")
@@ -166,7 +161,7 @@ func _on_record_added(_entry: Dictionary) -> void:
 	_refresh()
 
 func _save_notes() -> void:
-	if _notes_edit != null and _model != null:
+	if _notes_edit.visible and _model != null:
 		_model.notes = _notes_edit.text
 
 func _kinds() -> Array[StringName]:
@@ -177,50 +172,22 @@ func _kinds() -> Array[StringName]:
 			kinds.push_back(k)
 	return kinds
 
-func _build_ui() -> void:
-	_layer = CanvasLayer.new()
-	_layer.name = "BookLayer"
-	add_child(_layer)
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = PAPER_COLOR
-	style.border_color = INK_COLOR
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(6)
-	style.set_content_margin_all(PAGE_MARGIN)
-	panel.add_theme_stylebox_override(&"panel", style)
-	panel.custom_minimum_size = BOOK_SIZE
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_KEEP_SIZE)
-	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_layer.add_child(panel)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override(&"separation", 10)
-	panel.add_child(col)
-	_tabs = HBoxContainer.new()
-	_tabs.add_theme_constant_override(&"separation", 6)
-	col.add_child(_tabs)
-	_scroll = ScrollContainer.new()
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	col.add_child(_scroll)
-	_body = VBoxContainer.new()
-	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_body.add_theme_constant_override(&"separation", 12)
-	_scroll.add_child(_body)
-
 func _refresh() -> void:
-	if not _open or _body == null:
+	if not _open:
 		return
 	_rebuild_tabs()
-	for c in _body.get_children():
-		_body.remove_child(c)
-		c.queue_free()
-	_notes_edit = null
+	_clear_page()
 	if _page == PAGE_NOTES:
-		_build_notes_page()
+		_show_notes_page()
 	else:
-		_build_record_page()
+		_show_record_page()
+
+func _clear_page() -> void:
+	for c in _entries.get_children():
+		_entries.remove_child(c)
+		c.queue_free()
+	_empty_label.visible = false
+	_notes_edit.visible = false
 
 func _rebuild_tabs() -> void:
 	for c in _tabs.get_children():
@@ -232,62 +199,27 @@ func _rebuild_tabs() -> void:
 	_add_tab(TAB_NOTES, PAGE_NOTES)
 
 func _add_tab(label: String, page: StringName) -> void:
-	var b := Button.new()
+	var b := tab_button_scene.instantiate() as Button
 	b.text = label
-	b.toggle_mode = true
 	b.button_pressed = (page == _page)
-	b.focus_mode = Control.FOCUS_NONE
-	b.add_theme_color_override(&"font_color", INK_COLOR)
-	b.add_theme_color_override(&"font_pressed_color", INK_COLOR)
-	b.add_theme_color_override(&"font_hover_color", INK_COLOR)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = PAPER_COLOR if page == _page else TAB_COLOR
-	sb.set_corner_radius_all(4)
-	sb.set_content_margin_all(6)
-	for state in [&"normal", &"pressed", &"hover"]:
-		b.add_theme_stylebox_override(state, sb)
 	b.pressed.connect(show_page.bind(page))
 	_tabs.add_child(b)
 
-func _build_record_page() -> void:
+func _show_record_page() -> void:
 	var shown: Array[Dictionary] = []
 	for i in range(_model.records.size() - 1, -1, -1):
 		var r: Dictionary = _model.records[i]
 		if _page == PAGE_ALL or r["kind"] == _page:
 			shown.push_back(r)
-	if shown.is_empty():
-		_body.add_child(_make_label(EMPTY_TEXT, BODY_SIZE, DIM_COLOR))
-		return
+	_empty_label.visible = shown.is_empty()
 	for r in shown:
-		var entry := VBoxContainer.new()
+		var entry := entry_scene.instantiate() as Control
 		entry.set_meta(&"record_title", r["title"])
-		var head := "%s  %s" % [format_tick(r["tick"]), r["title"]]
-		entry.add_child(_make_label(head, TITLE_SIZE, INK_COLOR))
-		var text := _make_label(r["text"], BODY_SIZE, INK_COLOR)
-		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		entry.add_child(text)
-		_body.add_child(entry)
+		(entry.get_node(^"%Title") as Label).text = "%s  %s" % [format_tick(r["tick"]), r["title"]]
+		(entry.get_node(^"%Text") as Label).text = r["text"]
+		_entries.add_child(entry)
 
-func _build_notes_page() -> void:
-	_notes_edit = TextEdit.new()
+func _show_notes_page() -> void:
 	_notes_edit.text = _model.notes
-	_notes_edit.placeholder_text = NOTES_HINT
-	_notes_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
-	_notes_edit.custom_minimum_size = Vector2(BOOK_SIZE.x - 2.0 * PAGE_MARGIN - 8.0, BOOK_SIZE.y - 90.0)
-	_notes_edit.add_theme_color_override(&"font_color", INK_COLOR)
-	_notes_edit.add_theme_color_override(&"font_placeholder_color", DIM_COLOR)
-	_notes_edit.add_theme_font_size_override(&"font_size", NOTES_SIZE)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = PAPER_COLOR
-	_notes_edit.add_theme_stylebox_override(&"normal", sb)
-	_notes_edit.add_theme_stylebox_override(&"focus", sb)
-	_notes_edit.text_changed.connect(_save_notes)
-	_body.add_child(_notes_edit)
+	_notes_edit.visible = true
 	_notes_edit.grab_focus()
-
-func _make_label(text: String, size: int, color: Color) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.add_theme_font_size_override(&"font_size", size)
-	l.add_theme_color_override(&"font_color", color)
-	return l

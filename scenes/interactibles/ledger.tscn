@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
 [ext_resource type="Script" path="res://scripts/interactibles/ledger.gd" id="2_ledger"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/ledger_line.tscn" id="3_line"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ledger"]
 size = Vector3(1.6, 1.6, 1.2)
@@ -18,10 +19,27 @@ albedo_color = Color(0.32, 0.2, 0.12, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_book"]
 albedo_color = Color(0.45, 0.35, 0.1, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+bg_color = Color(0.93, 0.87, 0.72, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.16, 0.1, 0.06, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+
 ; PLACEHOLDER: art — a stand with a flat book
 
 [node name="Ledger" instance=ExtResource("1_base")]
 script = ExtResource("2_ledger")
+line_scene = ExtResource("3_line")
 
 [node name="CollisionShape3D" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
@@ -36,3 +54,39 @@ surface_material_override/0 = SubResource("StandardMaterial3D_wood")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, 0)
 mesh = SubResource("BoxMesh_book")
 surface_material_override/0 = SubResource("StandardMaterial3D_book")
+
+; The open page: hidden until E at your own ledger.
+; PLACEHOLDER: look and wording — paper, ink and sizes.
+[node name="LedgerLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Panel" type="PanelContainer" parent="LedgerLayer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -210.0
+offset_right = 280.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(560, 420)
+theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+
+[node name="Body" type="VBoxContainer" parent="LedgerLayer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="LedgerLayer/Panel/Body"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.1, 0.06, 1)
+theme_override_font_sizes/font_size = 22
+text = "Ledger"
+
+[node name="Lines" type="VBoxContainer" parent="LedgerLayer/Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10

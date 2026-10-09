@@ -12,20 +12,22 @@ class_name TreasureRoom extends Node3D
 const MAX_CRATES: int = 200
 const STACK_COLUMNS: int = 5
 const STACK_ROWS: int = 4
+## The size of crate.tscn's box, for spacing the stack.
 const CRATE_SIZE: Vector3 = Vector3(0.45, 0.3, 0.45)
 const CRATE_GAP: float = 0.05
-const CRATE_COLOR: Color = Color(0.7, 0.55, 0.25)
 # PLACEHOLDER: wording
 const PLAQUE_FORMAT: String = "Goods: %d"
-const PLAQUE_HEIGHT: float = 2.2
 
-var _crates: MultiMeshInstance3D
-var _plaque: Label3D
+## Instanced once per good shown.
+@export var crate_scene: PackedScene
+
 var _shown_goods: int = -1
 var _shown_peer: int = -2
 
+@onready var _crates: Node3D = %Crates
+@onready var _plaque: Label3D = %Plaque
+
 func _ready() -> void:
-	_build_look()
 	_refresh()
 
 func _process(_delta: float) -> void:
@@ -47,10 +49,10 @@ func get_goods() -> int:
 	return mm.get_treasury(get_owner_peer()) if mm else 0
 
 func get_crate_count() -> int:
-	return _crates.multimesh.visible_instance_count if _crates and _crates.multimesh else 0
+	return _crates.get_child_count()
 
 func get_plaque_text() -> String:
-	return _plaque.text if _plaque else ""
+	return _plaque.text
 
 func _refresh() -> void:
 	var peer := get_owner_peer()
@@ -60,41 +62,27 @@ func _refresh() -> void:
 		return
 	_shown_goods = goods
 	_shown_peer = peer
-	_crates.multimesh.visible_instance_count = mini(goods, MAX_CRATES)
+	_set_crate_count(mini(goods, MAX_CRATES))
 	_plaque.text = PLAQUE_FORMAT % goods
 
 func _minion_manager() -> MinionManager:
 	var scene := get_tree().current_scene
 	return scene.get_node_or_null("MinionManager") as MinionManager if scene else null
 
-func _build_look() -> void:
-	## PLACEHOLDER: art — plain boxes in a grid, filling bottom-up.
-	var multi := MultiMesh.new()
-	multi.transform_format = MultiMesh.TRANSFORM_3D
-	var box := BoxMesh.new()
-	box.size = CRATE_SIZE
-	multi.mesh = box
-	multi.instance_count = MAX_CRATES
+func _set_crate_count(count: int) -> void:
+	## Crates fill the grid bottom-up, one layer at a time.
 	var per_layer: int = STACK_COLUMNS * STACK_ROWS
-	for i in MAX_CRATES:
+	while _crates.get_child_count() < count:
+		var i: int = _crates.get_child_count()
 		var layer: int = i / per_layer
 		var slot: int = i % per_layer
-		var x: float = float(slot % STACK_COLUMNS) * (CRATE_SIZE.x + CRATE_GAP)
-		var z: float = float(slot / STACK_COLUMNS) * (CRATE_SIZE.z + CRATE_GAP)
-		var y: float = CRATE_SIZE.y * 0.5 + float(layer) * CRATE_SIZE.y
-		multi.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(x, y, z)))
-	multi.visible_instance_count = 0
-	_crates = MultiMeshInstance3D.new()
-	_crates.name = "Crates"
-	_crates.multimesh = multi
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = CRATE_COLOR
-	_crates.material_override = mat
-	add_child(_crates)
-	_plaque = Label3D.new()
-	_plaque.name = "Plaque"
-	_plaque.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_plaque.font_size = 48
-	_plaque.outline_size = 8
-	_plaque.position = Vector3(float(STACK_COLUMNS) * 0.25, PLAQUE_HEIGHT, 0.0)
-	add_child(_plaque)
+		var crate := crate_scene.instantiate() as Node3D
+		crate.position = Vector3(
+			float(slot % STACK_COLUMNS) * (CRATE_SIZE.x + CRATE_GAP),
+			CRATE_SIZE.y * 0.5 + float(layer) * CRATE_SIZE.y,
+			float(slot / STACK_COLUMNS) * (CRATE_SIZE.z + CRATE_GAP))
+		_crates.add_child(crate)
+	while _crates.get_child_count() > count:
+		var last: Node = _crates.get_child(_crates.get_child_count() - 1)
+		_crates.remove_child(last)
+		last.queue_free()
