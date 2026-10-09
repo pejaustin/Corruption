@@ -32,6 +32,7 @@
 [ext_resource type="PackedScene" uid="uid://c8uteh2tyq2lx" path="res://scenes/interactibles/palantir.tscn" id="27_k0irn"]
 [ext_resource type="PackedScene" uid="uid://d24db7jslh5tl" path="res://scenes/actors/minion/minion_spawn_point.tscn" id="31_8uuiu"]
 [ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="40_site"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/desk.tscn" id="42_desk"]
 [ext_resource type="Resource" path="res://data/sites/tower.tres" id="41_towertype"]
 [ext_resource type="Script" uid="uid://hthsj34lyade" path="res://scenes/world/env/jumpable_link.gd" id="33_7a0l1"]
 [ext_resource type="PackedScene" uid="uid://71btovk3inad" path="res://scenes/actors/minion/types/advisor_actor.tscn" id="35_n8gnn"]
@@ -145,6 +146,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 41.371777, 0)
 
 [node name="Palantir" parent="." unique_id=1536666789 instance=ExtResource("27_k0irn")]
 transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 48.999214, 1.0485661)
+
+[node name="Desk" parent="." unique_id=1793453701 instance=ExtResource("42_desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 39.4, -6)
 
 [node name="MinionSpawnPoint" parent="." unique_id=1793453589 instance=ExtResource("31_8uuiu")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3415604, 40.38556, 10.8646965)

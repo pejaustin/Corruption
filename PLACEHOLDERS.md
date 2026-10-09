@@ -19,7 +19,14 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 |---|---|---|---|
 | Seat colours (one per tower) and the good faction's colour | How players tell each other apart | `scripts/game_constants.gd` `SEAT_COLORS`, `GOOD_COLOR` | — |
 | Site marker (stone disc + tinted crystal) and the beacon (a coloured column of light) | Site and beacon art | `scenes/sites/corruption_site.gd` | #553 |
+| Desk look (box table and red book) | Desk and book art | `scenes/interactibles/desk.tscn` | #570 |
 | Ruined tower = hidden roof pieces, revealed as sites are held | Tower restoration stages | `scenes/world/env/tower.gd` | #567 |
+
+## Wording
+
+| What | Stands in for | Where | Ticket |
+|---|---|---|---|
+| Desk book strings (prompts, tab names "All"/"Notes", empty-page and notes hints) and the mm:ss match-time format | The desk's copy | `scripts/interactibles/desk.gd` | #570 |
 
 ## Tuning (playtest ticket #587)
 

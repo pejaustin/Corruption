@@ -438,6 +438,13 @@ Minion-vs-minion physical collision is intentionally OFF (`minion_actor.gd:COLLI
 
 Full design: `docs/systems/war-table.md`.
 
+### Desk (`scripts/interactibles/desk.gd`)
+
+`Desk` is one per tower (`tower.tscn`, hall floor). E at your own desk (`is_active_for_local_peer`) opens a code-built book
+UI: tabs for "All" (newest first, ticks as mm:ss), one per record `kind` in `WorldModel.records`, and a Notes page bound to
+`WorldModel.notes`. It claims the modal lock, frees the mouse, disables the rig's `PlayerInput`, refreshes on
+`record_added`, and closes on Esc / E / Q (E/Q ignored while typing in Notes). Test: `tools/tests/test_desk.tscn`.
+
 ### Interactable focus — raycast-pull, not poll-push
 
 Interactables (war table, palantir, altar, summoning circle, advisor handoff, gem, gem site, mirror, etc.) all extend `Interactable` (Area3D, `scenes/interactibles/interactable.gd`). Focus is driven from the **player side**, not from each interactable.

@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scripts/interactibles/desk.gd" id="2_desk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_desk"]
+size = Vector3(2.4, 1.6, 1.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_top"]
+size = Vector3(2, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.1, 0.8, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_book"]
+size = Vector3(0.45, 0.07, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.32, 0.2, 0.12, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_book"]
+albedo_color = Color(0.5, 0.1, 0.12, 1)
+
+[node name="Desk" instance=ExtResource("1_base")]
+script = ExtResource("2_desk")
+
+[node name="CollisionShape3D" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_desk")
+
+[node name="Top" type="MeshInstance3D" parent="Model" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+mesh = SubResource("BoxMesh_top")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="LegA" type="MeshInstance3D" parent="Model" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.4, -0.4)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="LegB" type="MeshInstance3D" parent="Model" index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.4, -0.4)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="LegC" type="MeshInstance3D" parent="Model" index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.4, 0.4)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="LegD" type="MeshInstance3D" parent="Model" index="4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.4, 0.4)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="Book" type="MeshInstance3D" parent="Model" index="5"]
+transform = Transform3D(0.94, 0, 0.34, 0, 1, 0, -0.34, 0, 0.94, 0.2, 0.925, 0)
+mesh = SubResource("BoxMesh_book")
+surface_material_override/0 = SubResource("StandardMaterial3D_book")
