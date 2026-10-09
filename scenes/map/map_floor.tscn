@@ -1,6 +1,50 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/map/map_floor.gd" id="1_floor"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_point_marker.tscn" id="2_marker"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_piece.tscn" id="3_piece"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_piece_avatar.tscn" id="4_avatar"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_line_route.tscn" id="5_route"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_line.tscn" id="6_ink"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_line_pencil.tscn" id="7_pencil"]
+
+; PLACEHOLDER: art — the illustration is generated from the terrain's heights
+; (hill shading on parchment) until Austin's map art (ticket #534). The script
+; draws it into this material's albedo texture and sizes the plane to floor_size.
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+resource_local_to_scene = true
+size = Vector2(14, 14)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+resource_local_to_scene = true
+shading_mode = 0
 
 [node name="MapFloor" type="Node3D"]
 script = ExtResource("1_floor")
+marker_scene = ExtResource("2_marker")
+piece_scene = ExtResource("3_piece")
+avatar_piece_scene = ExtResource("4_avatar")
+route_line_scene = ExtResource("5_route")
+ink_line_scene = ExtResource("6_ink")
+
+[node name="Illustration" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+material_override = SubResource("StandardMaterial3D_floor")
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="Routes" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Markers" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Pieces" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Ink" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="DraftLine" parent="." instance=ExtResource("7_pencil")]
+unique_name_in_owner = true

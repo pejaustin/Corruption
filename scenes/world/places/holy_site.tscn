@@ -1,0 +1,26 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/world/places/holy_site.gd" id="1_script"]
+
+; PLACEHOLDER: art — a pale disc on the ground marks the holy site. The script
+; sizes the disc to the site's radius.
+[sub_resource type="CylinderMesh" id="CylinderMesh_disc"]
+resource_local_to_scene = true
+top_radius = 10.0
+bottom_radius = 10.0
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_disc"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.95, 0.75, 0.35)
+
+[node name="HolySite" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Disc" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+material_override = SubResource("StandardMaterial3D_disc")
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_disc")

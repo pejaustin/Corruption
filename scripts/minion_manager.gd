@@ -24,6 +24,11 @@ const FORMATION_WIDTH: int = 4
 ## Units raised or spawned this close to their tower muster at its gate.
 const MUSTER_RADIUS: float = 60.0
 
+## The authored container (World/Minions in world.tscn) every unit lives under.
+@export var minions_root: Node3D
+## Scene instanced for each body left on the ground.
+@export var body_scene: PackedScene
+
 var _next_minion_id: int = 1
 var _minions_node: Node3D
 var _sync_timer: float = 0.0
@@ -53,14 +58,10 @@ var _peer_slots: Dictionary[int, int] = {}
 var _started_peers: Dictionary[int, bool] = {}
 
 func _ready() -> void:
-	_minions_node = Node3D.new()
-	_minions_node.name = "Minions"
+	_minions_node = minions_root
 	call_deferred("_setup_minions_node")
 
 func _setup_minions_node() -> void:
-	var world = get_tree().current_scene.get_node_or_null("World")
-	if world:
-		world.add_child(_minions_node)
 	_adopt_preplaced_minions()
 	bind_tower_markers()
 
@@ -450,7 +451,7 @@ func spawn_body(pos: Vector3) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _spawn_body_rpc(id: int, pos: Vector3) -> void:
-	var body := Body.new()
+	var body := body_scene.instantiate() as Body
 	body.body_id = id
 	body.name = "Body%d" % id
 	if _minions_node:

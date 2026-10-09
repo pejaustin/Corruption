@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: art — the Paladin's piece: the same chess piece, 1.6 times larger.
+
+[ext_resource type="PackedScene" path="res://scenes/map/map_piece.tscn" id="1_piece"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_avatar"]
+height = 0.8
+radius = 0.224
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_avatar_body"]
+top_radius = 0.096
+bottom_radius = 0.192
+height = 0.48
+
+[sub_resource type="SphereMesh" id="SphereMesh_avatar_head"]
+radius = 0.112
+height = 0.224
+
+[node name="MapPiece" instance=ExtResource("1_piece")]
+
+[node name="Shape" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("CylinderShape3D_avatar")
+
+[node name="Base" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+mesh = SubResource("CylinderMesh_avatar_body")
+
+[node name="Head" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.576, 0)
+mesh = SubResource("SphereMesh_avatar_head")
+
+[node name="Label" parent="." index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.96, 0)

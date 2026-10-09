@@ -18,11 +18,11 @@ const TICK_INTERVAL: float = 1.0
 
 var pile: float = 0.0
 var _timer: float = 0.0
-var _stack: MeshInstance3D
+
+@onready var _stack: MeshInstance3D = %Stack
 
 func _ready() -> void:
 	add_to_group(GROUP)
-	_build_look()
 	if multiplayer.is_server():
 		_spawn_overseers.call_deferred()
 
@@ -74,19 +74,6 @@ func _sync_pile(value: float) -> void:
 	pile = value
 	if _stack:
 		_stack.scale = Vector3(1, maxf(0.05, pile / float(max_pile)) * 4.0, 1)
-
-func _build_look() -> void:
-	## PLACEHOLDER: art — a crate stack that grows with the pile.
-	_stack = MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(1.2, 0.5, 1.2)
-	_stack.mesh = box
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.7, 0.55, 0.25)
-	_stack.material_override = mat
-	_stack.position = Vector3(2.5, 0.25, 0)
-	_stack.scale = Vector3(1, 0.2, 1)
-	add_child(_stack)
 
 static func near(tree: SceneTree, pos: Vector3, max_dist: float) -> ResourceSite:
 	for n in tree.get_nodes_in_group(GROUP):

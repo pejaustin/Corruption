@@ -22,9 +22,10 @@
 [ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="22_groups"]
 [ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="23_fieldwork"]
 [ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="24_settlement"]
-[ext_resource type="Script" path="res://scenes/world/places/resource_site.gd" id="25_resource"]
-[ext_resource type="Script" path="res://scenes/world/places/holy_site.gd" id="26_holy"]
-[ext_resource type="Script" path="res://scenes/world/places/relic_place.gd" id="27_relicplace"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/resource_site.tscn" id="25_resource"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/holy_site.tscn" id="26_holy"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/relic_place.tscn" id="27_relicplace"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="30_body"]
 [ext_resource type="Resource" path="res://data/relics/placeholder_a.tres" id="28_relic_a"]
 [ext_resource type="Resource" path="res://data/relics/placeholder_b.tres" id="29_relic_b"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="23_daynight"]
@@ -309,28 +310,23 @@ soldiers = 0
 
 ; PLACEHOLDER: the holy site's size and look (tickets #559, #583)
 
-[node name="HolySite" type="Node3D" parent="World/Places" unique_id=1301301506]
-script = ExtResource("26_holy")
+[node name="HolySite" parent="World/Places" unique_id=1301301506 instance=ExtResource("26_holy")]
 
 ; PLACEHOLDER: where relics lie, and which (tickets #580, #584)
 
-[node name="RelicAvatarSite" type="Node3D" parent="World/Places"]
+[node name="RelicAvatarSite" parent="World/Places" instance=ExtResource("27_relicplace")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21, 0, 33.5)
-script = ExtResource("27_relicplace")
 relic = ExtResource("28_relic_a")
 
-[node name="RelicBossSite" type="Node3D" parent="World/Places"]
+[node name="RelicBossSite" parent="World/Places" instance=ExtResource("27_relicplace")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.6, 0, -37.7)
-script = ExtResource("27_relicplace")
 relic = ExtResource("29_relic_b")
 
-[node name="MineSE" type="Node3D" parent="World/Places" unique_id=1301301504]
+[node name="MineSE" parent="World/Places" unique_id=1301301504 instance=ExtResource("25_resource")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 0, 75)
-script = ExtResource("25_resource")
 
-[node name="MineNW" type="Node3D" parent="World/Places" unique_id=1301301505]
+[node name="MineNW" parent="World/Places" unique_id=1301301505 instance=ExtResource("25_resource")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -90)
-script = ExtResource("25_resource")
 
 [node name="Markers" type="Node3D" parent="World" unique_id=1288722471]
 
@@ -378,8 +374,12 @@ mouse_filter = 2
 [node name="WinScreen" parent="CanvasLayer" unique_id=401192825 instance=ExtResource("10_6hctx")]
 visible = false
 
-[node name="MinionManager" type="Node" parent="." unique_id=172942630]
+[node name="Minions" type="Node3D" parent="World" unique_id=1301301600]
+
+[node name="MinionManager" type="Node" parent="." unique_id=172942630 node_paths=PackedStringArray("minions_root")]
 script = ExtResource("12_xq18t")
+minions_root = NodePath("../World/Minions")
+body_scene = ExtResource("30_body")
 
 [node name="SiteChapel" parent="." unique_id=1560168247 instance=ExtResource("15_mxkvs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.05959, 0.2057867, 3.4718819)

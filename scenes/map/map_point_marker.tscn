@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/map/map_point_marker.gd" id="1_script"]
+
+; PLACEHOLDER: art — an ink disc with the point's name written beside it.
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_marker"]
+height = 0.3
+radius = 0.25
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_disc"]
+top_radius = 0.14
+bottom_radius = 0.16
+height = 0.03
+
+; Local to scene: the script tints each marker by its point's kind.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_disc"]
+resource_local_to_scene = true
+
+[node name="MapPointMarker" type="Area3D"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_marker")
+
+[node name="Disc" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+material_override = SubResource("StandardMaterial3D_disc")
+mesh = SubResource("CylinderMesh_disc")
+
+[node name="Label" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.03, 0.28)
+pixel_size = 0.004
+modulate = Color(0.08, 0.06, 0.05, 1)
+outline_size = 0
+font_size = 48

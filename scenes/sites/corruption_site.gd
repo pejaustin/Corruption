@@ -27,7 +27,6 @@ const AVATAR_STRENGTH: float = 12.0
 ## Seconds the beacon of light stands over a site after it changes hands.
 ## PLACEHOLDER: tuning.
 const BEACON_SECONDS: float = 20.0
-const BEACON_HEIGHT: float = 160.0
 ## Unit traits that never count toward a site's strength.
 const NON_COMBAT_TRAITS: Array[StringName] = [&"courier", &"info_courier", &"advisor", &"hauler"]
 
@@ -53,13 +52,15 @@ var unusable: bool = false
 var present_strength: Dictionary[int, float] = {}
 
 var _tick_timer: float = 0.0
-var _marker_material: StandardMaterial3D
-var _beacon: MeshInstance3D
 var _beacon_timer: float = 0.0
+
+@onready var _pillar: MeshInstance3D = %Pillar
+@onready var _beacon: MeshInstance3D = %Beacon
+@onready var _marker_material: StandardMaterial3D = _pillar.material_override as StandardMaterial3D
 
 func _ready() -> void:
 	add_to_group(GROUP)
-	_build_marker()
+	_refresh_marker()
 
 func grants(capability: StringName) -> bool:
 	if unusable or site_type == null:
@@ -243,47 +244,7 @@ func _sync_progress(p: float, p_peer: int, strengths: Dictionary) -> void:
 	for side in strengths:
 		present_strength[int(side)] = float(strengths[side])
 
-# --- Presentation (PLACEHOLDER art: a stone disc and a pillar tinted by holder) ---
-
-func _build_marker() -> void:
-	var base := MeshInstance3D.new()
-	base.name = "Base"
-	var disc := CylinderMesh.new()
-	disc.top_radius = 1.6
-	disc.bottom_radius = 1.9
-	disc.height = 0.3
-	base.mesh = disc
-	base.position = Vector3(0, 0.15, 0)
-	add_child(base)
-	var pillar := MeshInstance3D.new()
-	pillar.name = "Pillar"
-	var prism := PrismMesh.new()
-	prism.size = Vector3(1.0, 2.4, 1.0)
-	pillar.mesh = prism
-	pillar.position = Vector3(0, 1.5, 0)
-	_marker_material = StandardMaterial3D.new()
-	_marker_material.emission_enabled = true
-	_marker_material.emission_energy_multiplier = 0.5
-	pillar.material_override = _marker_material
-	add_child(pillar)
-	_beacon = MeshInstance3D.new()
-	_beacon.name = "Beacon"
-	var column := CylinderMesh.new()
-	column.top_radius = 1.2
-	column.bottom_radius = 1.2
-	column.height = BEACON_HEIGHT
-	_beacon.mesh = column
-	_beacon.position = Vector3(0, BEACON_HEIGHT * 0.5, 0)
-	var beam := StandardMaterial3D.new()
-	beam.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	beam.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	beam.cull_mode = BaseMaterial3D.CULL_DISABLED
-	beam.disable_fog = true  # stays readable from the balcony, day or night
-	_beacon.material_override = beam
-	_beacon.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_beacon.visible = false
-	add_child(_beacon)
-	_refresh_marker()
+# --- Presentation (PLACEHOLDER art, authored in corruption_site.tscn: a stone disc and a pillar tinted by holder) ---
 
 func _refresh_marker() -> void:
 	if _marker_material == null:

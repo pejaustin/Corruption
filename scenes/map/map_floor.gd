@@ -21,11 +21,17 @@ signal selection_changed
 @export var floor_size: float = 14.0
 ## The part of the world the floor depicts (x, z).
 @export var world_rect: Rect2 = Rect2(-180.0, -180.0, 360.0, 360.0)
+## Authored scenes the floor instances: a marker per known point, a piece per
+## reported group (the Paladin has his own), and the route and ink ribbons.
+@export var marker_scene: PackedScene
+@export var piece_scene: PackedScene
+@export var avatar_piece_scene: PackedScene
+@export var route_line_scene: PackedScene
+@export var ink_line_scene: PackedScene
 
-## PLACEHOLDER: art direction — ink, pencil and parchment colours.
+## PLACEHOLDER: art direction — ink and parchment colours (the pencil and route
+## colours live in map_line_pencil.tscn and map_line_route.tscn).
 const INK_COLOR: Color = Color(0.08, 0.06, 0.05)
-const PENCIL_COLOR: Color = Color(0.35, 0.32, 0.3, 0.8)
-const ROUTE_COLOR: Color = Color(0.25, 0.2, 0.16, 0.6)
 ## Stepping this close (floor metres) to a point adds it to the route.
 const STEP_RADIUS: float = 0.45
 ## Seconds for a sent order's route to darken in ink (ticket #538).
@@ -41,11 +47,6 @@ static var _illustration: ImageTexture
 
 var _markers: Dictionary[StringName, MapPointMarker] = {}
 var _pieces: Dictionary[int, MapPiece] = {}
-var _routes_root: Node3D
-var _markers_root: Node3D
-var _pieces_root: Node3D
-var _ink_root: Node3D
-var _draft_line: MeshInstance3D
 var _refresh_timer: float = 0.0
 var _ink_started: Dictionary[int, float] = {}
 
@@ -56,18 +57,15 @@ var path_points: Array[StringName] = []
 ## Piece being carried by hand (MapPiece key), or 0.
 var carried_piece: int = 0
 
+@onready var _illustration_plane: MeshInstance3D = %Illustration
+@onready var _routes_root: Node3D = %Routes
+@onready var _markers_root: Node3D = %Markers
+@onready var _pieces_root: Node3D = %Pieces
+@onready var _ink_root: Node3D = %Ink
+@onready var _draft_line: MeshInstance3D = %DraftLine
+
 func _ready() -> void:
-	_build_floor()
-	for n in ["Routes", "Markers", "Pieces", "Ink"]:
-		var node := Node3D.new()
-		node.name = n
-		add_child(node)
-	_routes_root = $Routes
-	_markers_root = $Markers
-	_pieces_root = $Pieces
-	_ink_root = $Ink
-	_draft_line = _make_line_mesh(PENCIL_COLOR)
-	add_child(_draft_line)
+	_fit_floor()
 
 # --- Ownership ---
 
@@ -266,7 +264,7 @@ func _sync_markers() -> void:
 		var known := m.is_point_known(p.point_id)
 		var marker: MapPointMarker = _markers.get(p.point_id)
 		if known and marker == null:
-			marker = MapPointMarker.create(self, p)
+			marker = MapPointMarker.create(marker_scene, self, p)
 			_markers_root.add_child(marker)
 			marker.position = world_to_floor(p.global_position)
 			_markers[p.point_id] = marker
@@ -289,7 +287,7 @@ func _sync_routes() -> void:
 			wanted[key] = true
 			if _routes_root.has_node(key.replace("|", "__")):
 				continue
-			var line := _make_line_mesh(ROUTE_COLOR)
+			var line := route_line_scene.instantiate() as MeshInstance3D
 			line.name = key.replace("|", "__")
 			_set_line(line, [world_to_floor(p.global_position), world_to_floor(q.global_position)], 0.03)
 			_routes_root.add_child(line)
@@ -341,7 +339,7 @@ func _sync_pieces() -> void:
 func _get_piece(key: int, owner: int, is_avatar: bool) -> MapPiece:
 	var piece: MapPiece = _pieces.get(key)
 	if piece == null:
-		piece = MapPiece.create(self, key, owner, is_avatar)
+		piece = MapPiece.create(avatar_piece_scene if is_avatar else piece_scene, self, key, owner, is_avatar)
 		_pieces_root.add_child(piece)
 		_pieces[key] = piece
 	return piece
@@ -406,7 +404,7 @@ func _sync_ink() -> void:
 		var node_name := "Order%d" % cmd
 		if _ink_root.has_node(node_name):
 			continue
-		var line := _make_line_mesh(INK_COLOR)
+		var line := ink_line_scene.instantiate() as MeshInstance3D
 		line.name = node_name
 		line.set_meta(&"points", _order_points(o))
 		_ink_root.add_child(line)
@@ -490,18 +488,8 @@ func _tower_point() -> MapPoint:
 
 # --- Mesh helpers ---
 
-func _make_line_mesh(color: Color) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.mesh = ImmediateMesh.new()
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = color
-	if color.a < 1.0:
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mi.material_override = mat
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	return mi
-
+# Data-only: the ribbon geometry (an ImmediateMesh authored on the line scene) is
+# refilled from the route's points as they change.
 static func _set_line(mi: MeshInstance3D, pts: Array[Vector3], width: float) -> void:
 	## A flat ribbon on the floor through `pts`.
 	var mesh := mi.mesh as ImmediateMesh
@@ -528,26 +516,19 @@ static func _set_line(mi: MeshInstance3D, pts: Array[Vector3], width: float) -> 
 
 # --- The floor itself ---
 
-func _build_floor() -> void:
+func _fit_floor() -> void:
+	## The plane, its material and the other nodes are authored in map_floor.tscn;
+	## this sizes the plane to floor_size and paints the generated illustration.
 	## PLACEHOLDER: art — the illustration is generated from the terrain's
 	## heights (hill shading on parchment) until Austin's map art (ticket #534).
-	var plane := MeshInstance3D.new()
-	plane.name = "Illustration"
-	var mesh := PlaneMesh.new()
-	mesh.size = Vector2(floor_size, floor_size)
-	plane.mesh = mesh
-	plane.position = Vector3(0, 0.005, 0)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = _get_illustration()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	plane.material_override = mat
-	plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(plane)
+	(_illustration_plane.mesh as PlaneMesh).size = Vector2(floor_size, floor_size)
+	(_illustration_plane.material_override as StandardMaterial3D).albedo_texture = _get_illustration()
 
 func _get_illustration() -> Texture2D:
 	if _illustration:
 		return _illustration
 	const RES: int = 192
+	# Data-only: pixels generated from the terrain's heights, not a node.
 	var img := Image.create(RES, RES, false, Image.FORMAT_RGB8)
 	var terrain := get_tree().current_scene.find_child("Terrain3D", true, false) if get_tree().current_scene else null
 	var heights := PackedFloat32Array()

@@ -8,40 +8,20 @@ class_name MapPointMarker extends Interactable
 var floor_map: MapFloor
 var point: MapPoint
 
-static func create(map: MapFloor, p: MapPoint) -> MapPointMarker:
-	var m := MapPointMarker.new()
+@onready var _disc: MeshInstance3D = %Disc
+@onready var _label: Label3D = %Label
+
+static func create(scene: PackedScene, map: MapFloor, p: MapPoint) -> MapPointMarker:
+	## One marker per known map point: an instance of the authored scene.
+	var m := scene.instantiate() as MapPointMarker
 	m.floor_map = map
 	m.point = p
 	m.name = "Point_%s" % p.point_id
-	m.collision_layer = Interactable.INTERACTABLE_LAYER
-	m.collision_mask = 0
-	m.monitoring = false
-	var shape := CollisionShape3D.new()
-	var cyl := CylinderShape3D.new()
-	cyl.radius = 0.25
-	cyl.height = 0.3
-	shape.shape = cyl
-	m.add_child(shape)
-	var disc := MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.14
-	mesh.bottom_radius = 0.16
-	mesh.height = 0.03
-	disc.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = _kind_color(p.kind)
-	disc.material_override = mat
-	m.add_child(disc)
-	var label := Label3D.new()
-	label.text = p.get_label()
-	label.font_size = 48
-	label.pixel_size = 0.004
-	label.modulate = MapFloor.INK_COLOR
-	label.outline_size = 0
-	label.rotation_degrees = Vector3(-90, 0, 0)
-	label.position = Vector3(0, 0.03, 0.28)
-	m.add_child(label)
 	return m
+
+func _interactable_ready() -> void:
+	(_disc.material_override as StandardMaterial3D).albedo_color = _kind_color(point.kind)
+	_label.text = point.get_label()
 
 static func _kind_color(kind: int) -> Color:
 	match kind:

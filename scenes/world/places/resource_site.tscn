@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/world/places/resource_site.gd" id="1_script"]
+
+; PLACEHOLDER: art — a crate stack that grows with the pile.
+[sub_resource type="BoxMesh" id="BoxMesh_stack"]
+size = Vector3(1.2, 0.5, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stack"]
+albedo_color = Color(0.7, 0.55, 0.25, 1)
+
+[node name="ResourceSite" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Stack" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.2, 0, 0, 0, 1, 2.5, 0.25, 0)
+material_override = SubResource("StandardMaterial3D_stack")
+mesh = SubResource("BoxMesh_stack")

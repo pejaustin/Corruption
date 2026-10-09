@@ -22,51 +22,18 @@ var selected: bool = false
 var status: StringName = &""
 var is_avatar: bool = false
 
-var _mat: StandardMaterial3D
-var _label: Label3D
+@onready var _base: MeshInstance3D = %Base
+@onready var _label: Label3D = %Label
+@onready var _mat: StandardMaterial3D = _base.material_override as StandardMaterial3D
 
-static func create(map: MapFloor, piece_key: int, owner: int, avatar: bool) -> MapPiece:
-	var p := MapPiece.new()
+static func create(scene: PackedScene, map: MapFloor, piece_key: int, owner: int, avatar: bool) -> MapPiece:
+	## One piece per reported group: an instance of the authored scene.
+	var p := scene.instantiate() as MapPiece
 	p.floor_map = map
 	p.key = piece_key
 	p.owner_peer_id = owner
 	p.is_avatar = avatar
 	p.name = "Piece_%d" % absi(piece_key)
-	p.collision_layer = Interactable.INTERACTABLE_LAYER
-	p.collision_mask = 0
-	p.monitoring = false
-	var scale := 1.6 if avatar else 1.0
-	var shape := CollisionShape3D.new()
-	var cyl := CylinderShape3D.new()
-	cyl.radius = 0.14 * scale
-	cyl.height = 0.5 * scale
-	shape.shape = cyl
-	shape.position = Vector3(0, 0.25 * scale, 0)
-	p.add_child(shape)
-	p._mat = StandardMaterial3D.new()
-	var base := MeshInstance3D.new()
-	var body := CylinderMesh.new()
-	body.top_radius = 0.06 * scale
-	body.bottom_radius = 0.12 * scale
-	body.height = 0.3 * scale
-	base.mesh = body
-	base.position = Vector3(0, 0.15 * scale, 0)
-	base.material_override = p._mat
-	p.add_child(base)
-	var head := MeshInstance3D.new()
-	var sphere := SphereMesh.new()
-	sphere.radius = 0.07 * scale
-	sphere.height = 0.14 * scale
-	head.mesh = sphere
-	head.position = Vector3(0, 0.36 * scale, 0)
-	head.material_override = p._mat
-	p.add_child(head)
-	p._label = Label3D.new()
-	p._label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	p._label.font_size = 40
-	p._label.pixel_size = 0.004
-	p._label.position = Vector3(0, 0.6 * scale, 0)
-	p.add_child(p._label)
 	return p
 
 func is_mine() -> bool:

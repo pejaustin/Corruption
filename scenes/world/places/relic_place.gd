@@ -11,11 +11,12 @@ const GROUP: StringName = &"relic_places"
 @export var radius: float = 6.0
 
 var available: bool = true
-var _look: MeshInstance3D
+
+@onready var _look: MeshInstance3D = %Look
 
 func _ready() -> void:
 	add_to_group(GROUP)
-	_build_look()
+	_look.visible = available
 
 func get_relic_index() -> int:
 	return Relic.index_of(relic)
@@ -47,19 +48,3 @@ static func restore(tree: SceneTree, relic_index: int) -> void:
 		if p and not p.available and p.get_relic_index() == relic_index:
 			p._sync_available.rpc(true)
 			return
-
-func _build_look() -> void:
-	## PLACEHOLDER: art — a small gold gem on the ground.
-	_look = MeshInstance3D.new()
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.3
-	mesh.height = 0.6
-	_look.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(1.0, 0.85, 0.2)
-	mat.emission_enabled = true
-	mat.emission = Color(1.0, 0.8, 0.1)
-	_look.material_override = mat
-	_look.position = Vector3(0, 0.6, 0)
-	_look.visible = available
-	add_child(_look)

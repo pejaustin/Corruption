@@ -3,6 +3,52 @@
 [ext_resource type="Script" path="res://scenes/sites/corruption_site.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/sites/corrupted_chapel.tres" id="2_type"]
 
+; PLACEHOLDER: art — a stone disc, a pillar tinted by holder, and a beacon of light.
+[sub_resource type="CylinderMesh" id="CylinderMesh_base"]
+top_radius = 1.6
+bottom_radius = 1.9
+height = 0.3
+
+[sub_resource type="PrismMesh" id="PrismMesh_pillar"]
+size = Vector3(1, 2.4, 1)
+
+; Local to scene: the script tints each site's pillar by its holder.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pillar"]
+resource_local_to_scene = true
+emission_enabled = true
+emission_energy_multiplier = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_beacon"]
+top_radius = 1.2
+bottom_radius = 1.2
+height = 160.0
+
+; Local to scene: the script colours each site's beacon by its holder.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beam"]
+resource_local_to_scene = true
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+disable_fog = true
+
 [node name="CorruptionSite" type="Node3D"]
 script = ExtResource("1_script")
 site_type = ExtResource("2_type")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("CylinderMesh_base")
+
+[node name="Pillar" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+material_override = SubResource("StandardMaterial3D_pillar")
+mesh = SubResource("PrismMesh_pillar")
+
+[node name="Beacon" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 80, 0)
+visible = false
+material_override = SubResource("StandardMaterial3D_beam")
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_beacon")

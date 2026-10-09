@@ -51,11 +51,13 @@ var _boss_unit: MinionActor
 var _avatar: AvatarActor
 var _mm: MinionManager
 
+@onready var _disc: MeshInstance3D = %Disc
+
 func _ready() -> void:
 	add_to_group(GROUP)
 	state = State.IDLE
 	boss_peer = -1
-	_build_look()
+	_fit_look()
 
 # --- Strength ---
 
@@ -225,19 +227,9 @@ func _find_avatar() -> AvatarActor:
 func _find_mm() -> MinionManager:
 	return get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
 
-func _build_look() -> void:
-	## PLACEHOLDER: art — a pale disc on the ground marks the holy site.
-	var disc := MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
+func _fit_look() -> void:
+	## The pale disc is authored in holy_site.tscn (PLACEHOLDER art); it only
+	## follows the site's radius.
+	var mesh := _disc.mesh as CylinderMesh
 	mesh.top_radius = radius
 	mesh.bottom_radius = radius
-	mesh.height = 0.1
-	disc.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(1.0, 0.95, 0.75, 0.35)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	disc.material_override = mat
-	disc.position = Vector3(0, 0.1, 0)
-	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(disc)

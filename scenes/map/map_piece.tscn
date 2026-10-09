@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/map/map_piece.gd" id="1_script"]
+
+; PLACEHOLDER: art — a primitive chess piece tinted by owner.
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_piece"]
+height = 0.5
+radius = 0.14
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+top_radius = 0.06
+bottom_radius = 0.12
+height = 0.3
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.07
+height = 0.14
+
+; Local to scene: one material shared by the body and head, tinted per piece.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_piece"]
+resource_local_to_scene = true
+
+[node name="MapPiece" type="Area3D"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_script")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+shape = SubResource("CylinderShape3D_piece")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+material_override = SubResource("StandardMaterial3D_piece")
+mesh = SubResource("CylinderMesh_body")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
+material_override = SubResource("StandardMaterial3D_piece")
+mesh = SubResource("SphereMesh_head")
+
+[node name="Label" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+pixel_size = 0.004
+billboard = 1
+font_size = 40
