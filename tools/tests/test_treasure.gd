@@ -37,7 +37,7 @@ func run_tests() -> void:
 	model.ledger[&"MineNW"] = {"pile": 40, "tick": now + 1}
 	var lines := ledger.get_lines()
 	check(lines.size() == 3 and lines[0] == "In the treasure room: 537", "the ledger opens with what the tower holds")
-	check(lines[1].begins_with("MineNW"), "newest report first")
+	check(lines[1].contains("40 goods"), "newest report first")
 	check(ledger.format_age(now - NetworkTime.tickrate * 125).begins_with("02:"), "age is shown as mm:ss")
 
 	var player := world.find_child("1", true, false) as OverlordActor
