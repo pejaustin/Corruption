@@ -20,7 +20,8 @@ signal selection_changed
 ## Side of the square floor, in metres.
 @export var floor_size: float = 14.0
 ## The part of the world the floor depicts (x, z).
-@export var world_rect: Rect2 = Rect2(-180.0, -180.0, 360.0, 360.0)
+## PLACEHOLDER: the whole of Austin's 2 km map (the picture is tools/bake_map_illustration.gd's).
+@export var world_rect: Rect2 = Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
 ## Authored scenes the floor instances: a marker per known point, a piece per
 ## reported group (the Paladin has his own), and the route and ink ribbons.
 @export var marker_scene: PackedScene
@@ -42,8 +43,6 @@ const STALE_SECONDS: float = 90.0
 const ENEMY_CLUSTER: float = 15.0
 const REFRESH_INTERVAL: float = 0.2
 const HEIGHT: float = 0.02
-
-static var _illustration: ImageTexture
 
 var _markers: Dictionary[StringName, MapPointMarker] = {}
 var _pieces: Dictionary[int, MapPiece] = {}
@@ -517,42 +516,6 @@ static func _set_line(mi: MeshInstance3D, pts: Array[Vector3], width: float) -> 
 # --- The floor itself ---
 
 func _fit_floor() -> void:
-	## The plane, its material and the other nodes are authored in map_floor.tscn;
-	## this sizes the plane to floor_size and paints the generated illustration.
-	## PLACEHOLDER: art — the illustration is generated from the terrain's
-	## heights (hill shading on parchment) until Austin's map art (ticket #534).
+	## The plane, its material and its picture are authored in map_floor.tscn;
+	## this only sizes the plane to floor_size.
 	(_illustration_plane.mesh as PlaneMesh).size = Vector2(floor_size, floor_size)
-	(_illustration_plane.material_override as StandardMaterial3D).albedo_texture = _get_illustration()
-
-func _get_illustration() -> Texture2D:
-	if _illustration:
-		return _illustration
-	const RES: int = 192
-	# Data-only: pixels generated from the terrain's heights, not a node.
-	var img := Image.create(RES, RES, false, Image.FORMAT_RGB8)
-	var terrain := get_tree().current_scene.find_child("Terrain3D", true, false) if get_tree().current_scene else null
-	var heights := PackedFloat32Array()
-	heights.resize(RES * RES)
-	for y in RES:
-		for x in RES:
-			var wx := world_rect.position.x + (float(x) + 0.5) / RES * world_rect.size.x
-			var wz := world_rect.position.y + (float(y) + 0.5) / RES * world_rect.size.y
-			var h := 0.0
-			if terrain and terrain.get(&"data"):
-				h = terrain.data.get_height(Vector3(wx, 0, wz))
-				if is_nan(h):
-					h = 0.0
-			heights[y * RES + x] = h
-	var parchment := Color(0.8, 0.72, 0.56)
-	for y in RES:
-		for x in RES:
-			var h := heights[y * RES + x]
-			var hx := heights[y * RES + mini(x + 1, RES - 1)] - h
-			var hy := heights[mini(y + 1, RES - 1) * RES + x] - h
-			var shade := clampf(0.5 - (hx + hy) * 2.5, 0.0, 1.0)
-			var c := parchment.darkened(0.35 * (1.0 - shade))
-			if int(floor(h / 1.5)) != int(floor((h + maxf(absf(hx), absf(hy))) / 1.5)):
-				c = c.darkened(0.25)  # contour line
-			img.set_pixel(x, y, c)
-	_illustration = ImageTexture.create_from_image(img)
-	return _illustration

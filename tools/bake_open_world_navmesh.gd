@@ -2,12 +2,15 @@ extends SceneTree
 ## Bakes an open world's navigation mesh and saves it, as the editor's "Bake NavigationMesh" button would.
 ## Run: SIZE=2km godot --headless --path . -s res://tools/bake_open_world_navmesh.gd   (SIZE = 400m | 2km | 6km)
 ## Writes scenes/world/open_world/open_world_<size>_navmesh.res, which open_world_<size>.tscn's Nav region uses.
+## WORLD=1 also writes scenes/world/world_navmesh.res, the game world's (world.tscn's Nav region holds the same
+## landscape scene, so the mesh is identical; use SIZE=2km).
 
 ## PLACEHOLDER: tuning, not designed. Per size: [cell size, max climb]. Climb must be at least cell size x tan(max
 ## slope) or slopes split the mesh into islands (2 m cells with 0.5 m climb gave 110 islands at 2 km).
 const PARAMS: Dictionary[String, Array] = {"400m": [0.5, 0.5], "2km": [1.0, 1.0], "6km": [2.0, 2.0]}
 const AGENT_HEIGHT: float = 0.4   # as in world.tscn
 const AGENT_RADIUS: float = 0.5
+const WORLD_OUT: String = "res://scenes/world/world_navmesh.res"
 
 func _init() -> void:
 	var size: String = OS.get_environment("SIZE") if OS.get_environment("SIZE") != "" else "2km"
@@ -19,6 +22,7 @@ func _init() -> void:
 	var region := world.get_node("Nav") as NavigationRegion3D
 	var nm := NavigationMesh.new()
 	nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
+	nm.geometry_collision_mask = 4294967291   # as world.tscn had: leaves out the towers' boundary layer
 	nm.cell_size = PARAMS[size][0]
 	nm.cell_height = 0.1
 	nm.agent_max_climb = PARAMS[size][1]
@@ -34,4 +38,7 @@ func _init() -> void:
 		return
 	var err := ResourceSaver.save(nm, out)
 	print("[bake] saved ", out, " err=", err)
+	if err == OK and OS.get_environment("WORLD") == "1":
+		err = ResourceSaver.save(nm, WORLD_OUT)
+		print("[bake] saved ", WORLD_OUT, " err=", err)
 	quit(err)

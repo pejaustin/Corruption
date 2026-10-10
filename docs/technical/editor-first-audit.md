@@ -168,7 +168,6 @@ action taken. Sites that added `add_child` without `.new()` (reparenting, `insta
 | `scripts/network/enet_network.gd:69` | `UPNP.new()` | c | Data-only: ENet/UPNP/Thread network objects, not nodes |
 | `scripts/network/enet_network.gd:77` | `ENetMultiplayerPeer.new()` | c | Data-only: ENet/UPNP/Thread network objects, not nodes |
 | `scripts/test/cania_walk_test_controller.gd:41` | `OfflineMultiplayerPeer.new()` | d | Tool: walk-test harness |
-| `scripts/world_nav_baker.gd:41` | `NavigationMeshSourceGeometryData3D.new()` | c | Data-only: navmesh source geometry |
 | `tools/playtest/input_driver.gd:50` | `InputEventAction.new()` | d | Tool: tests, playtest driver, shot rig |
 | `tools/playtest/input_driver.gd:82` | `InputEventKey.new()` | d | Tool: tests, playtest driver, shot rig |
 | `tools/playtest/input_driver.gd:93` | `InputEventMouseButton.new()` | d | Tool: tests, playtest driver, shot rig |

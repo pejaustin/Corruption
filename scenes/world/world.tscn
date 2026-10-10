@@ -6,10 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_m114p"]
 [ext_resource type="PackedScene" uid="uid://bt4ygfe5wcduv" path="res://scenes/actors/minion/types/holy_knight.tscn" id="5_umvgx"]
 [ext_resource type="PackedScene" uid="uid://bblv3fe3c2a5k" path="res://scenes/actors/minion/minion_rally_point.tscn" id="6_bt7bg"]
-[ext_resource type="Terrain3DMaterial" uid="uid://bpw8ev0lcs1gg" path="res://assets/world/env/world_terrain_materials.tres" id="9_mxkvs"]
 [ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="9_t634p"]
 [ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="10_6hctx"]
-[ext_resource type="Terrain3DAssets" uid="uid://lbx5l2n1geta" path="res://assets/world/env/world_terrain_assets.tres" id="10_m114p"]
 [ext_resource type="Shader" uid="uid://bmai62r5iaiaf" path="res://shaders/ps1_pixelated_postprocess.gdshader" id="11_mxkvs"]
 [ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="12_xq18t"]
 [ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="15_mxkvs"]
@@ -17,8 +15,9 @@
 [ext_resource type="Resource" path="res://data/sites/avatar_site.tres" id="18_avsite"]
 [ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="19_bosite"]
 [ext_resource type="Script" path="res://scripts/good_faction.gd" id="16_71ii3"]
-[ext_resource type="Script" path="res://scripts/world_nav_baker.gd" id="20_navbake"]
 [ext_resource type="Script" path="res://scenes/map/map_point.gd" id="21_mappoint"]
+[ext_resource type="PackedScene" path="res://art/world/export/world_landscape_2km.tscn" id="31_landscape"]
+[ext_resource type="NavigationMesh" path="res://scenes/world/world_navmesh.res" id="32_navmesh"]
 [ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="22_groups"]
 [ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="23_fieldwork"]
 [ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="24_settlement"]
@@ -48,11 +47,6 @@ fog_height_density = -9.7663
 volumetric_fog_density = 0.0242
 volumetric_fog_albedo = Color(0.964706, 0.698039, 0.431373, 1)
 volumetric_fog_length = 50.0
-
-[sub_resource type="NavigationMesh" id="NavigationMesh_ghyor"]
-geometry_collision_mask = 4294967291
-agent_height = 0.4
-agent_max_climb = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
 shader = ExtResource("11_mxkvs")
@@ -342,20 +336,12 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -44.
 [node name="MinionRallyPoint4" parent="World/Markers" unique_id=659469130 instance=ExtResource("6_bt7bg")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.4895134, -0.09324348, -39.175354)
 
+; Austin's 2 km map (ground + his place markers + his four tower sites). The navmesh is baked from it
+; by tools/bake_open_world_navmesh.gd (WORLD=1), not at runtime.
 [node name="Nav" type="NavigationRegion3D" parent="World" unique_id=674281798]
-navigation_mesh = SubResource("NavigationMesh_ghyor")
+navigation_mesh = ExtResource("32_navmesh")
 
-[node name="Terrain3D" type="Terrain3D" parent="World/Nav" unique_id=593417565]
-data_directory = "res://assets/world/terrain"
-material = ExtResource("9_mxkvs")
-assets = ExtResource("10_m114p")
-collision_mode = 4
-top_level = true
-metadata/_edit_lock_ = true
-
-[node name="NavBaker" type="Node" parent="World/Nav" unique_id=1201201201 node_paths=PackedStringArray("terrain")]
-script = ExtResource("20_navbake")
-terrain = NodePath("../Terrain3D")
+[node name="WorldLandscape" parent="World/Nav" instance=ExtResource("31_landscape")]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1495107198]
 

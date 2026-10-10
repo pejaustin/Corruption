@@ -34,8 +34,11 @@ This file gives Claude Code the context it needs to make informed changes to a G
   `/tmp/claude-1000/playtest`): `godot --path . --resolution 1280x720 res://tools/playtest/playtest_order.tscn`.
   Without Vulkan add `--rendering-driver opengl3 --rendering-method gl_compatibility`. Stand about 1.9 m back from
   floor markers: the overlord's camera is 2.3 m up and cannot look down past 70 degrees.
-- **World navmesh:** `world.tscn` ships without baked polygons (lost in the terrain swap); `WorldNavBaker` bakes it on
-  the host at load. Baking it in the editor (Terrain3D → Bake NavMesh) and saving makes that a no-op.
+- **World ground and navmesh:** the game world is Austin's 2 km map (`art/world/export/world_landscape_2km.tscn`, under
+  `World/Nav` in `world.tscn`); the old Terrain3D ground is gone (the addon stays installed). The navmesh is baked and
+  saved as `scenes/world/world_navmesh.res`, not at runtime: re-bake after any ground, tower or tower-rotation change with
+  `WORLD=1 SIZE=2km godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (needs the headless-import
+  workaround in `art/world/README.md`). The map floor's picture is `tools/bake_map_illustration.gd`'s.
 
 
 ### Debug Access
