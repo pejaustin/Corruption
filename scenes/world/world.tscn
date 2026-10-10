@@ -71,6 +71,8 @@ _player_spawn_point = NodePath("../World/PlayerSpawnPoint")
 transform = Transform3D(1, 0, 0, 0, 0.696001, 0.718041, 0, -0.718041, 0.696001, 0, 11.4862, 6.19946)
 light_color = Color(0.980392, 0.717647, 0.0470588, 1)
 shadow_enabled = true
+; PLACEHOLDER: tuning — shadows reach this far (the default is 100 m; the map is 2 km)
+directional_shadow_max_distance = 400.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere" unique_id=446517867]
 environment = SubResource("Environment_s4jie")

@@ -39,8 +39,9 @@ const STEP_RADIUS: float = 0.45
 const INK_SECONDS: float = 3.0
 ## Reports older than this (seconds) make a piece "old news" (never missing).
 const STALE_SECONDS: float = 90.0
-## Enemy sightings closer than this (world metres) share one piece.
-const ENEMY_CLUSTER: float = 15.0
+## Enemy sightings closer than this (world metres) share one piece. PLACEHOLDER: tuning — was 15 m on the
+## 360 m map; scaled with the floor (14 m for 2 km).
+const ENEMY_CLUSTER: float = 80.0
 const REFRESH_INTERVAL: float = 0.2
 const HEIGHT: float = 0.02
 
