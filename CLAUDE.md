@@ -38,7 +38,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
   `World/Nav` in `world.tscn`); the old Terrain3D ground is gone (the addon stays installed). The navmesh is baked and
   saved as `scenes/world/world_navmesh.res`, not at runtime: re-bake after any ground, tower or tower-rotation change with
   `WORLD=1 SIZE=2km godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (needs the headless-import
-  workaround in `art/world/README.md`; it puts the baked vertices on the ground and splits triangles, see the README). The map floor's picture is `tools/bake_map_illustration.gd`'s.
+  workaround in `art/world/README.md`; it puts the baked vertices on the ground and splits triangles, see the README). The map floor's picture is `tools/bake_map_illustration.gd`'s. The 400 m and 6 km worlds are generated from the 2 km scenes: after editing the map or the 2 km scenes run `tools/sync_world_sizes.sh` (see `art/world/README.md`, "Sizes" for which flags after which edit).
 
 
 ### Debug Access

@@ -32,11 +32,55 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 
 ## Sizes: 400 m, 2 km, 6 km (Austin, 2026-10-10)
 
-The map is authored at 2 km in `source/world_landscape.blend`. `export_landscape.py -- <repo> 400m|2km|6km` writes
-`export/world_landscape_<size>.glb`; the others are the same file scaled in memory around the origin: 6 km is 3x wide
-and 5x tall, 400 m is a uniform 1/5 miniature for quick tests. Each size has its inherited scene (`export/world_landscape_<size>.tscn`, towers under the tower markers),
-`scenes/world/open_world/open_world_<size>.tscn` and baked navmesh. The 2 km version is the one in the game for now (`scenes/world/world.tscn`; see "Game world on the 2 km map").
-After editing the map, export every size, then rebake the navmeshes if the ground changed.
+The map is authored at 2 km in `source/world_landscape.blend`, and the game plays at three sizes; the host picks one in the
+lobby (**World: 400 m / 2 km / 6 km**, default 2 km, next to the pace picker; `MatchConfig.WorldSize`, `GameState.world_size`).
+`export_landscape.py -- <repo> 400m|2km|6km` writes `export/world_landscape_<size>.glb`; the others are the same file scaled in
+memory around the origin: 6 km is 3x wide and 5x tall, 400 m is a uniform 1/5 miniature for quick tests.
+
+**Two files are hand-edited sources, the rest is generated from them:**
+
+| Source (edit these) | Generated from it (each starts with a `GENERATED` comment; never edit) |
+|---|---|
+| `source/world_landscape.blend` (ground, markers) | `export/world_landscape_<size>.glb`, all three sizes |
+| `export/world_landscape_2km.tscn` (what hangs under his markers: the four towers, `slot_index`, jump landings) | `export/world_landscape_400m.tscn`, `world_landscape_6km.tscn` |
+| `scenes/world/world.tscn` (the 2 km game world and where every place is) | `scenes/world/world_400m.tscn`, `world_6km.tscn` |
+| | `scenes/world/world_navmesh.res` (2 km, baked), `world_<size>_navmesh.res` (400 m, 6 km); `scenes/map/map_illustration[_<size>].png` |
+
+`scripts/build/build_world_sizes.gd` makes the derived scenes: the same things under the same markers (offsets from a marker
+scale with the size's width and drop onto the ground; towers keep their size; each tower's jump landing is recomputed on that size's ground;
+a tower whose gate would hang over a drop or whose units could not walk out is turned in 15 degree steps until it fits), and the
+game world with every placed node (map points, places, sites, rally points, spawn points, Avatar, enemies) moved by the
+size's width around the origin and put on that size's ground at the same height above it. What stands beside a tower (its
+rally point, courier spawn, player spawn) keeps its offset from the tower; roads, mines and the Avatar that scaling drops on
+a cliff move to the nearest walkable spot. Shadow distance, the balcony's far plane and the map floor's rectangle and picture
+follow the size (`SIZE_TUNING`; all PLACEHOLDER, listed in `PLACEHOLDERS.md`).
+
+### What to run after which edit
+
+| You changed | Run |
+|---|---|
+| The map in Blender (ground, markers, paint) | save it, then `tools/sync_world_sizes.sh` (exports all sizes, re-imports, bakes pictures and navmeshes, rebuilds the derived scenes, about 3 minutes). With the add-on below, saving already does the export; then `tools/sync_world_sizes.sh --no-export` |
+| Something under a marker (a tower, its `slot_index` or rotation) in `world_landscape_2km.tscn` | `tools/sync_world_sizes.sh --no-export` (the 2 km navmesh is rebaked, 400 m and 6 km are rebuilt) |
+| Where places, sites or points stand in `world.tscn`, or what they are | `tools/sync_world_sizes.sh --no-export --no-bake` (rebuilds only the derived scenes; the navmeshes depend on the ground, not the places) |
+| A shared scene (a tower, the map floor, a place scene) | nothing: the derived scenes instance it |
+| Tuning (`SIZE_TUNING`, the fit and walkable-slope constants in `build_world_sizes.gd`) | `tools/sync_world_sizes.sh --no-export --no-bake` |
+
+`tools/sync_world_sizes.sh` needs `GODOT` (Godot 4.6; default `godot`) and, unless `--no-export`, `BLENDER` (Blender 4.5; defaults to
+the Windows install under WSL, `/Applications/Blender.app` on a Mac, else `blender`). It switches the `.blend` importer
+off in `project.godot` for the Godot runs (a headless import stops at the first `.blend` otherwise) and puts it back.
+`VERBOSE=1` shows the full engine output. Afterwards check with `WORLD_SIZE=400m|2km|6km godot --headless --path .
+res://tools/tests/test_world_layout.tscn` (the other tests and the shot rig take `WORLD_SIZE` too).
+
+**Blender add-on (optional):** `tools/blender/addons/corruption_world_sync.py`. Install it from Edit > Preferences > Add-ons >
+Install from Disk, tick "Corruption: world sync". Saving `world_landscape.blend` then exports all three sizes in
+background Blenders (your session is untouched); Godot re-imports the glb files when its window gets focus. It does not run the
+Godot steps (derived scenes, navmeshes, pictures): after a ground change run `tools/sync_world_sizes.sh --no-export`.
+
+Per-size navmesh bakes: 400 m uses 0.5 m cells, 2 km 1 m, 6 km 1.5 m (1.25 and finer fail on the 6 km map). 400 m and 6 km are baked
+without the towers (a tower's own navmesh carries its floor; the coarse copy of it in the world bake cut towers off from their
+jump links); 6 km's slope limits are raised by the map's extra steepness. Known at 6 km: the Volcano Tower (slot 2) stands on
+ground the mesh does not join to the rest of the map, so its units cannot walk out. Re-baking by hand: `WORLD=1 SIZE=<size> godot
+--headless --path . -s res://tools/bake_open_world_navmesh.gd`.
 
 ## Godot export (`tools/blender/export_landscape.py`)
 

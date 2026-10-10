@@ -467,7 +467,10 @@ func _save(packed: PackedScene, path: String) -> void:
 	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.READ)
 	var text := file.get_as_text()
 	file.close()
-	_write(path, text)
+	# pack() gives every node a fresh random unique_id each run, which would make every sync a diff: Godot assigns
+	# them again when the scene loads, so they are left out.
+	var ids := RegEx.create_from_string(" unique_id=[0-9]+")
+	_write(path, ids.sub(text, "", true))
 
 func _write(path: String, text: String) -> void:
 	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.WRITE)
