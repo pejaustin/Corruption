@@ -9,7 +9,7 @@ spellings were unconfirmed (ticket #606; Austin's spellings on his markers are n
 `source/world_landscape.blend` is **Austin's own hand-made map** (`corruption-map.blend`), not the generated blockout.
 **+Y is north** (he rotated it); 1 unit = 1 m. His objects, spelled as he typed them:
 
-- **Ground:** `geo`, the terrain mesh (52 x 52 grid, 2000 x 2000 m, z scale 3).
+- **Ground:** `geo`, the terrain mesh (52 x 52 grid; 6000 x 6000 m, object scale (3000, 3000, 15), heights about -310 to 770 m. Scaled 3x wide and 5x tall around the world origin on 2026-10-10 at Austin's request, markers moved with it at scale 1; was 2000 m).
 - **Forest and water guides:** `elder wood`, `northwood`, `Pale River`, `The Still Lake` are rough outlines of where
   forests and water go (their X/Y only), not meshes to use (Austin, 2026-10-10). The export skips them; real forests and
   water are still to be built.

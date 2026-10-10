@@ -439,7 +439,7 @@ layout are unconfirmed (#606). See `art/world/README.md`.
 
 **Update 2026-10-09 (second version):** `source/world_landscape.blend` is AUSTIN'S hand-made map (original:
 `source/reference/corruption-map-original.blend`; generated blockout: `world_landscape_generated_placeholder.blend`). +Y is
-north. Ground = `geo` (2000 x 2000 m); `elder wood`, `northwood`, `Pale River`, `The Still Lake` are position guides only (not exported, Austin 2026-10-10); **every
+north. Ground = `geo` (6000 x 6000 m since 2026-10-10: scaled 3x wide, 5x tall around the origin at Austin's request; was 2000 m); `elder wood`, `northwood`, `Pale River`, `The Still Lake` are position guides only (not exported, Austin 2026-10-10); **every
 empty is a POI marker** (his spellings, e.g. `Avequel'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
 to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend`. Placeholder textures come from
 `tools/blender/texture_austin_map.py`; the ground's texture choice is his vertex paint (`Splat` layer, `add_splat.py`, README "Painting the ground"); geometry untouched, checksummed. POI files with no marker yet: `northwood`, `old_gate`,
