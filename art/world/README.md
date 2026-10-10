@@ -30,13 +30,13 @@ mesh are identical before/after; the script prints `GEOMETRY_UNCHANGED True`). H
 The ground's texture choice is now vertex-painted (see "Painting the ground"); the old height / slope rule is gone.
 Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds temporary markers and labels, not saved).
 
-## Two sizes (Austin, 2026-10-10)
+## Sizes: 400 m, 2 km, 6 km (Austin, 2026-10-10)
 
-The map is authored at 2 km in `source/world_landscape.blend`. `export_landscape.py -- <repo> 2km|6km` writes
-`export/world_landscape_2km.glb` or `_6km.glb`; 6 km is the same file scaled in memory around the origin, 3x wide and
-5x tall. Each size has its inherited scene (`export/world_landscape_<size>.tscn`, towers under the tower markers),
+The map is authored at 2 km in `source/world_landscape.blend`. `export_landscape.py -- <repo> 400m|2km|6km` writes
+`export/world_landscape_<size>.glb`; the others are the same file scaled in memory around the origin: 6 km is 3x wide
+and 5x tall, 400 m is a uniform 1/5 miniature for quick tests. Each size has its inherited scene (`export/world_landscape_<size>.tscn`, towers under the tower markers),
 `scenes/world/open_world/open_world_<size>.tscn` and baked navmesh. The 2 km version is the one in the game for now.
-After editing the map, export both sizes, then rebake both navmeshes if the ground changed.
+After editing the map, export every size, then rebake the navmeshes if the ground changed.
 
 ## Godot export (`tools/blender/export_landscape.py`)
 

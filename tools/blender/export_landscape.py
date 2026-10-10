@@ -1,9 +1,9 @@
 """Export Austin's map (art/world/source/world_landscape.blend) to art/world/export/world_landscape.glb for Godot.
 Blender 4.5, background. NEVER SAVES the .blend: it opens it, exports, prints a checksum and quits.
 Usage: blender.exe -b <world_landscape.blend> --python tools/blender/export_landscape.py -- <repo_root>
-Optional 2nd arg: `2km` (default) or `6km` (writes export/world_landscape_<size>.glb), or an output .glb path (scratch).
+Optional 2nd arg: `400m`, `2km` (default) or `6km` (writes export/world_landscape_<size>.glb), or an output .glb path (scratch).
 Sizes (Austin, 2026-10-10: keep both, 2 km in the game for now): the .blend is authored at 2 km; `6km` scales it in memory
-around the world origin, 3x wide and 5x tall (positions of every root object, and the scale of every mesh; empties keep
+around the world origin, 3x wide and 5x tall; `400m` is a uniform 1/5 miniature for quick tests (Austin, 2026-10-10) (positions of every root object, and the scale of every mesh; empties keep
 scale 1 so things hung under markers keep their size). Blender +Y (north) becomes Godot -Z (glTF Y-up conversion).
 Exported: the ground `geo` and every empty (POI and tower markers, Austin's spellings as node names). Other meshes
 (`elder wood`, `northwood`, `Pale River`, `The Still Lake`) are Austin's rough position guides for where forests and
@@ -20,7 +20,7 @@ import numpy as np
 
 _a = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else ["."]
 root = _a[0]
-SIZES = {"2km": (1.0, 1.0), "6km": (3.0, 5.0)}   # (wide, tall) factors over the authored 2 km map
+SIZES = {"400m": (0.2, 0.2), "2km": (1.0, 1.0), "6km": (3.0, 5.0)}   # (wide, tall) factors over the authored 2 km map
 size = _a[1] if len(_a) > 1 and _a[1] in SIZES else "2km"
 out = _a[1] if len(_a) > 1 and _a[1] not in SIZES else os.path.join(root, "art/world/export/world_landscape_%s.glb" % size)
 out_dir = os.path.dirname(out)
