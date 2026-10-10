@@ -2,7 +2,7 @@ extends Node
 
 ## Screenshot rig: loads the world as an offline host, then renders named
 ## camera views to PNGs. Views come from the SHOTS env var as
-## "name:x,y,z:tx,ty,tz;..." (camera position : look-at target), and output goes
+## "name:x,y,z:tx,ty,tz:fov:curve_horizon_m;..." (camera position : look-at target : fov : bend horizon, optional), and output goes
 ## to SHOT_DIR (default user://shots). Run windowed (not --headless):
 ##   SHOTS="tower:0,60,0:0,40,0" godot --path . res://tools/shots/shot.tscn
 
@@ -47,8 +47,11 @@ func _run() -> void:
 		var t := _vec(parts[2])
 		cam.global_position = p
 		cam.look_at(t, Vector3.UP if absf((t - p).normalized().y) < 0.99 else Vector3.FORWARD)
-		if parts.size() > 3:
+		if parts.size() > 3 and parts[3] != "":
 			cam.fov = float(parts[3])
+		# Optional 5th field: curve_horizon_m for this shot (the curved-world bend; 0 = off). Default: the project setting.
+		if parts.size() > 4:
+			RenderingServer.global_shader_parameter_set("curve_horizon_m", float(parts[4]))
 		for i in 8:
 			await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()

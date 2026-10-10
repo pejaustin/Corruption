@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit_prepass.gdshader" id="1_f1maa"]
+[ext_resource type="Texture2D" path="res://assets/world/env/mod-castle/Props/Decoration/Floating_Platform_2_0.png" id="2_k7w78"]
+
+[resource]
+resource_name = "Prop_Mat"
+render_priority = 0
+shader = ExtResource("1_f1maa")
+shader_parameter/albedo_tex = ExtResource("2_k7w78")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)

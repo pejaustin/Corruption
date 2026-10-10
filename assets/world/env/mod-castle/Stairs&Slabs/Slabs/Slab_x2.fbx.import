@@ -37,7 +37,15 @@ import_script/path=""
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
-_subresources={}
+_subresources={
+"materials": {
+"Stair_Mat": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/world/env/mod-castle/curved_materials/Slab_x2.Stair_Mat.tres",
+"use_external/path": "res://assets/world/env/mod-castle/curved_materials/Slab_x2.Stair_Mat.tres"
+}
+}
+}
 fbx/importer=0
 fbx/allow_geometry_helper_nodes=false
 fbx/embedded_image_handling=1

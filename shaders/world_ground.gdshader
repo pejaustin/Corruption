@@ -11,6 +11,8 @@
 shader_type spatial;
 render_mode diffuse_lambert, specular_disabled;
 
+#include "res://shaders/curved_world.gdshaderinc"
+
 uniform sampler2D grass_tex : source_color, filter_nearest, repeat_enable;
 uniform sampler2D rock_tex : source_color, filter_nearest, repeat_enable;
 uniform sampler2D dirt_tex : source_color, filter_nearest, repeat_enable;
@@ -22,7 +24,8 @@ uniform float splat_threshold = 0.5; // PLACEHOLDER: a channel at or above this 
 varying vec3 world_pos;
 
 void vertex() {
-	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; // before the bend: only y changes, the tiling uses x, z
+	curve_bend(VERTEX, MODEL_MATRIX, CAMERA_POSITION_WORLD);
 }
 
 void fragment() {

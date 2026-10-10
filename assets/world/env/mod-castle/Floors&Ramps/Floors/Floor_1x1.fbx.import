@@ -38,6 +38,13 @@ materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
 _subresources={
+"materials": {
+"Floor_Mat": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/world/env/mod-castle/curved_materials/Floor_1x1.Floor_Mat.tres",
+"use_external/path": "res://assets/world/env/mod-castle/curved_materials/Floor_1x1.Floor_Mat.tres"
+}
+},
 "nodes": {
 "PATH:Floor_1x1": {
 "generate/physics": true

@@ -58,6 +58,23 @@ materials by name.
 - **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world.tscn SHOT_FAR=6000
   SHOTS="overview:0,2900,0:0,0,0:50" godot --path . res://tools/shots/shot.tscn`.
 
+## Curved world (PLACEHOLDER tuning)
+
+Ground, water, forests and the castle kit (so towers) bend down with horizontal distance from the camera
+(`shaders/curved_world.gdshaderinc`: `world.y -= d^2 / (2R)`, `R = horizon^2 / (2 x eye height)`). Change it live in
+**Project Settings > Globals > Shader Globals**: `curve_horizon_m` (default 1500; 0 = off) is the distance at which ground at
+eye level has dropped by `curve_eye_height_m` (default 40). In the editor the camera is the editor camera, so it follows you.
+Collision, navmesh and gameplay are NOT bent (look only).
+
+- **Bent:** `world_ground.gdshader`; `water_placeholder.tres` / `forest_placeholder.tres` (now ShaderMaterials on
+  `shaders/world_triplanar.gdshader`, same look); every `.fbx` in `assets/world/env/mod-castle/` (materials extracted to
+  `curved_materials/`, shaders `shaders/curved_kit*.gdshader`). Repeat or extend with `tools/curve_kit_materials.gd`.
+- **Not bent yet (they float above the bend when far):** anything with its own StandardMaterial3D: desk, ledger, balcony,
+  summoning slot, mirror, corruption site, map floor and map lines, crystal ball and table glb, units. To add one, give it a
+  ShaderMaterial that does `#include "res://shaders/curved_world.gdshaderinc"` and calls `curve_bend(VERTEX, MODEL_MATRIX,
+  CAMERA_POSITION_WORLD)` in `vertex()`.
+- Shots: the 5th field of a `SHOTS` entry sets `curve_horizon_m` for that shot (`...:fov:1500`).
+
 ## Painting the ground
 
 `geo` has two colour layers (Object Data > Color Attributes; click a layer to make it active):

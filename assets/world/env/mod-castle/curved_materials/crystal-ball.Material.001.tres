@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit.gdshader" id="1_mvy3g"]
+
+[resource]
+resource_name = "Material.001"
+render_priority = 0
+shader = ExtResource("1_mvy3g")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)

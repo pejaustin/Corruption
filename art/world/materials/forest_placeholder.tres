@@ -1,16 +1,13 @@
-[gd_resource type="StandardMaterial3D" format=3 uid="uid://iv3fiy040nng"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://iv3fiy040nng"]
 
-[ext_resource type="Texture2D" path="res://art/world/textures/leaf_pine.png" id="1_tex"]
+[ext_resource type="Shader" path="res://shaders/world_triplanar.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/world/textures/leaf_pine.png" id="2_tex"]
 
 [resource]
 resource_name = "forest_placeholder"
-vertex_color_use_as_albedo = true
-albedo_color = Color(0.6, 0.7, 0.6, 1)
-albedo_texture = ExtResource("1_tex")
-roughness = 1.0
-metallic_specular = 0.0
-uv1_scale = Vector3(0.125, 0.125, 0.125)
-uv1_triplanar = true
-uv1_world_triplanar = true
-texture_filter = 0
+shader = ExtResource("1_shader")
+shader_parameter/albedo_tex = ExtResource("2_tex")
+shader_parameter/albedo_color = Color(0.6, 0.7, 0.6, 1)
+shader_parameter/tile_metres = 8.0
+shader_parameter/triplanar_sharpness = 0.5
 metadata/PLACEHOLDER = "stand-in look, not designed by Austin"
