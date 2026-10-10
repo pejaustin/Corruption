@@ -32,6 +32,10 @@ const REFINE_MIN_EDGE_M: float = 8.0
 const REFINE_ERROR_M: float = 0.8
 ## Ground heights are sampled on this grid (metres) once, then looked up.
 const HEIGHT_GRID_M: float = 2.0
+## Baked vertices closer than this (metres, per axis) after snapping are one vertex.
+const WELD_M: float = 0.3
+## Triangles smaller than this (square metres) are slivers and are dropped.
+const MIN_AREA_M2: float = 0.2
 const AGENT_HEIGHT: float = 0.4   # as in world.tscn
 const AGENT_RADIUS: float = 0.5
 const WORLD_OUT: String = "res://scenes/world/world_navmesh.res"
@@ -93,9 +97,27 @@ func _refine(nm: NavigationMesh, ground: MeshInstance3D, max_edge: float) -> voi
 	for i in _verts.size():
 		if _on_ground(i):
 			_verts[i].y = _ground_y(_verts[i]) + GROUND_OFFSET
+	# Snapping can put two baked vertices (one above the other at a cliff edge) on the same spot: weld them, or the
+	# navigation server sees more than two edges in one place and drops connections.
+	var weld: Dictionary[Vector3i, int] = {}
+	var remap := PackedInt32Array()
+	remap.resize(_verts.size())
+	for i in _verts.size():
+		var key := Vector3i((_verts[i] / WELD_M).round())
+		if not weld.has(key):
+			weld[key] = i
+		remap[i] = weld[key]
 	var polygons: Array[PackedInt32Array] = []
 	for i in nm.get_polygon_count():
-		polygons.append(nm.get_polygon(i))
+		var poly := PackedInt32Array()
+		for idx in nm.get_polygon(i):
+			var m := remap[idx]
+			if poly.is_empty() or poly[poly.size() - 1] != m:
+				poly.append(m)
+		if poly.size() > 1 and poly[0] == poly[poly.size() - 1]:
+			poly.remove_at(poly.size() - 1)
+		if poly.size() >= 3:
+			polygons.append(poly)
 	for poly in polygons:
 		for k in range(1, poly.size() - 1):
 			_split(poly[0], poly[k], poly[k + 1])
@@ -103,8 +125,8 @@ func _refine(nm: NavigationMesh, ground: MeshInstance3D, max_edge: float) -> voi
 	nm.clear()
 	nm.set_vertices(_verts)
 	for t in _tris:
-		var n := (_verts[t[2]] - _verts[t[0]]).cross(_verts[t[1]] - _verts[t[0]]).normalized()
-		if absf(n.y) < MIN_NORMAL_Y:
+		var cross := (_verts[t[2]] - _verts[t[0]]).cross(_verts[t[1]] - _verts[t[0]])
+		if cross.length() < MIN_AREA_M2 * 2.0 or absf(cross.normalized().y) < MIN_NORMAL_Y:
 			continue
 		nm.add_polygon(t)
 		kept += 1
