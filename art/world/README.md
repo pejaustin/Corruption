@@ -10,8 +10,9 @@ spellings were unconfirmed (ticket #606; Austin's spellings on his markers are n
 **+Y is north** (he rotated it); 1 unit = 1 m. His objects, spelled as he typed them:
 
 - **Ground:** `geo`, the terrain mesh (52 x 52 grid, 2000 x 2000 m, z scale 3).
-- **Forest areas:** `elder wood`, `northwood` (any mesh with `wood` in its name is a forest).
-- **Water:** `Pale River` (river), `The Still Lake` (lake) (any mesh with `river` or `lake` in its name is water).
+- **Forest and water guides:** `elder wood`, `northwood`, `Pale River`, `The Still Lake` are rough outlines of where
+  forests and water go (their X/Y only), not meshes to use (Austin, 2026-10-10). The export skips them; real forests and
+  water are still to be built.
 - **POI markers: every empty in the landscape file is a POI marker, except tower markers (names ending in `Tower`).** Its snake_case name (lowercase, spaces to `_`,
   apostrophes dropped: `Avequel'la` -> `avequella`, `Naf Ishun` -> `naf_ishun`, `Hell's Mouth` -> `hells_mouth`) is its POI
   file `pois/<snake>.blend`. Markers: `Ale Bend`, `Avequel'la`, `Entbridge`, `far harbor`, `Forest Ruins`, `Hell's Mouth`,

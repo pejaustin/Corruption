@@ -2,9 +2,10 @@
 Blender 4.5, background. NEVER SAVES the .blend: it opens it, exports, prints a checksum and quits.
 Usage: blender.exe -b <world_landscape.blend> --python tools/blender/export_landscape.py -- <repo_root>
 Optional 2nd arg: output .glb path (scratch tests). Blender +Y (north) becomes Godot -Z (glTF Y-up conversion).
-Exported as-is: every mesh and every empty (the POI markers, Austin's spellings as node names), vertex colour `Col`
-(on geo: Splat and Col are repacked in memory, see below), materials by name (ground_placeholder,
-water_placeholder, forest_placeholder). The materials' Blender node trees are not glTF-exportable; Godot replaces
+Exported: the ground `geo` and every empty (POI and tower markers, Austin's spellings as node names). Other meshes
+(`elder wood`, `northwood`, `Pale River`, `The Still Lake`) are Austin's rough position guides for where forests and
+water go, not meshes to use (Austin, 2026-10-10), so they stay in Blender only. Vertex colour on geo: Splat and Col
+are repacked in memory, see below; material by name (ground_placeholder). The materials' Blender node trees are not glTF-exportable; Godot replaces
 them by name (art/world/materials/, mapped in world_landscape.glb.import). Ground collision (trimesh on `geo`) is set in
 the .glb.import, not here, so the .glb stays faithful."""
 import hashlib
@@ -64,8 +65,12 @@ if "Splat" in gme.color_attributes and "Col" in gme.color_attributes:
     print("PACKED Splat -> COLOR_0, Col -> UV/UV2")
 else:
     print("WARNING: geo has no Splat / Col; run tools/blender/add_splat.py")
+# Only geo and the markers; guide meshes (forest / water outlines) are not exported (Austin, 2026-10-10).
+for o in bpy.data.objects:
+    o.select_set(o.name == "geo" or o.type == "EMPTY")
+print("GUIDES_NOT_EXPORTED", [o.name for o in bpy.data.objects if o.type == "MESH" and o.name != "geo"])
 bpy.ops.export_scene.gltf(
-    filepath=out, export_format="GLB", export_yup=True, use_selection=False,
+    filepath=out, export_format="GLB", export_yup=True, use_selection=True,
     export_apply=False, export_materials="EXPORT", export_image_format="NONE",
     export_vertex_color="ACTIVE", export_active_vertex_color_when_no_material=True,
     export_texcoords=True, export_normals=True, export_cameras=False, export_lights=False,

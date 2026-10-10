@@ -49,3 +49,5 @@ metadata/PLACEHOLDER = "stand-in sun, not designed by Austin"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
+
+[editable path="Nav/WorldLandscape"]
