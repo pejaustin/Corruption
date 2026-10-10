@@ -2,7 +2,8 @@ extends Node
 
 ## Screenshot rig: loads the world as an offline host, then renders named
 ## camera views to PNGs. Views come from the SHOTS env var as
-## "name:x,y,z:tx,ty,tz:fov:curve_horizon_m;..." (camera position : look-at target : fov : bend horizon, optional), and output goes
+## "name:x,y,z:tx,ty,tz:fov:curve_horizon_m;..." (camera position : look-at target : fov : bend horizon, optional; a position
+## may be "T<slot>@x,y,z", an offset in that tower's frame), and output goes
 ## to SHOT_DIR (default user://shots). Run windowed (not --headless):
 ##   SHOTS="tower:0,60,0:0,40,0" godot --path . res://tools/shots/shot.tscn
 
@@ -66,5 +67,10 @@ func _run() -> void:
 	get_tree().quit()
 
 func _vec(s: String) -> Vector3:
+	## "x,y,z" in world coordinates, or "T<slot>@x,y,z": that offset in the tower of that slot's own frame (T0@-25,44.4,5 is
+	## its balcony lookout), which follows the tower on every world size.
+	if s.begins_with("T") and s.contains("@"):
+		var tower := Tower.in_slot_order(get_tree())[int(s.get_slice("@", 0).substr(1))]
+		return tower.global_transform * _vec(s.get_slice("@", 1))
 	var c := s.split(",")
 	return Vector3(float(c[0]), float(c[1]), float(c[2]))
