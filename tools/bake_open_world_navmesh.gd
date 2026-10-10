@@ -22,6 +22,16 @@ const REFINE_EDGE_M: Dictionary[String, float] = {"400m": 0.0, "2km": 40.0, "6km
 const ON_GROUND_TOLERANCE: float = 6.0
 ## Where the navmesh sits above the ground, in metres.
 const GROUND_OFFSET: float = 0.1
+## PLACEHOLDER: tuning. Triangles steeper than this (the Y of their normal below it; 0.6 = about 53 degrees) are dropped
+## after refining: putting vertices on the ground can stretch a triangle over a cliff the bake had left out.
+const MIN_NORMAL_Y: float = 0.6
+## PLACEHOLDER: tuning. Below the edge length above, an edge is still split while it is longer than REFINE_MIN_EDGE_M and
+## the ground at 1/4, 1/2 or 3/4 along it is more than REFINE_ERROR_M off the straight line between its ends: flat
+## ground keeps long triangles, creases and slopes get short ones.
+const REFINE_MIN_EDGE_M: float = 8.0
+const REFINE_ERROR_M: float = 0.8
+## Ground heights are sampled on this grid (metres) once, then looked up.
+const HEIGHT_GRID_M: float = 2.0
 const AGENT_HEIGHT: float = 0.4   # as in world.tscn
 const AGENT_RADIUS: float = 0.5
 const WORLD_OUT: String = "res://scenes/world/world_navmesh.res"
@@ -69,11 +79,16 @@ var _tris: Array[PackedInt32Array] = []
 var _max_edge: float
 var _ground_tri: TriangleMesh
 var _ground_xf: Transform3D
+var _grid: PackedFloat32Array
+var _grid_min: Vector2
+var _grid_w: int
+var _grid_h: int
 
 func _refine(nm: NavigationMesh, ground: MeshInstance3D, max_edge: float) -> void:
 	_max_edge = max_edge
 	_ground_tri = ground.mesh.generate_triangle_mesh()
 	_ground_xf = ground.global_transform
+	_build_height_grid(ground)
 	_verts = nm.get_vertices()
 	for i in _verts.size():
 		if _on_ground(i):
@@ -84,11 +99,16 @@ func _refine(nm: NavigationMesh, ground: MeshInstance3D, max_edge: float) -> voi
 	for poly in polygons:
 		for k in range(1, poly.size() - 1):
 			_split(poly[0], poly[k], poly[k + 1])
+	var kept := 0
 	nm.clear()
 	nm.set_vertices(_verts)
 	for t in _tris:
+		var n := (_verts[t[2]] - _verts[t[0]]).cross(_verts[t[1]] - _verts[t[0]]).normalized()
+		if absf(n.y) < MIN_NORMAL_Y:
+			continue
 		nm.add_polygon(t)
-	print("[bake] refined to ", _tris.size(), " triangles, ", _verts.size(), " vertices")
+		kept += 1
+	print("[bake] refined to ", kept, " triangles (", _tris.size() - kept, " too steep dropped), ", _verts.size(), " vertices")
 
 func _split(a: int, b: int, c: int) -> void:
 	## Splits the triangle's longest splittable edge at its midpoint and recurses. Whether an edge is split depends
@@ -114,7 +134,16 @@ func _split(a: int, b: int, c: int) -> void:
 	_split(m, q, r)
 
 func _wants_split(p: int, q: int, length: float) -> bool:
-	return length > _max_edge and _on_ground(p) and _on_ground(q)
+	if length <= REFINE_MIN_EDGE_M or not _on_ground(p) or not _on_ground(q):
+		return false
+	if length > _max_edge:
+		return true
+	for f in [0.25, 0.5, 0.75]:
+		var at: Vector3 = _verts[p].lerp(_verts[q], f)
+		var g := _ground_y(at)
+		if not is_nan(g) and absf(g + GROUND_OFFSET - at.y) > REFINE_ERROR_M:
+			return true
+	return false
 
 func _midpoint(p: int, q: int) -> int:
 	var key := Vector2i(mini(p, q), maxi(p, q))
@@ -135,9 +164,33 @@ func _on_ground(i: int) -> bool:
 		_grounded[i] = not is_nan(g) and absf(_verts[i].y - g) <= ON_GROUND_TOLERANCE
 	return _grounded[i]
 
-func _ground_y(v: Vector3) -> float:
+func _build_height_grid(ground: MeshInstance3D) -> void:
+	var box := _ground_xf * ground.mesh.get_aabb()
+	_grid_min = Vector2(box.position.x, box.position.z)
+	_grid_w = int(ceil(box.size.x / HEIGHT_GRID_M)) + 2
+	_grid_h = int(ceil(box.size.z / HEIGHT_GRID_M)) + 2
+	_grid.resize(_grid_w * _grid_h)
+	for gz in _grid_h:
+		for gx in _grid_w:
+			_grid[gz * _grid_w + gx] = _ray_y(_grid_min.x + gx * HEIGHT_GRID_M, _grid_min.y + gz * HEIGHT_GRID_M)
+
+func _ray_y(x: float, z: float) -> float:
 	var inv := _ground_xf.affine_inverse()
-	var a: Vector3 = inv * Vector3(v.x, 5000.0, v.z)
-	var b: Vector3 = inv * Vector3(v.x, -5000.0, v.z)
+	var a: Vector3 = inv * Vector3(x, 5000.0, z)
+	var b: Vector3 = inv * Vector3(x, -5000.0, z)
 	var hit := _ground_tri.intersect_ray(a, (b - a).normalized())
 	return NAN if hit.is_empty() else (_ground_xf * (hit["position"] as Vector3)).y
+
+func _ground_y(v: Vector3) -> float:
+	## Bilinear lookup in the height grid.
+	var fx := (v.x - _grid_min.x) / HEIGHT_GRID_M
+	var fz := (v.z - _grid_min.y) / HEIGHT_GRID_M
+	var ix := clampi(int(floor(fx)), 0, _grid_w - 2)
+	var iz := clampi(int(floor(fz)), 0, _grid_h - 2)
+	var tx := clampf(fx - ix, 0.0, 1.0)
+	var tz := clampf(fz - iz, 0.0, 1.0)
+	var h00 := _grid[iz * _grid_w + ix]
+	var h10 := _grid[iz * _grid_w + ix + 1]
+	var h01 := _grid[(iz + 1) * _grid_w + ix]
+	var h11 := _grid[(iz + 1) * _grid_w + ix + 1]
+	return lerpf(lerpf(h00, h10, tx), lerpf(h01, h11, tx), tz)

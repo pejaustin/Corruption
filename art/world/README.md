@@ -165,9 +165,11 @@ names end in `Tower` are tower markers, not POIs (no `pois/` file). In Godot, `w
 
 `scenes/world/world.tscn` holds `world_landscape_2km.tscn` under `World/Nav`; the Terrain3D ground and the runtime navmesh
 bake are gone. The navmesh is `scenes/world/world_navmesh.res`, baked with `WORLD=1 SIZE=2km godot --headless --path . -s
-res://tools/bake_open_world_navmesh.gd` (re-bake after any ground, tower or tower-rotation change). The tool splits the baked
-triangles to 40 m and puts the new vertices on the ground, because Godot leaves rolling ground as a few huge flat triangles
-(up to 35 m off the ground at 1 m cells, 1 m climb); agents and path queries search 32768 polygons.
+res://tools/bake_open_world_navmesh.gd` (re-bake after any ground, tower or tower-rotation change). The tool then puts the baked
+vertices on the ground and splits triangle edges (to 40 m on flat ground, down to 8 m where the ground is more than 0.8 m
+off the straight line), because Godot leaves rolling ground as a few huge flat triangles up to 35 m off the ground; the
+result is ~30k triangles within ~0.2 m of the ground on average. Agents and path queries search 32768 polygons (the
+engine's 4096 gave up on long routes) and count a waypoint as reached within 2.5 m.
 
 **Towers:** one tower per tower site, instanced under his markers in `world_landscape_2km.tscn`. Each has `slot_index`, which
 pairs it with the `MinionRallyPoint` at the same position under `World/Markers`, the `MapPoint` whose `tower_slot` matches, and
@@ -180,7 +182,7 @@ the ground is steep), are placeholders.
 | City, HolySite, Places/City | Hopes Gate | yes |
 | SettlementSE, SettlementNW | Entbridge, Teshfield | yes |
 | Chapel (SiteChapel), AvatarSite (SiteAvatar), BossSite (SiteBoss) | Forest Ruins, Ale Bend, Valley Cross | yes |
-| Ford, Crossing | Mountain Pass, Lastford | yes |
+| Ford, Crossing | Mountain Pass (20 m east of his marker, at the foot of the pass), Lastford | yes |
 | RoadEast / South / West / North | between each tower and its nearest place, by eye | no |
 | MineSE, MineNW | ~55 m from Entbridge and Teshfield | no |
 | Avatar, HolyKnights | beside Hopes Gate | no |

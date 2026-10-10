@@ -31,6 +31,10 @@ func _run() -> void:
 		var clock: Node = world.get_node_or_null("DayNight")
 		if clock != null:
 			clock.call("set_time", float(time_env))
+	# The debug overlay covers a quarter of the picture; SHOT_OVERLAY=1 keeps it.
+	var overlay := world.get_node_or_null("CanvasLayer/DebugOverlay") as CanvasItem
+	if overlay != null and OS.get_environment("SHOT_OVERLAY") == "":
+		overlay.visible = false
 	var cam := Camera3D.new()
 	cam.far = float(OS.get_environment("SHOT_FAR")) if OS.get_environment("SHOT_FAR") != "" else 2000.0
 	get_tree().root.add_child(cam)

@@ -55,7 +55,11 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 - [x] 9 Mirror
 - [x] 10 Getting better (leader experience, maneuvers, teaching, relics; `test_growth`). Paid gear is not built.
 
-Tests (`tools/tests/`): sites, orders, desk, mirror, fieldwork, paladin, balcony, endgame, treasure, growth.
+- [x] World on Austin's 2 km map (2026-10-10): `world.tscn` holds `world_landscape_2km.tscn`, his four tower sites are the
+  four towers (paired by `slot_index`), every place and site stands on his map (PLACEHOLDER layout, `art/world/README.md`),
+  saved navmesh `scenes/world/world_navmesh.res`; `test_world_layout`.
+
+Tests (`tools/tests/`): sites, orders, desk, mirror, fieldwork, paladin, balcony, endgame, treasure, growth, world_layout.
 
 Still open: player control of boss forms (#560), every placeholder in `PLACEHOLDERS.md`, how the Paladin gets to the
 winner's tower (#576), the GDD §11 questions, and real multi-peer testing of the mirror and Palantir voice.
