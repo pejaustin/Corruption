@@ -481,7 +481,7 @@ func _tower_point() -> MapPoint:
 	if t == null:
 		return null
 	for p in MapPoint.all_points(get_tree()):
-		if p.kind == MapPoint.Kind.TOWER and p.tower_slot == t.get_index():
+		if p.kind == MapPoint.Kind.TOWER and p.tower_slot == t.slot_index:
 			return p
 	return null
 

@@ -236,7 +236,7 @@ func _stand_off(from: Vector3, to: Vector3, dist: float) -> Vector2:
 	return t - d.normalized() * dist
 
 func _my_floor(world: Node) -> MapFloor:
-	for t in world.get_node("World/Env/Towers").get_children():
+	for t in Tower.in_slot_order(get_tree()):
 		if t is Tower and (t as Tower).owner_peer_id == 1:
 			return t.get_node_or_null("MapFloor") as MapFloor
 	return null

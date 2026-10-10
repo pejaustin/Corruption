@@ -118,22 +118,18 @@ func _mp_manager() -> MultiplayerManager:
 	return get_tree().current_scene.get_node_or_null("MultiplayerManager") as MultiplayerManager
 
 func bind_tower_markers() -> void:
-	## Pair each tower with a rally point by child order:
-	##   Towers[0] ↔ Markers[0], Towers[1] ↔ Markers[1], …
+	## Pair each tower with a rally point: the tower in slot N (its slot_index, authored on
+	## the tower in the landscape scene) gets the Nth MinionRallyPoint under World/Markers.
 	## Then bind each rally to the connected peer in the matching tower slot.
 	_spawn_points.clear()
 	_rally_points.clear()
 	var scene := get_tree().current_scene
 	if scene == null:
 		return
-	var towers_root := scene.get_node_or_null("World/Env/Towers")
 	var markers_root := scene.get_node_or_null("World/Markers")
-	if towers_root == null or markers_root == null:
+	if markers_root == null:
 		return
-	var towers: Array[Tower] = []
-	for child in towers_root.get_children():
-		if child is Tower:
-			towers.append(child)
+	var towers := Tower.in_slot_order(get_tree())
 	var rallies: Array[MinionRallyPoint] = []
 	for child in markers_root.get_children():
 		if child is MinionRallyPoint:

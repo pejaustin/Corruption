@@ -11,7 +11,7 @@ const _PLAYER_SCENE_PATH: String = "res://scenes/actors/player/overlord/overlord
 var _players_in_game: Dictionary = {}
 var _player_slot_order: Array[int] = [] # Tracks join order for tower assignment
 
-# Tower spawn positions as offsets from PlayerSpawnPoint (72, 41, 1)
+# Tower spawn positions as offsets from PlayerSpawnPoint, in tower slot order.
 # Each tower's floor is at local Y=40, so spawn Y = tower_global_Y + 40 + 1 (standing height)
 # Offset = tower_spawn_global - PlayerSpawnPoint_global
 @onready var TOWER_SPAWNS: Array[Vector3] = _get_tower_spawns()
@@ -125,7 +125,7 @@ func _peer_disconnected(network_id: int) -> void:
 
 func _get_tower_spawns() -> Array[Vector3]:
 	var towers_arr : Array[Vector3] = []
-	for tower in %Towers.get_children():
+	for tower in Tower.in_slot_order(get_tree()):
 		var tower_spawn : Marker3D = tower.get_node("SpawnPoint")
 		towers_arr.append(_player_spawn_point.to_local(tower_spawn.global_position))
 		

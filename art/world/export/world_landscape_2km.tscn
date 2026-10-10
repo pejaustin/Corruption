@@ -6,9 +6,21 @@
 [node name="WorldLandscape" instance=ExtResource("1_landscape")]
 
 [node name="Tower" parent="Volcano Tower" instance=ExtResource("2_tower")]
+transform = Transform3D(-0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866025, 0, 0, 0)
+; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces (toward the map centre unless the ground is steep), not designed
+slot_index = 2
 
 [node name="Tower" parent="Forest Tower" instance=ExtResource("2_tower")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0)
+; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces (toward the map centre unless the ground is steep), not designed
+slot_index = 1
 
 [node name="Tower" parent="Avequel'la" instance=ExtResource("2_tower")]
+transform = Transform3D(-0.562791, 0, 0.826599, 0, 1, 0, -0.826599, 0, -0.562791, 0, 0, 0)
+; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces (toward the map centre unless the ground is steep), not designed
+slot_index = 3
 
 [node name="Tower" parent="Naf Ishun" instance=ExtResource("2_tower")]
+transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, 0, 0, 0)
+; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces (toward the map centre unless the ground is steep), not designed
+slot_index = 0

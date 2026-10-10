@@ -49,9 +49,8 @@ func run_tests() -> void:
 	check(chapel.progress < 0.5, "good faction purifies corruption it stands in")
 
 	# The tower is a permanent site held by its owner.
-	var towers := world.get_node("World/Env/Towers")
 	var mine: CorruptionSite = null
-	for t in towers.get_children():
+	for t in Tower.in_slot_order(get_tree()):
 		if t is Tower and (t as Tower).owner_peer_id == 1:
 			mine = (t as Tower).site
 	check(mine != null and mine.permanent and mine.holder_peer_id == 1, "your tower is a permanent site you hold")

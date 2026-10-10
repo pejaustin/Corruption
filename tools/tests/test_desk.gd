@@ -6,7 +6,7 @@ extends "res://tools/tests/test_base.gd"
 func run_tests() -> void:
 	var world := await load_world()
 	var desk: Desk = null
-	for t in world.get_node("World/Env/Towers").get_children():
+	for t in Tower.in_slot_order(get_tree()):
 		if t is Tower and (t as Tower).owner_peer_id == 1:
 			desk = t.get_node_or_null("Desk") as Desk
 	check(desk != null, "peer 1's tower has a desk")

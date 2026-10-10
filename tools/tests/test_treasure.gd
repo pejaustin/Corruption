@@ -9,7 +9,7 @@ func run_tests() -> void:
 	var room: TreasureRoom = null
 	var ledger: Ledger = null
 	var foreign: TreasureRoom = null
-	for t in world.get_node("World/Env/Towers").get_children():
+	for t in Tower.in_slot_order(get_tree()):
 		var tower := t as Tower
 		if tower == null:
 			continue

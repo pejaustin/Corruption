@@ -1,8 +1,10 @@
 class_name Tower extends Node3D
 
 ## One of the four overlord towers. Owns its own MinionSpawnPoint in-scene.
-## The tower_scene pairs each tower with a MinionRallyPoint from World/Markers
-## by child order (Tower → MinionRallyPoint, Tower2 → MinionRallyPoint2, …).
+## Towers stand under Austin's tower markers in world_landscape_2km.tscn, and each one's
+## `slot_index` (set there) pairs it with the MinionRallyPoint of the same child position
+## in World/Markers (slot 0 ↔ MinionRallyPoint, slot 1 ↔ MinionRallyPoint2, …), with the
+## MapPoint whose tower_slot matches, and with a player (joining order).
 
 const GROUP: StringName = &"towers"
 ## PLACEHOLDER: art direction, not designed — how the ruined tower rebuilds.
@@ -12,7 +14,9 @@ const GROUP: StringName = &"towers"
 const RUINED_ROOF_FRACTION: float = 0.25
 const WHOLE_AT_SITES: int = 4
 
-var slot_index: int = -1
+## The tower's slot (0-3). Authored on each tower in the landscape scene; the group is
+## set in tower.tscn so towers can be found before they are ready.
+@export var slot_index: int = -1
 var spawn_point: MinionSpawnPoint
 ## Marker3D where couriers (war-table delivery + info-gathering) spawn and
 ## return. Separate from spawn_point because the regular spawn lives high on
@@ -70,6 +74,18 @@ func _find_own_advisor() -> MinionActor:
 		if child is MinionActor and (child as MinionActor).minion_trait == &"advisor":
 			return child
 	return null
+
+## Every tower in the scene, in slot order (towers with no slot last, in tree order).
+static func in_slot_order(tree: SceneTree) -> Array[Tower]:
+	var out: Array[Tower] = []
+	for n in tree.get_nodes_in_group(GROUP):
+		if n is Tower:
+			out.append(n)
+	out.sort_custom(func(a: Tower, b: Tower) -> bool:
+		var sa: int = a.slot_index if a.slot_index >= 0 else 1000
+		var sb: int = b.slot_index if b.slot_index >= 0 else 1000
+		return sa < sb)
+	return out
 
 func assign_slot(index: int, rally: MinionRallyPoint) -> void:
 	slot_index = index

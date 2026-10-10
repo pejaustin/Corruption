@@ -7,7 +7,7 @@ func run_tests() -> void:
 	var world := await load_world()
 	var balcony: Balcony = null
 	var other_balconies: int = 0
-	for t in world.get_node("World/Env/Towers").get_children():
+	for t in Tower.in_slot_order(get_tree()):
 		if t is Tower:
 			var b := t.get_node_or_null("Balcony") as Balcony
 			check(b != null, "%s has a balcony" % t.name)
@@ -38,7 +38,7 @@ func run_tests() -> void:
 	check(not balcony.get_camera().current, "lookout camera released")
 
 	# Another tower's balcony is not ours.
-	for t in world.get_node("World/Env/Towers").get_children():
+	for t in Tower.in_slot_order(get_tree()):
 		if t is Tower and (t as Tower).owner_peer_id != 1:
 			var b := t.get_node("Balcony") as Balcony
 			b.open_lookout(player)

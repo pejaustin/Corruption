@@ -55,11 +55,10 @@ func get_label() -> String:
 
 func _snap() -> void:
 	if tower_slot >= 0:
-		# Slots follow the towers' order under World/Env/Towers (as
-		# MinionManager.bind_tower_markers assigns them).
+		# The tower in this slot (its slot_index, as MinionManager.bind_tower_markers uses it).
 		for n in get_tree().get_nodes_in_group(Tower.GROUP):
 			var t := n as Tower
-			if t and t.get_index() == tower_slot and t.courier_spawn:
+			if t and t.slot_index == tower_slot and t.courier_spawn:
 				global_position = t.courier_spawn.global_position
 				return
 	# Drop onto the ground below (terrain or static geometry).

@@ -32,6 +32,8 @@ visual_range_overlay_scene = ExtResource("8_range")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." index="2" unique_id=990365429]
 target_desired_distance = 1.5
+; PLACEHOLDER: tuning — the 2 km map's navmesh has ~24k polygons; the default 4096 gave up on long routes
+path_search_max_polygons = 32768
 avoidance_enabled = true
 neighbor_distance = 8.0
 max_neighbors = 8

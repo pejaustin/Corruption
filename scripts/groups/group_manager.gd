@@ -32,6 +32,9 @@ const UNREACHABLE_GAP: float = 4.0
 ## destination before heading home.
 const ASSESS_SECONDS: float = 20.0
 ## Units this close to a map point put it on the map when they report.
+## PLACEHOLDER: tuning — how many navmesh polygons a path search may visit before giving up; more than the 2 km
+## map's navmesh has (~24k), so a search never stops short of a reachable place.
+const PATH_SEARCH_POLYGONS: int = 32768
 const DISCOVER_RADIUS: float = 25.0
 ## How often groups at their tower report what the tower can see.
 const HOME_REPORT_INTERVAL: float = 2.0
@@ -338,7 +341,15 @@ func _reachable(sample: MinionActor, from: Vector3, to: Vector3) -> bool:
 	var map_rid := sample.nav_agent.get_navigation_map()
 	if not map_rid.is_valid():
 		return true
-	var path := NavigationServer3D.map_get_path(map_rid, from, to, true)
+	# Data-only: a path query (the plain map_get_path search gives up after 4096 polygons).
+	var query := NavigationPathQueryParameters3D.new()
+	query.map = map_rid
+	query.start_position = from
+	query.target_position = to
+	query.path_search_max_polygons = PATH_SEARCH_POLYGONS
+	var result := NavigationPathQueryResult3D.new()
+	NavigationServer3D.query_path(query, result)
+	var path := result.path
 	if path.is_empty():
 		return false
 	return _flat(path[path.size() - 1] - to) <= UNREACHABLE_GAP

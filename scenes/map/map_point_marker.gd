@@ -41,7 +41,7 @@ static func _kind_color(kind: int) -> Color:
 
 func _is_home() -> bool:
 	var t := floor_map.get_tower()
-	return point.kind == MapPoint.Kind.TOWER and t != null and point.tower_slot == t.get_index()
+	return point.kind == MapPoint.Kind.TOWER and t != null and point.tower_slot == t.slot_index
 
 func get_prompt_text() -> String:
 	# PLACEHOLDER: wording.
