@@ -176,6 +176,13 @@ roll={
 ]
 }
 
+[navigation]
+
+; PLACEHOLDER: tuning — the 2 km map's towers stand at different heights above their ground, so the towers' own
+; navmesh (cell 0.25) and the world's (cell 1) only join within these distances (the tower's jump-off link lands on the ground).
+3d/default_edge_connection_margin=2.0
+3d/default_link_connection_radius=2.5
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0

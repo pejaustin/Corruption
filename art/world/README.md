@@ -168,7 +168,10 @@ bake are gone. The navmesh is `scenes/world/world_navmesh.res`, baked with `WORL
 res://tools/bake_open_world_navmesh.gd` (re-bake after any ground, tower or tower-rotation change). The tool then puts the baked
 vertices on the ground and splits triangle edges (to 40 m on flat ground, down to 8 m where the ground is more than 0.8 m
 off the straight line), because Godot leaves rolling ground as a few huge flat triangles up to 35 m off the ground; the
-result is ~30k triangles within ~0.2 m of the ground on average. Agents and path queries search 32768 polygons (the
+result is ~30k triangles within ~0.2 m of the ground on average. Towers: units summoned in a tower jump from its balcony (a `NavigationLink3D`, `JumpPoint`) to the ground; each tower stands at a
+different height above its ground, so `world_landscape_2km.tscn` overrides the link's landing per tower, and `project.godot`
+widens the navigation edge margin (2 m) and link radius (2.5 m). `test_world_layout` checks a unit can walk out of every tower.
+Agents and path queries search 32768 polygons (the
 engine's 4096 gave up on long routes) and count a waypoint as reached within 2.5 m.
 
 **Towers:** one tower per tower site, instanced under his markers in `world_landscape_2km.tscn`. Each has `slot_index`, which

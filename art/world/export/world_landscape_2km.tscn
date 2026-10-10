@@ -24,3 +24,19 @@ slot_index = 3
 transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, 0, 0, 0)
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces (toward the map centre unless the ground is steep), not designed
 slot_index = 0
+
+; PLACEHOLDER: the tower's jump-off link (units summoned in the tower jump from its balcony to the ground) lands 40 m below
+; the balcony; each tower stands at a different height above its ground, so the landing is lowered or raised to meet the
+; ground (+0.1 m, where the navmesh sits). Tools: recompute if a tower or the ground moves.
+
+[node name="JumpPoint" parent="Naf Ishun/Tower/NavigationRegion3D" index="0"]
+end_position = Vector3(-5, -41.8027, 0)
+
+[node name="JumpPoint" parent="Forest Tower/Tower/NavigationRegion3D" index="0"]
+end_position = Vector3(-5, -40.3675, 0)
+
+[node name="JumpPoint" parent="Volcano Tower/Tower/NavigationRegion3D" index="0"]
+end_position = Vector3(-5, -45.4328, 0)
+
+[node name="JumpPoint" parent="Avequel'la/Tower/NavigationRegion3D" index="0"]
+end_position = Vector3(-5, -40.8999, 0)

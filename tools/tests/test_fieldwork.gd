@@ -43,14 +43,27 @@ func run_tests() -> void:
 
 	# A live captive for a thrall (earlier fighting may have thinned the village).
 	_add_villagers(world, 2)
-	(world.get_node("SiteChapel") as CorruptionSite).debug_give_to(1)
+	var chapel := world.get_node("SiteChapel") as CorruptionSite
+	chapel.debug_give_to(1)
 	_order(g, &"SettlementSE", OrderGoal.Goal.CAPTURE)
-	await _until(func() -> bool: return _count_type(1, &"thrall") > 0, 1500.0)
+	# (An unguarded site slips back after site_type.slip_seconds, 180 s; the walk to the village and on to the chapel
+	# takes longer on the 2 km map, so the test keeps the chapel held.)
+	await _until(func() -> bool:
+		if chapel.holder_peer_id != 1:
+			chapel.debug_give_to(1)
+		return _count_type(1, &"thrall") > 0, 1500.0)
 	check(_count_type(1, &"thrall") > 0, "a captive brought to the chapel becomes a thrall")
 
 	# Buying a noble.
 	mm.add_treasury(1, 40)
 	g = _group_at_home()
+	# The group is at the chapel, ~500 m from the tower, and the offer's goods are loaded at the tower (within
+	# MinionManager.MUSTER_RADIUS of its gate; on the old map the chapel was inside it): it walks home first.
+	var gate := mm.get_courier_spawn_for(1)
+	_order(g, &"TowerEast", OrderGoal.Goal.GO_HERE)
+	await _until(func() -> bool:
+		var c := gm.get_centroid(g)
+		return Vector2(c.x - gate.global_position.x, c.z - gate.global_position.z).length() < 30.0, 600.0)
 	_order(g, &"SettlementSE", OrderGoal.Goal.OFFER, &"spare")
 	var noble := _first_human(&"SettlementSE", true)
 	if noble == null:

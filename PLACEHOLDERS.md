@@ -123,4 +123,6 @@ Numbers I changed so the old tuning fits the 2 km map; none is designed (playtes
 | Map floor: enemy sightings sharing one piece | 80 m | 15 m | `scenes/map/map_floor.gd` `ENEMY_CLUSTER` |
 | Map floor: the world rectangle it shows | 2000 x 2000 m | 360 x 360 m | `scenes/map/map_floor.gd` `world_rect` |
 | Navmesh polygons a path search may visit | 32768 | 4096 (engine default) | `group_manager.gd` `PATH_SEARCH_POLYGONS`, minion and avatar agents |
+| Navigation map: edge connection margin and link connection radius | 2 m, 2.5 m | 0.25 m, 1 m (engine defaults) | `project.godot` `[navigation]` |
+| Each tower's jump-off link (summoned units jump from the balcony to the ground) lands at the ground below that tower | per tower | 40 m below the balcony | `art/world/export/world_landscape_2km.tscn` `JumpPoint` overrides |
 | Waypoint reached within (the navmesh sits up to ~1 m off the ground) | 2.5 m minions, 2 m Avatar | 1 m, 0.5 m | `minion_actor.tscn`, `avatar_actor.tscn` `path_desired_distance` |

@@ -79,6 +79,7 @@ func _play() -> void:
 	var road: MapPointMarker = floor_map._markers[&"RoadEast"]
 	var reached: bool = await drv.walk_to(Vector2(road.global_position.x, road.global_position.z), 0.2)
 	step(reached, "walked onto the East road marker")
+	drv.say("player %s, road marker %s (%.2f m apart)" % [player.global_position, road.global_position, Vector2(player.global_position.x - road.global_position.x, player.global_position.z - road.global_position.z).length()])
 	await drv.seconds(0.3)
 	step(&"RoadEast" in floor_map.path_points, "the pencil route records the East road")
 	await drv.screenshot("02_route_pencilled")

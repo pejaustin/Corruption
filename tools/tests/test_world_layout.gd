@@ -48,14 +48,23 @@ func run_tests() -> void:
 			check(g != INF and absf(g - s.global_position.y) < GROUND_TOLERANCE, "%s stands on the ground (%.1f vs %.1f)" % [s.name, s.global_position.y, g])
 		var on_mesh := NavigationServer3D.map_get_closest_point(map, s.global_position)
 		check(on_mesh.distance_to(s.global_position) < NAV_TOLERANCE, "%s is on the navmesh (%.1f m off)" % [s.name, on_mesh.distance_to(s.global_position)])
+	# Units summoned in a tower walk down its stairs and out onto the ground.
+	for t in towers:
+		var up := _path(map, t.spawn_point.global_position, t.courier_spawn.global_position)
+		check(not up.is_empty() and _arrives(up[up.size() - 1], t.courier_spawn.global_position), "slot %d: a unit summoned in the tower can walk out to its gate" % t.slot_index)
 	for t in towers:
 		var from := t.courier_spawn.global_position
 		var bad: Array[String] = []
 		for s in spots:
 			var path := _path(map, from, s.global_position)
-			if path.is_empty() or path[path.size() - 1].distance_to(s.global_position) > NAV_TOLERANCE:
+			if path.is_empty() or not _arrives(path[path.size() - 1], s.global_position):
 				bad.append(String(s.name))
 		check(bad.is_empty(), "slot %d's courier spawn can walk to everything (unreachable: %s)" % [t.slot_index, ", ".join(bad)])
+
+func _arrives(end: Vector3, target: Vector3) -> bool:
+	## A path ends where it should: within NAV_TOLERANCE across the ground, and within 3 m of height (a tower's gate
+	## is a sphere that stands up to 2.4 m above a sloping ground; a place sits on it).
+	return Vector2(end.x - target.x, end.z - target.z).length() <= NAV_TOLERANCE and absf(end.y - target.y) <= 3.0
 
 func _ground_y(at: Vector3) -> float:
 	## Height of the landscape's ground (collision layer 1, no towers: they are above their own ground) at x, z.
