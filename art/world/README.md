@@ -49,8 +49,10 @@ materials by name.
   Forests and water are flat patches and have none.
 - **Scene:** `scenes/world/open_world/open_world.tscn` (a `NavigationRegion3D` around the glb, sun, sky, fog; all
   PLACEHOLDER). The navmesh `open_world_navmesh.res` is baked from `geo`'s collision by
-  `godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (agent height and climb as in `world.tscn`; cell size
-  2 m is a PLACEHOLDER tuning for 2000 x 2000 m). Re-bake after any geometry change.
+  `godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (agent height as in `world.tscn`; cell size 1 m and
+  max climb 1 m are PLACEHOLDER tuning. Climb must be at least cell size x tan(max slope): with 2 m cells and the old
+  0.5 m climb, any slope over ~14 degrees split the mesh into 110 islands and cut off Avequel'la. Now one walkable mesh;
+  tower floors bake as their own islands). Re-bake after any geometry change.
 - **Re-import headless:** with a Blender path unset, `godot --headless --import` stops at the `.blend` files; temporarily set
   `import/blender/enabled=false` under `[filesystem]` in `project.godot` for the import, then revert it.
 - **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world.tscn SHOT_FAR=6000
