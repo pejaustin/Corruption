@@ -12,6 +12,8 @@ const STAND_OFF: float = 1.8
 const MIN_FROM_OVERLORD: float = 1.6
 ## PLACEHOLDER: tuning — keep this far off the line between overlord and station.
 const CLEAR_OF_LINE: float = 1.0
+## PLACEHOLDER: tuning — keep the walk to the spot this far from the overlord, so he never walks into him and stalls.
+const CLEAR_OF_WALK: float = 1.0
 ## PLACEHOLDER: tuning — margin around the map floor's square he never enters.
 const FLOOR_MARGIN: float = 1.0
 ## PLACEHOLDER: tuning — at the map floor he re-picks his edge spot once the overlord is this far away.
@@ -90,6 +92,13 @@ static func spot_for(advisor: Node3D, s: Vector3, overlord: Node3D, floor_map: M
 		if so.length() > 0.5:
 			var t := clampf(_flat(cand - s).dot(so) / so.length_squared(), 0.0, 1.0)
 			if _flat(cand - s).distance_to(so * t) < CLEAR_OF_LINE:
+				continue
+		# Not behind the overlord: a straight walk past him ends pressed against him, going nowhere.
+		var from := _flat(advisor.global_position)
+		var walk := _flat(cand) - from
+		if walk.length_squared() > 0.01:
+			var wt := clampf((_flat(o) - from).dot(walk) / walk.length_squared(), 0.0, 1.0)
+			if (_flat(o) - (from + walk * wt)).length() < CLEAR_OF_WALK:
 				continue
 		var score := _flat(cand - o).length() + _flat(cand - advisor.global_position).length() * 0.3
 		if score < best_score:

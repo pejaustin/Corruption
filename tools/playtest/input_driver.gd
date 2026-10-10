@@ -151,6 +151,17 @@ func aim_at(world_pos: Vector3, max_steps: int = 80) -> bool:
 	print("[driver] aim gave up: yaw err %.3f pitch err %.3f (cam pitch %.1f deg, cam y %.2f, target %s)" % [e.x, e.y, rad_to_deg(camera.global_rotation.x), camera.global_position.y, world_pos])
 	return false
 
+func _ground_yaw_error(world_xz: Vector2) -> float:
+	## Yaw (radians, positive = target is left) between where the camera faces and the target, both flattened onto the
+	## ground. The camera-frame angle (_angles_to) is wrong for a target close to the feet, because the view is pitched down
+	## and yawing it then moves the target's camera-frame angle by more than the yaw: steering flipped sign forever 0.5 m from
+	## a small map marker.
+	var fwd := -camera.global_basis.z
+	var to := Vector2(world_xz.x - camera.global_position.x, world_xz.y - camera.global_position.z)
+	if Vector2(fwd.x, fwd.z).length() < 0.001 or to.length() < 0.001:
+		return 0.0
+	return Vector2(fwd.x, fwd.z).angle_to(to) * -1.0
+
 func walk_to(world_xz: Vector2, radius: float = 0.3, timeout: float = 25.0) -> bool:
 	## Hold forward while steering the view toward a point on the ground.
 	var elapsed := 0.0
@@ -161,10 +172,9 @@ func walk_to(world_xz: Vector2, radius: float = 0.3, timeout: float = 25.0) -> b
 			release_all()
 			await frames(10)
 			return true
-		var target := Vector3(world_xz.x, camera.global_position.y, world_xz.y)
-		var err := _angles_to(target)
-		await look(clampf(-err.x / MOUSE_SENS, -150.0, 150.0), 0.0)
-		if absf(err.x) < 0.5:
+		var yaw_err := _ground_yaw_error(world_xz)
+		await look(clampf(-yaw_err / MOUSE_SENS, -150.0, 150.0), 0.0)
+		if absf(yaw_err) < 0.5:
 			hold_action(&"forward")
 		else:
 			release_action(&"forward")
