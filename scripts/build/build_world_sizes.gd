@@ -363,6 +363,10 @@ func _build_world(size: String, ref: Ground, ground: Ground, factors: Vector2) -
 		moved += 1
 	var light := world.get_node("World/Atmosphere/DirectionalLight3D") as DirectionalLight3D
 	light.directional_shadow_max_distance = float(SIZE_TUNING[size]["shadow"])
+	# The curved-world bend follows the size: horizon with the width, eye height with the height (2 km values are the source's).
+	var curve := world.get_node("World/Atmosphere/WorldCurve") as WorldCurve
+	curve.horizon_m *= factors.x
+	curve.eye_height_m *= factors.y
 	print("[build] ", size, ": moved ", moved, " placed nodes")
 	var packed := PackedScene.new()
 	packed.pack(world)

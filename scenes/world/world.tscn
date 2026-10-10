@@ -27,6 +27,7 @@
 [ext_resource type="Resource" path="res://data/relics/placeholder_a.tres" id="28_relic_a"]
 [ext_resource type="Resource" path="res://data/relics/placeholder_b.tres" id="29_relic_b"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="23_daynight"]
+[ext_resource type="Script" path="res://scripts/world_curve.gd" id="33_curve"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -76,6 +77,9 @@ directional_shadow_max_distance = 400.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere" unique_id=446517867]
 environment = SubResource("Environment_s4jie")
+
+[node name="WorldCurve" type="Node" parent="World/Atmosphere" unique_id=446517868]
+script = ExtResource("33_curve")
 
 [node name="Env" type="Node3D" parent="World" unique_id=932413741]
 

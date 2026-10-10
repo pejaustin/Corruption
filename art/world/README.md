@@ -119,8 +119,11 @@ materials by name.
 
 Ground, water, forests and the castle kit (so towers) bend down with horizontal distance from the camera
 (`shaders/curved_world.gdshaderinc`: `world.y -= d^2 / (2R)`, `R = horizon^2 / (2 x eye height)`). Change it live in
-**Project Settings > Globals > Shader Globals**: `curve_horizon_m` (default 1500; 0 = off) is the distance at which ground at
-eye level has dropped by `curve_eye_height_m` (default 40). In the editor the camera is the editor camera, so it follows you.
+the `WorldCurve` node under `World/Atmosphere` in each world scene (`scripts/world_curve.gd`, @tool, so the editor shows it):
+`horizon_m` (0 = off) is the distance at which ground at eye level has dropped by `eye_height_m`. `world.tscn` (2 km) is 1500 / 40;
+`build_world_sizes.gd` scales the horizon by the size's width and the eye height by its height (400 m 300 / 8, 6 km 4500 / 200),
+so edit the 2 km node and re-run the sync. **Project Settings > Globals > Shader Globals** (`curve_horizon_m` 1500,
+`curve_eye_height_m` 40) is only the fallback for scenes without the node. In the editor the camera is the editor camera, so it follows you.
 Collision, navmesh and gameplay are NOT bent (look only).
 
 - **Bent:** `world_ground.gdshader`; `water_placeholder.tres` / `forest_placeholder.tres` (now ShaderMaterials on
@@ -130,7 +133,7 @@ Collision, navmesh and gameplay are NOT bent (look only).
   summoning slot, mirror, corruption site, map floor and map lines, crystal ball and table glb, units. To add one, give it a
   ShaderMaterial that does `#include "res://shaders/curved_world.gdshaderinc"` and calls `curve_bend(VERTEX, MODEL_MATRIX,
   CAMERA_POSITION_WORLD)` in `vertex()`.
-- Shots: the 5th field of a `SHOTS` entry sets `curve_horizon_m` for that shot (`...:fov:1500`).
+- Shots: the 5th field of a `SHOTS` entry sets `curve_horizon_m` for that shot (over the world's own) (`...:fov:1500`).
 
 ## Painting the ground
 

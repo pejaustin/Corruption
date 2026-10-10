@@ -2,32 +2,33 @@
 ; PLACEHOLDER: the layout is the 2 km scene's scaled by the size, not designed by Austin (tuning: SIZE_TUNING in the script)
 [gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/network/multiplayer_manager.tscn" id="1_ds1g8"]
-[ext_resource type="PackedScene" path="res://scenes/menus/in_game_menu.tscn" id="2_jxm57"]
-[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="3_kmwk7"]
-[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/holy_knight.tscn" id="4_s6p6d"]
-[ext_resource type="Script" path="res://scenes/map/map_point.gd" id="5_wofib"]
-[ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="6_v670c"]
-[ext_resource type="PackedScene" path="res://scenes/world/places/holy_site.tscn" id="7_l6md0"]
-[ext_resource type="PackedScene" path="res://scenes/world/places/relic_place.tscn" id="8_aquyn"]
-[ext_resource type="Resource" path="res://data/relics/placeholder_a.tres" id="9_xdkmn"]
-[ext_resource type="Resource" path="res://data/relics/placeholder_b.tres" id="10_5nh1s"]
-[ext_resource type="PackedScene" path="res://scenes/world/places/resource_site.tscn" id="11_psrip"]
-[ext_resource type="PackedScene" path="res://scenes/actors/minion/minion_rally_point.tscn" id="12_blu21"]
-[ext_resource type="NavigationMesh" path="res://scenes/world/world_6km_navmesh.res" id="13_2s6aq"]
-[ext_resource type="PackedScene" path="res://art/world/export/world_landscape_6km.tscn" id="14_vsayu"]
-[ext_resource type="Shader" path="res://shaders/ps1_pixelated_postprocess.gdshader" id="15_ky8a2"]
-[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="16_namle"]
-[ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="17_kc7dq"]
-[ext_resource type="Script" path="res://scripts/minion_manager.gd" id="18_eh7ei"]
-[ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="19_uqhml"]
-[ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="20_suoaf"]
-[ext_resource type="Resource" path="res://data/sites/avatar_site.tres" id="21_0xc4y"]
-[ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="22_xk3op"]
-[ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="23_2nffh"]
-[ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="24_xk3gi"]
-[ext_resource type="Script" path="res://scripts/day_night.gd" id="25_lvnmi"]
-[ext_resource type="Script" path="res://scripts/good_faction.gd" id="26_dejo2"]
+[ext_resource type="PackedScene" path="res://scenes/network/multiplayer_manager.tscn" id="1_jxm57"]
+[ext_resource type="PackedScene" path="res://scenes/menus/in_game_menu.tscn" id="2_kmwk7"]
+[ext_resource type="Script" path="res://scripts/world_curve.gd" id="3_s6p6d"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_wofib"]
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/holy_knight.tscn" id="5_v670c"]
+[ext_resource type="Script" path="res://scenes/map/map_point.gd" id="6_l6md0"]
+[ext_resource type="Script" path="res://scenes/world/places/settlement.gd" id="7_aquyn"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/holy_site.tscn" id="8_xdkmn"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/relic_place.tscn" id="9_5nh1s"]
+[ext_resource type="Resource" path="res://data/relics/placeholder_a.tres" id="10_psrip"]
+[ext_resource type="Resource" path="res://data/relics/placeholder_b.tres" id="11_blu21"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/resource_site.tscn" id="12_2s6aq"]
+[ext_resource type="PackedScene" path="res://scenes/actors/minion/minion_rally_point.tscn" id="13_vsayu"]
+[ext_resource type="NavigationMesh" path="res://scenes/world/world_6km_navmesh.res" id="14_ky8a2"]
+[ext_resource type="PackedScene" path="res://art/world/export/world_landscape_6km.tscn" id="15_namle"]
+[ext_resource type="Shader" path="res://shaders/ps1_pixelated_postprocess.gdshader" id="16_kc7dq"]
+[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="17_eh7ei"]
+[ext_resource type="PackedScene" path="res://scenes/menus/win_screen.tscn" id="18_uqhml"]
+[ext_resource type="Script" path="res://scripts/minion_manager.gd" id="19_suoaf"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="20_0xc4y"]
+[ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="21_xk3op"]
+[ext_resource type="Resource" path="res://data/sites/avatar_site.tres" id="22_2nffh"]
+[ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="23_xk3gi"]
+[ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="24_lvnmi"]
+[ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="25_dejo2"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="26_dvuhw"]
+[ext_resource type="Script" path="res://scripts/good_faction.gd" id="27_a8bkb"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -49,7 +50,7 @@ volumetric_fog_albedo = Color(0.964706, 0.698039, 0.431373, 1)
 volumetric_fog_length = 50.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
-shader = ExtResource("15_ky8a2")
+shader = ExtResource("16_kc7dq")
 shader_parameter/pixel_size = 4.0
 shader_parameter/color_steps = 16
 
@@ -59,10 +60,10 @@ shader_parameter/color_steps = 16
 _spawnable_scenes = PackedStringArray("uid://cqo6h5ijp2vpo")
 spawn_path = NodePath("../World/PlayerSpawnPoint")
 
-[node name="MultiplayerManager" parent="." node_paths=PackedStringArray("_player_spawn_point") instance=ExtResource("1_ds1g8")]
+[node name="MultiplayerManager" parent="." node_paths=PackedStringArray("_player_spawn_point") instance=ExtResource("1_jxm57")]
 _player_spawn_point = NodePath("../World/PlayerSpawnPoint")
 
-[node name="InGameMenu" parent="." instance=ExtResource("2_jxm57")]
+[node name="InGameMenu" parent="." instance=ExtResource("2_kmwk7")]
 
 [node name="World" type="Node3D" parent="."]
 
@@ -77,23 +78,28 @@ directional_shadow_max_distance = 800.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere"]
 environment = SubResource("Environment_s4jie")
 
+[node name="WorldCurve" type="Node" parent="World/Atmosphere"]
+script = ExtResource("3_s6p6d")
+horizon_m = 4500.0
+eye_height_m = 200.0
+
 [node name="Env" type="Node3D" parent="World"]
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1622.3442, 42.402996, -2344.5015)
 
-[node name="Avatar" parent="World" instance=ExtResource("3_kmwk7")]
+[node name="Avatar" parent="World" instance=ExtResource("4_wofib")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.5, -12.071711, 152.70001)
 
 [node name="Enemies" type="Node3D" parent="World"]
 
-[node name="HolyKnight" parent="World/Enemies" instance=ExtResource("4_s6p6d")]
+[node name="HolyKnight" parent="World/Enemies" instance=ExtResource("5_v670c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.47, -13.26264, 163.5)
 
-[node name="HolyKnight2" parent="World/Enemies" instance=ExtResource("4_s6p6d")]
+[node name="HolyKnight2" parent="World/Enemies" instance=ExtResource("5_v670c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 281.40002, -14.230585, 156.29999)
 
-[node name="HolyKnight3" parent="World/Enemies" instance=ExtResource("4_s6p6d")]
+[node name="HolyKnight3" parent="World/Enemies" instance=ExtResource("5_v670c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 305.09998, -14.854262, 156.29999)
 
 [node name="Interactables" type="Node3D" parent="World"]
@@ -102,7 +108,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 305.09998, -14.854262, 156.29
 
 [node name="TowerEast" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1600.2041, 0.15299684, -2312.8816)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"TowerEast"
 display_name = "Naf Ishun"
 kind = 6
@@ -111,7 +117,7 @@ tower_slot = 0
 
 [node name="TowerSouth" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2084.3623, 96.047714, 1355.4991)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"TowerSouth"
 display_name = "Forest Tower"
 kind = 6
@@ -120,7 +126,7 @@ tower_slot = 1
 
 [node name="TowerWest" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1.0000001, 0, 0, 0, 1, 0, 0, 0, 1.0000001, -1889.9792, 680.0373, 2150.882)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"TowerWest"
 display_name = "Volcano Tower"
 kind = 6
@@ -129,7 +135,7 @@ tower_slot = 2
 
 [node name="TowerNorth" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1610.2712, 0.00018310547, -2363.8257)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"TowerNorth"
 display_name = "Avequel'la"
 kind = 6
@@ -138,35 +144,35 @@ tower_slot = 3
 
 [node name="RoadEast" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1053, 0.46328124, -1917)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"RoadEast"
 display_name = "Road (Naf Ishun)"
 links = Array[NodePath]([NodePath("../TowerEast"), NodePath("../Chapel"), NodePath("../SettlementSE"), NodePath("../Ford")])
 
 [node name="RoadSouth" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1620, -40.341045, 1146)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"RoadSouth"
 display_name = "Road (Forest Tower)"
 links = Array[NodePath]([NodePath("../TowerSouth"), NodePath("../AvatarSite"), NodePath("../SettlementSE"), NodePath("../Crossing")])
 
 [node name="RoadWest" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1950, 130.83905, 1140)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"RoadWest"
 display_name = "Road (Volcano Tower)"
 links = Array[NodePath]([NodePath("../TowerWest"), NodePath("../City"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Crossing")])
 
 [node name="RoadNorth" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -876, 3.86475, -1506)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"RoadNorth"
 display_name = "Road (Avequel'la)"
 links = Array[NodePath]([NodePath("../TowerNorth"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Ford")])
 
 [node name="Chapel" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 356.49, 5.4811187, -1365)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"Chapel"
 display_name = "Forest Ruins"
 kind = 4
@@ -175,7 +181,7 @@ target = NodePath("../../../SiteChapel")
 
 [node name="AvatarSite" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -523.86, -0.00022888184, 491.34)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"AvatarSite"
 display_name = "Ale Bend"
 kind = 4
@@ -184,7 +190,7 @@ target = NodePath("../../../SiteAvatar")
 
 [node name="BossSite" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1978.74, -32.060604, 152.13)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"BossSite"
 display_name = "Valley Cross"
 kind = 4
@@ -193,7 +199,7 @@ target = NodePath("../../../SiteBoss")
 
 [node name="City" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.47, -16.15839, 152.88)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"City"
 display_name = "Hopes Gate"
 kind = 3
@@ -201,7 +207,7 @@ links = Array[NodePath]([NodePath("../Chapel"), NodePath("../AvatarSite"), NodeP
 
 [node name="SettlementSE" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1134.51, -62.21626, 898.41003)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"SettlementSE"
 display_name = "Entbridge"
 kind = 2
@@ -209,7 +215,7 @@ links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadSouth"), Node
 
 [node name="SettlementNW" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -456, -8.6404915, -616.74)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"SettlementNW"
 display_name = "Teshfield"
 kind = 2
@@ -217,7 +223,7 @@ links = Array[NodePath]([NodePath("../RoadWest"), NodePath("../RoadNorth"), Node
 
 [node name="MineSE" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1269, -59.94969, 987)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"MineSE"
 display_name = "Mine (Entbridge)"
 kind = 5
@@ -225,7 +231,7 @@ links = Array[NodePath]([NodePath("../SettlementSE")])
 
 [node name="MineNW" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -561, -0.52608645, -708)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"MineNW"
 display_name = "Mine (Teshfield)"
 kind = 5
@@ -233,7 +239,7 @@ links = Array[NodePath]([NodePath("../SettlementNW")])
 
 [node name="Ford" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -852, 9.513708, -1650.2999)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"Ford"
 display_name = "Mountain Pass"
 kind = 1
@@ -242,7 +248,7 @@ links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadNorth")])
 
 [node name="Crossing" type="Marker3D" parent="World/MapPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.64, -5.7099004, 1495.92)
-script = ExtResource("5_wofib")
+script = ExtResource("6_l6md0")
 point_id = &"Crossing"
 display_name = "Lastford"
 kind = 1
@@ -253,54 +259,54 @@ links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../RoadWest")])
 
 [node name="SettlementSE" type="Node3D" parent="World/Places"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1134.51, -62.21626, 898.41003)
-script = ExtResource("6_v670c")
+script = ExtResource("7_aquyn")
 
 [node name="SettlementNW" type="Node3D" parent="World/Places"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -456, -8.6404915, -616.74)
-script = ExtResource("6_v670c")
+script = ExtResource("7_aquyn")
 
 [node name="City" type="Node3D" parent="World/Places"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.47, -16.15839, 152.88)
-script = ExtResource("6_v670c")
+script = ExtResource("7_aquyn")
 radius = 12.0
 villagers = 3
 soldiers = 0
 
-[node name="HolySite" parent="World/Places" instance=ExtResource("7_l6md0")]
+[node name="HolySite" parent="World/Places" instance=ExtResource("8_xdkmn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.47, -16.15839, 152.88)
 
-[node name="RelicAvatarSite" parent="World/Places" instance=ExtResource("8_aquyn")]
+[node name="RelicAvatarSite" parent="World/Places" instance=ExtResource("9_5nh1s")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -523.86, -0.00022888184, 500.34)
-relic = ExtResource("9_xdkmn")
+relic = ExtResource("10_psrip")
 
-[node name="RelicBossSite" parent="World/Places" instance=ExtResource("8_aquyn")]
+[node name="RelicBossSite" parent="World/Places" instance=ExtResource("9_5nh1s")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1978.74, -32.30204, 161.13)
-relic = ExtResource("10_5nh1s")
+relic = ExtResource("11_blu21")
 
-[node name="MineSE" parent="World/Places" instance=ExtResource("11_psrip")]
+[node name="MineSE" parent="World/Places" instance=ExtResource("12_2s6aq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1269, -59.94969, 987)
 
-[node name="MineNW" parent="World/Places" instance=ExtResource("11_psrip")]
+[node name="MineNW" parent="World/Places" instance=ExtResource("12_2s6aq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -561, -0.52608645, -708)
 
 [node name="Markers" type="Node3D" parent="World"]
 
-[node name="MinionRallyPoint" parent="World/Markers" instance=ExtResource("12_blu21")]
+[node name="MinionRallyPoint" parent="World/Markers" instance=ExtResource("13_vsayu")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 1590.8042, 0.15299684, -2299.4517)
 
-[node name="MinionRallyPoint2" parent="World/Markers" instance=ExtResource("12_blu21")]
+[node name="MinionRallyPoint2" parent="World/Markers" instance=ExtResource("13_vsayu")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 2084.3623, 95.55772, 1339.0991)
 
-[node name="MinionRallyPoint3" parent="World/Markers" instance=ExtResource("12_blu21")]
+[node name="MinionRallyPoint3" parent="World/Markers" instance=ExtResource("13_vsayu")]
 transform = Transform3D(-4.3711392e-08, 0, 1.0000001, 0, 1, 0, -1.0000001, 0, -4.3711392e-08, -1875.7693, 679.5073, 2159.082)
 
-[node name="MinionRallyPoint4" parent="World/Markers" instance=ExtResource("12_blu21")]
+[node name="MinionRallyPoint4" parent="World/Markers" instance=ExtResource("13_vsayu")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1601.0613, 0.00018310547, -2350.2556)
 
 [node name="Nav" type="NavigationRegion3D" parent="World"]
-navigation_mesh = ExtResource("13_2s6aq")
+navigation_mesh = ExtResource("14_ky8a2")
 
-[node name="WorldLandscape" parent="World/Nav" instance=ExtResource("14_vsayu")]
+[node name="WorldLandscape" parent="World/Nav" instance=ExtResource("15_namle")]
 
 [node name="Minions" type="Node3D" parent="World"]
 
@@ -316,35 +322,35 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="DebugOverlay" parent="CanvasLayer" instance=ExtResource("16_namle")]
+[node name="DebugOverlay" parent="CanvasLayer" instance=ExtResource("17_eh7ei")]
 
-[node name="WinScreen" parent="CanvasLayer" instance=ExtResource("17_kc7dq")]
+[node name="WinScreen" parent="CanvasLayer" instance=ExtResource("18_uqhml")]
 visible = false
 
 [node name="MinionManager" type="Node" parent="." node_paths=PackedStringArray("minions_root")]
-script = ExtResource("18_eh7ei")
+script = ExtResource("19_suoaf")
 minions_root = NodePath("../World/Minions")
-body_scene = ExtResource("19_uqhml")
+body_scene = ExtResource("20_0xc4y")
 
-[node name="SiteChapel" parent="." instance=ExtResource("20_suoaf")]
+[node name="SiteChapel" parent="." instance=ExtResource("21_xk3op")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 356.49, 5.4811187, -1365)
 
-[node name="SiteAvatar" parent="." instance=ExtResource("20_suoaf")]
+[node name="SiteAvatar" parent="." instance=ExtResource("21_xk3op")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -523.86, -0.00022888184, 491.34)
-site_type = ExtResource("21_0xc4y")
+site_type = ExtResource("22_2nffh")
 
-[node name="SiteBoss" parent="." instance=ExtResource("20_suoaf")]
+[node name="SiteBoss" parent="." instance=ExtResource("21_xk3op")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1978.74, -32.060604, 152.13)
-site_type = ExtResource("22_xk3op")
+site_type = ExtResource("23_xk3gi")
 
 [node name="GroupManager" type="Node" parent="."]
-script = ExtResource("23_2nffh")
+script = ExtResource("24_lvnmi")
 
 [node name="FieldWork" type="Node" parent="."]
-script = ExtResource("24_xk3gi")
+script = ExtResource("25_dejo2")
 
 [node name="DayNight" type="Node" parent="."]
-script = ExtResource("25_lvnmi")
+script = ExtResource("26_dvuhw")
 
 [node name="GoodFaction" type="Node" parent="."]
-script = ExtResource("26_dejo2")
+script = ExtResource("27_a8bkb")
