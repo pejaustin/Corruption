@@ -442,9 +442,9 @@ layout are unconfirmed (#606). See `art/world/README.md`.
 
 **Update 2026-10-09 (second version):** `source/world_landscape.blend` is AUSTIN'S hand-made map (original:
 `source/reference/corruption-map-original.blend`; generated blockout: `world_landscape_generated_placeholder.blend`). +Y is
-north. Ground = `geo` (authored at 2000 x 2000 m; exported at 2 km and 6 km, see README "Two sizes"; 2 km is in the game); `elder wood`, `northwood`, `Pale River`, `The Still Lake` are position guides only (not exported, Austin 2026-10-10); **every
+north. Ground = `geo` (authored at 2000 x 2000 m; exported at 2 km and 6 km, see README "Two sizes"; 2 km is in the game); `elder wood`, `northwood`, `Pale River`, `The Still Lake` are position guides only (not in the glb; their footprints grow stand-in forests and water in the size build, Austin 2026-10-10; `art/world/README.md` "Forests and water"); **every
 empty is a POI marker** (his spellings, e.g. `Avequel'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
-to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend`. Placeholder textures come from
+to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend` (exported to glb) and its Godot scene `art/world/pois/<snake>.tscn`, instanced under the marker by the size build. Placeholder textures come from
 `tools/blender/texture_austin_map.py`; the ground's texture choice is his vertex paint (`Splat` layer, `add_splat.py`, README "Painting the ground"); geometry untouched, checksummed. POI files with no marker yet: `northwood`, `old_gate`,
 `elder_woods`, `holy_site`, `graveyard`. Tower markers: empties named `Volcano Tower`, `Forest Tower` (plus the `Avequel'la` and `Naf Ishun` POI markers); see README "Tower locations". No roads or scale figure in his file.
 

@@ -29,9 +29,11 @@ const MARKER_CLEAR_M: float = 60.0
 const TREE_MAX_SLOPE: float = 0.9
 ## PLACEHOLDER: trees are grown in chunks of this many metres a side; a chunk is hidden beyond VISIBILITY_END_M[size].
 const CHUNK_M: float = 200.0
-const VISIBILITY_END_M: Dictionary[String, float] = {"400m": 500.0, "2km": 900.0, "6km": 1200.0}
+const VISIBILITY_END_M: Dictionary[String, float] = {"400m": 500.0, "2km": 1500.0, "6km": 3500.0}
 ## PLACEHOLDER: water. A lake is a flat surface LAKE_RAISE_M above the median ground height along its outline; a river
-## is a strip over the footprint, split to RIVER_EDGE_M and put RIVER_ABOVE_M over the ground (no channel is carved).
+## is a strip over the footprint, split to RIVER_EDGE_M and put RIVER_ABOVE_M over the ground (no channel is carved). The raise
+## and the offset are 2 km values: they scale with the size's height (a taller map has taller bumps in its ground), the edge
+## with its width.
 const LAKE_RAISE_M: float = 0.3
 const RIVER_EDGE_M: float = 12.0
 const RIVER_ABOVE_M: float = 0.25
@@ -43,7 +45,7 @@ var _size: String
 var _markers: Array[Vector2] = []   # his markers on this size's map (x, z)
 var _water_loops: Array[PackedVector2Array] = []
 var _tree_meshes: Array[Mesh] = []
-var _report: String = ""
+var _buffers: Dictionary[String, PackedFloat32Array] = {}   # "<forest>/<chunk>" -> the chunk's instance transforms
 
 func build(size: String, ground: Ground, markers: Array[Vector2], owner_tree: SceneTree) -> String:
 	## Returns the report line (trees, chunks, water vertices). Writes AREAS_TSCN.
@@ -93,12 +95,43 @@ func build(size: String, ground: Ground, markers: Array[Vector2], owner_tree: Sc
 		return ""
 	var text := FileAccess.get_file_as_string(path)
 	text = RegEx.create_from_string(" unique_id=[0-9]+").sub(text, "", true)
+	text = _insert_buffers(text)
 	if not text.get_slice("]", 0).contains("uid="):
 		text = RegEx.create_from_string("\\[gd_scene format=(\\d+)").sub(text, "[gd_scene format=$1 uid=\"%s\"" % scene_uid)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(GENERATED + text)
 	file.close()
 	return "%s: %d trees in %d chunks (visible to %d m), %d water vertices, %d KB" % [size, trees, chunks, int(VISIBILITY_END_M[size]), water_verts, FileAccess.get_file_as_bytes(path).size() / 1024]
+
+func _insert_buffers(text: String) -> String:
+	## Puts `buffer = PackedFloat32Array(...)` into each chunk's MultiMesh sub-resource (the saver wrote none).
+	var lines := text.split("\n")
+	var node_name := ""
+	var parent := ""
+	var ids: Dictionary[String, String] = {}   # sub-resource id -> buffer key
+	var node_re := RegEx.create_from_string("^\\[node name=\"([^\"]*)\".*parent=\"Forests/([^\"]*)\"")
+	for line in lines:
+		if line.begins_with("[node "):
+			var m := node_re.search(line)
+			node_name = m.get_string(1) if m != null else ""
+			parent = m.get_string(2) if m != null else ""
+		elif line.begins_with("multimesh = SubResource(\"") and node_name != "":
+			ids[line.get_slice("\"", 1)] = "%s/%s" % [parent, node_name]
+	var out: PackedStringArray = []
+	var current := ""
+	for line in lines:
+		if line.begins_with("[sub_resource type=\"MultiMesh\""):
+			current = line.get_slice("id=\"", 1).get_slice("\"", 0)
+		elif line.begins_with("[") or line == "":
+			if current != "" and ids.has(current):
+				var buf: PackedFloat32Array = _buffers[ids[current]]
+				var parts := PackedStringArray()
+				for f in buf:
+					parts.append(String.num(f, 3))
+				out.append("buffer = PackedFloat32Array(%s)" % ", ".join(parts))
+			current = ""
+		out.append(line)
+	return "\n".join(out)
 
 func _tree_mesh(glb: String) -> Mesh:
 	## The tree's mesh with the forest look on its leaves (forest_placeholder) and the blockout's bark on the trunk.
@@ -166,12 +199,17 @@ func _grow_forest(forests: Node3D, owner_node: Node, name: String, area: Diction
 			mm.transform_format = MultiMesh.TRANSFORM_3D
 			mm.mesh = _tree_meshes[k]
 			mm.instance_count = per_kind[k].size()
+			# (the transforms go into the scene text by hand, see _insert_buffers: a headless run has no renderer to read them back from)
+			var buffer := PackedFloat32Array()
 			for i in per_kind[k].size():
 				var at: Vector3 = per_kind[k][i]
 				var s := rng.randf_range(TREE_SCALE_MIN, TREE_SCALE_MAX)
 				var yaw := deg_to_rad(float(rng.randi() % 360))
 				var basis := Basis(Vector3.UP, yaw).scaled(Vector3(s, s, s))
-				mm.set_instance_transform(i, Transform3D(_round_basis(basis), Vector3(snappedf(at.x, 0.01), snappedf(at.y - TREE_SINK_M, 0.01), snappedf(at.z, 0.01))))
+				var b := _round_basis(basis)
+				var o := Vector3(snappedf(at.x, 0.01), snappedf(at.y - TREE_SINK_M, 0.01), snappedf(at.z, 0.01))
+				# MultiMesh's 3D layout: the 3 x 4 matrix, row by row (basis rows, then the origin's component)
+				buffer.append_array(PackedFloat32Array([b.x.x, b.y.x, b.z.x, o.x, b.x.y, b.y.y, b.z.y, o.y, b.x.z, b.y.z, b.z.z, o.z]))
 			var inst := MultiMeshInstance3D.new()
 			inst.name = "chunk_%d_%d_%s" % [key.x, key.y, ["cone", "lollipop"][k]]
 			inst.multimesh = mm
@@ -180,6 +218,7 @@ func _grow_forest(forests: Node3D, owner_node: Node, name: String, area: Diction
 			inst.visibility_range_end_margin = 40.0
 			holder.add_child(inst)
 			inst.owner = owner_node
+			_buffers["%s/%s" % [name, inst.name]] = buffer
 			trees += per_kind[k].size()
 	print("[build]   ", _size, " ", name, ": ", trees, " trees in ", keys.size(), " chunks (", snappedf(float(area["area_m2"]) / 1.0e6, 0.001), " km2)")
 	return Vector2i(trees, keys.size())
@@ -226,7 +265,7 @@ func _make_water(waters: Node3D, owner_node: Node, name: String, area: Dictionar
 			if not is_nan(g):
 				heights.append(g)
 		heights.sort()
-		level = (heights[heights.size() / 2] if not heights.is_empty() else 0.0) + LAKE_RAISE_M
+		level = (heights[heights.size() / 2] if not heights.is_empty() else 0.0) + LAKE_RAISE_M * _tall_scale()
 		for t in area["triangles"]:
 			tris.append([Vector2(verts[t[0]][0], verts[t[0]][1]), Vector2(verts[t[1]][0], verts[t[1]][1]), Vector2(verts[t[2]][0], verts[t[2]][1])])
 	var st := SurfaceTool.new()
@@ -257,7 +296,7 @@ func _make_water(waters: Node3D, owner_node: Node, name: String, area: Dictionar
 
 func _river_y(p: Vector2) -> float:
 	var g := _ground.y_at(p.x, p.y)
-	return (0.0 if is_nan(g) else g) + RIVER_ABOVE_M
+	return (0.0 if is_nan(g) else g) + RIVER_ABOVE_M * _tall_scale()
 
 func _split_river(out: Array, a: Vector2, b: Vector2, c: Vector2) -> void:
 	## Splits the triangle's longest edge at its midpoint until none is longer than RIVER_EDGE_M (scaled by the width of
@@ -283,6 +322,9 @@ func _split_river(out: Array, a: Vector2, b: Vector2, c: Vector2) -> void:
 			var m := (c + a) * 0.5
 			_split_river(out, a, b, m)
 			_split_river(out, m, b, c)
+
+func _tall_scale() -> float:
+	return {"400m": 0.2, "2km": 1.0, "6km": 5.0}[_size]
 
 func _edge_scale() -> float:
 	return {"400m": 0.2, "2km": 1.0, "6km": 3.0}[_size]

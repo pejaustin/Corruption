@@ -11,8 +11,8 @@ spellings were unconfirmed (ticket #606; Austin's spellings on his markers are n
 
 - **Ground:** `geo`, the terrain mesh (52 x 52 grid, 2000 x 2000 m, object scale (1000, 1000, 3); the 6 km export scales it, see "Two sizes").
 - **Forest and water guides:** `elder wood`, `northwood`, `Pale River`, `The Still Lake` are rough outlines of where
-  forests and water go (their X/Y only), not meshes to use (Austin, 2026-10-10). The export skips them; real forests and
-  water are still to be built.
+  forests and water go (their X/Y only), not meshes to use (Austin, 2026-10-10). The glb skips them; their footprints go to
+  `export/areas_<size>.json` and the size build grows stand-in trees and water inside them (see "Forests and water").
 - **POI markers: every empty in the landscape file is a POI marker, except tower markers (names ending in `Tower`).** Its snake_case name (lowercase, spaces to `_`,
   apostrophes dropped: `Avequel'la` -> `avequella`, `Naf Ishun` -> `naf_ishun`, `Hell's Mouth` -> `hells_mouth`) is its POI
   file `pois/<snake>.blend`. Markers: `Ale Bend`, `Avequel'la`, `Entbridge`, `far harbor`, `Forest Ruins`, `Hell's Mouth`,
@@ -42,8 +42,9 @@ memory around the origin: 6 km is 3x wide and 5x tall, 400 m is a uniform 1/5 mi
 | Source (edit these) | Generated from it (each starts with a `GENERATED` comment; never edit) |
 |---|---|
 | `source/world_landscape.blend` (ground, markers) | `export/world_landscape_<size>.glb`, all three sizes |
-| `export/world_landscape_2km.tscn` (what hangs under his markers: the four towers, `slot_index`, jump landings) | `export/world_landscape_400m.tscn`, `world_landscape_6km.tscn` |
+| `export/world_landscape_2km.tscn` (what hangs under his markers: the four towers, `slot_index`, jump landings, a `POI` under every POI marker, the `Areas` scene; the sync adds missing POIs and Areas, never removes) | `export/world_landscape_400m.tscn`, `world_landscape_6km.tscn` |
 | `scenes/world/world.tscn` (the 2 km game world and where every place is) | `scenes/world/world_400m.tscn`, `world_6km.tscn` |
+| `pois/<snake>.blend` (a place's blockout; Austin edits) and `pois/<snake>.tscn` (its Godot scene, made once, Austin edits) | `pois/export/<snake>.glb`, `export/props/*.glb`, `export/areas_<size>.json`, `export/world_areas_<size>.tscn` |
 | | `scenes/world/world_navmesh.res` (2 km, baked), `world_<size>_navmesh.res` (400 m, 6 km); `scenes/map/map_illustration[_<size>].png` |
 
 `scripts/build/build_world_sizes.gd` makes the derived scenes: the same things under the same markers (offsets from a marker
@@ -63,7 +64,10 @@ follow the size (`SIZE_TUNING`; all PLACEHOLDER, listed in `PLACEHOLDERS.md`).
 | Something under a marker (a tower, its `slot_index` or rotation) in `world_landscape_2km.tscn` | `tools/sync_world_sizes.sh --no-export` (the 2 km navmesh is rebaked, 400 m and 6 km are rebuilt) |
 | Where places, sites or points stand in `world.tscn`, or what they are | `tools/sync_world_sizes.sh --no-export --no-bake` (rebuilds only the derived scenes; the navmeshes depend on the ground, not the places) |
 | A shared scene (a tower, the map floor, a place scene) | nothing: the derived scenes instance it |
-| Tuning (`SIZE_TUNING`, the fit and walkable-slope constants in `build_world_sizes.gd`) | `tools/sync_world_sizes.sh --no-export --no-bake` |
+| A POI blockout `pois/<snake>.blend` or `props.blend` (the trees) | save it, then `tools/sync_world_sizes.sh` (exports every POI and the props again; the navmeshes are rebaked because the buildings' collision cuts them). A new POI marker in `world_landscape.blend` needs its `pois/<snake>.blend` first (duplicate `_template.blend`) |
+| The forest or water guides (`elder wood`, `northwood`, `Pale River`, `The Still Lake`) | save the map, then `tools/sync_world_sizes.sh --no-bake` (new footprints, the trees and water are regrown in all sizes; no navmesh depends on them) |
+| Godot-only things in a place (`pois/<snake>.tscn`) | nothing: the landscapes instance it |
+| Tuning (`SIZE_TUNING`, the fit and walkable-slope constants in `build_world_sizes.gd`, the tree and water constants in `world_areas.gd`) | `tools/sync_world_sizes.sh --no-export --no-bake` |
 
 `tools/sync_world_sizes.sh` needs `GODOT` (Godot 4.6; default `godot`) and, unless `--no-export`, `BLENDER` (Blender 4.5; defaults to
 the Windows install under WSL, `/Applications/Blender.app` on a Mac, else `blender`). It switches the `.blend` importer
@@ -81,6 +85,37 @@ without the towers (a tower's own navmesh carries its floor; the coarse copy of 
 jump links); 6 km's slope limits are raised by the map's extra steepness. Known at 6 km: the Volcano Tower (slot 2) stands on
 ground the mesh does not join to the rest of the map, so its units cannot walk out. Re-baking by hand: `WORLD=1 SIZE=<size> godot
 --headless --path . -s res://tools/bake_open_world_navmesh.gd`.
+
+### POI scenes
+
+Every marker that does not end in `Tower` is a POI marker; its place scene is `pois/<snake>.tscn`, an inherited scene of
+`pois/export/<snake>.glb`, which `tools/blender/export_pois.py` writes from `pois/<snake>.blend` (it never saves the .blend;
+`-noimp` objects, the `Reference` collection and the starter's round `ground` patch are skipped, `-col` meshes become
+`-colonly` (Godot: a static trimesh body, mesh dropped) with the ground slab of the collision proxy cut from the exported copy,
+`site` / `spawn` empties arrive as plain nodes, instanced props like the fences are kept). The scene's materials come from
+`pois/poi_post_import.gd` (set in each glb's `.import`; `mat_<texture>` -> `materials/poi/mat_<texture>.tres`, shader
+`shaders/poi_uv.gdshader`, curved like the ground). `build_world_sizes.gd` creates a missing `pois/<snake>.tscn` once (never
+rewritten: add Godot-only things there, such as lights, sounds or sites) and adds `POI` under the marker in
+`export/world_landscape_2km.tscn` when it is missing (idempotent; never removes what you placed). The other sizes copy those
+instances: POIs keep their real size at every scale, like towers. Consequences, all PLACEHOLDER (`PLACEHOLDERS.md`):
+anything within 60 m of a marker keeps its real offset from it; a POI closer than 60 m to a tower on another marker is left out of
+that size (400 m: Hell's Mouth); Avequel'la and Naf Ishun carry a tower and a POI, and the POI's buildings stand around the
+tower's base (the castle's collision is 54 x 46 m, the tower's footprint about 58 x 38 m: they overlap). No `.gdignore` for the
+`.blend` files in `pois/`: it would hide the scenes and glbs too (`source/` is `.gdignore`d); with the Blender importer on,
+Godot imports them as unused scenes, as it does `assets/world/env/table.blend`. The POI collision is parsed by the navmesh
+bake, so units walk around buildings.
+
+### Forests and water
+
+`export_landscape.py` writes each guide's footprint (x, z in that size's metres, its triangles and outline loops) to
+`export/areas_<size>.json`; `scripts/build/world_areas.gd` (run by the size build) writes `export/world_areas_<size>.tscn`,
+which each landscape instances as `Areas`: `Forests/<guide>/chunk_*` (a MultiMeshInstance3D per 200 m chunk and tree kind, trees
+standing on the ground) and `Waters/<guide>` (a lake: flat surface over the low ground; a river, any water guide named `*River*`: a
+strip draped on the ground; no channel is carved). Trees have no collision (units walk through them) and the water none (units
+wade through it): the navmeshes do not depend on them. Counts (2 km / 6 km): 6,677 / 61,711 trees (`elder wood` 4,412 / 40,640,
+`northwood` 2,265 / 21,071; 400 m: 42), in 33 / 208 chunks, hidden beyond 1500 m / 3500 m (no far stand-in yet: from the
+towers a forest more than that away is bare ground). The generated scene is 0.8 MB at 2 km, 5.4 MB at 6 km (the transforms are
+written by hand into the scene text, because a headless Godot has no renderer to read them back from).
 
 ## Godot export (`tools/blender/export_landscape.py`)
 
@@ -230,8 +265,8 @@ the ground is steep), are placeholders.
 |---|---|---|
 | TowerEast / South / West / North | slot 0 Naf Ishun, 1 Forest Tower, 2 Volcano Tower, 3 Avequel'la (at each tower's courier spawn) | yes |
 | City, HolySite, Places/City | Hopes Gate | yes |
-| SettlementSE, SettlementNW | Entbridge, Teshfield | yes |
-| Chapel (SiteChapel), AvatarSite (SiteAvatar), BossSite (SiteBoss) | Forest Ruins, Ale Bend, Valley Cross | yes |
+| SettlementSE, SettlementNW | Entbridge, Teshfield | yes, 16 m and 12 m off (out of the POI's buildings) |
+| Chapel (SiteChapel), AvatarSite (SiteAvatar), BossSite (SiteBoss, RelicBossSite) | Forest Ruins (6 m east), Ale Bend, Valley Cross (22 m north) | yes |
 | Ford, Crossing | Mountain Pass (20 m east of his marker, at the foot of the pass), Lastford | yes |
 | RoadEast / South / West / North | between each tower and its nearest place, by eye | no |
 | MineSE, MineNW | ~55 m from Entbridge and Teshfield | no |
