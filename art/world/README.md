@@ -48,6 +48,10 @@ materials by name.
   the script = a scratch `.glb` path.
 - **Collision:** only `geo`, set in the `.glb.import` (`PATH:geo`: generate physics, static body, trimesh), not by renaming.
   Forests and water are flat patches and have none.
+- **Inherited scene:** `export/world_landscape.tscn` inherits the glb (Scene > New Inherited Scene, as
+  `docs/technical/3d-asset-pipeline.md` asks: gameplay never instances the raw import). Things tied to a marker live here as
+  its children, so they follow the marker: a `Tower` under `Volcano Tower`, `Forest Tower`, `Avequel'la`, `Naf Ishun`.
+  Renaming or deleting a marker in Blender drops what hangs under it (Godot warns on load).
 - **Scene:** `scenes/world/open_world/open_world.tscn` (a `NavigationRegion3D` around the glb, sun, sky, fog; all
   PLACEHOLDER). The navmesh `open_world_navmesh.res` is baked from `geo`'s collision by
   `godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (agent height as in `world.tscn`; cell size 1 m and
