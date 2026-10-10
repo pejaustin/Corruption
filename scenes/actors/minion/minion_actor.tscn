@@ -36,7 +36,7 @@ target_desired_distance = 1.5
 ; mesh sits up to ~1 m off the ground in places, so a waypoint counts as reached within 2.5 m (the default 1 m made
 ; units oscillate at a spot where the path's first point was 1 m below them)
 path_desired_distance = 2.5
-path_search_max_polygons = 32768
+path_search_max_polygons = 65536
 avoidance_enabled = true
 neighbor_distance = 8.0
 max_neighbors = 8

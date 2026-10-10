@@ -109,7 +109,7 @@ path_desired_distance = 2.0
 target_desired_distance = 0.5
 path_max_distance = 3.0
 ; PLACEHOLDER: tuning — the 2 km map's navmesh has ~24k polygons; the default 4096 gave up on long routes
-path_search_max_polygons = 32768
+path_search_max_polygons = 65536
 
 [node name="AvatarAI" type="Node" parent="." index="11" unique_id=1422890772]
 script = ExtResource("14_ai")

@@ -34,7 +34,7 @@ const ASSESS_SECONDS: float = 20.0
 ## Units this close to a map point put it on the map when they report.
 ## PLACEHOLDER: tuning — how many navmesh polygons a path search may visit before giving up; more than the 2 km
 ## map's navmesh has (~24k), so a search never stops short of a reachable place.
-const PATH_SEARCH_POLYGONS: int = 32768
+const PATH_SEARCH_POLYGONS: int = 65536
 const DISCOVER_RADIUS: float = 25.0
 ## How often groups at their tower report what the tower can see.
 const HOME_REPORT_INTERVAL: float = 2.0

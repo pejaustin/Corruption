@@ -24,7 +24,7 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 |---|---|---|---|
 | World blockout: the whole landscape (heights, mountains, rivers, roads, forests, coast), the stand-in shape of every place, the props and the 32 px textures, all read off the sketch by eye | The world's real geography and art | `art/world/` (see its README), generators in `tools/blender/` | #604 |
 | Textures on Austin's hand-made map: `geo` is vertex-painted (`Splat` layer: black grass, red rock, green dirt, blue sand; the channel -> texture mapping and the 50% threshold are guesses, seeded from the old height / slope look); `Pale River` and `The Still Lake` water; `elder wood` and `northwood` darkened `leaf_pine` (no forest texture exists); nearest-filtered, 8 m tile size is a guess | His real ground art | `art/world/source/world_landscape.blend`, `tools/blender/add_splat.py`, `tools/blender/texture_austin_map.py` | #604 |
-| Open-world scene: sun, sky and fog, and the navmesh tuning (2 km: 1 m cells, climb 1 m, vertices put on the ground and edges split (40 m flat, down to 8 m on slopes; ~30k triangles), agents search 32768 polygons and reach a waypoint within 2.5 m; 6 km: 2 m cells, climb 2 m; agent radius 0.5 m, height 0.4 m (climb >= cell x tan(slope) or slopes split the mesh), walkable on `geo` and tower floors) | The world's real lighting and nav settings | `scenes/world/open_world/open_world_<size>.tscn`, `open_world_<size>_navmesh.res`, `tools/bake_open_world_navmesh.gd` | #605 |
+| Open-world scene: sun, sky and fog, and the navmesh tuning (2 km: 1 m cells, climb 1 m, vertices put on the ground and edges split (40 m flat, down to 8 m on slopes; ~30k triangles), agents search 65536 polygons and reach a waypoint within 2.5 m; 6 km: 1.5 m cells (1.25 and finer make the bake fail), climb 1.5 m, slope limits scaled with the map's extra steepness, baked without the towers like 400 m (0.5 m cells); agent radius 0.5 m, height 0.4 m (climb >= cell x tan(slope) or slopes split the mesh), walkable on `geo` and tower floors) | The world's real lighting and nav settings | `scenes/world/open_world/open_world_<size>.tscn`, `open_world_<size>_navmesh.res`, `tools/bake_open_world_navmesh.gd` | #605 |
 | Godot ground shader and water/forest materials: the splat channel mapping, 50% threshold and 8 m tile | His real ground art | `shaders/world_ground.gdshader`, `art/world/materials/` | #605 |
 | Curved world: horizon 1500 m, eye height 40 m (R = horizon^2 / (2 x eye height)), and the whole look of the bend | How far the world curves away, or whether it does | `project.godot` `[shader_globals]` (`curve_horizon_m`, `curve_eye_height_m`), `shaders/curved_world.gdshaderinc` | |
 | World size, 2000 m x 1500 m | The real world scale, decided by the scale test | `tools/blender/world_data.py` `WORLD_W/WORLD_H`, `world_root` in `world_landscape.blend` | #603 |
@@ -120,9 +120,29 @@ Numbers I changed so the old tuning fits the 2 km map; none is designed (playtes
 |---|---|---|---|
 | Balcony lookout far plane | 3500 m | 1500 m | `scenes/interactibles/balcony.tscn` |
 | Sun shadow distance | 400 m | 100 m (default) | `scenes/world/world.tscn` `DirectionalLight3D` |
-| Map floor: enemy sightings sharing one piece | 80 m | 15 m | `scenes/map/map_floor.gd` `ENEMY_CLUSTER` |
+| Map floor: enemy sightings sharing one piece | 4% of the world's width (80 m at 2 km) | 15 m | `scenes/map/map_floor.gd` `ENEMY_CLUSTER_FRACTION` |
 | Map floor: the world rectangle it shows | 2000 x 2000 m | 360 x 360 m | `scenes/map/map_floor.gd` `world_rect` |
-| Navmesh polygons a path search may visit | 32768 | 4096 (engine default) | `group_manager.gd` `PATH_SEARCH_POLYGONS`, minion and avatar agents |
+| Navmesh polygons a path search may visit | 65536 (the 6 km mesh has ~63k) | 4096 (engine default) | `group_manager.gd` `PATH_SEARCH_POLYGONS`, minion and avatar agents |
 | Navigation map: edge connection margin and link connection radius | 2 m, 2.5 m | 0.25 m, 1 m (engine defaults) | `project.godot` `[navigation]` |
 | Each tower's jump-off link (summoned units jump from the balcony to the ground) lands at the ground below that tower | per tower | 40 m below the balcony | `art/world/export/world_landscape_2km.tscn` `JumpPoint` overrides |
 | Waypoint reached within (the navmesh sits up to ~1 m off the ground) | 2.5 m minions, 2 m Avatar | 1 m, 0.5 m | `minion_actor.tscn`, `avatar_actor.tscn` `path_desired_distance` |
+
+## Tuning (400 m and 6 km game worlds, Austin, 2026-10-10)
+
+`scenes/world/world_400m.tscn` and `world_6km.tscn` are built from the 2 km scenes by `scripts/build/build_world_sizes.gd` (see
+`art/world/README.md`, "Sizes"): the layout is the 2 km one scaled around the origin (400 m: 0.2 wide, 0.2 tall; 6 km: 3 wide,
+5 tall), placed on that size's ground. None of it is designed; the numbers are mine.
+
+| Value | 400 m | 2 km | 6 km | Where |
+|---|---|---|---|---|
+| Sun shadow distance | 200 m | 400 m | 800 m | `SIZE_TUNING` in `build_world_sizes.gd` |
+| Balcony lookout far plane | 800 m | 3500 m | 10500 m | `SIZE_TUNING`, set per tower in `world_landscape_<size>.tscn` |
+| Map floor rectangle and picture | 400 x 400 m | 2000 x 2000 m | 6000 x 6000 m | `MapFloor.world_rect`, `illustration` per tower in `world_landscape_<size>.tscn`; picture by `tools/bake_map_illustration.gd` |
+| A tower that does not fit the smaller or steeper ground (its gate off the ground, or its units cannot walk out) is turned in 15 degree steps; the yaw is the 2 km placeholder anyway | | | | `_turn_to_fit` in `build_world_sizes.gd`, `YAW_STEP_DEGREES`, `FIT_*` |
+| Roads, mines and the Avatar, which are not on his markers, move off ground steeper than 0.45 | | | | `_walkable_spot` in `build_world_sizes.gd` |
+| Anything within 100 m of a tower (2 km coordinates) keeps its offset from the tower instead of scaling | | | | `TOWER_BOUND_M` |
+| Camera far plane of the overlord and Avatar | engine default (4000 m) at every size | | | their camera scenes (not scaled) |
+
+Known: at 6 km the Volcano Tower (slot 2) stands on ground the baked mesh does not connect to the rest of the map, so units
+summoned there cannot walk out (`test_world_layout` fails two checks for it); no yaw fixes it.
+

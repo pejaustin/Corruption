@@ -22,6 +22,8 @@ signal selection_changed
 ## The part of the world the floor depicts (x, z).
 ## PLACEHOLDER: the whole of Austin's 2 km map (the picture is tools/bake_map_illustration.gd's).
 @export var world_rect: Rect2 = Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
+## The floor's picture of that part of the world (the 2 km one here; the other world sizes' landscape scenes set theirs).
+@export var illustration: Texture2D
 ## Authored scenes the floor instances: a marker per known point, a piece per
 ## reported group (the Paladin has his own), and the route and ink ribbons.
 @export var marker_scene: PackedScene
@@ -39,9 +41,9 @@ const STEP_RADIUS: float = 0.45
 const INK_SECONDS: float = 3.0
 ## Reports older than this (seconds) make a piece "old news" (never missing).
 const STALE_SECONDS: float = 90.0
-## Enemy sightings closer than this (world metres) share one piece. PLACEHOLDER: tuning — was 15 m on the
-## 360 m map; scaled with the floor (14 m for 2 km).
-const ENEMY_CLUSTER: float = 80.0
+## Enemy sightings closer than this share one piece, as a fraction of the world's width (so the same on the floor at every
+## world size). PLACEHOLDER: tuning — was 15 m on the 360 m map; 0.04 is 80 m on the 2 km map (14 m of floor).
+const ENEMY_CLUSTER_FRACTION: float = 0.04
 const REFRESH_INTERVAL: float = 0.2
 const HEIGHT: float = 0.02
 
@@ -352,7 +354,7 @@ func _enemy_clusters(m: WorldModel) -> Array[Dictionary]:
 		var owner := int(e.get("owner_peer_id", -1))
 		var merged := false
 		for c in out:
-			if int(c["owner"]) == owner and (c["pos"] as Vector3).distance_to(pos) <= ENEMY_CLUSTER and uid != KnowledgeManager.AVATAR_ID and int(c["id"]) != KnowledgeManager.AVATAR_ID:
+			if int(c["owner"]) == owner and (c["pos"] as Vector3).distance_to(pos) <= world_rect.size.x * ENEMY_CLUSTER_FRACTION and uid != KnowledgeManager.AVATAR_ID and int(c["id"]) != KnowledgeManager.AVATAR_ID:
 				c["count"] = int(c["count"]) + 1
 				c["tick"] = maxi(int(c["tick"]), int(e.get("tick", 0)))
 				merged = true
@@ -517,6 +519,7 @@ static func _set_line(mi: MeshInstance3D, pts: Array[Vector3], width: float) -> 
 # --- The floor itself ---
 
 func _fit_floor() -> void:
-	## The plane, its material and its picture are authored in map_floor.tscn;
-	## this only sizes the plane to floor_size.
+	## The plane and its material are authored in map_floor.tscn;
+	## this sizes the plane to floor_size and puts `illustration` on its material (the material is local to the scene).
 	(_illustration_plane.mesh as PlaneMesh).size = Vector2(floor_size, floor_size)
+	(_illustration_plane.material_override as StandardMaterial3D).albedo_texture = illustration
