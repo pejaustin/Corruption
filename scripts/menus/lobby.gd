@@ -5,7 +5,7 @@ extends Control
 ## Manages name/faction/ready state across peers and gates a synchronized
 ## game start. MVP: everyone plays Undead (GDD §1), so the faction picker shows
 ## only Undead; per-player faction ids stay so more factions can come later.
-## The host picks the match pace (MatchConfig, GDD Q31). CPU slots are host-controlled bots that fill empty seats —
+## The host picks the match pace (MatchConfig, GDD Q31) and the world size (400 m, 2 km, 6 km). CPU slots are host-controlled bots that fill empty seats —
 ## on START they're spawned as dummy players (see DebugManager.spawn_lobby_cpus)
 ## and inherit the lobby's chosen faction + name via GameState.
 
@@ -27,12 +27,15 @@ var player_ready: Dictionary[int, bool] = {}
 @onready var _start_button: Button = %StartButton
 @onready var _pace_selector: OptionButton = %PaceSelector
 @onready var _pace_label: Label = %PaceLabel
+@onready var _world_size_selector: OptionButton = %WorldSizeSelector
+@onready var _world_size_label: Label = %WorldSizeLabel
 @onready var _add_cpu_button: Button = %AddCpuButton
 @onready var _back_button: Button = %BackButton
 @onready var _host_ip_label: Label = %HostIPLabel
 
 var _panels: Dictionary[int, PlayerPanel] = {}
 var match_pace: int = MatchConfig.Pace.NORMAL
+var world_size: int = MatchConfig.WorldSize.NORMAL
 
 func _ready() -> void:
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -46,6 +49,7 @@ func _ready() -> void:
 	_add_cpu_button.visible = multiplayer.is_server()
 	_host_ip_label.visible = multiplayer.is_server()
 	_setup_pace_controls()
+	_setup_world_size_controls()
 
 	if multiplayer.is_server():
 		_connect_upnp_label()
@@ -265,6 +269,7 @@ func _request_sync() -> void:
 		sender = 1
 	_sync_all_state.rpc_id(sender, player_factions, player_names, player_ready)
 	_set_pace.rpc_id(sender, match_pace)
+	_set_world_size.rpc_id(sender, world_size)
 
 @rpc("authority", "call_local", "reliable")
 func _sync_all_state(factions: Dictionary, names: Dictionary, ready: Dictionary) -> void:
@@ -363,6 +368,7 @@ func _on_start_pressed() -> void:
 	GameState.sync_player_factions.rpc(player_factions)
 	GameState.sync_player_names.rpc(player_names)
 	GameState.sync_match_pace.rpc(match_pace)
+	GameState.sync_world_size.rpc(world_size)
 	_begin_game.rpc()
 
 @rpc("authority", "call_local", "reliable")
@@ -398,6 +404,35 @@ func _show_pace() -> void:
 		_pace_selector.select(_pace_selector.get_item_index(match_pace))
 	if _pace_label.visible:
 		_pace_label.text = "Pace: %s" % MatchConfig.PACE_NAMES.get(match_pace, "?")
+
+# --- world size ---
+
+func _setup_world_size_controls() -> void:
+	## As the pace's: both controls are authored beside the Start button, the host gets the picker, clients a label.
+	if multiplayer.is_server():
+		for size in MatchConfig.WORLD_SIZE_NAMES:
+			_world_size_selector.add_item("World: %s" % MatchConfig.WORLD_SIZE_NAMES[size], size)
+		_world_size_selector.item_selected.connect(_on_world_size_selected)
+		_world_size_selector.visible = true
+	else:
+		_world_size_label.visible = true
+	_show_world_size()
+
+func _on_world_size_selected(index: int) -> void:
+	if not multiplayer.is_server():
+		return
+	_set_world_size.rpc(_world_size_selector.get_item_id(index))
+
+@rpc("authority", "call_local", "reliable")
+func _set_world_size(size: int) -> void:
+	world_size = size
+	_show_world_size()
+
+func _show_world_size() -> void:
+	if _world_size_selector.visible:
+		_world_size_selector.select(_world_size_selector.get_item_index(world_size))
+	if _world_size_label.visible:
+		_world_size_label.text = "World: %s" % MatchConfig.WORLD_SIZE_NAMES.get(world_size, "?")
 
 # --- back ---
 

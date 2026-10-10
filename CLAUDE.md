@@ -11,7 +11,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Game type:** 4-player PvP Dark Lord simulator — 3D third-person (Avatar) + 3D first-person (Overlords)
 - **Scripting language:** GDScript only
 - **Target platforms:** Desktop
-- **Entry scene:** `scenes/world/world.tscn` (loaded as `NetworkManager.GAME_SCENE`; project main scene is `scenes/menus/main_menu.tscn`)
+- **Entry scene:** `scenes/world/world.tscn`, the 2 km world; the host picks 400 m / 2 km / 6 km in the lobby (`GameState.world_size`, `MatchConfig.WORLD_SCENES`; the other two are generated, see `art/world/README.md` "Sizes"). Project main scene is `scenes/menus/main_menu.tscn`
 - **Key autoloads:** `NetworkManager`, `DebugManager`, plus netfox autoloads (`NetworkTime`, `NetworkRollback`, etc.)
 - **Game constants:** `scripts/game_constants.gd` — Factions enum, MAX_PLAYERS, GOOD_SIDE, seat colours; match pace in `scripts/match_config.gd`
 - **Full overview:** `docs/one-pager.md`
@@ -635,7 +635,8 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - `GameState.get_player_color(peer)` — seat colour (by tower slot); `get_player_name(peer)`.
 - `GameState.get_held_sites(peer)` / `count_held_sites(peer)` / `has_capability(peer, cap)` — see Corruption sites.
 - `GameState.match_pace` (`MatchConfig.Pace`, picked by the host in the lobby) scales unit speed and the good
-  faction's growth clock.
+  faction's growth clock. `GameState.world_size` (`MatchConfig.WorldSize`, picked beside it) decides which world scene loads
+  (`MatchConfig.world_scene()`); tests and the shot rig take `WORLD_SIZE=400m|2km|6km`.
 - `GameState.avatar_owner_peer_id` (-1 = the good faction has him) and `avatar_peer_id` (controller, -1 = AI-driven).
   `request_possess_avatar()` (owner only, from a Palantir) / `request_recall_avatar()` (Q in his body);
   `set_avatar_owner(peer)` on the host (also drops the controller). Ownership moves only through `PaladinHold` and

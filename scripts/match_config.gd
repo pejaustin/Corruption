@@ -12,6 +12,24 @@ const PACE_NAMES: Dictionary[int, String] = {
 	Pace.SLOW: "Slow (4–5 h)",
 }
 
+## World size (Austin, 2026-10-10): the same map at three sizes, picked by the host in the lobby like the pace;
+## GameState.world_size holds it for the match. 2 km is Austin's map as authored; 400 m is a miniature for quick tests
+## and 6 km a larger one for getting a sense of distance (art/world/README.md, "Sizes").
+enum WorldSize { SMALL, NORMAL, LARGE }
+
+const WORLD_SIZE_NAMES: Dictionary[int, String] = {
+	WorldSize.SMALL: "400 m (quick test)",
+	WorldSize.NORMAL: "2 km",
+	WorldSize.LARGE: "6 km",
+}
+
+## The game world scene per size (the 400 m and 6 km ones are generated: scripts/build/build_world_sizes.gd).
+const WORLD_SCENES: Dictionary[int, String] = {
+	WorldSize.SMALL: "res://scenes/world/world_400m.tscn",
+	WorldSize.NORMAL: "res://scenes/world/world.tscn",
+	WorldSize.LARGE: "res://scenes/world/world_6km.tscn",
+}
+
 ## PLACEHOLDER: tuning, not designed — unit move-speed multiplier per pace.
 const UNIT_SPEED: Dictionary[int, float] = {
 	Pace.NORMAL: 1.0,
@@ -30,6 +48,20 @@ static func unit_speed_multiplier() -> float:
 
 static func good_growth_interval() -> float:
 	return GOOD_GROWTH_INTERVAL.get(GameState.match_pace, 360.0)
+
+## The size names the tools use (WORLD_SIZE=400m|2km|6km): the same three sizes.
+const WORLD_SIZE_BY_NAME: Dictionary[String, int] = {
+	"400m": WorldSize.SMALL,
+	"2km": WorldSize.NORMAL,
+	"6km": WorldSize.LARGE,
+}
+
+static func world_scene_named(size_name: String) -> String:
+	## The world scene for a tool's size name; an empty or unknown name is the 2 km world.
+	return WORLD_SCENES[WORLD_SIZE_BY_NAME.get(size_name, WorldSize.NORMAL)]
+
+static func world_scene() -> String:
+	return WORLD_SCENES.get(GameState.world_size, WORLD_SCENES[WorldSize.NORMAL])
 
 ## Each player starts with a ruined tower, the advisor, a few couriers and one
 ## small group of troops, and no sites (GDD §2, Q38).

@@ -94,6 +94,17 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
+; The host picks the world size (400 m, 2 km, 6 km); clients see it (the script shows one of the two).
+[node name="WorldSizeSelector" type="OptionButton" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="WorldSizeLabel" type="Label" parent="VBoxContainer/ButtonRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
 [node name="StartButton" type="Button" parent="VBoxContainer/ButtonRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 0)

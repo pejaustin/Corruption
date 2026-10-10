@@ -6,15 +6,16 @@ extends Node
 ## to SHOT_DIR (default user://shots). Run windowed (not --headless):
 ##   SHOTS="tower:0,60,0:0,40,0" godot --path . res://tools/shots/shot.tscn
 
-const WORLD: String = "res://scenes/world/world.tscn"
-## WORLD=res://scenes/world/open_world/open_world_2km.tscn shoots that scene instead; SHOT_FAR sets the camera far plane.
+## WORLD_SIZE=400m|2km|6km shoots that size's game world (default 2 km); WORLD=res://scenes/world/open_world/open_world_2km.tscn
+## shoots that scene instead; SHOT_FAR sets the camera far plane.
 
 func _ready() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
 	NetworkManager.is_hosting_game = true
-	var world: Node = (load(OS.get_environment("WORLD") if OS.get_environment("WORLD") != "" else WORLD) as PackedScene).instantiate()
+	var world_path := OS.get_environment("WORLD") if OS.get_environment("WORLD") != "" else MatchConfig.world_scene_named(OS.get_environment("WORLD_SIZE"))
+	var world: Node = (load(world_path) as PackedScene).instantiate()
 	get_tree().root.add_child(world)
 	get_tree().current_scene = world
 	var settle := float(OS.get_environment("SHOT_SETTLE")) if OS.get_environment("SHOT_SETTLE") != "" else 3.0

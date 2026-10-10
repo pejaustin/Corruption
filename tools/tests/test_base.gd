@@ -7,8 +7,7 @@ extends Node
 ## Exit code is the number of failed checks.
 
 const WORLD: String = "res://scenes/world/world.tscn"
-## WORLD_SIZE=400m|6km runs the test on that size's world (world_<size>.tscn); the default is the 2 km world.
-const WORLD_SIZE_SCENE: String = "res://scenes/world/world_%s.tscn"
+## WORLD_SIZE=400m|6km runs the test on that size's world (MatchConfig.WORLD_SCENES); the default is the 2 km world.
 
 var failures: int = 0
 var checks: int = 0
@@ -29,8 +28,7 @@ func load_world() -> Node:
 	## The world is added beside this runner (not swapped in for it) so the
 	## runner survives; game code finds it through current_scene as usual.
 	NetworkManager.is_hosting_game = true
-	var size := OS.get_environment("WORLD_SIZE")
-	var world: Node = (load(WORLD if size == "" or size == "2km" else WORLD_SIZE_SCENE % size) as PackedScene).instantiate()
+	var world: Node = (load(MatchConfig.world_scene_named(OS.get_environment("WORLD_SIZE"))) as PackedScene).instantiate()
 	get_tree().root.add_child(world)
 	get_tree().current_scene = world
 	# The real game starts netfox's clock when a match begins; actors' display

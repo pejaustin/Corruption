@@ -52,6 +52,8 @@ var player_slots: Dictionary[int, int] = {}
 var route_point_bonus: Dictionary[int, int] = {}
 ## Match pace (MatchConfig.Pace), chosen by the host in the lobby.
 var match_pace: int = MatchConfig.Pace.NORMAL
+## World size (MatchConfig.WorldSize), chosen by the host in the lobby; decides which world scene loads.
+var world_size: int = MatchConfig.WorldSize.NORMAL
 
 func is_avatar(peer_id: int) -> bool:
 	return avatar_peer_id == peer_id
@@ -346,6 +348,10 @@ func sync_player_names(names: Dictionary) -> void:
 func sync_match_pace(pace: int) -> void:
 	match_pace = pace
 
+@rpc("authority", "call_local", "reliable")
+func sync_world_size(size: int) -> void:
+	world_size = size
+
 func get_route_point_bonus(peer_id: int) -> int:
 	return route_point_bonus.get(peer_id, 0)
 
@@ -370,3 +376,4 @@ func reset() -> void:
 	player_slots.clear()
 	route_point_bonus.clear()
 	match_pace = MatchConfig.Pace.NORMAL
+	world_size = MatchConfig.WorldSize.NORMAL

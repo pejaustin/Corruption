@@ -4,6 +4,7 @@ extends Node
 # IMPORTANT:
 # Variables like is_hosting_game must be reset upon exiting to main menu after a game has been played.
 
+## The default (2 km) game world; the lobby's world size picks the scene that loads (MatchConfig.world_scene()).
 const GAME_SCENE: String = "res://scenes/world/world.tscn"
 const LOBBY_SCENE: String = "res://scenes/menus/lobby.tscn"
 const MAIN_MENU_SCENE: String = "res://scenes/menus/main_menu.tscn"
@@ -88,9 +89,10 @@ func _load_game_scene() -> void:
 	# Runtime load (not preload) so a missing/broken world.tscn at export time
 	# fails here with a clear error, instead of nil-ing the whole autoload at
 	# parse time.
-	var scene: PackedScene = load(GAME_SCENE)
+	var path: String = MatchConfig.world_scene()   # the host's choice in the lobby (GameState.world_size); 2 km by default
+	var scene: PackedScene = load(path)
 	if scene == null:
-		push_error("NetworkManager: failed to load %s — check addon export filters" % GAME_SCENE)
+		push_error("NetworkManager: failed to load %s — check addon export filters" % path)
 		return
 	get_tree().call_deferred(&"change_scene_to_packed", scene)
 
