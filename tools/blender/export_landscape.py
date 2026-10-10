@@ -1,7 +1,10 @@
 """Export Austin's map (art/world/source/world_landscape.blend) to art/world/export/world_landscape.glb for Godot.
 Blender 4.5, background. NEVER SAVES the .blend: it opens it, exports, prints a checksum and quits.
 Usage: blender.exe -b <world_landscape.blend> --python tools/blender/export_landscape.py -- <repo_root>
-Optional 2nd arg: output .glb path (scratch tests). Blender +Y (north) becomes Godot -Z (glTF Y-up conversion).
+Optional 2nd arg: `2km` (default) or `6km` (writes export/world_landscape_<size>.glb), or an output .glb path (scratch).
+Sizes (Austin, 2026-10-10: keep both, 2 km in the game for now): the .blend is authored at 2 km; `6km` scales it in memory
+around the world origin, 3x wide and 5x tall (positions of every root object, and the scale of every mesh; empties keep
+scale 1 so things hung under markers keep their size). Blender +Y (north) becomes Godot -Z (glTF Y-up conversion).
 Exported: the ground `geo` and every empty (POI and tower markers, Austin's spellings as node names). Other meshes
 (`elder wood`, `northwood`, `Pale River`, `The Still Lake`) are Austin's rough position guides for where forests and
 water go, not meshes to use (Austin, 2026-10-10), so they stay in Blender only. Vertex colour on geo: Splat and Col
@@ -17,7 +20,9 @@ import numpy as np
 
 _a = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else ["."]
 root = _a[0]
-out = _a[1] if len(_a) > 1 else os.path.join(root, "art/world/export/world_landscape.glb")   # optional 2nd arg: scratch .glb
+SIZES = {"2km": (1.0, 1.0), "6km": (3.0, 5.0)}   # (wide, tall) factors over the authored 2 km map
+size = _a[1] if len(_a) > 1 and _a[1] in SIZES else "2km"
+out = _a[1] if len(_a) > 1 and _a[1] not in SIZES else os.path.join(root, "art/world/export/world_landscape_%s.glb" % size)
 out_dir = os.path.dirname(out)
 os.makedirs(out_dir, exist_ok=True)
 
@@ -65,6 +70,19 @@ if "Splat" in gme.color_attributes and "Col" in gme.color_attributes:
     print("PACKED Splat -> COLOR_0, Col -> UV/UV2")
 else:
     print("WARNING: geo has no Splat / Col; run tools/blender/add_splat.py")
+# Size preset, in memory only (undone after the export so the checksum below still compares like with like).
+from mathutils import Vector
+SX, SZ = SIZES[size]
+_saved = {o.name: (o.location.copy(), o.scale.copy()) for o in bpy.data.objects}
+def rescale(fx, fz):
+    for o in bpy.data.objects:
+        if o.parent is None:
+            o.location = Vector((o.location.x * fx, o.location.y * fx, o.location.z * fz))
+            if o.type != "EMPTY":
+                o.scale = Vector((o.scale.x * fx, o.scale.y * fx, o.scale.z * fz))
+rescale(SX, SZ)
+bpy.context.view_layer.update()
+print("SIZE", size, SX, SZ)
 # Only geo and the markers; guide meshes (forest / water outlines) are not exported (Austin, 2026-10-10).
 for o in bpy.data.objects:
     o.select_set(o.name == "geo" or o.type == "EMPTY")
@@ -76,6 +94,9 @@ bpy.ops.export_scene.gltf(
     export_texcoords=True, export_normals=True, export_cameras=False, export_lights=False,
     export_animations=False, export_extras=False)
 
+for o in bpy.data.objects:   # restore exactly (no float round trip)
+    o.location, o.scale = _saved[o.name]
+bpy.context.view_layer.update()
 after = checksum()
 print("EXPORTED", out, os.path.getsize(out), "bytes")
 print("GEOMETRY_AND_NAMES_UNCHANGED", before == after, digest(before), digest(after))

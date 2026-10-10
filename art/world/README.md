@@ -9,7 +9,7 @@ spellings were unconfirmed (ticket #606; Austin's spellings on his markers are n
 `source/world_landscape.blend` is **Austin's own hand-made map** (`corruption-map.blend`), not the generated blockout.
 **+Y is north** (he rotated it); 1 unit = 1 m. His objects, spelled as he typed them:
 
-- **Ground:** `geo`, the terrain mesh (52 x 52 grid; 6000 x 6000 m, object scale (3000, 3000, 15), heights about -310 to 770 m. Scaled 3x wide and 5x tall around the world origin on 2026-10-10 at Austin's request, markers moved with it at scale 1; was 2000 m).
+- **Ground:** `geo`, the terrain mesh (52 x 52 grid, 2000 x 2000 m, object scale (1000, 1000, 3); the 6 km export scales it, see "Two sizes").
 - **Forest and water guides:** `elder wood`, `northwood`, `Pale River`, `The Still Lake` are rough outlines of where
   forests and water go (their X/Y only), not meshes to use (Austin, 2026-10-10). The export skips them; real forests and
   water are still to be built.
@@ -30,6 +30,14 @@ mesh are identical before/after; the script prints `GEOMETRY_UNCHANGED True`). H
 The ground's texture choice is now vertex-painted (see "Painting the ground"); the old height / slope rule is gone.
 Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds temporary markers and labels, not saved).
 
+## Two sizes (Austin, 2026-10-10)
+
+The map is authored at 2 km in `source/world_landscape.blend`. `export_landscape.py -- <repo> 2km|6km` writes
+`export/world_landscape_2km.glb` or `_6km.glb`; 6 km is the same file scaled in memory around the origin, 3x wide and
+5x tall. Each size has its inherited scene (`export/world_landscape_<size>.tscn`, towers under the tower markers),
+`scenes/world/open_world/open_world_<size>.tscn` and baked navmesh. The 2 km version is the one in the game for now.
+After editing the map, export both sizes, then rebake both navmeshes if the ground changed.
+
 ## Godot export (`tools/blender/export_landscape.py`)
 
 `blender.exe -b source/world_landscape.blend --python tools/blender/export_landscape.py -- <repo_root>` writes
@@ -38,7 +46,7 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 The glb holds every mesh and every empty (POI markers keep Austin's spellings as node names), vertex colour `Col`, and
 materials by name.
 
-- **Materials:** Blender's node trees do not survive glTF, so `world_landscape.glb.import` maps the three names to
+- **Materials:** Blender's node trees do not survive glTF, so `world_landscape_<size>.glb.import` maps the three names to
   `materials/ground_placeholder.tres` (shader `shaders/world_ground.gdshader`: world-space 8 m tiles, nearest, the `Splat`
   layer picks the texture, times the `Col` tint), `water_placeholder.tres` and `forest_placeholder.tres`
   (StandardMaterial3D, world triplanar, nearest).
@@ -48,19 +56,19 @@ materials by name.
   the script = a scratch `.glb` path.
 - **Collision:** only `geo`, set in the `.glb.import` (`PATH:geo`: generate physics, static body, trimesh), not by renaming.
   Forests and water are flat patches and have none.
-- **Inherited scene:** `export/world_landscape.tscn` inherits the glb (Scene > New Inherited Scene, as
+- **Inherited scene:** `export/world_landscape_<size>.tscn` (2km, 6km) inherits the glb (Scene > New Inherited Scene, as
   `docs/technical/3d-asset-pipeline.md` asks: gameplay never instances the raw import). Things tied to a marker live here as
   its children, so they follow the marker: a `Tower` under `Volcano Tower`, `Forest Tower`, `Avequel'la`, `Naf Ishun`.
   Renaming or deleting a marker in Blender drops what hangs under it (Godot warns on load).
-- **Scene:** `scenes/world/open_world/open_world.tscn` (a `NavigationRegion3D` around the glb, sun, sky, fog; all
-  PLACEHOLDER). The navmesh `open_world_navmesh.res` is baked from `geo`'s collision by
-  `godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (agent height as in `world.tscn`; cell size 1 m and
+- **Scene:** `scenes/world/open_world/open_world_<size>.tscn` (a `NavigationRegion3D` around the glb, sun, sky, fog; all
+  PLACEHOLDER). The navmesh `open_world_<size>_navmesh.res` is baked from `geo`'s collision by
+  `SIZE=<size> godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (agent height as in `world.tscn`; cell size 1 m and
   max climb 1 m are PLACEHOLDER tuning. Climb must be at least cell size x tan(max slope): with 2 m cells and the old
   0.5 m climb, any slope over ~14 degrees split the mesh into 110 islands and cut off Avequel'la. Now one walkable mesh;
   tower floors bake as their own islands). Re-bake after any geometry change.
 - **Re-import headless:** with a Blender path unset, `godot --headless --import` stops at the `.blend` files; temporarily set
   `import/blender/enabled=false` under `[filesystem]` in `project.godot` for the import, then revert it.
-- **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world.tscn SHOT_FAR=6000
+- **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world_2km.tscn SHOT_FAR=6000
   SHOTS="overview:0,2900,0:0,0,0:50" godot --path . res://tools/shots/shot.tscn`.
 
 ## Curved world (PLACEHOLDER tuning)
@@ -150,5 +158,5 @@ Tile export and `_far` copies (#605), the scale test (#603), final names (#606),
 The four towers: **Volcano Tower** and **Forest Tower** are their own empties in `world_landscape.blend` (the `Hell's Mouth`
 empty marks the volcano POI, not the tower). The **Avequel'la** tower stands at the centre of the ruined city, so it uses
 the `Avequel'la` POI marker (later its POI file, or one linked from it). **Naf Ishun** uses its POI marker. Empties whose
-names end in `Tower` are tower markers, not POIs (no `pois/` file). In Godot, `open_world.tscn` instances
+names end in `Tower` are tower markers, not POIs (no `pois/` file). In Godot, `world_landscape_<size>.tscn` instances
 `scenes/world/env/tower.tscn` as a child of each of these four marker nodes.

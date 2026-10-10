@@ -7,7 +7,7 @@ extends Node
 ##   SHOTS="tower:0,60,0:0,40,0" godot --path . res://tools/shots/shot.tscn
 
 const WORLD: String = "res://scenes/world/world.tscn"
-## WORLD=res://scenes/world/open_world/open_world.tscn shoots that scene instead; SHOT_FAR sets the camera far plane.
+## WORLD=res://scenes/world/open_world/open_world_2km.tscn shoots that scene instead; SHOT_FAR sets the camera far plane.
 
 func _ready() -> void:
 	_run.call_deferred()

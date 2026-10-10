@@ -1,7 +1,7 @@
-[gd_scene format=3 uid="uid://cjnuqw4n6rljp"]
+[gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://art/world/export/world_landscape.tscn" id="1_landscape"]
-[ext_resource type="NavigationMesh" path="res://scenes/world/open_world/open_world_navmesh.res" id="2_navmesh"]
+[ext_resource type="PackedScene" path="res://art/world/export/world_landscape_6km.tscn" id="1_landscape"]
+[ext_resource type="NavigationMesh" path="res://scenes/world/open_world/open_world_6km_navmesh.res" id="2_navmesh"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.32, 0.5, 0.8, 1)
@@ -25,7 +25,7 @@ fog_density = 0.00012
 fog_sky_affect = 0.5
 metadata/PLACEHOLDER = "stand-in sky and fog, not designed by Austin"
 
-[node name="OpenWorld" type="Node3D"]
+[node name="OpenWorld6km" type="Node3D"]
 
 [node name="Nav" type="NavigationRegion3D" parent="."]
 navigation_mesh = ExtResource("2_navmesh")

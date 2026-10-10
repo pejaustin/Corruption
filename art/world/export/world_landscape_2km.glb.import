@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b5024ats0g83l"
-path="res://.godot/imported/world_landscape.glb-0ba646c4f6c4ab403c6800de93cd22f9.scn"
+path="res://.godot/imported/world_landscape_2km.glb-860383b7c1d0306a7177192a52f79509.scn"
 
 [deps]
 
-source_file="res://art/world/export/world_landscape.glb"
-dest_files=["res://.godot/imported/world_landscape.glb-0ba646c4f6c4ab403c6800de93cd22f9.scn"]
+source_file="res://art/world/export/world_landscape_2km.glb"
+dest_files=["res://.godot/imported/world_landscape_2km.glb-860383b7c1d0306a7177192a52f79509.scn"]
 
 [params]
 
