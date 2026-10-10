@@ -1,0 +1,8 @@
+; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Forest Ruins's place scene. Its look is
+; art/world/pois/export/forest_ruins.glb (from forest_ruins.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
+; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
+[gd_scene format=3 uid="uid://d0ru2yjmgd6dt"]
+
+[ext_resource type="PackedScene" uid="uid://dele4bc707iep" path="res://art/world/pois/export/forest_ruins.glb" id="1_glb"]
+
+[node name="ForestRuins" instance=ExtResource("1_glb")]

@@ -7,10 +7,14 @@
 #   tools/sync_world_sizes.sh --no-bake       as above, and the ground did not change: skip the navmesh and map-picture bakes
 #
 # What it does:
-#   1. exports every size from art/world/source/world_landscape.blend (tools/blender/export_landscape.py; never saves the .blend)
+#   1. exports every size from art/world/source/world_landscape.blend (tools/blender/export_landscape.py; never saves the .blend),
+#      with the forest and water guide outlines (art/world/export/areas_<size>.json), then every POI blockout
+#      (art/world/pois/<snake>.blend -> pois/export/<snake>.glb) and the shared props (props.blend -> export/props/*.glb)
+#      (tools/blender/export_pois.py; never saves those either)
 #   2. re-imports in Godot headless (the .blend importer is switched off in project.godot for the run and restored after)
 #   3. bakes each size's map-floor picture (tools/bake_map_illustration.gd) and imports it
-#   4. builds the 400 m and 6 km landscape and world scenes from the 2 km ones (scripts/build/build_world_sizes.gd)
+#   4. builds the POI scenes (pois/<snake>.tscn, once), the forests and water of each size (export/world_areas_<size>.tscn) and
+#      the 400 m and 6 km landscape and world scenes from the 2 km ones (scripts/build/build_world_sizes.gd)
 #   5. bakes each size's navmesh (tools/bake_open_world_navmesh.gd, WORLD=1), then builds again so the towers
 #      are fitted against the fresh meshes
 #
@@ -63,7 +67,27 @@ disable_blender_import() {
 restore_project() {
   if [ -n "$PROJECT_BACKUP" ] && [ -f "$PROJECT_BACKUP" ]; then cp "$PROJECT_BACKUP" project.godot; rm -f "$PROJECT_BACKUP"; PROJECT_BACKUP=""; fi
 }
-import_assets() { gd 600 "$GODOT" --headless --path . --import; }
+# The POI marker names (Godot's glb nodes keep Austin's spellings) as snake_case file names: lowercase, apostrophes dropped,
+# spaces to underscores. Read from the 2 km ground's nodes via a Blender-free route: the marker list in the glb's JSON chunk.
+poi_snakes() {
+  python3 - "$ROOT/art/world/export/world_landscape_2km.glb" <<'PY'
+import json, struct, sys
+d = open(sys.argv[1], 'rb').read()
+j = json.loads(d[20:20 + struct.unpack('<I', d[12:16])[0]])
+for n in j['nodes']:
+    name = n.get('name', '')
+    if 'mesh' not in n and not name.endswith('Tower') and 'children' not in n and name:
+        print(name.lower().replace("'", '').replace(' ', '_'))
+PY
+}
+# A new glb of the POIs and props needs its .import (the import script puts the curved-world materials on its materials).
+ensure_glb_imports() {
+  for f in art/world/pois/export/*.glb art/world/export/props/*.glb; do
+    [ -f "$f" ] && [ ! -f "$f.import" ] && printf '[remap]\n\nimporter="scene"\nimporter_version=1\ntype="PackedScene"\n\n[params]\n\nimport_script/path="res://art/world/pois/poi_post_import.gd"\n' > "$f.import"
+  done
+  return 0
+}
+import_assets() { ensure_glb_imports; gd 600 "$GODOT" --headless --path . --import; }
 
 trap 'rm -f "$LOG"; restore_project' EXIT
 
@@ -89,6 +113,14 @@ if [ "$DO_EXPORT" = 1 ]; then
     grep -E '^EXPORTED|GEOMETRY_AND_NAMES_UNCHANGED' "$LOG" | sed "s/^/  [$size] /"
     grep -q 'GEOMETRY_AND_NAMES_UNCHANGED True' "$LOG" || { echo "the export changed the scene in memory ($size); stop" >&2; exit 1; }
   done
+  # one POI blockout per marker of his map (snake_case name; tower markers have none), and the shared props
+  for snake in $(poi_snakes); do
+    [ -f "$ROOT/art/world/pois/$snake.blend" ] || { echo "  no art/world/pois/$snake.blend for a marker; skipped" >&2; continue; }
+    run 300 "$BLENDER" -b "$(conv "$ROOT/art/world/pois/$snake.blend")" --python "$(conv "$ROOT/tools/blender/export_pois.py")" -- "$(conv "$ROOT")" >"$LOG" 2>&1 || { cat "$LOG" >&2; echo "Blender export failed for POI $snake" >&2; exit 1; }
+    grep -q '^EXPORTED' "$LOG" && echo "  [poi $snake] exported" || { cat "$LOG" >&2; echo "no glb written for POI $snake" >&2; exit 1; }
+  done
+  run 300 "$BLENDER" -b "$(conv "$ROOT/art/world/props.blend")" --python "$(conv "$ROOT/tools/blender/export_pois.py")" -- "$(conv "$ROOT")" --props >"$LOG" 2>&1 || { cat "$LOG" >&2; echo "Blender export failed for props" >&2; exit 1; }
+  grep -cE '^EXPORTED' "$LOG" | sed 's/^/  [props] glbs exported: /'
 else
   step "1/5 export from Blender: skipped"
 fi

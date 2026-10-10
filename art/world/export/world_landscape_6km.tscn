@@ -3,55 +3,97 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" uid="uid://bg37vuhc5n40t" path="res://art/world/export/world_landscape_6km.glb" id="1_landscape"]
-[ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="2_tower"]
-[ext_resource type="Texture2D" path="res://scenes/map/map_illustration_6km.png" id="3_picture"]
+[ext_resource type="PackedScene" uid="uid://lt4mtg8eveys" path="res://art/world/export/world_areas_6km.tscn" id="2_world_areas_6km"]
+[ext_resource type="PackedScene" uid="uid://dqbatka7l1bfl" path="res://art/world/pois/naf_ishun.tscn" id="3_naf_ishun"]
+[ext_resource type="PackedScene" uid="uid://d0ru2yjmgd6dt" path="res://art/world/pois/forest_ruins.tscn" id="4_forest_ruins"]
+[ext_resource type="PackedScene" uid="uid://c0ahvpcadc8qq" path="res://art/world/pois/avequella.tscn" id="5_avequella"]
+[ext_resource type="PackedScene" uid="uid://bs6sap1d4nbpx" path="res://art/world/pois/teshfield.tscn" id="6_teshfield"]
+[ext_resource type="PackedScene" uid="uid://dlp2kgyegx1t" path="res://art/world/pois/hopes_gate.tscn" id="7_hopes_gate"]
+[ext_resource type="PackedScene" uid="uid://dmxwixx0koisc" path="res://art/world/pois/entbridge.tscn" id="8_entbridge"]
+[ext_resource type="PackedScene" uid="uid://bjlneb8hnj1ni" path="res://art/world/pois/ale_bend.tscn" id="9_ale_bend"]
+[ext_resource type="PackedScene" uid="uid://cqt5kdyjwyhyd" path="res://art/world/pois/valley_cross.tscn" id="10_valley_cross"]
+[ext_resource type="PackedScene" uid="uid://fmho8i5wbwb" path="res://art/world/pois/veilton.tscn" id="11_veilton"]
+[ext_resource type="PackedScene" uid="uid://nrr8i5b0ggxg" path="res://art/world/pois/hells_mouth.tscn" id="12_hells_mouth"]
+[ext_resource type="PackedScene" uid="uid://c8h3c7wkt8jw6" path="res://art/world/pois/lastford.tscn" id="13_lastford"]
+[ext_resource type="PackedScene" uid="uid://cnkqc3m05qerk" path="res://art/world/pois/far_harbor.tscn" id="14_far_harbor"]
+[ext_resource type="PackedScene" uid="uid://vl7b1d7aspgb" path="res://art/world/pois/mountain_pass.tscn" id="15_mountain_pass"]
+[ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="16_tower"]
+[ext_resource type="Texture2D" path="res://scenes/map/map_illustration_6km.png" id="17_picture"]
 
 [node name="WorldLandscape" instance=ExtResource("1_landscape")]
 
-[node name="Tower" parent="Volcano Tower" instance=ExtResource("2_tower")]
+[node name="Areas" parent="." instance=ExtResource("2_world_areas_6km")]
+
+[node name="POI" parent="Naf Ishun" instance=ExtResource("3_naf_ishun")]
+
+[node name="POI" parent="Forest Ruins" instance=ExtResource("4_forest_ruins")]
+
+[node name="POI" parent="Avequel'la" instance=ExtResource("5_avequella")]
+
+[node name="POI" parent="Teshfield" instance=ExtResource("6_teshfield")]
+
+[node name="POI" parent="Hopes Gate" instance=ExtResource("7_hopes_gate")]
+
+[node name="POI" parent="Entbridge" instance=ExtResource("8_entbridge")]
+
+[node name="POI" parent="Ale Bend" instance=ExtResource("9_ale_bend")]
+
+[node name="POI" parent="Valley Cross" instance=ExtResource("10_valley_cross")]
+
+[node name="POI" parent="Veilton" instance=ExtResource("11_veilton")]
+
+[node name="POI" parent="Hell's Mouth" instance=ExtResource("12_hells_mouth")]
+
+[node name="POI" parent="Lastford" instance=ExtResource("13_lastford")]
+
+[node name="POI" parent="far harbor" instance=ExtResource("14_far_harbor")]
+
+[node name="POI" parent="Mountain Pass" instance=ExtResource("15_mountain_pass")]
+
+[node name="Tower" parent="Volcano Tower" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
 transform = Transform3D(-0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866025, 0, -4.550598, 0)
 slot_index = 2
 
 [node name="MapFloor" parent="Volcano Tower/Tower" index="13"]
 world_rect = Rect2(-3000, -3000, 6000, 6000)
-illustration = ExtResource("3_picture")
+illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Volcano Tower/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
 far = 10500.0
 
-[node name="Tower" parent="Forest Tower" instance=ExtResource("2_tower")]
+[node name="Tower" parent="Forest Tower" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.89941406, 0)
 slot_index = 1
 
 [node name="MapFloor" parent="Forest Tower/Tower" index="13"]
 world_rect = Rect2(-3000, -3000, 6000, 6000)
-illustration = ExtResource("3_picture")
+illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Forest Tower/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
 far = 10500.0
 
-[node name="Tower" parent="Avequel'la" instance=ExtResource("2_tower")]
+[node name="Tower" parent="Avequel'la" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
-transform = Transform3D(-0.562791, 0, 0.826599, 0, 1, 0, -0.826599, 0, -0.562791, 0, 0.0010375977, 0)
+transform = Transform3D(-0.90069103, 0, 0.4344603, 0, 1, 0, -0.4344603, 0, -0.90069103, 0, 0.0010375977, 0)
 slot_index = 3
 
 [node name="MapFloor" parent="Avequel'la/Tower" index="13"]
 world_rect = Rect2(-3000, -3000, 6000, 6000)
-illustration = ExtResource("3_picture")
+illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Avequel'la/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
 far = 10500.0
 
-[node name="Tower" parent="Naf Ishun" instance=ExtResource("2_tower")]
+[node name="Tower" parent="Naf Ishun" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
 transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, 0, -3.5174751, 0)
 slot_index = 0
 
 [node name="MapFloor" parent="Naf Ishun/Tower" index="13"]
 world_rect = Rect2(-3000, -3000, 6000, 6000)
-illustration = ExtResource("3_picture")
+illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Naf Ishun/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
 far = 10500.0

@@ -15,14 +15,28 @@ extends SceneTree
 ##        the sites at the root) moved by the size's width around the origin and put on that size's ground at the same
 ##        height above it. Anything within TOWER_BOUND_M of a tower (its rally point, courier spawn, player spawn) keeps its
 ##        offset from the tower instead, because towers keep their size. Sun shadow distance follows the size.
+## Also, before the sizes: every POI marker (his empties except the ones named *Tower) gets its place scene
+##   art/world/pois/<snake>.tscn (an inherited scene of export/<snake>.glb, made here once and never rewritten: it is where Austin
+##   adds Godot-only things) and an instance of it, named POI, under its marker in the 2 km landscape scene (added when missing,
+##   nothing removed or duplicated). The derived sizes copy these instances: POIs keep their real size, like towers.
+##   Forests and water grown from his guide outlines (scripts/build/world_areas.gd) go to art/world/export/world_areas_<size>.tscn,
+##   instanced as Areas under the landscape root (2 km: added to the source scene the same way; other sizes: generated).
 ## The size's factors (wide, tall) are read off the exported grounds (tools/blender/export_landscape.py SIZES), not copied.
 ## Needs `godot --import` after the Blender export so the glbs are current. Then bake the navmeshes
 ## (tools/bake_open_world_navmesh.gd, WORLD=1) and the map pictures (tools/bake_map_illustration.gd).
 
 const Ground = preload("res://scripts/build/world_ground.gd")
+const Areas = preload("res://scripts/build/world_areas.gd")
+const POI_GLB: String = "res://art/world/pois/export/%s.glb"
+const POI_TSCN: String = "res://art/world/pois/%s.tscn"
+const POI_NODE: String = "POI"
+const AREAS_NODE: String = "Areas"
+## Marker names ending like this are tower markers, not POIs.
+const TOWER_MARKER_SUFFIX: String = "Tower"
 const SOURCE_SIZE: String = "2km"
 const LANDSCAPE_TSCN: String = "res://art/world/export/world_landscape_%s.tscn"
 const LANDSCAPE_GLB: String = "res://art/world/export/world_landscape_%s.glb"
+const AREAS_TSCN: String = "res://art/world/export/world_areas_%s.tscn"
 const WORLD_SOURCE: String = "res://scenes/world/world.tscn"
 const WORLD_TSCN: String = "res://scenes/world/world_%s.tscn"
 const NAVMESH: String = "res://scenes/world/world_%s_navmesh.res"
@@ -51,6 +65,17 @@ const WALK_SLOPE: float = 0.45
 const WALK_SEARCH_STEP_M: float = 12.0
 const WALK_SEARCH_MAX_M: float = 400.0
 const ON_MARKER_M: float = 25.0
+## PLACEHOLDER: tuning, not designed. A POI keeps its real size at every world size (it is buildings), so what stands in or
+## beside one (a place, a site, a map point; anything within POI_BOUND_M of a marker, 2 km coordinates) keeps its real offset from
+## the marker instead of scaling with the map, or on 400 m it would end up inside the buildings.
+const POI_BOUND_M: float = 60.0
+## PLACEHOLDER: tuning, not designed. A POI keeps its real size, so on a small map it can swallow a tower (Hell's Mouth, a 45 m
+## cone with 130 m of collision, 98 m from the Volcano Tower at 2 km and 20 m at 400 m: the tower's units could not walk out).
+## A generated size leaves out the POI instance of any marker closer than this (metres, that size) to a tower on another marker.
+const POI_TOWER_CLEAR_M: float = 60.0
+## PLACEHOLDER: tuning. A node placed by eye whose ground the baked navmesh of its size leaves more than this (metres) away is
+## moved to the nearest spot whose ground it does not (the bake moves with every geometry change).
+const NAV_SNAP_M: float = 1.0
 ## PLACEHOLDER: tuning, not designed. Per size: sun shadow distance (2 km: 400 m, in world.tscn) and the balcony lookout's
 ## far plane (2 km: 3500 m, in balcony.tscn): about the width of the map.
 const SIZE_TUNING: Dictionary[String, Dictionary] = {
@@ -74,6 +99,17 @@ func _build() -> void:
 		sizes = OS.get_environment("SIZES").split(",", false)
 	var ref := Ground.new()
 	ref.load_size(SOURCE_SIZE)
+	_ensure_poi_scenes()
+	for size in ["2km"] if sizes.has("2km") else (["2km"] + Array(sizes)):
+		var area_ground := ref
+		if size != SOURCE_SIZE:
+			area_ground = Ground.new()
+			area_ground.load_size(size)
+		var report := Areas.new().build(size, area_ground, _marker_spots(size), self)
+		if report == "":
+			_failed = true
+		print("[build] areas ", report)
+	_ensure_areas_in_source()
 	for size in sizes:
 		var ground := Ground.new()
 		ground.load_size(size)
@@ -103,6 +139,11 @@ func _build_landscape(size: String, ref: Ground, ground: Ground, factors: Vector
 	if size != SOURCE_SIZE and not have_picture:
 		push_warning("%s is missing: bake it (tools/bake_map_illustration.gd) and import, then re-run" % picture)
 	var nodes: Array[Dictionary] = []
+	var tower_markers: Array[String] = []   # the markers that carry a tower (a POI there shares the tower's ground)
+	for i in range(1, state.get_node_count()):
+		var carried := state.get_node_instance(i)
+		if carried != null and carried.resource_path.ends_with("/tower.tscn"):
+			tower_markers.append(String(state.get_node_path(i, true)).trim_prefix("./"))
 	for i in range(1, state.get_node_count()):
 		var path := String(state.get_node_path(i)).trim_prefix("./")
 		var parent_path := String(state.get_node_path(i, true)).trim_prefix("./")
@@ -112,19 +153,31 @@ func _build_landscape(size: String, ref: Ground, ground: Ground, factors: Vector
 			props[String(state.get_node_property_name(i, p))] = state.get_node_property_value(i, p)
 		if scene != null:
 			# Something his marker carries: instanced again, same properties, its offset from the marker re-snapped.
+			# (A tower has a transform and a slot; a POI and the Areas have neither and are copied as they are, the Areas
+			# of the same name but this size's file.)
+			var scene_path: String = scene.resource_path
+			if scene_path == AREAS_TSCN % SOURCE_SIZE:
+				scene_path = AREAS_TSCN % size
+				scene = load(scene_path) as PackedScene
 			var parent := land.get_node(parent_path) as Node3D
+			if size != SOURCE_SIZE and scene_path.begins_with("res://art/world/pois/") and not tower_markers.has(parent_path):
+				var too_near := _tower_within(land, tower_markers, parent, POI_TOWER_CLEAR_M)
+				if too_near != "":
+					print("[build]   ", size, ": ", parent_path, "'s POI left out, ", too_near)
+					continue
 			var thing: Node = scene.instantiate()
 			thing.name = state.get_node_name(i)
 			parent.add_child(thing)
-			var old_thing := old_land.get_node(parent_path).get_node(String(thing.name)) as Node3D
-			props["transform"] = _resnap_offset(props["transform"] as Transform3D, old_land.get_node(parent_path) as Node3D, parent, ref, ground, factors.x)
-			for prop in props:
-				thing.set(prop, props[prop])
-			if size != SOURCE_SIZE and thing.has_node("CourierSpawn"):
-				props["transform"] = await _turn_to_fit(thing as Node3D, old_thing, ref, ground)
-				(thing as Node3D).transform = props["transform"]
-			nodes.append({"parent": parent_path, "name": thing.name, "scene": scene.resource_path, "index": -1, "props": props})
-			if size != SOURCE_SIZE:
+			if not (scene_path.begins_with("res://art/world/pois/") or scene_path.begins_with("res://art/world/export/world_areas_")):
+				var old_thing := old_land.get_node(parent_path).get_node(String(thing.name)) as Node3D
+				props["transform"] = _resnap_offset(props.get("transform", Transform3D.IDENTITY) as Transform3D, old_land.get_node(parent_path) as Node3D, parent, ref, ground, factors.x)
+				for prop in props:
+					thing.set(prop, props[prop])
+				if size != SOURCE_SIZE and thing.has_node("CourierSpawn"):
+					props["transform"] = await _turn_to_fit(thing as Node3D, old_thing, ref, ground)
+					(thing as Node3D).transform = props["transform"]
+			nodes.append({"parent": parent_path, "name": thing.name, "scene": scene_path, "index": -1, "props": props})
+			if size != SOURCE_SIZE and thing.has_node("MapFloor"):
 				_tower_overrides(nodes, thing, parent_path + "/" + String(thing.name), factors.x, tuning, picture if have_picture else "")
 		else:
 			# A property of something inside an instanced scene (an override): copied, except the jump landing.
@@ -135,6 +188,15 @@ func _build_landscape(size: String, ref: Ground, ground: Ground, factors: Vector
 	_save_landscape_text(size, nodes, picture if have_picture else "")
 	land.free()
 	old_land.free()
+
+func _tower_within(land: Node, tower_markers: Array[String], marker: Node3D, metres: float) -> String:
+	## "" or a note naming the tower marker within `metres` of this marker (across the ground).
+	for t in tower_markers:
+		var other := land.get_node(t) as Node3D
+		var d := Vector2(other.position.x - marker.position.x, other.position.z - marker.position.z).length()
+		if d < metres:
+			return "%d m from the tower at %s" % [roundi(d), t]
+	return ""
 
 func _turn_to_fit(tower: Node3D, old_tower: Node3D, ref: Ground, ground: Ground) -> Transform3D:
 	## A tower keeps its size, so on a smaller or steeper map its gate (the courier spawn) can hang over a drop or sink into
@@ -279,12 +341,12 @@ func _save_landscape_text(size: String, nodes: Array[Dictionary], picture: Strin
 			var scene: String = n["scene"]
 			if not ids.has(scene):
 				ids[scene] = "%d_%s" % [ids.size() + 2, scene.get_file().get_basename()]
-				ext.append("[ext_resource type=\"PackedScene\" uid=\"%s\" path=\"%s\" id=\"%s\"]" % [_uid(scene), scene, ids[scene]])
+				ext.append("[ext_resource type=\"PackedScene\"%s path=\"%s\" id=\"%s\"]" % [_uid_attr(scene), scene, ids[scene]])
 			line += " instance=ExtResource(\"%s\")" % ids[scene]
 		else:
 			line += " index=\"%d\"" % n["index"]
 		text += line + "]\n"
-		if n["scene"] != "":
+		if n["scene"] != "" and n["props"].has("slot_index"):
 			text += "; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed\n"
 		for prop in n["props"]:
 			var value: Variant = n["props"][prop]
@@ -297,9 +359,105 @@ func _save_landscape_text(size: String, nodes: Array[Dictionary], picture: Strin
 				text += "%s = %s\n" % [prop, var_to_str(value)]
 	_write(_landscape_path(size), "[gd_scene format=3]\n\n" + "\n".join(ext) + "\n\n[node name=\"WorldLandscape\" instance=ExtResource(\"1_landscape\")]\n" + text)
 
+func _uid_attr(path: String) -> String:
+	var id := _uid(path)
+	return "" if id == "" else " uid=\"%s\"" % id
+
 func _uid(path: String) -> String:
 	var id := ResourceLoader.get_resource_uid(path)
-	return ResourceUID.id_to_text(id) if id != ResourceUID.INVALID_ID else ""
+	if id != ResourceUID.INVALID_ID:
+		return ResourceUID.id_to_text(id)
+	# a scene written in this run is not in the uid cache yet: read it off its first line
+	if path.ends_with(".tscn") and FileAccess.file_exists(path):
+		var head := FileAccess.get_file_as_string(path).get_slice("[gd_scene", 1).get_slice("]", 0)
+		var found := RegEx.create_from_string("uid=\"(uid://[a-z0-9]+)\"").search(head)
+		if found != null:
+			return found.get_string(1)
+	return ""
+
+
+# --- POI scenes and the Areas, added to the 2 km source scene ---
+
+func _poi_markers() -> Array[String]:
+	## His POI markers: the empties of the 2 km ground file, except tower markers.
+	var out: Array[String] = []
+	var land: Node = (load(LANDSCAPE_GLB % SOURCE_SIZE) as PackedScene).instantiate()
+	for c in land.get_children():
+		if c is Node3D and not c is MeshInstance3D and not String(c.name).ends_with(TOWER_MARKER_SUFFIX):
+			out.append(String(c.name))
+	land.free()
+	return out
+
+func _snake(marker: String) -> String:
+	## `Avequel'la` -> avequella, `Hell's Mouth` -> hells_mouth, `far harbor` -> far_harbor.
+	return marker.to_lower().replace("'", "").replace(" ", "_")
+
+func _marker_spots(size: String) -> Array[Vector2]:
+	## Every marker (POIs and towers) of that size's ground, as x, z.
+	var out: Array[Vector2] = []
+	var land: Node = (load(LANDSCAPE_GLB % size) as PackedScene).instantiate()
+	for c in land.get_children():
+		if c is Node3D and not c is MeshInstance3D:
+			out.append(Vector2((c as Node3D).position.x, (c as Node3D).position.z))
+	land.free()
+	return out
+
+func _ensure_poi_scenes() -> void:
+	## art/world/pois/<snake>.tscn for each POI marker whose export/<snake>.glb exists (made once, never rewritten), and an
+	## instance of it under the marker in the 2 km landscape scene when that has none.
+	var wanted: Array[Dictionary] = []
+	for marker in _poi_markers():
+		var snake := _snake(marker)
+		if not ResourceLoader.exists(POI_GLB % snake):
+			push_warning("%s: no %s; run tools/sync_world_sizes.sh (it exports the POI blockouts first)" % [marker, POI_GLB % snake])
+			continue
+		var scene_path: String = POI_TSCN % snake
+		if not FileAccess.file_exists(scene_path):
+			var glb: String = POI_GLB % snake
+			var file := FileAccess.open(scene_path, FileAccess.WRITE)
+			file.store_string("; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is %s's place scene. Its look is\n; art/world/pois/export/%s.glb (from %s.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.\n; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin\n[gd_scene format=3 uid=\"%s\"]\n\n[ext_resource type=\"PackedScene\" uid=\"%s\" path=\"%s\" id=\"1_glb\"]\n\n[node name=\"%s\" instance=ExtResource(\"1_glb\")]\n" % [marker, snake, snake, ResourceUID.id_to_text(ResourceUID.create_id()), _uid(glb), glb, snake.to_pascal_case()])
+			file.close()
+			print("[build] wrote ", scene_path)
+		wanted.append({"parent": marker, "scene": scene_path, "id": "poi_" + snake})
+	_add_to_source(wanted, POI_NODE, "; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin")
+
+func _ensure_areas_in_source() -> void:
+	_add_to_source([{"parent": ".", "scene": AREAS_TSCN % SOURCE_SIZE, "id": "areas_2km"}], AREAS_NODE, "; PLACEHOLDER: forests and water grown inside his guide outlines (scripts/build/world_areas.gd), stand-ins")
+
+func _add_to_source(wanted: Array[Dictionary], node_name: String, comment: String) -> void:
+	## Adds `[node name=<node_name> parent=<parent> instance=...]` to the 2 km landscape scene for each wanted entry that the
+	## scene does not have yet (same parent and same scene). Nothing is removed and nothing existing is touched.
+	var path: String = LANDSCAPE_TSCN % SOURCE_SIZE
+	var state := (load(path) as PackedScene).get_state()
+	var present: Dictionary = {}
+	for i in range(1, state.get_node_count()):
+		var inst := state.get_node_instance(i)
+		if inst != null:
+			present[String(state.get_node_path(i, true)).trim_prefix("./") + "|" + inst.resource_path] = true
+	var text := FileAccess.get_file_as_string(path)
+	var ext := ""
+	var body := ""
+	var added := 0
+	for w in wanted:
+		var parent: String = w["parent"]
+		if present.has(("." if parent == "." else parent) + "|" + String(w["scene"])):
+			continue
+		ext += "[ext_resource type=\"PackedScene\"%s path=\"%s\" id=\"%s\"]\n" % [_uid_attr(w["scene"]), w["scene"], w["id"]]
+		body += "\n[node name=\"%s\" parent=\"%s\" instance=ExtResource(\"%s\")]\n%s\n" % [node_name, parent, w["id"], comment]
+		added += 1
+	if added == 0:
+		return
+	# the ext_resources after the last existing one, the nodes right after the root node (parents exist before children)
+	var last_ext := text.rfind("[ext_resource")
+	var after_ext := text.find("\n", last_ext) + 1
+	text = text.substr(0, after_ext) + ext + text.substr(after_ext)
+	var root_at := text.find("[node name=\"WorldLandscape\"")
+	var after_root := text.find("\n", root_at) + 1
+	text = text.substr(0, after_root) + body + text.substr(after_root)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(text)
+	file.close()
+	print("[build] ", path, ": added ", added, " ", node_name, " instance(s)")
 
 func _resnap_offset(local: Transform3D, old_parent: Node3D, new_parent: Node3D, ref: Ground, ground: Ground, wide: float) -> Transform3D:
 	## An offset from its marker scales with the size's width and keeps its height above the ground (a marker that floats
@@ -345,7 +503,7 @@ func _build_world(size: String, ref: Ground, ground: Ground, factors: Vector2) -
 	var old_towers := _towers_of(old_landscape)
 	var markers: Array[Vector3] = []   # his markers (the landscape's empties), 2 km coordinates
 	for m in old_landscape.get_children():
-		if m is Node3D and not m is MeshInstance3D:
+		if m is Node3D and not m is MeshInstance3D and m.name != AREAS_NODE:
 			markers.append((m as Node3D).position)
 	nav.remove_child(old_landscape)
 	var landscape: Node = (load(_landscape_path(size)) as PackedScene).instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE)
@@ -415,6 +573,11 @@ func _place(node: Node3D, old_towers: Array[Node3D], new_towers: Array[Node3D], 
 		return
 	var x := old_pos.x * factors.x
 	var z := old_pos.z * factors.x
+	for m in markers:
+		if Vector2(m.x - old_pos.x, m.z - old_pos.z).length() <= POI_BOUND_M:
+			x = m.x * factors.x + (old_pos.x - m.x)
+			z = m.z * factors.x + (old_pos.z - m.z)
+			break
 	if not _on_marker(old_pos, markers):
 		var spot := _walkable_spot(ground, x, z)
 		if spot != Vector2(x, z):
@@ -427,6 +590,87 @@ func _place(node: Node3D, old_towers: Array[Node3D], new_towers: Array[Node3D], 
 	if not is_nan(old_g) and not is_nan(new_g):
 		y = new_g + (old_pos.y - old_g)
 	node.position = Vector3(x, y, z)
+	if _ground_mesh != null and not _on_marker(old_pos, markers) and not is_nan(new_g):
+		var spot := _spot_on_navmesh(ground, Vector2(x, z))
+		if spot != Vector2(x, z):
+			print("[build]   ", node.name, " (placed by eye) moved ", snappedf(spot.distance_to(Vector2(x, z)), 0.1), " m to stand on the navmesh")
+			node.position = Vector3(spot.x, ground.y_at(spot.x, spot.y) + (y - new_g), spot.y)
+
+func _spot_on_navmesh(ground: Ground, at: Vector2) -> Vector2:
+	## `at` when the ground there lies within NAV_SNAP_M of the size's baked navmesh (a baked triangle can sit metres off
+	## the ground on a steep slope, and a map point drops onto the ground), else the nearest spot in rings of 2 m, up to 40 m,
+	## where it does.
+	var r := 0.0
+	while r <= 40.0:
+		for k in (1 if r == 0.0 else 16):
+			var p := at + Vector2.RIGHT.rotated(k * TAU / 16.0) * r
+			var g := ground.y_at(p.x, p.y)
+			if not is_nan(g) and _distance_to_navmesh(Vector3(p.x, g, p.y)) <= NAV_SNAP_M:
+				return p
+		r += 2.0
+	return at
+
+var _nav_cells: Dictionary[Vector2i, PackedInt32Array] = {}   # the baked mesh's triangles by 16 m cell, built on first use
+var _nav_cells_for: NavigationMesh
+
+func _distance_to_navmesh(p: Vector3) -> float:
+	## Distance from p to the nearest triangle of the baked navmesh (only the triangles in the cells around p are tried).
+	var verts := _ground_mesh.get_vertices()
+	if _nav_cells_for != _ground_mesh:
+		_nav_cells_for = _ground_mesh
+		_nav_cells.clear()
+		for i in _ground_mesh.get_polygon_count():
+			var poly := _ground_mesh.get_polygon(i)
+			var lo := Vector2(INF, INF)
+			var hi := Vector2(-INF, -INF)
+			for idx in poly:
+				lo = lo.min(Vector2(verts[idx].x, verts[idx].z))
+				hi = hi.max(Vector2(verts[idx].x, verts[idx].z))
+			for cx in range(floori(lo.x / 16.0), floori(hi.x / 16.0) + 1):
+				for cz in range(floori(lo.y / 16.0), floori(hi.y / 16.0) + 1):
+					var key := Vector2i(cx, cz)
+					if not _nav_cells.has(key):
+						_nav_cells[key] = PackedInt32Array()
+					_nav_cells[key].append(i)
+	var best := INF
+	for cx in range(floori((p.x - 16.0) / 16.0), floori((p.x + 16.0) / 16.0) + 1):
+		for cz in range(floori((p.z - 16.0) / 16.0), floori((p.z + 16.0) / 16.0) + 1):
+			for i in _nav_cells.get(Vector2i(cx, cz), PackedInt32Array()):
+				var poly := _ground_mesh.get_polygon(i)
+				for k in range(1, poly.size() - 1):
+					best = minf(best, _closest_on_triangle(p, verts[poly[0]], verts[poly[k]], verts[poly[k + 1]]).distance_to(p))
+	return best
+
+func _closest_on_triangle(p: Vector3, a: Vector3, b: Vector3, c: Vector3) -> Vector3:
+	## Ericson, Real-Time Collision Detection 5.1.5.
+	var ab := b - a
+	var ac := c - a
+	var ap := p - a
+	var d1 := ab.dot(ap)
+	var d2 := ac.dot(ap)
+	if d1 <= 0.0 and d2 <= 0.0:
+		return a
+	var bp := p - b
+	var d3 := ab.dot(bp)
+	var d4 := ac.dot(bp)
+	if d3 >= 0.0 and d4 <= d3:
+		return b
+	var vc := d1 * d4 - d3 * d2
+	if vc <= 0.0 and d1 >= 0.0 and d3 <= 0.0:
+		return a + ab * (d1 / (d1 - d3))
+	var cp := p - c
+	var d5 := ab.dot(cp)
+	var d6 := ac.dot(cp)
+	if d6 >= 0.0 and d5 <= d6:
+		return c
+	var vb := d5 * d2 - d1 * d6
+	if vb <= 0.0 and d2 >= 0.0 and d6 <= 0.0:
+		return a + ac * (d2 / (d2 - d6))
+	var va := d3 * d6 - d5 * d4
+	if va <= 0.0 and (d4 - d3) >= 0.0 and (d5 - d6) >= 0.0:
+		return b + (c - b) * ((d4 - d3) / ((d4 - d3) + (d5 - d6)))
+	var denom := 1.0 / (va + vb + vc)
+	return a + ab * (vb * denom) + ac * (vc * denom)
 
 func _on_marker(at: Vector3, markers: Array[Vector3]) -> bool:
 	for m in markers:

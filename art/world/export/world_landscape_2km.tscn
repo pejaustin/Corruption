@@ -2,8 +2,64 @@
 
 [ext_resource type="PackedScene" uid="uid://b5024ats0g83l" path="res://art/world/export/world_landscape_2km.glb" id="1_landscape"]
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="2_tower"]
+[ext_resource type="PackedScene" uid="uid://dqbatka7l1bfl" path="res://art/world/pois/naf_ishun.tscn" id="poi_naf_ishun"]
+[ext_resource type="PackedScene" uid="uid://d0ru2yjmgd6dt" path="res://art/world/pois/forest_ruins.tscn" id="poi_forest_ruins"]
+[ext_resource type="PackedScene" uid="uid://c0ahvpcadc8qq" path="res://art/world/pois/avequella.tscn" id="poi_avequella"]
+[ext_resource type="PackedScene" uid="uid://bs6sap1d4nbpx" path="res://art/world/pois/teshfield.tscn" id="poi_teshfield"]
+[ext_resource type="PackedScene" uid="uid://dlp2kgyegx1t" path="res://art/world/pois/hopes_gate.tscn" id="poi_hopes_gate"]
+[ext_resource type="PackedScene" uid="uid://dmxwixx0koisc" path="res://art/world/pois/entbridge.tscn" id="poi_entbridge"]
+[ext_resource type="PackedScene" uid="uid://bjlneb8hnj1ni" path="res://art/world/pois/ale_bend.tscn" id="poi_ale_bend"]
+[ext_resource type="PackedScene" uid="uid://cqt5kdyjwyhyd" path="res://art/world/pois/valley_cross.tscn" id="poi_valley_cross"]
+[ext_resource type="PackedScene" uid="uid://fmho8i5wbwb" path="res://art/world/pois/veilton.tscn" id="poi_veilton"]
+[ext_resource type="PackedScene" uid="uid://nrr8i5b0ggxg" path="res://art/world/pois/hells_mouth.tscn" id="poi_hells_mouth"]
+[ext_resource type="PackedScene" uid="uid://c8h3c7wkt8jw6" path="res://art/world/pois/lastford.tscn" id="poi_lastford"]
+[ext_resource type="PackedScene" uid="uid://cnkqc3m05qerk" path="res://art/world/pois/far_harbor.tscn" id="poi_far_harbor"]
+[ext_resource type="PackedScene" uid="uid://vl7b1d7aspgb" path="res://art/world/pois/mountain_pass.tscn" id="poi_mountain_pass"]
+[ext_resource type="PackedScene" uid="uid://nbnw1p1e6wc2" path="res://art/world/export/world_areas_2km.tscn" id="areas_2km"]
 
 [node name="WorldLandscape" instance=ExtResource("1_landscape")]
+
+[node name="Areas" parent="." instance=ExtResource("areas_2km")]
+; PLACEHOLDER: forests and water grown inside his guide outlines (scripts/build/world_areas.gd), stand-ins
+
+[node name="POI" parent="Naf Ishun" instance=ExtResource("poi_naf_ishun")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Forest Ruins" instance=ExtResource("poi_forest_ruins")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Avequel'la" instance=ExtResource("poi_avequella")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Teshfield" instance=ExtResource("poi_teshfield")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Hopes Gate" instance=ExtResource("poi_hopes_gate")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Entbridge" instance=ExtResource("poi_entbridge")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Ale Bend" instance=ExtResource("poi_ale_bend")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Valley Cross" instance=ExtResource("poi_valley_cross")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Veilton" instance=ExtResource("poi_veilton")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Hell's Mouth" instance=ExtResource("poi_hells_mouth")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Lastford" instance=ExtResource("poi_lastford")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="far harbor" instance=ExtResource("poi_far_harbor")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
+
+[node name="POI" parent="Mountain Pass" instance=ExtResource("poi_mountain_pass")]
+; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
 
 [node name="Tower" parent="Volcano Tower" instance=ExtResource("2_tower")]
 transform = Transform3D(-0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866025, 0, 0, 0)

@@ -1,0 +1,8 @@
+; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Entbridge's place scene. Its look is
+; art/world/pois/export/entbridge.glb (from entbridge.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
+; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
+[gd_scene format=3 uid="uid://dmxwixx0koisc"]
+
+[ext_resource type="PackedScene" uid="uid://y3gt7rsupkoi" path="res://art/world/pois/export/entbridge.glb" id="1_glb"]
+
+[node name="Entbridge" instance=ExtResource("1_glb")]

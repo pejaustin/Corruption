@@ -1,0 +1,8 @@
+; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Hell's Mouth's place scene. Its look is
+; art/world/pois/export/hells_mouth.glb (from hells_mouth.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
+; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
+[gd_scene format=3 uid="uid://nrr8i5b0ggxg"]
+
+[ext_resource type="PackedScene" uid="uid://27r5b11hn8k3" path="res://art/world/pois/export/hells_mouth.glb" id="1_glb"]
+
+[node name="HellsMouth" instance=ExtResource("1_glb")]

@@ -1,0 +1,8 @@
+; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Avequel'la's place scene. Its look is
+; art/world/pois/export/avequella.glb (from avequella.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
+; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
+[gd_scene format=3 uid="uid://c0ahvpcadc8qq"]
+
+[ext_resource type="PackedScene" uid="uid://doh14ue5keugo" path="res://art/world/pois/export/avequella.glb" id="1_glb"]
+
+[node name="Avequella" instance=ExtResource("1_glb")]

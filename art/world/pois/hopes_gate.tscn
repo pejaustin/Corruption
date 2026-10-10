@@ -1,0 +1,8 @@
+; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Hopes Gate's place scene. Its look is
+; art/world/pois/export/hopes_gate.glb (from hopes_gate.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
+; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
+[gd_scene format=3 uid="uid://dlp2kgyegx1t"]
+
+[ext_resource type="PackedScene" uid="uid://dq3iwxxwguora" path="res://art/world/pois/export/hopes_gate.glb" id="1_glb"]
+
+[node name="HopesGate" instance=ExtResource("1_glb")]

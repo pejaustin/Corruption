@@ -1,0 +1,8 @@
+; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Valley Cross's place scene. Its look is
+; art/world/pois/export/valley_cross.glb (from valley_cross.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
+; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
+[gd_scene format=3 uid="uid://cqt5kdyjwyhyd"]
+
+[ext_resource type="PackedScene" uid="uid://cesh4ijepdhq1" path="res://art/world/pois/export/valley_cross.glb" id="1_glb"]
+
+[node name="ValleyCross" instance=ExtResource("1_glb")]

@@ -182,7 +182,7 @@ known_at_start = true
 links = Array[NodePath]([NodePath("../TowerNorth"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Ford")])
 
 [node name="Chapel" type="Marker3D" parent="World/MapPoints" unique_id=1301301309]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 118.83, 1.1, -455.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124.83, 1.02, -455.0)
 script = ExtResource("21_mappoint")
 point_id = &"Chapel"
 display_name = "Forest Ruins"
@@ -202,7 +202,7 @@ links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../City")])
 target = NodePath("../../../SiteAvatar")
 
 [node name="BossSite" type="Marker3D" parent="World/MapPoints" unique_id=1301301311]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.41, 50.71)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.4, 72.71)
 script = ExtResource("21_mappoint")
 point_id = &"BossSite"
 display_name = "Valley Cross"
@@ -221,7 +221,7 @@ known_at_start = true
 links = Array[NodePath]([NodePath("../Chapel"), NodePath("../AvatarSite"), NodePath("../BossSite"), NodePath("../RoadWest")])
 
 [node name="SettlementSE" type="Marker3D" parent="World/MapPoints" unique_id=1301301313]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 378.17, -12.44, 299.47)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 378.17, -14.55, 283.47)
 script = ExtResource("21_mappoint")
 point_id = &"SettlementSE"
 display_name = "Entbridge"
@@ -230,7 +230,7 @@ known_at_start = true
 links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadSouth"), NodePath("../MineSE")])
 
 [node name="SettlementNW" type="Marker3D" parent="World/MapPoints" unique_id=1301301314]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -152.0, -1.73, -205.58)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -155.1, -1.71, -193.98)
 script = ExtResource("21_mappoint")
 point_id = &"SettlementNW"
 display_name = "Teshfield"
@@ -278,11 +278,11 @@ links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../RoadWest")])
 ; PLACEHOLDER: settlements, their people and the mines, not designed (tickets #584, #586)
 
 [node name="SettlementSE" type="Node3D" parent="World/Places" unique_id=1301301501]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 378.17, -12.44, 299.47)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 378.17, -14.55, 283.47)
 script = ExtResource("24_settlement")
 
 [node name="SettlementNW" type="Node3D" parent="World/Places" unique_id=1301301502]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -152.0, -1.73, -205.58)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -155.1, -1.71, -193.98)
 script = ExtResource("24_settlement")
 
 [node name="City" type="Node3D" parent="World/Places" unique_id=1301301503]
@@ -304,7 +304,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -174.62, 0.0, 166.78)
 relic = ExtResource("28_relic_a")
 
 [node name="RelicBossSite" parent="World/Places" instance=ExtResource("27_relicplace")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.46, 53.71)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.37, 75.71)
 relic = ExtResource("29_relic_b")
 
 [node name="MineSE" parent="World/Places" unique_id=1301301504 instance=ExtResource("25_resource")]
@@ -359,7 +359,7 @@ minions_root = NodePath("../World/Minions")
 body_scene = ExtResource("30_body")
 
 [node name="SiteChapel" parent="." unique_id=1560168247 instance=ExtResource("15_mxkvs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 118.83, 1.1, -455.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 124.83, 1.02, -455.0)
 ; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
 site_type = ExtResource("17_chapel")
 
@@ -369,7 +369,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -174.62, 0.0, 163.78)
 site_type = ExtResource("18_avsite")
 
 [node name="SiteBoss" parent="." unique_id=1825113212 instance=ExtResource("15_mxkvs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.41, 50.71)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.4, 72.71)
 ; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
 site_type = ExtResource("19_bosite")
 
