@@ -12,7 +12,7 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Which site type stands where, and how many | The first map's sites | `scenes/world/world.tscn` (`SiteChapel`, `SiteAvatar`, `SiteBoss`) | #584 |
 | Good-faction growth flavour lines | Flavour moments as the good faction grows | `scripts/good_faction.gd` `FLAVOUR_LINES` | #562 |
 | Which undead the summoning circle raises, one body each | Unit types and their cost in remains | `scripts/interactibles/summoning_circle.gd` | — |
-| The first map: 18 points (4 towers, 4 roads, the 3 sites, the city, 2 villages, 2 mines, an unknown ford and crossing), their labels and links | The first map's points, settlements, sites and city | `scenes/world/world.tscn` `World/MapPoints` | #584 |
+| The first map's 18 points (4 towers, 4 roads, the 3 sites, the city, 2 villages, 2 mines, an unknown ford and crossing), their labels and links, and WHERE each stands on Austin's 2 km map (Austin 2026-10-10: towns are sources of resources and humans; ~20 corruptible sites and graveyards are planned, none placed): towers on his four tower sites (slot 0 Naf Ishun, 1 Forest Tower, 2 Volcano Tower, 3 Avequel'la, which way each faces); city and holy site at Hopes Gate; villages at Entbridge and Teshfield; the chapel, avatar and boss sites at Forest Ruins, Ale Bend and Valley Cross; the ford and crossing at Mountain Pass and Lastford; roads, mines, Avatar and holy knights placed by eye (table in `art/world/README.md`) | The first map's points, settlements, sites and city, and which of his places is which | `scenes/world/world.tscn` `World/MapPoints`, `World/Places`, `World/Markers`, `Site*`; `art/world/export/world_landscape_2km.tscn` (tower `slot_index`) | #584 |
 | Advisor lines: goal names, questions, report sentences, dispatch/refusal lines | The advisor's voice | `scripts/orders/order_goal.gd`, `scripts/interactibles/advisor_handoff.gd`, `scripts/knowledge/knowledge_manager.gd` | #585 |
 | Boss form: one stand-in type, scaled by sites held (a skeleton in the Undead colours) | The Undead boss form and how sites feed it | `data/minions/boss_form.tres`, `scenes/actors/minion/types/boss_form.tscn`, `scenes/world/places/holy_site.gd` | #583 |
 | Maneuvers: three entries that only record being learned | The list of maneuvers and what each does | `data/maneuvers/*.tres` | #581 |
@@ -24,7 +24,7 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 |---|---|---|---|
 | World blockout: the whole landscape (heights, mountains, rivers, roads, forests, coast), the stand-in shape of every place, the props and the 32 px textures, all read off the sketch by eye | The world's real geography and art | `art/world/` (see its README), generators in `tools/blender/` | #604 |
 | Textures on Austin's hand-made map: `geo` is vertex-painted (`Splat` layer: black grass, red rock, green dirt, blue sand; the channel -> texture mapping and the 50% threshold are guesses, seeded from the old height / slope look); `Pale River` and `The Still Lake` water; `elder wood` and `northwood` darkened `leaf_pine` (no forest texture exists); nearest-filtered, 8 m tile size is a guess | His real ground art | `art/world/source/world_landscape.blend`, `tools/blender/add_splat.py`, `tools/blender/texture_austin_map.py` | #604 |
-| Open-world scene: sun, sky and fog, and the navmesh tuning (2 km: 1 m cells, climb 1 m; 6 km: 2 m cells, climb 2 m; agent radius 0.5 m, height 0.4 m (climb >= cell x tan(slope) or slopes split the mesh), walkable on `geo` and tower floors) | The world's real lighting and nav settings | `scenes/world/open_world/open_world_<size>.tscn`, `open_world_<size>_navmesh.res`, `tools/bake_open_world_navmesh.gd` | #605 |
+| Open-world scene: sun, sky and fog, and the navmesh tuning (2 km: 1 m cells, climb 1 m, triangles split to 40 m and put on the ground, agents search 32768 polygons; 6 km: 2 m cells, climb 2 m; agent radius 0.5 m, height 0.4 m (climb >= cell x tan(slope) or slopes split the mesh), walkable on `geo` and tower floors) | The world's real lighting and nav settings | `scenes/world/open_world/open_world_<size>.tscn`, `open_world_<size>_navmesh.res`, `tools/bake_open_world_navmesh.gd` | #605 |
 | Godot ground shader and water/forest materials: the splat channel mapping, 50% threshold and 8 m tile | His real ground art | `shaders/world_ground.gdshader`, `art/world/materials/` | #605 |
 | Curved world: horizon 1500 m, eye height 40 m (R = horizon^2 / (2 x eye height)), and the whole look of the bend | How far the world curves away, or whether it does | `project.godot` `[shader_globals]` (`curve_horizon_m`, `curve_eye_height_m`), `shaders/curved_world.gdshaderinc` | |
 | World size, 2000 m x 1500 m | The real world scale, decided by the scale test | `tools/blender/world_data.py` `WORLD_W/WORLD_H`, `world_root` in `world_landscape.blend` | #603 |
@@ -36,7 +36,7 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Balcony wording ("Press E to look out", "E / Q to return") | The balcony's UI copy | `scripts/interactibles/balcony.gd` | — |
 | Sky, sun and moon colours, night light and ambient levels | Day/night look | `scripts/day_night.gd` | #574 |
 | Ruined tower = hidden roof pieces, revealed as sites are held | Tower restoration stages | `scenes/world/env/tower.gd` | #567 |
-| Map floor illustration (parchment + terrain contours), point discs, chess pieces, ink ribbons | Map art | `scenes/map/` | #534, #538 |
+| Map floor illustration (parchment + terrain contours, now baked from his 2 km ground by `tools/bake_map_illustration.gd`: 256 px, shading and 20 m contours), point discs, chess pieces, ink ribbons | Map art | `scenes/map/` | #534, #538 |
 | Held scroll (a cylinder at the corner of the view); advisor subtitles and choice panel | Scroll and dialogue look | `overlord_actor.gd`, `scenes/ui/advisor_dialogue.gd` | — |
 | Mirror ring: a pulsing purple halo quad plus light, and a synthesized two-tone chime | How a ringing mirror looks and sounds (Q34: "chimes or glows") | `scripts/interactibles/mirror.gd` `_setup_ring_effects`, `_make_chime` | #569 |
 | Mirror prompt and notice text ("Press E to call", "No answer. Recording a message.", "Line busy.", "Call ended.", ...) | The mirror's UI wording | `scripts/interactibles/mirror.gd` `get_prompt_text` and call handlers | #569 |
@@ -111,3 +111,15 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Expected walking speed 3.5 m/s, contradiction radius 25 m, arrived radius 12 m, confirmed look lasts 10 s | How the map extrapolates and judges a group's position (tuning) | `world_model.gd` consts | #541 |
 | A courier looks at up to 3 more places along the group's route, waiting half the usual time at each, before reporting a group missing | How long a courier searches (tuning) | `knowledge_manager.gd` `COURIER_SEARCH_POINTS`, `courier_arrival_state.gd` `SEARCH_WAIT_FRACTION` | #541 |
 | The goal "Check that my orders were followed" and the courier line "Could not find group N where you thought it was, nor along its route" | Advisor wording (#585) | `order_goal.gd` `NAMES`, `knowledge_manager.gd` `_report_lines` | #541 |
+
+## Tuning (2 km game world)
+
+Numbers I changed so the old tuning fits the 2 km map; none is designed (playtest ticket #587).
+
+| Value | Now | Was | Where |
+|---|---|---|---|
+| Balcony lookout far plane | 3500 m | 1500 m | `scenes/interactibles/balcony.tscn` |
+| Sun shadow distance | 400 m | 100 m (default) | `scenes/world/world.tscn` `DirectionalLight3D` |
+| Map floor: enemy sightings sharing one piece | 80 m | 15 m | `scenes/map/map_floor.gd` `ENEMY_CLUSTER` |
+| Map floor: the world rectangle it shows | 2000 x 2000 m | 360 x 360 m | `scenes/map/map_floor.gd` `world_rect` |
+| Navmesh polygons a path search may visit | 32768 | 4096 (engine default) | `group_manager.gd` `PATH_SEARCH_POLYGONS`, minion and avatar agents |

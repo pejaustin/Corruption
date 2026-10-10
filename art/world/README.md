@@ -35,7 +35,7 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 The map is authored at 2 km in `source/world_landscape.blend`. `export_landscape.py -- <repo> 400m|2km|6km` writes
 `export/world_landscape_<size>.glb`; the others are the same file scaled in memory around the origin: 6 km is 3x wide
 and 5x tall, 400 m is a uniform 1/5 miniature for quick tests. Each size has its inherited scene (`export/world_landscape_<size>.tscn`, towers under the tower markers),
-`scenes/world/open_world/open_world_<size>.tscn` and baked navmesh. The 2 km version is the one in the game for now.
+`scenes/world/open_world/open_world_<size>.tscn` and baked navmesh. The 2 km version is the one in the game for now (`scenes/world/world.tscn`; see "Game world on the 2 km map").
 After editing the map, export every size, then rebake the navmeshes if the ground changed.
 
 ## Godot export (`tools/blender/export_landscape.py`)
@@ -160,3 +160,29 @@ empty marks the volcano POI, not the tower). The **Avequel'la** tower stands at 
 the `Avequel'la` POI marker (later its POI file, or one linked from it). **Naf Ishun** uses its POI marker. Empties whose
 names end in `Tower` are tower markers, not POIs (no `pois/` file). In Godot, `world_landscape_<size>.tscn` instances
 `scenes/world/env/tower.tscn` as a child of each of these four marker nodes.
+
+## Game world on the 2 km map (PLACEHOLDER layout, 2026-10-10)
+
+`scenes/world/world.tscn` holds `world_landscape_2km.tscn` under `World/Nav`; the Terrain3D ground and the runtime navmesh
+bake are gone. The navmesh is `scenes/world/world_navmesh.res`, baked with `WORLD=1 SIZE=2km godot --headless --path . -s
+res://tools/bake_open_world_navmesh.gd` (re-bake after any ground, tower or tower-rotation change). The tool splits the baked
+triangles to 40 m and puts the new vertices on the ground, because Godot leaves rolling ground as a few huge flat triangles
+(up to 35 m off the ground at 1 m cells, 1 m climb); agents and path queries search 32768 polygons.
+
+**Towers:** one tower per tower site, instanced under his markers in `world_landscape_2km.tscn`. Each has `slot_index`, which
+pairs it with the `MinionRallyPoint` at the same position under `World/Markers`, the `MapPoint` whose `tower_slot` matches, and
+the player who joined in that order. Which slot is which site, and which way each tower faces (toward the map centre unless
+the ground is steep), are placeholders.
+
+| Old point (`point_id`) | Now at | On his marker? |
+|---|---|---|
+| TowerEast / South / West / North | slot 0 Naf Ishun, 1 Forest Tower, 2 Volcano Tower, 3 Avequel'la (at each tower's courier spawn) | yes |
+| City, HolySite, Places/City | Hopes Gate | yes |
+| SettlementSE, SettlementNW | Entbridge, Teshfield | yes |
+| Chapel (SiteChapel), AvatarSite (SiteAvatar), BossSite (SiteBoss) | Forest Ruins, Ale Bend, Valley Cross | yes |
+| Ford, Crossing | Mountain Pass, Lastford | yes |
+| RoadEast / South / West / North | between each tower and its nearest place, by eye | no |
+| MineSE, MineNW | ~55 m from Entbridge and Teshfield | no |
+| Avatar, HolyKnights | beside Hopes Gate | no |
+
+Unused markers: Veilton, Hell's Mouth, far harbor, Valley Cross's neighbours. The war table's floor shows the whole map.
