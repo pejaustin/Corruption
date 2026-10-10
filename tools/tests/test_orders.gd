@@ -82,6 +82,11 @@ func run_tests() -> void:
 		t += 1.0
 
 	# A courier sent to check reads the report and leaves the order alone.
+	# (The group walked to the east road while the map still shows it at the chapel, 300 m away: far beyond a
+	# courier's sight, where on the old 300 m map it was 25 m. A courier brings fresh news first, as one would.)
+	var news := gm.make_report(g)
+	news["source"] = &"courier"
+	KnowledgeManager.deliver_report(1, news)
 	var issued := int(g.order.get("issued_tick", -1))
 	floor_map.toggle_group(g.id)
 	floor_map.finish_at(MapPoint.find(get_tree(), &"RoadEast"))
@@ -89,7 +94,7 @@ func run_tests() -> void:
 	chk["goal"] = OrderGoal.Goal.CHECK
 	var cmd3 := KnowledgeManager.request_dispatch(chk)
 	t = 0.0
-	while t < 200.0 and model.orders[cmd3]["stage"] != &"checked":
+	while t < 600.0 and model.orders[cmd3]["stage"] != &"checked":
 		await seconds(1.0)
 		t += 1.0
 	check(model.orders[cmd3]["stage"] == &"checked", "the check's report comes home (%.0fs)" % t)
@@ -102,8 +107,10 @@ func run_tests() -> void:
 	# The group is somewhere nobody expects: the courier searches, then it is missing.
 	var spot := MapPoint.find(get_tree(), &"RoadEast").global_position
 	model.expect(g.id, -1, spot, [spot], OrderGoal.Goal.GO_HERE, &"RoadEast", KnowledgeManager.current_tick())
+	# (Teshfield: ~560 m from the east road's point, on the ground; the old spot was 170 m from it.)
+	var hidden := MapPoint.find(get_tree(), &"SettlementNW").global_position + Vector3(0.0, 1.0, 0.0)
 	for m in gm.get_members(g):
-		m.global_position = Vector3(150, 0, -150)
+		m.global_position = hidden
 		m.waypoint = m.global_position
 	g.clear_order()
 	floor_map.toggle_group(g.id)
@@ -140,7 +147,7 @@ func run_tests() -> void:
 		"dest_point": &"Ford", "dest_kind": MapPoint.Kind.CROSSING, "goal": OrderGoal.Goal.SCOUT}
 	KnowledgeManager.request_dispatch(scout)
 	t = 0.0
-	while t < 200.0 and not model.is_point_known(&"Ford"):
+	while t < 900.0 and not model.is_point_known(&"Ford"):
 		await seconds(2.0)
 		t += 2.0
 	check(model.is_point_known(&"Ford"), "a scouting courier puts the ford on the map (%.0fs)" % t)

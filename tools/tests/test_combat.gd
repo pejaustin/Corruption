@@ -25,7 +25,7 @@ func run_tests() -> void:
 	for t in [&"wraith", &"thrall", &"boss_form"]:
 		await _duel("%s vs holy knight" % t, 1, t, -1, &"holy_knight", origin + Vector3(0, 0, 0.5), false)
 	await _duel("player 1 vs player 2", 1, &"skeleton", 2, &"skeleton", origin + Vector3(0, 0, 0.5), false)
-	await _capture_stalemate()
+	await _capture_stalemate(origin)
 	await _paladin(origin + Vector3(0, 0, 0.5))
 	await _duel("skeleton vs villager", 1, &"skeleton", -1, &"villager", origin + Vector3(0, 0, 0.5), false)
 
@@ -99,10 +99,10 @@ func _paladin(at: Vector3) -> void:
 		if is_instance_valid(m):
 			mm.despawn_minion(m)
 
-func _capture_stalemate() -> void:
+func _capture_stalemate(origin: Vector3) -> void:
 	## A group out to take captives hits humans only down to 1 HP. It must then
 	## leave them be, not swing at a human it can never kill (or never take).
-	var at := Vector3(0, 1.5, 0.5)
+	var at := origin + Vector3(0, 0.5, 0.5)  # was the world origin, on the old 300 m map's flat ground
 	# Keep the Paladin out of it: he would join whichever fight is nearest.
 	var avatar := get_tree().current_scene.get_node("World/Avatar") as AvatarActor
 	var ai_driver := avatar.avatar_input.ai_driver

@@ -30,14 +30,14 @@ func run_tests() -> void:
 	check(mm.get_bodies().size() >= 1, "a killed human leaves a body")
 	_order(g, &"SettlementSE", OrderGoal.Goal.GATHER_DEAD)
 	var remains_before := mm.get_remains(1)
-	await _until(func() -> bool: return mm.get_remains(1) > remains_before, 240.0)
+	await _until(func() -> bool: return mm.get_remains(1) > remains_before, 1200.0)  # the village is ~1100 m from the first tower
 	check(mm.get_remains(1) > remains_before, "the group carries the body home as remains")
 
 	# Goods.
 	var mine := world.get_node("World/Places/MineSE") as ResourceSite
 	mine.pile = 30.0
 	_order(g, &"MineSE", OrderGoal.Goal.HAUL)
-	await _until(func() -> bool: return mm.get_treasury(1) > 0, 240.0)
+	await _until(func() -> bool: return mm.get_treasury(1) > 0, 1200.0)
 	check(mm.get_treasury(1) > 0, "hauled goods reach the treasury (%d)" % mm.get_treasury(1))
 	check(KnowledgeManager.local_model().ledger.has(&"MineSE"), "the ledger has a report on the mine")
 
@@ -45,7 +45,7 @@ func run_tests() -> void:
 	_add_villagers(world, 2)
 	(world.get_node("SiteChapel") as CorruptionSite).debug_give_to(1)
 	_order(g, &"SettlementSE", OrderGoal.Goal.CAPTURE)
-	await _until(func() -> bool: return _count_type(1, &"thrall") > 0, 300.0)
+	await _until(func() -> bool: return _count_type(1, &"thrall") > 0, 1500.0)
 	check(_count_type(1, &"thrall") > 0, "a captive brought to the chapel becomes a thrall")
 
 	# Buying a noble.
@@ -59,7 +59,7 @@ func run_tests() -> void:
 		var nid := mm.spawn_neutral_minion(village.global_position + Vector3.UP, &"noble", village.global_position)
 		noble = mm.get_minion_by_id(nid)
 		noble.settlement_name = &"SettlementSE"
-	await _until(func() -> bool: return noble and noble.owner_peer_id == 1, 300.0)
+	await _until(func() -> bool: return noble and noble.owner_peer_id == 1, 1200.0)
 	check(noble != null and noble.owner_peer_id == 1, "goods and a promise buy the noble")
 
 	# Breaking the promise.

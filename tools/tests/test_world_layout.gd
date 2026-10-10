@@ -4,8 +4,8 @@ extends "res://tools/tests/test_base.gd"
 ## map point and player; every place and site stands on the ground and can be walked to from every tower (the holy knights are adopted into the unit root at start, so only the Avatar is checked).
 
 const GROUND_TOLERANCE: float = 3.0
-## How near the navmesh a place must be, and how near a path must end, in metres.
-const NAV_TOLERANCE: float = 6.0
+## How near the navmesh a place must be, and how near a path must end, in metres (a unit gives up circling a goal it cannot get within ~1.5 m of).
+const NAV_TOLERANCE: float = 2.0
 
 func run_tests() -> void:
 	var world := await load_world()

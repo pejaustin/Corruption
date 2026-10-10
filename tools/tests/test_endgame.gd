@@ -35,7 +35,7 @@ func run_tests() -> void:
 	check(HolySite.order_for(1) == expect, "the gauntlet runs weakest first")
 	var home := Marker3D.new()
 	world.add_child(home)
-	home.global_position = Vector3(60, 5, 60)
+	home.global_position = holy.global_position + Vector3(10, 0, 10)  # was (60, 5, 60), beside the old city
 	mm.bind_peer_courier_spawn(3, home)
 
 	# Away from the holy site, or not his owner: nothing starts.

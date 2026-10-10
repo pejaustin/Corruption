@@ -253,7 +253,7 @@ known_at_start = true
 links = Array[NodePath]([NodePath("../SettlementNW")])
 
 [node name="Ford" type="Marker3D" parent="World/MapPoints" unique_id=1301301317]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -302.77, 5.3, -554.85)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -284.0, 1.9, -550.1)
 script = ExtResource("21_mappoint")
 point_id = &"Ford"
 display_name = "Mountain Pass"

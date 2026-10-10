@@ -104,7 +104,8 @@ raycast = NodePath("../AvatarCamera/CameraMount/CameraRot/Camera3D/InteractionRa
 owner_actor = NodePath("..")
 
 [node name="NavAgent" type="NavigationAgent3D" parent="." index="10" unique_id=1422890771]
-path_desired_distance = 0.5
+; PLACEHOLDER: tuning — path_desired_distance was 0.5; the 2 km navmesh sits up to ~1 m off the ground
+path_desired_distance = 2.0
 target_desired_distance = 0.5
 path_max_distance = 3.0
 ; PLACEHOLDER: tuning — the 2 km map's navmesh has ~24k polygons; the default 4096 gave up on long routes

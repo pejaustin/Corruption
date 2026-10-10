@@ -17,8 +17,11 @@ const PARAMS: Dictionary[String, Array] = {"400m": [0.5, 0.5], "2km": [1.0, 1.0]
 ## 2 km at 40 m: ~24k polygons, ground within 0.4 m on average (12 m gave 195k polygons, which no path search covers;
 ## 80 m gave 10k polygons at 0.6 m). Paths and agents then need path_search_max_polygons above the polygon count.
 const REFINE_EDGE_M: Dictionary[String, float] = {"400m": 0.0, "2km": 40.0, "6km": 0.0}
-## How far a vertex may be from the ground and still count as standing on it, in metres.
-const ON_GROUND_TOLERANCE: float = 1.5
+## How far a baked vertex may be from the ground and still count as standing on it, in metres (contour vertices on
+## cliff edges can be a few metres off); such vertices are put exactly on the ground, so no triangle floats over another.
+const ON_GROUND_TOLERANCE: float = 6.0
+## Where the navmesh sits above the ground, in metres.
+const GROUND_OFFSET: float = 0.1
 const AGENT_HEIGHT: float = 0.4   # as in world.tscn
 const AGENT_RADIUS: float = 0.5
 const WORLD_OUT: String = "res://scenes/world/world_navmesh.res"
@@ -72,6 +75,9 @@ func _refine(nm: NavigationMesh, ground: MeshInstance3D, max_edge: float) -> voi
 	_ground_tri = ground.mesh.generate_triangle_mesh()
 	_ground_xf = ground.global_transform
 	_verts = nm.get_vertices()
+	for i in _verts.size():
+		if _on_ground(i):
+			_verts[i].y = _ground_y(_verts[i]) + GROUND_OFFSET
 	var polygons: Array[PackedInt32Array] = []
 	for i in nm.get_polygon_count():
 		polygons.append(nm.get_polygon(i))
@@ -94,7 +100,7 @@ func _split(a: int, b: int, c: int) -> void:
 		var p: int = ids[i]
 		var q: int = ids[(i + 1) % 3]
 		var d := _verts[p].distance_to(_verts[q])
-		if d > _max_edge and d > longest and _on_ground(p) and _on_ground(q):
+		if d > longest and _wants_split(p, q, d):
 			longest = d
 			at = i
 	if at < 0:
@@ -107,6 +113,9 @@ func _split(a: int, b: int, c: int) -> void:
 	_split(p, m, r)
 	_split(m, q, r)
 
+func _wants_split(p: int, q: int, length: float) -> bool:
+	return length > _max_edge and _on_ground(p) and _on_ground(q)
+
 func _midpoint(p: int, q: int) -> int:
 	var key := Vector2i(mini(p, q), maxi(p, q))
 	if _mids.has(key):
@@ -114,15 +123,11 @@ func _midpoint(p: int, q: int) -> int:
 	var mid := (_verts[p] + _verts[q]) * 0.5
 	var g := _ground_y(mid)
 	if not is_nan(g):
-		mid.y = g + (_verts[p].y + _verts[q].y) * 0.5 - _ground_y_cached(p, q)
+		mid.y = g + GROUND_OFFSET
 	_verts.append(mid)
 	_mids[key] = _verts.size() - 1
 	_grounded[_verts.size() - 1] = true
 	return _verts.size() - 1
-
-func _ground_y_cached(p: int, q: int) -> float:
-	## Mean ground height under the two ends, so the new vertex keeps the baked mesh's small offset above the ground.
-	return (_ground_y(_verts[p]) + _ground_y(_verts[q])) * 0.5
 
 func _on_ground(i: int) -> bool:
 	if not _grounded.has(i):
