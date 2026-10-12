@@ -35,7 +35,7 @@ func run_tests() -> void:
 	check(HolySite.order_for(1) == expect, "the gauntlet runs weakest first")
 	var home := Marker3D.new()
 	world.add_child(home)
-	home.global_position = holy.global_position + Vector3(10, 0, 10)  # was (60, 5, 60), beside the old city
+	home.global_position = _walkable_spot_near(world, holy.global_position, 10.0)  # was (60, 5, 60), beside the old city
 	mm.bind_peer_courier_spawn(3, home)
 
 	# Away from the holy site, or not his owner: nothing starts.
@@ -138,6 +138,17 @@ func _boss_of(mm: MinionManager, peer: int) -> MinionActor:
 		if m.minion_type_id == &"boss_form" and m.hp > 0:
 			return m
 	return null
+
+func _walkable_spot_near(world: Node, from: Vector3, metres: float) -> Vector3:
+	## A point about `metres` along the walking path out of `from` (towards the first tower). A fixed offset can land on a
+	## navmesh island (a pocket inside the city's buildings), where the army that spawns there can never leave.
+	var map := (world.get_node("World/Nav") as NavigationRegion3D).get_navigation_map()
+	var towers := get_tree().get_nodes_in_group(&"towers")
+	var path := NavigationServer3D.map_get_path(map, from, (towers[0] as Node3D).global_position, true)
+	for p in path:
+		if Vector2(p.x - from.x, p.z - from.z).length() >= metres:
+			return p
+	return from
 
 func _flat(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
