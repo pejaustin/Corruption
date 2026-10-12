@@ -184,7 +184,7 @@ func _hand_over(winner: int) -> void:
 		return
 	var gate := _mm.get_courier_spawn_for(winner)
 	if gate:
-		# PLACEHOLDER: #576 — how he is taken to the winner's tower; a plain teleport.
+		# He appears at the winner's tower straight away (Austin, 2026-10-12, #576).
 		# Pinned for a moment so the rollback tick keeps the new position.
 		_avatar.pin_transform(Transform3D(Basis.IDENTITY, gate.global_position + Vector3.UP))
 		get_tree().create_timer(PIN_SECONDS).timeout.connect(_avatar.unpin_transform)

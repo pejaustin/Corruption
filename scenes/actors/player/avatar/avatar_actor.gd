@@ -9,9 +9,11 @@ class_name AvatarActor extends PlayerActor
 ## - **Control tiers** (Q18): an owner's control level is 1 + the AVATAR_CONTROL
 ##   sites they hold; each action needs a level (`can_use`), and below
 ##   RESIST_GOOD_BELOW_LEVEL he refuses to strike the good faction.
-## - **Zero HP** (Q15): his corruption is wiped (the good faction has him again)
-##   and after RECOVER_DELAY he gets up where he fell, weak; AvatarAI then takes
-##   him home to recover.
+## - **Defeat** (Q14, Q15; Austin, 2026-10-12): unheld, he goes to whoever
+##   defeated him (`last_hit_by`), no contest. Held, his corruption is wiped
+##   (the good faction has him again), PaladinHold opens a contest, and after
+##   RECOVER_DELAY he gets up where he fell, weak; AvatarAI then takes him home
+##   to recover.
 
 signal resisted(target: Actor)
 
@@ -53,6 +55,8 @@ const WATCHER_ORB_ALPHA: float = 0.45
 @export var watcher_orb_scene: PackedScene
 
 var controlling_peer_id: int = -1
+## Host: the allegiance of whoever last landed a blow on him (-1 = good faction).
+var last_hit_by: int = GameConstants.GOOD_SIDE
 ## Legacy flag kept for old test harnesses (activate/deactivate). In play the
 ## Paladin is never dormant: unowned, he serves the good faction.
 var is_dormant: bool = false
@@ -170,8 +174,16 @@ func _die() -> void:
 	super()
 	if not multiplayer.is_server():
 		return
-	# GDD §8 (Q15): at zero HP his corruption is wiped and the controller loses him.
-	GameState.set_avatar_owner(GameConstants.GOOD_SIDE)
+	# Neutral: whoever defeats him gets control, no contest (Austin, 2026-10-12).
+	# Not while a contest over him is open: that is the contest's to settle.
+	if not GameState.has_avatar_owner() and not hold.is_contested() and last_hit_by > 0:
+		GameState.set_avatar_owner(last_hit_by)
+		return
+	# Held (Q15): his corruption is wiped and the controller loses him; any
+	# player can now contest him (Austin, 2026-10-12).
+	if GameState.has_avatar_owner():
+		GameState.set_avatar_owner(GameConstants.GOOD_SIDE)
+		hold.open_contest()
 	if not _recover_scheduled:
 		_recover_scheduled = true
 		get_tree().create_timer(RECOVER_DELAY).timeout.connect(_recover_in_place)
@@ -250,8 +262,9 @@ func _on_avatar_owner_changed(_old_owner: int, new_owner: int) -> void:
 		avatar_ai.clear_orders()  # a new master's pawn doesn't keep old orders
 	if new_owner > 0:
 		faction = GameState.get_faction(new_owner)
-		# PLACEHOLDER: rule — a player who takes him gets him at full HP.
-		if multiplayer.is_server() and hp > 0:
+		# PLACEHOLDER: rule — a player who takes him gets him at full HP (up
+		# again, if he was defeated taking him).
+		if multiplayer.is_server():
 			_pending_hp = get_max_hp()
 	else:
 		faction = GameConstants.Faction.NEUTRAL

@@ -72,6 +72,7 @@ func run_tests() -> void:
 	check(_outcomes.has(&"lost") and HolySite.state == HolySite.State.IDLE, "a boss beating the Paladin ends the gauntlet")
 	check(gs.avatar_owner_peer_id == 3, "the winning boss's player owns him")
 	check(avatar.global_position.distance_to(home.global_position) < 4.0, "he is taken to their tower")
+	check(not avatar.hold.is_contested(), "a gauntlet comeback leaves no contest over him")
 	check(_boss_of(mm, 3) == null, "the boss form is gone with the gauntlet")
 	avatar.god_mode = true
 	await seconds(AvatarActor.RECOVER_DELAY + 1.0)

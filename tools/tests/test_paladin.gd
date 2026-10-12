@@ -1,6 +1,6 @@
 extends "res://tools/tests/test_base.gd"
 
-## The Paladin (GDD §8): takeover by troops when he is low, the hold fading
+## The Paladin (GDD §8): defeat takes a neutral one, a contest over a defeated held one, the hold fading
 ## away from corruption, zero HP wiping his owner, control tiers, resistance,
 ## the unclaimed AI, overpowering, and the Palantir voice group.
 
@@ -26,26 +26,23 @@ func run_tests() -> void:
 	Engine.time_scale = 4.0
 	var here := avatar.global_position
 
-	# Full HP: troops around him do not turn him.
+	# Troops around a neutral Paladin do not turn him: there is no contest.
 	avatar.god_mode = true
 	for i in 5:
 		mm.spawn_unit_for_peer(1, &"", here + Vector3(2.0, 0.5, float(i) - 2.0))
 	await seconds(3.0)
-	check(hold.get_takeover(1) == 0.0 and not gs.has_avatar_owner(), "no takeover while he is at full HP")
+	check(hold.get_takeover(1) == 0.0 and not hold.is_contested() and not gs.has_avatar_owner(), "no contest over a neutral Paladin")
 
-	# Low HP: anyone's troops can begin turning him.
+	# Neutral: whoever defeats him gets control, no contest (Austin, 2026-10-12).
 	avatar.god_mode = false
-	avatar.incoming_damage += avatar.hp - int(avatar.get_max_hp() * 0.2)
+	avatar.last_hit_by = 1  # the blow lands from player 1's troops (attack_state sets this)
+	avatar.incoming_damage += avatar.hp + 10
+	await frames(10)
+	check(gs.avatar_owner_peer_id == 1, "defeating a neutral Paladin gives you control")
+	check(not hold.is_contested(), "no contest after a neutral defeat")
 	await frames(10)
 	avatar.god_mode = true
-	check(hold.is_low(), "damage brings him low (hp %d)" % avatar.hp)
-	await seconds(3.0)
-	check(hold.get_takeover(1) > 0.0, "troops near him at low HP build takeover progress (%.2f)" % hold.get_takeover(1))
-	hold.takeover[1] = 0.99
-	await seconds(1.5)
-	check(gs.avatar_owner_peer_id == 1, "a finished takeover hands him to that player")
-	await frames(10)
-	check(avatar.hp == avatar.get_max_hp(), "the new owner gets him at full HP")
+	check(avatar.hp == avatar.get_max_hp(), "the new owner gets him up at full HP (hp %d)" % avatar.hp)
 	for m in mm.get_minions_for_player(1):
 		mm.notify_minion_died(m)
 	await frames(5)
@@ -58,7 +55,7 @@ func run_tests() -> void:
 	var start_hold := hold.hold
 	await seconds(2.0)
 	check(hold.hold < start_hold, "away from corruption the hold fades (%.3f)" % hold.hold)
-	hold.hold = 0.005
+	hold.hold = 0.0005
 	await seconds(1.5)
 	check(not gs.has_avatar_owner(), "an empty hold loses him to the good faction")
 
@@ -108,6 +105,7 @@ func run_tests() -> void:
 	avatar.incoming_damage += avatar.hp + 10
 	await seconds(1.0)
 	check(not gs.has_avatar_owner() and not gs.has_avatar(), "zero HP: the owner and controller lose him")
+	check(hold.is_contested(), "a defeated, held Paladin is open to a contest")
 	check(avatar.global_position.distance_to(fell_at) < 2.0, "he is not sent home at zero HP")
 	await seconds(AvatarActor.RECOVER_DELAY + 1.0)
 	check(avatar.hp > 0 and avatar.hp < avatar.get_max_hp(), "he recovers in place, weak (hp %d)" % avatar.hp)
@@ -135,6 +133,24 @@ func run_tests() -> void:
 	gs.request_set_watching(false)
 	await frames(5)
 	check(not gs.is_watching(1) and gs.get_paladin_voice_peers().is_empty(), "leaving the Palantir leaves the voice group")
+
+	# Held and defeated: any player can contest him; troops near him build
+	# progress (PLACEHOLDER rule for #573: tug of war by strength present).
+	avatar.avatar_input.ai_driver = null
+	avatar.god_mode = false
+	avatar.last_hit_by = GameConstants.GOOD_SIDE
+	avatar.incoming_damage += avatar.hp + 10
+	await frames(10)
+	check(not gs.has_avatar_owner() and hold.is_contested(), "his owner defeated holding him: a contest opens")
+	var down_at := avatar.global_position
+	for i in 5:
+		mm.spawn_unit_for_peer(1, &"", down_at + Vector3(2.0, 0.5, float(i) - 2.0))
+	await seconds(2.0)
+	check(hold.get_takeover(1) > 0.0, "troops near the contested Paladin build progress (%.2f)" % hold.get_takeover(1))
+	hold.takeover[1] = 0.99
+	await seconds(1.5)
+	check(gs.avatar_owner_peer_id == 1 and not hold.is_contested(), "a finished takeover wins the contest")
+	avatar.god_mode = true
 	Engine.time_scale = 1.0
 	if NetworkTime.has_method("stop"):
 		NetworkTime.stop()

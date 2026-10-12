@@ -81,7 +81,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Good faction: thresholds +15% per growth step, a site goes dark every 2 steps, draw at step 15 | `scripts/good_faction.gd` |
 | Tower whole at 4 sites held; a ruin shows a quarter of its roof | `scenes/world/env/tower.gd` |
 | Mirror: ring timeout 20 s, live pose 20 Hz, live voice ~11 kHz in 0.1 s packets, status notice 5 s, chime every 2 s, glow 1 pulse/s | `scripts/interactibles/mirror.gd` consts |
-| Paladin takeover: begins at or below 30% HP; troops within 10 m; strength 3 to begin; 15 s at that strength (faster with more); a stalled takeover fades over 30 s | `scenes/actors/player/avatar/paladin_hold.gd` `TAKEOVER_*` |
+| Paladin contest: open for 60 s after a held Paladin is defeated; troops within 10 m; strength 3 to begin; 15 s at that strength (faster with more); a stalled takeover fades over 30 s | `scenes/actors/player/avatar/paladin_hold.gd` `CONTEST_SECONDS`, `TAKEOVER_*` |
 | Paladin hold fades from full to nothing over 300 s away from your sites; overpowering takes 240 s at a Palantir | `paladin_hold.gd` `HOLD_SECONDS`, `OVERPOWER_SECONDS` |
 | Paladin at zero HP lies 5 s, then gets up where he fell with 25% HP | `scenes/actors/player/avatar/avatar_actor.gd` `RECOVER_DELAY`, `RECOVER_HP_FRACTION` |
 | Unclaimed Paladin goes home below 50% HP (stays until whole), regenerates 5 HP/s within 6 m of the city centre | `scenes/actors/player/avatar/avatar_ai.gd` `RECOVER_BELOW_FRACTION`, `RECOVER_RADIUS`, `REGEN_PER_SECOND` |
@@ -98,7 +98,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Rule | Open question | Where | Ticket |
 |---|---|---|---|
 | A sacked tower is only flagged (`CorruptionSite.sacked`); it spawns nothing yet. Design: a steady trickle (Austin, 2026-10-12) | Trickle rate and unit type | `scenes/sites/corruption_site.gd` | |
-| Contested takeover of the Paladin: the player with the most troop strength near him progresses, a tie freezes everyone; his company (troops of his own allegiance) present freezes it | How a contested takeover works (Q14) | `paladin_hold.gd` `_tick_takeover` | #573 |
+| Contested takeover of the Paladin: the player with the most troop strength near him progresses, a tie freezes everyone; his company (troops of his own allegiance) present freezes it | How the contest over a defeated, held Paladin resolves (Q14) | `paladin_hold.gd` `_tick_takeover` | #573 |
 | Control tiers: level 1 walk; 2 + attack; 3 + run, roll, jump; 4 + abilities. Below level 3 he refuses to strike the good faction | Which action sits in which tier (tiers plus resistance, temple crystals raise control: Austin, 2026-10-12) | `avatar_actor.gd` `CONTROL_UNLOCKS`, `RESIST_GOOD_BELOW_LEVEL` |  |
 | An owned Paladin driven by the AI obeys the same tiers (at level 1 he only walks, and he skips targets he would resist) | Whether the tiers bind him when left alone (Q17/Q18) | `avatar_ai.gd` `_fight`, `_update_target` |  |
 | Overpowering needs strictly more AVATAR_CONTROL sites than his owner (the good faction counts as none) and runs only while you keep looking through a Palantir; stop looking and it is lost | How "overpower with raw corruption" works (Q14) | `paladin_hold.gd` `can_overpower`, `_tick_overpower` | #554 |

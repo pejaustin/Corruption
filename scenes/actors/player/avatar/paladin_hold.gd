@@ -5,12 +5,14 @@ class_name PaladinHold extends Node
 ## is the same on every peer). The host ticks it and mirrors the numbers to
 ## clients for the Palantir prompt and the avatar HUD.
 ##
-## Taking him (Q14):
-## - **Takeover by troops**, mirroring CorruptionSite's presence capture: while
-##   his HP is at or below TAKEOVER_HP_FRACTION, any player's troop strength
-##   inside TAKEOVER_RADIUS that meets TAKEOVER_THRESHOLD builds that player's
-##   progress at strength / threshold speed. His company (troops of his own
-##   allegiance) present freezes it: they have to be beaten first.
+## Taking him (Q14; Austin, 2026-10-12):
+## - **Neutral:** whoever defeats him gets control, no contest
+##   (AvatarActor._die hands him to his last attacker).
+## - **Held, then defeated** (e.g. losing a runestone boss fight): his owner
+##   loses him and a contest opens for CONTEST_SECONDS. Any player's troop
+##   strength inside TAKEOVER_RADIUS that meets TAKEOVER_THRESHOLD builds that
+##   player's progress at strength / threshold speed. His company (troops of
+##   his own allegiance) present freezes it: they have to be beaten first.
 ## - **Overpowering** with raw corruption: a player holding strictly more
 ##   AVATAR_CONTROL sites than his owner can start a slow overpower while
 ##   looking through a Palantir.
@@ -22,8 +24,8 @@ class_name PaladinHold extends Node
 signal changed
 
 const TICK_INTERVAL: float = 0.5
-## PLACEHOLDER: tuning — HP fraction at or below which anyone can begin a takeover.
-const TAKEOVER_HP_FRACTION: float = 0.3
+## PLACEHOLDER: tuning — seconds a defeated, held Paladin stays open to a contest.
+const CONTEST_SECONDS: float = 60.0
 ## PLACEHOLDER: tuning — troops within this horizontal distance of him count.
 const TAKEOVER_RADIUS: float = 10.0
 ## PLACEHOLDER: tuning — troop strength needed to begin turning him.
@@ -40,8 +42,10 @@ const OVERPOWER_SECONDS: float = 240.0
 
 ## The owner's hold on him, 0..1. Full while he is near their corruption.
 var hold: float = 1.0
-## peer -> takeover progress 0..1 (troops turning him while he is low).
+## peer -> takeover progress 0..1 (troops turning him while he is contested).
 var takeover: Dictionary[int, float] = {}
+## Seconds left on the contest over a defeated, held Paladin; 0 = no contest.
+var contest_left: float = 0.0
 ## peer -> overpower progress 0..1 (raw corruption from a Palantir).
 var overpower: Dictionary[int, float] = {}
 ## Allegiance -> troop strength near him at the last tick (host only).
@@ -65,14 +69,20 @@ func _physics_process(delta: float) -> void:
 	_tick_hold(dt)
 	_tick_takeover(dt)
 	_tick_overpower(dt)
-	_sync.rpc(hold, takeover, overpower)
+	_sync.rpc(hold, takeover, overpower, contest_left)
 	changed.emit()
 
 # --- Queries ---
 
-func is_low() -> bool:
-	## True while he is weak enough for anyone to begin a takeover.
-	return _avatar.hp > 0 and float(_avatar.hp) <= float(_avatar.get_max_hp()) * TAKEOVER_HP_FRACTION
+func is_contested() -> bool:
+	## True while a defeated, held Paladin is open to any player's takeover.
+	return contest_left > 0.0
+
+func open_contest() -> void:
+	## Host: his owner was defeated holding him; any player may now contest him.
+	if multiplayer.is_server():
+		contest_left = CONTEST_SECONDS
+		takeover.clear()
 
 func get_takeover(peer_id: int) -> float:
 	return takeover.get(peer_id, 0.0)
@@ -151,7 +161,8 @@ func _tick_takeover(dt: float) -> void:
 	_measure_presence()
 	var taker := -1
 	var frozen := false
-	if is_low():
+	if is_contested():
+		contest_left = maxf(0.0, contest_left - dt)
 		var company: float = present_strength.get(_avatar.get_allegiance(), 0.0)
 		if company > 0.0:
 			frozen = true  # his company stands by him: beat them first
@@ -217,10 +228,13 @@ func _measure_presence() -> void:
 		var side := minion.get_allegiance()
 		present_strength[side] = present_strength.get(side, 0.0) + minion.strength
 
-func _on_avatar_owner_changed(_old_owner: int, _new_owner: int) -> void:
-	# A new owner starts with a full hold; every takeover starts over.
+func _on_avatar_owner_changed(_old_owner: int, new_owner: int) -> void:
+	# A new owner starts with a full hold; every takeover starts over. A player
+	# taking him ends any contest.
 	hold = 1.0
 	takeover.clear()
+	if new_owner > 0:
+		contest_left = 0.0
 	if multiplayer.is_server():
 		for peer in overpower.keys():
 			if not can_overpower(peer):
@@ -228,8 +242,9 @@ func _on_avatar_owner_changed(_old_owner: int, _new_owner: int) -> void:
 	changed.emit()
 
 @rpc("authority", "call_remote", "unreliable")
-func _sync(h: float, t: Dictionary, o: Dictionary) -> void:
+func _sync(h: float, t: Dictionary, o: Dictionary, c: float) -> void:
 	hold = h
+	contest_left = c
 	takeover.clear()
 	for peer in t:
 		takeover[int(peer)] = float(t[peer])
