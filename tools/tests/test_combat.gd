@@ -91,10 +91,20 @@ func _paladin(at: Vector3) -> void:
 		waited += 2.0
 	var skel := await _spawn(1, &"skeleton", at)
 	var knight := await _spawn(-1, &"holy_knight", at + Vector3(40, 0, 0))
-	avatar.global_position = at + Vector3(2.5, 0, 0)
+	# A plain global_position write is undone by the next rollback restore; pin_transform survives it.
+	avatar.pin_transform(Transform3D(Basis.IDENTITY, at + Vector3(2.5, 0, 0)))
+	await frames(10)
+	avatar.unpin_transform()
 	var hp := avatar.hp
-	await seconds(20.0)
-	check(not is_instance_valid(skel) or skel.hp <= 0 or avatar.hp < hp, "the Paladin and a player's unit hurt each other (skeleton %s, Paladin %d/%d)" % [skel.hp if is_instance_valid(skel) else "dead", avatar.hp, hp])
+	# Watch his lowest HP: a neutral Paladin who is beaten goes to the victor at full HP (Austin, 2026-10-12),
+	# so his HP at the end of the fight can be back at full.
+	var lowest := hp
+	var elapsed := 0.0
+	while elapsed < 20.0:
+		await seconds(0.25)
+		elapsed += 0.25
+		lowest = mini(lowest, avatar.hp)
+	check(not is_instance_valid(skel) or skel.hp <= 0 or lowest < hp, "the Paladin and a player's unit hurt each other (skeleton %s, Paladin %d/%d)" % [skel.hp if is_instance_valid(skel) else "dead", lowest, hp])
 	for m in [skel, knight]:
 		if is_instance_valid(m):
 			mm.despawn_minion(m)
@@ -107,7 +117,7 @@ func _capture_stalemate(origin: Vector3) -> void:
 	var avatar := get_tree().current_scene.get_node("World/Avatar") as AvatarActor
 	var ai_driver := avatar.avatar_input.ai_driver
 	avatar.avatar_input.ai_driver = null
-	avatar.global_position = at + Vector3(80, 0, 0)
+	avatar.pin_transform(Transform3D(Basis.IDENTITY, at + Vector3(80, 0, 0)))  # a bare global_position write is rolled back
 	for case in [[&"noble", "a noble"], [&"villager", "a villager"], [&"holy_knight", "a soldier"]]:
 		var a := await _spawn(1, &"wraith", at)
 		var b := await _spawn(-1, case[0], at + Vector3(2.5, 0, 0))
@@ -127,4 +137,5 @@ func _capture_stalemate(origin: Vector3) -> void:
 			if is_instance_valid(m):
 				mm.despawn_minion(m)
 		await frames(5)
+	avatar.unpin_transform()
 	avatar.avatar_input.ai_driver = ai_driver
