@@ -86,7 +86,7 @@ eye_height_m = 200.0
 [node name="Env" type="Node3D" parent="World"]
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="World"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1622.3442, 42.402996, -2344.5015)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1622.3442, 42.402996, -2344.5017)
 
 [node name="Avatar" parent="World" instance=ExtResource("4_wofib")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.5, -12.071711, 152.70001)
@@ -94,13 +94,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.5, -12.071711, 152.70001)
 [node name="Enemies" type="Node3D" parent="World"]
 
 [node name="HolyKnight" parent="World/Enemies" instance=ExtResource("5_v670c")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.46988, -14.360815, 156.4112)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.4699, -14.360815, 156.4112)
 
 [node name="HolyKnight2" parent="World/Enemies" instance=ExtResource("5_v670c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 290.7799, -14.64715, 154.0112)
 
 [node name="HolyKnight3" parent="World/Enemies" instance=ExtResource("5_v670c")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 298.67987, -14.893172, 154.0112)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 298.6799, -14.893172, 154.0112)
 
 [node name="Interactables" type="Node3D" parent="World"]
 
@@ -198,7 +198,7 @@ links = Array[NodePath]([NodePath("../RoadWest"), NodePath("../RoadNorth"), Node
 target = NodePath("../../../SiteBoss")
 
 [node name="City" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.46988, -16.159992, 152.87119)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.4699, -16.159992, 152.87119)
 script = ExtResource("6_l6md0")
 point_id = &"City"
 display_name = "Hopes Gate"
@@ -266,14 +266,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -459.11618, -8.610604, -605.1
 script = ExtResource("7_aquyn")
 
 [node name="City" type="Node3D" parent="World/Places"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.46988, -16.159992, 152.87119)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.4699, -16.159992, 152.87119)
 script = ExtResource("7_aquyn")
 radius = 12.0
 villagers = 3
 soldiers = 0
 
 [node name="HolySite" parent="World/Places" instance=ExtResource("8_xdkmn")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.46988, -16.159992, 152.87119)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 295.4699, -16.159992, 152.87119)
 
 [node name="RelicAvatarSite" parent="World/Places" instance=ExtResource("9_5nh1s")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -523.865, -0.00022888184, 494.34872)

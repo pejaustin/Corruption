@@ -2,12 +2,14 @@
 Blender 4.5, background. NEVER SAVES the .blend: it opens it, exports, prints a checksum and quits.
 Usage: blender.exe -b <world_landscape.blend> --python tools/blender/export_landscape.py -- <repo_root>
 Optional 2nd arg: `400m`, `2km` (default) or `6km` (writes export/world_landscape_<size>.glb), or an output .glb path (scratch).
-Sizes (Austin, 2026-10-10: keep both, 2 km in the game for now): the .blend is authored at 2 km; `6km` scales it in memory
-around the world origin, 3x wide and 5x tall; `400m` is a uniform 1/5 miniature for quick tests (Austin, 2026-10-10) (positions of every root object, and the scale of every mesh; empties keep
+Sizes (Austin, 2026-10-10: keep both, 2 km in the game for now): the map may be authored at any size; the authored size is read
+from `geo`'s object scale (2 km convention: scale (1000, 1000, 3); Austin's 2026-10-12 edit is at 6 km: (3000, 3000, 15)), and each
+preset below is relative to 2 km, so the file is rescaled in memory by preset / authored. `6km` is 3x wide and 5x tall over 2 km; `400m` is a uniform 1/5 miniature for quick tests (Austin, 2026-10-10) (positions of every root object, and the scale of every mesh; empties keep
 scale 1 so things hung under markers keep their size). Blender +Y (north) becomes Godot -Z (glTF Y-up conversion).
 Exported: the ground `geo` and every empty (POI and tower markers, Austin's spellings as node names). Other meshes
 (`elder wood`, `northwood`, `Pale River`, `The Still Lake`) are Austin's rough position guides for where forests and
-water go, not meshes to use (Austin, 2026-10-10), so they stay in Blender only. Vertex colour on geo: Splat and Col
+water go, not meshes to use (Austin, 2026-10-10), so they stay in Blender only. The one other mesh exported is the ocean (any mesh named *ocean*, e.g. "Glittering Ocean", exported under his exact name; his first version, `Plane`, becomes `Ocean`): a flat sea surface,
+exported as real geometry with the water material and no collision. Vertex colour on geo: Splat and Col
 are repacked in memory, see below; material by name (ground_placeholder). The materials' Blender node trees are not glTF-exportable; Godot replaces
 them by name (art/world/materials/, mapped in world_landscape.glb.import). Ground collision (trimesh on `geo`) is set in
 the .glb.import, not here, so the .glb stays faithful."""
@@ -47,6 +49,13 @@ def digest(c):
 
 before = checksum()
 geo = bpy.data.objects["geo"]
+# The ocean: Austin's flat sea plane (named `Ocean`; his first version is called `Plane`). Exported as geometry (PLACEHOLDER look).
+# Detected as any mesh whose name contains "ocean" (any case; Austin's is "Glittering Ocean"), else the first version's `Plane`.
+ocean = next((o for o in bpy.data.objects if o.type == "MESH" and "ocean" in o.name.lower()), None) or \
+    next((o for o in bpy.data.objects if o.type == "MESH" and o.name == "Plane"), None)
+OCEAN_NODE = (ocean.name if "ocean" in ocean.name.lower() else "Ocean") if ocean else None
+_ocean_name = ocean.name if ocean else None
+_ocean_mats = [m for m in ocean.data.materials] if ocean else []
 # Ground layers for Godot (IN MEMORY ONLY, never saved): glTF importer maps only COLOR_0 to COLOR, so pack
 #   Splat (texture choice, RGB) -> COLOR_0 (the active colour attribute is what gets exported),
 #   Col   (tint, RGB)           -> UV (r, g) and UV2 (b, 0)   [replaces geo's UVMap / WorldUV in the export; the shader
@@ -72,7 +81,11 @@ else:
     print("WARNING: geo has no Splat / Col; run tools/blender/add_splat.py")
 # Size preset, in memory only (undone after the export so the checksum below still compares like with like).
 from mathutils import Vector
-SX, SZ = SIZES[size]
+# Authored size from geo's scale (2 km = (1000, 1000, 3)); divide it out so any authored size exports right.
+AW = geo.scale.x / 1000.0
+AH = geo.scale.z / 3.0
+SX, SZ = SIZES[size][0] / AW, SIZES[size][1] / AH
+print("AUTHORED", AW, AH, "-> factors", SX, SZ)
 _saved = {o.name: (o.location.copy(), o.scale.copy()) for o in bpy.data.objects}
 def rescale(fx, fz):
     for o in bpy.data.objects:
@@ -138,16 +151,21 @@ def footprint(o):
     area = sum(abs((verts[b][0] - verts[a][0]) * (verts[c][1] - verts[a][1]) - (verts[c][0] - verts[a][0]) * (verts[b][1] - verts[a][1])) / 2 for a, b, c in tris)
     return {"kind": "forest" if mat.startswith("forest") else "water" if mat.startswith("water") else "", "material": mat,
             "area_m2": round(area, 1), "vertices": verts, "triangles": tris, "outlines": loops}
-GUIDES = {o.name: footprint(o) for o in bpy.data.objects if o.type == "MESH" and o.name != "geo"}
+GUIDES = {o.name: footprint(o) for o in bpy.data.objects if o.type == "MESH" and o.name != "geo" and o != ocean}
 areas_path = os.path.join(out_dir, "areas_%s.json" % size) if out == os.path.join(root, "art/world/export/world_landscape_%s.glb" % size) else None
 if areas_path:
     with open(areas_path, "w") as f:
-        json.dump({"size": size, "wide": SX, "tall": SZ, "note": "GENERATED by tools/blender/export_landscape.py from the guide meshes of world_landscape.blend (X/Y only; x, z = Godot axes, metres at this size)", "areas": GUIDES}, f, separators=(",", ":"))
+        json.dump({"size": size, "wide": SIZES[size][0], "tall": SIZES[size][1], "note": "GENERATED by tools/blender/export_landscape.py from the guide meshes of world_landscape.blend (X/Y only; x, z = Godot axes, metres at this size)", "areas": GUIDES}, f, separators=(",", ":"))
     print("AREAS", areas_path, {n: (g["kind"], g["area_m2"], len(g["triangles"]), len(g["outlines"])) for n, g in GUIDES.items()})
-# Only geo and the markers; guide meshes (forest / water outlines) are not exported (Austin, 2026-10-10).
+# Only geo, the ocean and the markers; guide meshes (forest / water outlines) are not exported (Austin, 2026-10-10).
+if ocean:   # in memory only: the node is called Ocean and carries the water material (Godot swaps it for water_placeholder.tres)
+    ocean.name = OCEAN_NODE
+    wm = bpy.data.materials.get("water_placeholder") or bpy.data.materials.new("water_placeholder")
+    ocean.data.materials.clear()
+    ocean.data.materials.append(wm)
 for o in bpy.data.objects:
-    o.select_set(o.name == "geo" or o.type == "EMPTY")
-print("GUIDES_NOT_EXPORTED", [o.name for o in bpy.data.objects if o.type == "MESH" and o.name != "geo"])
+    o.select_set(o.name in ("geo", OCEAN_NODE) or o.type == "EMPTY")
+print("GUIDES_NOT_EXPORTED", [o.name for o in bpy.data.objects if o.type == "MESH" and o.name not in ("geo", OCEAN_NODE)])
 bpy.ops.export_scene.gltf(
     filepath=out, export_format="GLB", export_yup=True, use_selection=True,
     export_apply=False, export_materials="EXPORT", export_image_format="NONE",
@@ -155,6 +173,11 @@ bpy.ops.export_scene.gltf(
     export_texcoords=True, export_normals=True, export_cameras=False, export_lights=False,
     export_animations=False, export_extras=False)
 
+if ocean:
+    ocean.name = _ocean_name
+    ocean.data.materials.clear()
+    for m in _ocean_mats:
+        ocean.data.materials.append(m)
 for o in bpy.data.objects:   # restore exactly (no float round trip)
     o.location, o.scale = _saved[o.name]
 bpy.context.view_layer.update()

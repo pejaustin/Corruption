@@ -32,10 +32,16 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 
 ## Sizes: 400 m, 2 km, 6 km (Austin, 2026-10-10)
 
-The map is authored at 2 km in `source/world_landscape.blend`, and the game plays at three sizes; the host picks one in the
+The map may be authored at any size in `source/world_landscape.blend`: the export reads `geo`'s object scale (2 km convention
+(1000, 1000, 3); Austin's 2026-10-12 edit is at 6 km, (3000, 3000, 15)) and divides it out before applying each preset, so a 2 km- or
+6 km-authored file both export right and the file is never rescaled. The game plays at three sizes; the host picks one in the
 lobby (**World: 400 m / 2 km / 6 km**, default 2 km, next to the pace picker; `MatchConfig.WorldSize`, `GameState.world_size`).
-`export_landscape.py -- <repo> 400m|2km|6km` writes `export/world_landscape_<size>.glb`; the others are the same file scaled in
-memory around the origin: 6 km is 3x wide and 5x tall, 400 m is a uniform 1/5 miniature for quick tests.
+`export_landscape.py -- <repo> 400m|2km|6km` writes `export/world_landscape_<size>.glb`; each is the file scaled in
+memory around the origin to the preset (relative to 2 km: 6 km is 3x wide and 5x tall, 400 m is a uniform 1/5 miniature for quick tests).
+
+**The ocean (2026-10-12):** Austin's flat sea mesh is exported as real geometry. It is found as any mesh whose name contains "ocean" (any case; his is
+`Glittering Ocean`), else the first version's `Plane`; the Godot node keeps his exact name (`Plane` becomes `Ocean`), with `water_placeholder` (curved-world shader), no collision (so no navmesh on its surface; the ground beneath is the
+sea floor) and not a guide. PLACEHOLDER look.
 
 **Two files are hand-edited sources, the rest is generated from them:**
 

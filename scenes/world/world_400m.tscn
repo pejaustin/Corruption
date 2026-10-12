@@ -80,34 +80,34 @@ environment = SubResource("Environment_s4jie")
 
 [node name="WorldCurve" type="Node" parent="World/Atmosphere"]
 script = ExtResource("3_wy4mj")
-horizon_m = 300.00000447034836
+horizon_m = 300.00002682209015
 eye_height_m = 8.000000715255737
 
 [node name="Env" type="Node3D" parent="World"]
 
 [node name="PlayerSpawnPoint" type="Node3D" parent="World"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 108.154396, 42.27964, -156.29932)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 108.154396, 42.27964, -156.29936)
 
 [node name="Avatar" parent="World" instance=ExtResource("4_u3tta")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7000003, 0.49421382, 10.18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7000003, 0.49421382, 10.180001)
 
 [node name="Enemies" type="Node3D" parent="World"]
 
 [node name="HolyKnight" parent="World/Enemies" instance=ExtResource("5_iqu3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698042, 0.8705933, 13.735522)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698038, 0.8705933, 13.735523)
 
 [node name="HolyKnight2" parent="World/Enemies" instance=ExtResource("5_iqu3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.008048, 0.7162231, 11.335521)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.008043, 0.7162231, 11.335522)
 
 [node name="HolyKnight3" parent="World/Enemies" instance=ExtResource("5_iqu3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.908041, 0.615852, 11.335521)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.908037, 0.615852, 11.335522)
 
 [node name="Interactables" type="Node3D" parent="World"]
 
 [node name="MapPoints" type="Node3D" parent="World"]
 
 [node name="TowerEast" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86.01438, 0.029638708, -124.67932)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86.01438, 0.029638708, -124.67937)
 script = ExtResource("6_bi1pj")
 point_id = &"TowerEast"
 display_name = "Naf Ishun"
@@ -134,7 +134,7 @@ links = Array[NodePath]([NodePath("../RoadWest")])
 tower_slot = 2
 
 [node name="TowerNorth" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(-0.25881904, 0, 0.96592605, 0, 1, 0, -0.96592605, 0, -0.25881904, -83.57948, 0.00018310547, -188.94003)
+transform = Transform3D(-0.25881904, 0, 0.96592605, 0, 1, 0, -0.96592605, 0, -0.25881904, -83.579544, 0.00018310547, -188.94)
 script = ExtResource("6_bi1pj")
 point_id = &"TowerNorth"
 display_name = "Avequel'la"
@@ -143,35 +143,35 @@ links = Array[NodePath]([NodePath("../RoadNorth")])
 tower_slot = 3
 
 [node name="RoadEast" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.200005, 0.027343752, -127.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.200005, 0.027343752, -127.80001)
 script = ExtResource("6_bi1pj")
 point_id = &"RoadEast"
 display_name = "Road (Naf Ishun)"
 links = Array[NodePath]([NodePath("../TowerEast"), NodePath("../Chapel"), NodePath("../SettlementSE"), NodePath("../Ford")])
 
 [node name="RoadSouth" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 107.200005, -1.5869021, 76.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 107.20001, -1.5869021, 76.40001)
 script = ExtResource("6_bi1pj")
 point_id = &"RoadSouth"
 display_name = "Road (Forest Tower)"
 links = Array[NodePath]([NodePath("../TowerSouth"), NodePath("../AvatarSite"), NodePath("../SettlementSE"), NodePath("../Crossing")])
 
 [node name="RoadWest" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -130, 5.271559, 76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -130.00002, 5.271559, 76.00001)
 script = ExtResource("6_bi1pj")
 point_id = &"RoadWest"
 display_name = "Road (Volcano Tower)"
 links = Array[NodePath]([NodePath("../TowerWest"), NodePath("../City"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Crossing")])
 
 [node name="RoadNorth" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -57.600002, 0.1356331, -100.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -57.600006, 0.1356331, -100.40001)
 script = ExtResource("6_bi1pj")
 point_id = &"RoadNorth"
 display_name = "Road (Avequel'la)"
 links = Array[NodePath]([NodePath("../TowerNorth"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Ford")])
 
 [node name="Chapel" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.763182, 0.009697247, -91.00027)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.763184, 0.009697247, -91.000275)
 script = ExtResource("6_bi1pj")
 point_id = &"Chapel"
 display_name = "Forest Ruins"
@@ -180,7 +180,7 @@ links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../City")])
 target = NodePath("../../../SiteChapel")
 
 [node name="AvatarSite" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.92201, 0, 32.75251)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.922012, 0, 32.75251)
 script = ExtResource("6_bi1pj")
 point_id = &"AvatarSite"
 display_name = "Ale Bend"
@@ -189,7 +189,7 @@ links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../City")])
 target = NodePath("../../../SiteAvatar")
 
 [node name="BossSite" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.9199, -0.18129893, 32.13999)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.91992, -0.18129893, 32.13999)
 script = ExtResource("6_bi1pj")
 point_id = &"BossSite"
 display_name = "Valley Cross"
@@ -198,7 +198,7 @@ links = Array[NodePath]([NodePath("../RoadWest"), NodePath("../RoadNorth"), Node
 target = NodePath("../../../SiteBoss")
 
 [node name="City" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698042, -0.6435621, 10.195521)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698038, -0.6435621, 10.195522)
 script = ExtResource("6_bi1pj")
 point_id = &"City"
 display_name = "Hopes Gate"
@@ -206,7 +206,7 @@ kind = 3
 links = Array[NodePath]([NodePath("../Chapel"), NodePath("../AvatarSite"), NodePath("../BossSite"), NodePath("../RoadWest")])
 
 [node name="SettlementSE" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.63134, -3.898096, 43.893513)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.63135, -3.898096, 43.893517)
 script = ExtResource("6_bi1pj")
 point_id = &"SettlementSE"
 display_name = "Entbridge"
@@ -214,7 +214,7 @@ kind = 2
 links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadSouth"), NodePath("../MineSE")])
 
 [node name="SettlementNW" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.493538, -0.46664068, -29.512993)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.493538, -0.46664068, -29.512995)
 script = ExtResource("6_bi1pj")
 point_id = &"SettlementNW"
 display_name = "Teshfield"
@@ -222,7 +222,7 @@ kind = 2
 links = Array[NodePath]([NodePath("../RoadWest"), NodePath("../RoadNorth"), NodePath("../MineNW")])
 
 [node name="MineSE" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120.46133, 0.012561036, 89.423515)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120.461334, 0.012561036, 89.423515)
 script = ExtResource("6_bi1pj")
 point_id = &"MineSE"
 display_name = "Mine (Entbridge)"
@@ -238,7 +238,7 @@ kind = 5
 links = Array[NodePath]([NodePath("../SettlementNW")])
 
 [node name="Ford" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.783474, 1.0177978, -106.21985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.783478, 1.0177978, -106.21986)
 script = ExtResource("6_bi1pj")
 point_id = &"Ford"
 display_name = "Mountain Pass"
@@ -247,7 +247,7 @@ known_at_start = false
 links = Array[NodePath]([NodePath("../RoadEast"), NodePath("../RoadNorth")])
 
 [node name="Crossing" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.176277, -0.2257544, 99.725)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.176277, -0.2257544, 99.725006)
 script = ExtResource("6_bi1pj")
 point_id = &"Crossing"
 display_name = "Lastford"
@@ -258,33 +258,33 @@ links = Array[NodePath]([NodePath("../RoadSouth"), NodePath("../RoadWest")])
 [node name="Places" type="Node3D" parent="World"]
 
 [node name="SettlementSE" type="Node3D" parent="World/Places"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.63134, -3.898096, 43.893513)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.63135, -3.898096, 43.893517)
 script = ExtResource("7_2chqg")
 
 [node name="SettlementNW" type="Node3D" parent="World/Places"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.493538, -0.46664068, -29.512993)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.493538, -0.46664068, -29.512995)
 script = ExtResource("7_2chqg")
 
 [node name="City" type="Node3D" parent="World/Places"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698042, -0.6435621, 10.195521)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698038, -0.6435621, 10.195522)
 script = ExtResource("7_2chqg")
 radius = 12.0
 villagers = 3
 soldiers = 0
 
 [node name="HolySite" parent="World/Places" instance=ExtResource("8_nxmcy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698042, -0.6435621, 10.195521)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698038, -0.6435621, 10.195522)
 
 [node name="RelicAvatarSite" parent="World/Places" instance=ExtResource("9_rim1j")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.92201, 0, 35.75251)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.922012, 0, 35.75251)
 relic = ExtResource("10_f0xld")
 
 [node name="RelicBossSite" parent="World/Places" instance=ExtResource("9_rim1j")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.9199, 0.1500929, 35.13999)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.91992, 0.1500929, 35.13999)
 relic = ExtResource("11_b3yna")
 
 [node name="MineSE" parent="World/Places" instance=ExtResource("12_o3v3t")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120.46133, 0.012561036, 89.423515)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120.461334, 0.012561036, 89.423515)
 
 [node name="MineNW" parent="World/Places" instance=ExtResource("12_o3v3t")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65.39353, 0.006750487, -71.533)
@@ -292,7 +292,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65.39353, 0.006750487, -71.5
 [node name="Markers" type="Node3D" parent="World"]
 
 [node name="MinionRallyPoint" parent="World/Markers" instance=ExtResource("13_pmbup")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 76.61436, 0.029638708, -111.24933)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 76.61436, 0.029638708, -111.249374)
 
 [node name="MinionRallyPoint2" parent="World/Markers" instance=ExtResource("13_pmbup")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 83.95767, 3.8680906, 92.936134)
@@ -301,7 +301,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 83.9
 transform = Transform3D(0.5000003, 0, -0.8660258, 0, 1, 0, 0.8660258, 0, 0.5000003, -183.23181, 26.33867, 142.10327)
 
 [node name="MinionRallyPoint4" parent="World/Markers" instance=ExtResource("13_pmbup")]
-transform = Transform3D(-0.96592605, 0, -0.25881907, 0, 1, 0, 0.25881907, 0, -0.96592605, -72.85563, 0.00018310547, -201.34834)
+transform = Transform3D(-0.96592605, 0, -0.25881907, 0, 1, 0, 0.25881907, 0, -0.96592605, -72.85568, 0.00018310547, -201.34831)
 
 [node name="Nav" type="NavigationRegion3D" parent="World"]
 navigation_mesh = ExtResource("14_cdgis")
@@ -333,14 +333,14 @@ minions_root = NodePath("../World/Minions")
 body_scene = ExtResource("20_yfxc3")
 
 [node name="SiteChapel" parent="." instance=ExtResource("21_agwjk")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.763182, 0.009697247, -91.00027)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.763184, 0.009697247, -91.000275)
 
 [node name="SiteAvatar" parent="." instance=ExtResource("21_agwjk")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.92201, 0, 32.75251)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.922012, 0, 32.75251)
 site_type = ExtResource("22_2gtmw")
 
 [node name="SiteBoss" parent="." instance=ExtResource("21_agwjk")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.9199, -0.18129893, 32.13999)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.91992, -0.18129893, 32.13999)
 site_type = ExtResource("23_mpfmw")
 
 [node name="GroupManager" type="Node" parent="."]
