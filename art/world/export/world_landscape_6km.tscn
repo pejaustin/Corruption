@@ -52,11 +52,11 @@
 
 [node name="Tower" parent="Volcano Tower" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
-transform = Transform3D(0.50000024, 0, 0.8660253, 0, 1, 0, -0.8660253, 0, 0.50000024, 0, -4.550598, 0)
+transform = Transform3D(1, 0, -2.384187e-07, 0, 1, 0, 2.384187e-07, 0, 1, 0, -16.60498, 0)
 slot_index = 2
 
 [node name="MapFloor" parent="Volcano Tower/Tower" index="13"]
-world_rect = Rect2(-3000, -3000, 6000, 6000)
+world_rect = Rect2(-3000.0002, -3000.0002, 6000.0005, 6000.0005)
 illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Volcano Tower/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
@@ -64,11 +64,11 @@ far = 10500.0
 
 [node name="Tower" parent="Forest Tower" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.89941406, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.8991852, 0)
 slot_index = 1
 
 [node name="MapFloor" parent="Forest Tower/Tower" index="13"]
-world_rect = Rect2(-3000, -3000, 6000, 6000)
+world_rect = Rect2(-3000.0002, -3000.0002, 6000.0005, 6000.0005)
 illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Forest Tower/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
@@ -76,11 +76,11 @@ far = 10500.0
 
 [node name="Tower" parent="Avequel'la" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
-transform = Transform3D(-0.90069103, 0, 0.4344603, 0, 1, 0, -0.4344603, 0, -0.90069103, 0, 0.0010375977, 0)
+transform = Transform3D(-0.9824473, 0, 0.18654047, 0, 1, 0, -0.18654047, 0, -0.9824473, 0, 0.0008544922, 0)
 slot_index = 3
 
 [node name="MapFloor" parent="Avequel'la/Tower" index="13"]
-world_rect = Rect2(-3000, -3000, 6000, 6000)
+world_rect = Rect2(-3000.0002, -3000.0002, 6000.0005, 6000.0005)
 illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Avequel'la/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
@@ -88,24 +88,24 @@ far = 10500.0
 
 [node name="Tower" parent="Naf Ishun" instance=ExtResource("16_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
-transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, 0, -3.5174751, 0)
+transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, 0, -3.2694588, 0)
 slot_index = 0
 
 [node name="MapFloor" parent="Naf Ishun/Tower" index="13"]
-world_rect = Rect2(-3000, -3000, 6000, 6000)
+world_rect = Rect2(-3000.0002, -3000.0002, 6000.0005, 6000.0005)
 illustration = ExtResource("17_picture")
 
 [node name="LookoutCamera" parent="Naf Ishun/Tower/Balcony/LookoutPivot/LookoutPitch" index="0"]
 far = 10500.0
 
 [node name="JumpPoint" parent="Naf Ishun/Tower/NavigationRegion3D" index="3"]
-end_position = Vector3(-5, -41.886818, 0)
+end_position = Vector3(-5, -41.854225, 0)
 
 [node name="JumpPoint" parent="Forest Tower/Tower/NavigationRegion3D" index="3"]
 end_position = Vector3(-5, -40.672615, 0)
 
 [node name="JumpPoint" parent="Volcano Tower/Tower/NavigationRegion3D" index="3"]
-end_position = Vector3(-5, -45.01233, 0)
+end_position = Vector3(-5, -41.895752, 0)
 
 [node name="JumpPoint" parent="Avequel'la/Tower/NavigationRegion3D" index="3"]
-end_position = Vector3(-5, -40.89744, 0)
+end_position = Vector3(-5, -40.89726, 0)
