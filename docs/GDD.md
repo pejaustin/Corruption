@@ -132,7 +132,8 @@ Wealth is material, never a number in the corner. (Q24, Q25)
   get, are set per site. Until Austin sets them, each uses one default marked PLACEHOLDER.
 - **Temples are mini-dungeons.** Inside are "the Goddesses forces, which are guards, priests, and maybe some minor
   celestial beings for harder to crack temples. these are not bosses, but can be difficult especially based on the
-  user's level as the avatar." Clearing the dungeon is a shortcut: troops can still take a temple slowly, but the
+  user's level as the avatar." Temples don't scale: each is designed easier or harder, and a player who has unlocked
+  less of the Avatar finds the harder temples harder to clear. Clearing the dungeon is a shortcut: troops can still take a temple slowly, but the
   Paladin clearing it corrupts it at once or much faster. The forces come back whenever the temple is purified or
   returns to neutral.
 - **Runestones are arena duels** with the sealed Dark Lord. Each runestone's power can be won once per round: the
