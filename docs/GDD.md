@@ -108,6 +108,34 @@ Wealth is material, never a number in the corner. (Q24, Q25)
 - **Your tower is a corruption site that is permanently yours.** It can be sacked but always comes back, and it spawns
   units in a way that discourages rivals from killing you and hanging around. (Q39)
 
+### Points of interest and Avatar encounters (Austin, 2026-10-12)
+
+- **Avatar encounters** are either an **arena duel** or a **mini-dungeon** of 3–5 rooms, about 3–5 minutes each. The
+  shape is fixed per POI type.
+- **Getting there:** the Paladin is sent by an order; when he arrives, the player possesses him through the Palantir
+  (builds on Q17).
+- **Four POI types:**
+  - **Temples:** "huge crystals are sources of power that are needed to ensure evil can't taint the land, and are
+    associated with the Goddess. Taking control and corrupting these sites allows the player that controls them to
+    gain specific upgrades."
+  - **Towns:** "sources of bodies, workers, and spies. To control them a player needs to enthrall their rulers by
+    various means: intimidation, persuasion, etc."
+  - **Work sites:** "where human workers can be commanded to collect resources needed for warfare."
+  - **Runestones:** "sites where previous Dark Lords were defeated and sealed away. This is where players can unlock
+    boss-form upgrades. They fight a boss as the Avatar, and winning means gaining a power, move, ability, technique,
+    etc. that that sealed evil used in the fight."
+- **Burial grounds** are not a POI type of their own. Each belongs to a parent site: temples have crypts, runestones
+  have ancient battlefields, towns have graveyards. Whoever holds the parent site mines its burial ground. Different
+  kinds of burial ground make different troops (for example, starting with armor, or immune to certain attacks).
+- **Temples are mini-dungeons.** Inside are "the Goddesses forces, which are guards, priests, and maybe some minor
+  celestial beings for harder to crack temples. these are not bosses, but can be difficult especially based on the
+  user's level as the avatar." Clearing the dungeon is a shortcut: troops can still take a temple slowly, but the
+  Paladin clearing it corrupts it at once or much faster. The forces come back whenever the temple is purified or
+  returns to neutral.
+- **Runestones are arena duels** with the sealed Dark Lord. Each runestone's power can be won once per round: the
+  first winner takes it and the runestone is spent.
+- **No Paladin encounters at towns or work sites.** Those run through troops, goods and the advisor.
+
 ## 8. The Paladin (the Avatar)
 
 The good faction's chosen Paladin. What makes him a powerful tool of good makes him a powerful tool of evil.
@@ -157,8 +185,13 @@ The magic mirror (Q33, Q34): live calls and recorded messages. It captures audio
 - **Boss forms:** what each looks like and does; how sites feed them.
 - **How the Paladin gets home** after a gauntlet comeback. (Q22)
 - **Your tower's unit spawning:** what it spawns, and when. (Q39)
-- **Content (Austin's to write):** site types and their capabilities, relics, maneuvers, the advisor, the map and its
-  locations, unit types, boss forms.
+- **Temple crystals:** which upgrades each temple's crystal gives. (Austin's to write)
+- **Burial grounds:** what troop traits each kind (crypt, ancient battlefield, graveyard) gives. (Austin's to write)
+- **Bogs and work sites:** where bogs go, and whether work sites get a burial ground.
+- **Burial-ground encounters:** whether burial grounds have a Paladin encounter of their own (e.g. a crypt as part of
+  the temple dungeon) or are troops-only.
+- **Content (Austin's to write):** what each POI type grants beyond the above, relics, maneuvers, the advisor, the map
+  and its locations, unit types, boss forms.
 
 ## 12. Proposals not adopted
 
