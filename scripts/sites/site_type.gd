@@ -21,6 +21,8 @@ enum Encounter { NONE, DUNGEON, ARENA }
 @export var size: Size = Size.SMALL
 @export var poi_kind: PoiKind = PoiKind.SITE
 @export var encounter: Encounter = Encounter.NONE
+## The rooms of that encounter (an EncounterSpace scene). PLACEHOLDER layouts. Null = none.
+@export var encounter_scene: PackedScene
 
 @export_group("Taking it")
 ## Minimum strength of your forces present before corruption starts (Q11). A

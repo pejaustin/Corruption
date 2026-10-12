@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/sites/site_type.gd" id="1_script"]
 
+[ext_resource type="PackedScene" path="res://scenes/sites/encounter/temple_dungeon.tscn" id="2_enc"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"temple"
@@ -9,6 +11,7 @@ display_name = "Temple"
 capability = &"avatar_control"
 size = 0
 poi_kind = 1
+encounter_scene = ExtResource("2_enc")
 encounter = 1
 strength_threshold = 3.0
 corrupt_seconds = 60.0

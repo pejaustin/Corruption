@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/sites/site_type.gd" id="1_script"]
 
+[ext_resource type="PackedScene" path="res://scenes/sites/encounter/runestone_arena.tscn" id="2_enc"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"runestone"
@@ -9,6 +11,7 @@ display_name = "Runestone"
 capability = &"boss_power"
 size = 1
 poi_kind = 4
+encounter_scene = ExtResource("2_enc")
 encounter = 2
 strength_threshold = 6.0
 corrupt_seconds = 120.0

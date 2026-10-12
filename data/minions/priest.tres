@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MinionType" format=3]
+
+; PLACEHOLDER: the Goddess's priest — name, stats and look are not designed (temple dungeons).
+; Good faction, so the Paladin resists striking it below control level 3 (AvatarActor).
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"priest"
+display_name = "PLACEHOLDER: Priest"
+hp = 40
+damage = 10
+speed = 2.5
+aggro_radius = 20.0
+attack_range = 2.0
+attack_cooldown = 1.5
+color = Color(0.95, 0.95, 1, 1)
+is_human = true
