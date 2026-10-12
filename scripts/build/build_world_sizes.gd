@@ -111,6 +111,8 @@ func _build() -> void:
 		print("[build] areas ", report)
 	_ensure_areas_in_source()
 	for size in sizes:
+		if size == SOURCE_SIZE and _out_dir == "":
+			continue   # the 2 km scenes are the hand-edited sources: only a trial (OUT_DIR) rebuilds them
 		var ground := Ground.new()
 		ground.load_size(size)
 		_size = size

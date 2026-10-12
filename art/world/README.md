@@ -32,6 +32,8 @@ Previews: `render_previews.py` (top-down ortho, +Y up, plus low views; it adds t
 
 ## Sizes: 400 m, 2 km, 6 km (Austin, 2026-10-10)
 
+**2 km is the working size (Austin, 2026-10-12).** `tools/sync_world_sizes.sh` handles only 2 km by default; 400 m and 6 km are kept and regenerated only on request (`--all-sizes`, or `--sizes 400m,6km`). They were last synced to the 2026-10-12 map (dense ground) and pass the layout test, but changes to the 2 km scenes since then do not reach them until that run.
+
 The map may be authored at any size in `source/world_landscape.blend`: the export reads `geo`'s object scale (2 km convention
 (1000, 1000, 3); Austin's 2026-10-12 edit is at 6 km, (3000, 3000, 15)) and divides it out before applying each preset, so a 2 km- or
 6 km-authored file both export right and the file is never rescaled. The game plays at three sizes; the host picks one in the

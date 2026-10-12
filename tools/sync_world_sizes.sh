@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# One step from Austin's 2 km map to all three world sizes (400 m, 2 km, 6 km).
+# One step from Austin's 2 km map to the world sizes. 2 km is the working size (Austin, 2026-10-12): by default only
+# 2 km is exported, imported, baked and checked; 400 m and 6 km are kept as they are and regenerated only on request.
 #
-#   tools/sync_world_sizes.sh                 after editing the map in Blender (ground, markers): everything below
+#   tools/sync_world_sizes.sh                 after editing the map in Blender (ground, markers): everything below, 2 km only
+#   tools/sync_world_sizes.sh --all-sizes     the same for 400 m, 2 km and 6 km (also --sizes 400m,2km,6km, any subset)
 #   tools/sync_world_sizes.sh --no-export     the .blend is unchanged; you edited art/world/export/world_landscape_2km.tscn
 #                                             (something under a marker) or scenes/world/world.tscn (moved places)
 #   tools/sync_world_sizes.sh --no-bake       as above, and the ground did not change: skip the navmesh and map-picture bakes
@@ -25,18 +27,25 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT="$PWD"
-SIZES=(400m 2km 6km)
+SIZES=(2km)
 GODOT="${GODOT:-godot}"
 DO_EXPORT=1
 DO_BAKE=1
-for arg in "$@"; do
+while [ $# -gt 0 ]; do
+  arg="$1"; shift
+  [ "$arg" = "--sizes" ] && { IFS=, read -ra SIZES <<< "${1:?--sizes needs a list}"; shift; continue; }
   case "$arg" in
     --no-export) DO_EXPORT=0 ;;
     --no-bake) DO_BAKE=0; DO_EXPORT=0 ;;
-    -h|--help) sed -n 2,22p "$0"; exit 0 ;;
+    --all-sizes) SIZES=(400m 2km 6km) ;;
+    --sizes=*) IFS=, read -ra SIZES <<< "${arg#--sizes=}" ;;
+    -h|--help) sed -n 2,26p "$0"; exit 0 ;;
     *) echo "unknown option: $arg (see --help)" >&2; exit 2 ;;
   esac
 done
+# the derived sizes (everything but 2 km) the build step makes from the 2 km scenes
+DERIVED=(); for s in "${SIZES[@]}"; do [ "$s" != 2km ] && DERIVED+=("$s"); done
+DERIVED_CSV="$(IFS=,; echo "${DERIVED[*]-}")"
 
 # --- helpers ---
 
@@ -140,12 +149,12 @@ else
 fi
 
 step "4/5 build the 400 m and 6 km scenes from the 2 km ones"
-gd 600 "$GODOT" --headless --path . -s res://scripts/build/build_world_sizes.gd
+gd 600 SIZES="${DERIVED_CSV:-2km}" "$GODOT" --headless --path . -s res://scripts/build/build_world_sizes.gd
 
 if [ "$DO_BAKE" = 1 ]; then
   step "5/5 navmeshes (then the build again, fitting the towers to them)"
   for size in "${SIZES[@]}"; do gd 1800 WORLD=1 SIZE="$size" "$GODOT" --headless --path . -s res://tools/bake_open_world_navmesh.gd; done
-  gd 600 "$GODOT" --headless --path . -s res://scripts/build/build_world_sizes.gd
+  gd 600 SIZES="${DERIVED_CSV:-2km}" "$GODOT" --headless --path . -s res://scripts/build/build_world_sizes.gd
 else
   step "5/5 navmeshes: skipped"
 fi
