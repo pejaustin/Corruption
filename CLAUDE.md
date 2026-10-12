@@ -24,6 +24,15 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Headless tests** (`tools/tests/`): each test is a small scene that loads the real world as an offline host and
   exits with the number of failed checks, e.g. `godot --headless --path . res://tools/tests/test_sites.tscn`.
   A fresh clone needs the editor opened once first (netfox autoload UIDs and the import cache).
+- **4-player network smoke** (`tools/net/`): `tools/net/smoke.sh` starts a listen-server host and three joiners as separate
+  headless processes on localhost (free UDP port, `timeout`, trap-killed) and drives lobby -> Start -> seats/towers -> orders
+  and couriers -> site changes -> Paladin (defeat, possess, Palantir viewers, recall) -> mirror calls -> gauntlet, win and
+  draw, checking on every peer; it exits non-zero on any FAIL or missing summary. Logs: `$SMOKE_LOGDIR` (default a temp dir).
+  Env: `SMOKE_WORLD=400m|2km|6km` (default 400m), `SMOKE_PLAYERS`, `SMOKE_ARGS="--stop-after=<phase>"`. Takes ~4-8 min.
+  Not covered (printed as SKIP): audio capture/playback, mic, a moving player's pose, real network latency/NAT. The host
+  freezes the 23 neutral townsfolk and the processes run physics at 30 Hz so four worlds fit on 4 cores. netfox's
+  "Trying to run rollback ... past the history limit" / "Received data for N, rejecting because older than 64 frames"
+  warnings (thousands per joiner) mean the host's tick count fell behind its clock under CPU load.
 - **Input playtests** (`tools/playtest/`): play the game like a person, not by calling its functions.
   `input_driver.gd` pushes real `InputEvent`s through `Input.parse_input_event()` (actions, keys, mouse look, the
   interaction raycast) and has `walk_to`, `aim_at`, `press_action`, `key`, `look`, `click` and `screenshot`, logging

@@ -20,9 +20,15 @@ var _upnp_mapped: bool = false
 
 func create_server_peer(network_connection_configs: NetworkConnectionConfigs) -> void:
 	var enet_network_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	enet_network_peer.create_server(SERVER_PORT, GameConstants.MAX_PLAYERS)
+	# host_port > 0 overrides the default port (tools/net/ picks a free one per run); the lobby still shows 8080.
+	var port: int = network_connection_configs.host_port if network_connection_configs.host_port > 0 else SERVER_PORT
+	var err: Error = enet_network_peer.create_server(port, GameConstants.MAX_PLAYERS)
+	if err != OK:
+		push_error("ENet: create_server on port %d failed (%s)" % [port, error_string(err)])
+		return
 	multiplayer.multiplayer_peer = enet_network_peer
-	_start_upnp_async()
+	if network_connection_configs.use_upnp:
+		_start_upnp_async()
 
 ## Discovers the gateway and opens SERVER_PORT on a worker thread so the host
 ## boot doesn't stall on the ~2s UPNP.discover() call. Result is reported via
