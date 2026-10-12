@@ -19,6 +19,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Relics: two entries (a runner on first hit; one more route point) and where they lie (one at each of two sites) | The list of relics, what each does, where they are | `data/relics/*.tres`, `scenes/world/world.tscn` (`RelicAvatarSite`, `RelicBossSite`) | |
 | Temple crystal upgrades: one default, the same for every temple | Which upgrades each temple's crystal gives (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 | Burial-ground troop traits: one default, the same for every burial ground | Which traits each burial ground's troops get (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
+| Domination of a neutral Paladin: no site or faction grants the ability yet, and the corruption level it needs is unset | Which site or faction type gives the domination ability (Austin 2026-10-12) | GDD §8 "Taking him" (not built yet) | |
 
 ## Art and look
 
