@@ -128,6 +128,8 @@ Wealth is material, never a number in the corner. (Q24, Q25)
   have ancient battlefields, towns have graveyards. Whoever holds the parent site mines its burial ground. Different
   kinds of burial ground make different troops (for example, starting with armor, or immune to certain attacks).
   Burial grounds are troops-only: they have no Paladin encounter of their own. Work sites have no burial ground.
+- **Configurable per site:** which upgrades a temple's crystal gives, and which troop traits a burial ground's troops
+  get, are set per site. Until Austin sets them, each uses one default marked PLACEHOLDER.
 - **Temples are mini-dungeons.** Inside are "the Goddesses forces, which are guards, priests, and maybe some minor
   celestial beings for harder to crack temples. these are not bosses, but can be difficult especially based on the
   user's level as the avatar." Clearing the dungeon is a shortcut: troops can still take a temple slowly, but the
@@ -186,8 +188,6 @@ The magic mirror (Q33, Q34): live calls and recorded messages. It captures audio
 - **Boss forms:** what each looks like and does; how sites feed them.
 - **How the Paladin gets home** after a gauntlet comeback. (Q22)
 - **Your tower's unit spawning:** what it spawns, and when. (Q39)
-- **Temple crystals:** which upgrades each temple's crystal gives. (Austin's to write)
-- **Burial grounds:** what troop traits each kind (crypt, ancient battlefield, graveyard) gives. (Austin's to write)
 - **Content (Austin's to write):** what each POI type grants beyond the above, relics, maneuvers, the advisor, the map
   and its locations, unit types, boss forms.
 

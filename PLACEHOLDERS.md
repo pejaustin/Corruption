@@ -17,6 +17,8 @@ Numbers are collected for the playtest ticket (#587); content questions have the
 | Boss form: one stand-in type, scaled by sites held (a skeleton in the Undead colours) | The Undead boss form and how sites feed it | `data/minions/boss_form.tres`, `scenes/actors/minion/types/boss_form.tscn`, `scenes/world/places/holy_site.gd` | #583 |
 | Maneuvers: three entries that only record being learned | The list of maneuvers and what each does | `data/maneuvers/*.tres` | #581 |
 | Relics: two entries (a runner on first hit; one more route point) and where they lie (one at each of two sites) | The list of relics, what each does, where they are | `data/relics/*.tres`, `scenes/world/world.tscn` (`RelicAvatarSite`, `RelicBossSite`) | #580, #584 |
+| Temple crystal upgrades: one default, the same for every temple | Which upgrades each temple's crystal gives (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
+| Burial-ground troop traits: one default, the same for every burial ground | Which traits each burial ground's troops get (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 
 ## Art and look
 
