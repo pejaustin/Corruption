@@ -55,6 +55,29 @@ func run_tests() -> void:
 			mine = (t as Tower).site
 	check(mine != null and mine.permanent and mine.holder_peer_id == 1, "your tower is a permanent site you hold")
 	check(gs.has_capability(1, SiteCapability.TOWER), "the tower grants its capability")
+
+	# The tower spawns a steady trickle so a beaten player can rebuild (#577).
+	var tower: Tower = null
+	for t in Tower.in_slot_order(get_tree()):
+		if t.owner_peer_id == 1:
+			tower = t
+	for m in mm.get_minions_for_player(1):
+		if m.minion_trait not in CorruptionSite.NON_COMBAT_TRAITS:
+			mm.notify_minion_died(m)
+	await frames(5)
+	check(tower.fighting_units(mm) == 0, "player 1 is beaten: no fighting units left")
+	var timer := tower.get_node("TrickleTimer") as Timer
+	check(not timer.is_stopped(), "the tower's trickle is running")
+	timer.start(0.5)
+	await seconds(1.5)
+	check(tower.fighting_units(mm) >= 1, "the trickle spawns a unit at the tower (%d)" % tower.fighting_units(mm))
+	for i in Tower.TRICKLE_CAP:
+		mm.spawn_unit_for_peer(1, &"", tower.courier_spawn.global_position)
+	await frames(5)
+	var at_cap := tower.fighting_units(mm)
+	timer.start(0.5)
+	await seconds(1.5)
+	check(tower.fighting_units(mm) == at_cap, "the trickle pauses at the cap (%d)" % at_cap)
 	Engine.time_scale = 1.0
 
 func _hold_all(mm: MinionManager, peer: int, pos: Vector3) -> void:

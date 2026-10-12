@@ -148,6 +148,9 @@ site_type = ExtResource("41_towertype")
 radius = 18.0
 permanent = true
 
+; The steady trickle of units (Austin, 2026-10-12, #577); wait_time set from Tower.TRICKLE_SECONDS.
+[node name="TrickleTimer" type="Timer" parent="."]
+
 [node name="CourierSpawn" type="Area3D" parent="." unique_id=1793453590]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.609, 1, -0.9840002)
 collision_layer = 0

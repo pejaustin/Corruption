@@ -97,7 +97,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 
 | Rule | Open question | Where | Ticket |
 |---|---|---|---|
-| A sacked tower is only flagged (`CorruptionSite.sacked`); it spawns nothing yet. Design: a steady trickle (Austin, 2026-10-12) | Trickle rate and unit type | `scenes/sites/corruption_site.gd` | |
+| Tower trickle (a steady trickle is Austin's, 2026-10-12): one default unit every 45 s, paused while you have 6 fighting units | Trickle rate, cap and unit type | `scenes/world/env/tower.gd` `TRICKLE_*` | |
 | Contested takeover of the Paladin: the player with the most troop strength near him progresses, a tie freezes everyone; his company (troops of his own allegiance) present freezes it | How the contest over a defeated, held Paladin resolves (Q14) | `paladin_hold.gd` `_tick_takeover` | #573 |
 | Control tiers: level 1 walk; 2 + attack; 3 + run, roll, jump; 4 + abilities. Below level 3 he refuses to strike the good faction | Which action sits in which tier (tiers plus resistance, temple crystals raise control: Austin, 2026-10-12) | `avatar_actor.gd` `CONTROL_UNLOCKS`, `RESIST_GOOD_BELOW_LEVEL` |  |
 | An owned Paladin driven by the AI obeys the same tiers (at level 1 he only walks, and he skips targets he would resist) | Whether the tiers bind him when left alone (Q17/Q18) | `avatar_ai.gd` `_fight`, `_update_target` |  |

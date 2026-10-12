@@ -13,6 +13,13 @@ const GROUP: StringName = &"towers"
 ## the rest, whole at WHOLE_AT_SITES (GDD §2, §7; ticket #567).
 const RUINED_ROOF_FRACTION: float = 0.25
 const WHOLE_AT_SITES: int = 4
+## The tower spawns a steady trickle of units so a beaten player can rebuild
+## (Austin, 2026-10-12, #577). PLACEHOLDER: tuning — seconds between units.
+const TRICKLE_SECONDS: float = 45.0
+## PLACEHOLDER: tuning — the trickle pauses while you have this many fighting units.
+const TRICKLE_CAP: int = 6
+## PLACEHOLDER: unit type the trickle spawns (empty = the faction's default unit).
+const TRICKLE_UNIT: StringName = &""
 
 ## The tower's slot (0-3). Authored on each tower in the landscape scene; the group is
 ## set in tower.tscn so towers can be found before they are ready.
@@ -40,6 +47,8 @@ var site: CorruptionSite
 
 var _roof_pieces: Array[Node3D] = []
 
+@onready var _trickle_timer: Timer = $TrickleTimer
+
 func _ready() -> void:
 	add_to_group(GROUP)
 	_collect_roof_pieces()
@@ -48,6 +57,8 @@ func _ready() -> void:
 	courier_spawn = _find_own_courier_spawn()
 	advisor = _find_own_advisor()
 	site = get_node_or_null(^"TowerSite") as CorruptionSite
+	_trickle_timer.wait_time = TRICKLE_SECONDS
+	_trickle_timer.timeout.connect(_on_trickle)
 
 func _find_own_spawn_point() -> MinionSpawnPoint:
 	for n in get_tree().get_nodes_in_group(MinionSpawnPoint.GROUP):
@@ -102,6 +113,8 @@ func assign_slot(index: int, rally: MinionRallyPoint) -> void:
 func bind_advisor(peer_id: int, faction: int) -> void:
 	owner_peer_id = peer_id
 	_apply_restoration()
+	if multiplayer.is_server() and peer_id > 0:
+		_trickle_timer.start()
 	if site:
 		site.set_permanent_holder(peer_id)
 	if advisor == null:
@@ -109,6 +122,26 @@ func bind_advisor(peer_id: int, faction: int) -> void:
 	if advisor:
 		advisor.owner_peer_id = peer_id
 		advisor.faction = faction
+
+# --- The trickle (host) ---
+
+func _on_trickle() -> void:
+	if not multiplayer.is_server() or owner_peer_id <= 0:
+		return
+	var mm := get_tree().current_scene.get_node_or_null(^"MinionManager") as MinionManager
+	if mm == null or fighting_units(mm) >= TRICKLE_CAP:
+		return
+	var at: Node3D = courier_spawn if courier_spawn else spawn_point
+	if at:
+		mm.spawn_unit_for_peer(owner_peer_id, TRICKLE_UNIT, at.global_position)
+
+func fighting_units(mm: MinionManager) -> int:
+	## The owner's units that fight (couriers, haulers and the advisor don't count).
+	var n := 0
+	for m in mm.get_minions_for_player(owner_peer_id):
+		if m != null and m.minion_trait not in CorruptionSite.NON_COMBAT_TRAITS:
+			n += 1
+	return n
 
 # --- Ruin and restoration (GDD §2: "a ruined tower that becomes more whole
 # with every corruption site you gain") ---
