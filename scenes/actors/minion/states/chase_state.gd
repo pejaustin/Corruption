@@ -1,5 +1,8 @@
 extends MinionState
 
+## PLACEHOLDER: tuning — re-path only once the goal has moved this far (metres).
+const REPATH_DISTANCE: float = 1.5
+
 ## Ratio (vs minion.move_speed) of velocity *projected onto the direction to
 ## the destination* below which the agent is considered to be making no
 ## progress. Measuring progress (not raw speed) catches the orbit case: RVO
@@ -56,7 +59,9 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
-	nav.target_position = destination
+	# Only re-target when the goal has moved: every new target_position is a full path search.
+	if nav.target_position.distance_to(destination) > REPATH_DISTANCE:
+		nav.target_position = destination
 	if nav.is_navigation_finished():
 		actor.velocity.x = 0
 		actor.velocity.z = 0

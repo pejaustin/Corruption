@@ -134,6 +134,7 @@ Numbers I changed so the old tuning fits the 2 km map; none is designed (playtes
 | Navigation map: edge connection margin and link connection radius | 2 m, 2.5 m | 0.25 m, 1 m (engine defaults) | `project.godot` `[navigation]` |
 | Each tower's jump-off link (summoned units jump from the balcony to the ground) lands at the ground below that tower | per tower | 40 m below the balcony | `art/world/export/world_landscape_2km.tscn` `JumpPoint` overrides |
 | Waypoint reached within (the navmesh sits up to ~1 m off the ground) | 2.5 m minions, 2 m Avatar | 1 m, 0.5 m | `minion_actor.tscn`, `avatar_actor.tscn` `path_desired_distance` |
+| A chasing or walking minion re-paths only once its goal has moved (each re-path is a full search of the navmesh; every tick was dropping the game to 3 FPS in fights) | 1.5 m | every tick | `chase_state.gd`, `advisor_follow_state.gd` `REPATH_DISTANCE` |
 
 ## Tuning (400 m and 6 km game worlds, Austin, 2026-10-10)
 

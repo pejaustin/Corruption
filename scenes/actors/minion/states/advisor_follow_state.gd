@@ -1,5 +1,8 @@
 extends MinionState
 
+## PLACEHOLDER: tuning — re-path only once the goal has moved this far (metres).
+const REPATH_DISTANCE: float = 1.5
+
 const Placement := preload("res://scenes/actors/minion/advisor_placement.gd")
 
 ## Advisor walking to his spot (`minion.waypoint`, chosen by AdvisorIdleState).
@@ -33,7 +36,9 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
-	nav.target_position = target
+	# Only re-target when the goal has moved: every new target_position is a full path search.
+	if nav.target_position.distance_to(target) > REPATH_DISTANCE:
+		nav.target_position = target
 	if nav.is_navigation_finished():
 		actor.velocity.x = 0
 		actor.velocity.z = 0
