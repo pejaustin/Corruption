@@ -126,7 +126,7 @@ links = Array[NodePath]([NodePath("../RoadSouth")])
 tower_slot = 1
 
 [node name="TowerWest" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1.0000001, 0, 0, 0, 1, 0, 0, 0, 1.0000001, -1889.9792, 680.0373, 2150.882)
+transform = Transform3D(-2.9802322e-08, 0, -1.0000005, 0, 1, 0, 1.0000005, 0, -2.9802322e-08, -1942.708, 680.0373, 2165.0024)
 script = ExtResource("6_l6md0")
 point_id = &"TowerWest"
 display_name = "Volcano Tower"
@@ -158,14 +158,14 @@ display_name = "Road (Forest Tower)"
 links = Array[NodePath]([NodePath("../TowerSouth"), NodePath("../AvatarSite"), NodePath("../SettlementSE"), NodePath("../Crossing")])
 
 [node name="RoadWest" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1934, 127.55963, 1140)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1950, 130.83905, 1140)
 script = ExtResource("6_l6md0")
 point_id = &"RoadWest"
 display_name = "Road (Volcano Tower)"
 links = Array[NodePath]([NodePath("../TowerWest"), NodePath("../City"), NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Crossing")])
 
 [node name="RoadNorth" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -870.4567, 3.9604225, -1503.7039)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -872, 3.8707008, -1506)
 script = ExtResource("6_l6md0")
 point_id = &"RoadNorth"
 display_name = "Road (Avequel'la)"
@@ -299,7 +299,7 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 1590
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 2084.3623, 95.55772, 1339.0991)
 
 [node name="MinionRallyPoint3" parent="World/Markers" instance=ExtResource("13_vsayu")]
-transform = Transform3D(-4.3711392e-08, 0, 1.0000001, 0, 1, 0, -1.0000001, 0, -4.3711392e-08, -1875.7693, 679.5073, 2159.082)
+transform = Transform3D(1.0000005, 0, 1.3909087e-08, 0, 1, 0, -1.3909087e-08, 0, 1.0000005, -1950.9081, 679.5073, 2179.2126)
 
 [node name="MinionRallyPoint4" parent="World/Markers" instance=ExtResource("13_vsayu")]
 transform = Transform3D(-0.50000024, 0, 0.86602557, 0, 1, 0, -0.86602557, 0, -0.50000024, -1582.456, 0.00018310547, -2371.806)

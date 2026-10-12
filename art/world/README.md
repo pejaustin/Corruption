@@ -86,10 +86,9 @@ Install from Disk, tick "Corruption: world sync". Saving `world_landscape.blend`
 background Blenders (your session is untouched); Godot re-imports the glb files when its window gets focus. It does not run the
 Godot steps (derived scenes, navmeshes, pictures): after a ground change run `tools/sync_world_sizes.sh --no-export`.
 
-Per-size navmesh bakes: 400 m uses 0.5 m cells, 2 km 1 m, 6 km 1.5 m (1.25 and finer fail on the 6 km map). 400 m and 6 km are baked
+Per-size navmesh bakes: 400 m uses 0.5 m cells, 2 km 1 m, 6 km 1.5 m with a 1.8 m max climb (1.25 and finer fail on the 6 km map; at 6 km a 1.5 m climb is less than a cell times the slope of the volcano's flanks, 48 degrees at the steepest triangle on the way up, so Recast's ledge filter cut the summit off; 1.8 joins it). The bake coarsens the cell height when the ground is over ~750 m from lowest to highest (Recast stores 13 bits of height; the 6 km map is 1079 m, 0.2 m cells). 400 m and 6 km are baked
 without the towers (a tower's own navmesh carries its floor; the coarse copy of it in the world bake cut towers off from their
-jump links); 6 km's slope limits are raised by the map's extra steepness. Known at 6 km: the Volcano Tower (slot 2) stands on
-ground the mesh does not join to the rest of the map, so its units cannot walk out. Re-baking by hand: `WORLD=1 SIZE=<size> godot
+jump links); 6 km's slope limits are raised by the map's extra steepness. Austin's 2026-10-12 sculpt gave the Volcano Tower (slot 2) a walkable way down. Re-baking by hand: `WORLD=1 SIZE=<size> godot
 --headless --path . -s res://tools/bake_open_world_navmesh.gd`.
 
 ### POI scenes

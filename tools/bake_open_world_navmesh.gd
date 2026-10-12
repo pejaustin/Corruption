@@ -9,10 +9,10 @@ extends SceneTree
 ## WORLD=1 also writes the game world's: scenes/world/world_navmesh.res for 2km, scenes/world/world_<size>_navmesh.res for
 ## the others (the world scenes' Nav regions hold the same landscape scenes, so the meshes are identical).
 
-## PLACEHOLDER: tuning, not designed. Per size: [cell size, max climb]. Climb must be at least cell size x tan(max
+## PLACEHOLDER: tuning, not designed. Per size: [cell size, max climb].  6 km: climb 1.8 (the steepest triangle on the way up the volcano is 48 degrees, 1.5 m cells need 1.7 m). Climb must be at least cell size x tan(max
 ## slope) or slopes split the mesh into islands (2 m cells with 0.5 m climb gave 110 islands at 2 km; 1 m cells with
 ## 0.4 m climb cut the volcano tower off from everything).
-const PARAMS: Dictionary[String, Array] = {"400m": [0.5, 0.5], "2km": [1.0, 1.0], "6km": [1.5, 1.5]}
+const PARAMS: Dictionary[String, Array] = {"400m": [0.5, 0.5], "2km": [1.0, 1.0], "6km": [1.5, 1.8]}
 ## PLACEHOLDER: tuning, not designed. Godot keeps the baked polygons as the contour left them, so on rolling ground they
 ## are a few huge flat triangles floating up to 35 m off the real ground, and units (whose agents measure in 3D) never
 ## "arrive". After baking, every triangle edge that lies on the ground is split until none is longer than this many
@@ -41,6 +41,7 @@ const HEIGHT_GRID_M: float = 2.0
 const WELD_M: float = 0.3
 ## Triangles smaller than this (square metres) are slivers and are dropped.
 const MIN_AREA_M2: float = 0.2
+const MAX_HEIGHT_CELLS: float = 7500.0   # under Recast's 8191
 const AGENT_HEIGHT: float = 0.4   # as in world.tscn
 const AGENT_RADIUS: float = 0.5
 const Ground = preload("res://scripts/build/world_ground.gd")
@@ -81,7 +82,12 @@ func _init() -> void:
 	nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
 	nm.geometry_collision_mask = 4294967291   # as world.tscn had: leaves out the towers' boundary layer
 	nm.cell_size = PARAMS[size][0]
-	nm.cell_height = 0.1
+	# Recast keeps a span's height in 13 bits (8191 cells): at 0.1 m a ground more than ~819 m from lowest to highest is
+	# clipped, and the top of it gets no navmesh (Austin's 6 km volcano, 1079 m, 2026-10-12). Coarsen the cell height to fit.
+	var geo_node := world.find_child("geo", true, false) as MeshInstance3D
+	var span_m: float = (geo_node.global_transform * geo_node.get_aabb()).size.y
+	nm.cell_height = maxf(0.1, snappedf(span_m / MAX_HEIGHT_CELLS + 0.05, 0.05))
+	print("[bake] ", size, " ground height span ", snappedf(span_m, 0.1), " m, cell height ", nm.cell_height)
 	nm.agent_max_climb = PARAMS[size][1]
 	nm.agent_height = AGENT_HEIGHT
 	nm.agent_radius = AGENT_RADIUS
