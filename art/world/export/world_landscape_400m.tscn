@@ -49,7 +49,7 @@
 
 [node name="Tower" parent="Volcano Tower" instance=ExtResource("15_tower")]
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces, are the 2 km scene's, not designed
-transform = Transform3D(0.50000024, 0, 0.8660253, 0, 1, 0, -0.8660253, 0, 0.50000024, 0, 3.320984, 0)
+transform = Transform3D(-0.70710677, 0, 0.7071068, 0, 1, 0, -0.7071068, 0, -0.70710677, 0, -6.5790176, 0)
 slot_index = 2
 
 [node name="MapFloor" parent="Volcano Tower/Tower" index="13"]
@@ -102,7 +102,7 @@ end_position = Vector3(-5, -41.7054, 0)
 end_position = Vector3(-5, -43.722424, 0)
 
 [node name="JumpPoint" parent="Volcano Tower/Tower/NavigationRegion3D" index="3"]
-end_position = Vector3(-5, -45.92288, 0)
+end_position = Vector3(-5, -39.841724, 0)
 
 [node name="JumpPoint" parent="Avequel'la/Tower/NavigationRegion3D" index="3"]
 end_position = Vector3(-5, -40.89726, 0)

@@ -126,7 +126,7 @@ links = Array[NodePath]([NodePath("../RoadSouth")])
 tower_slot = 1
 
 [node name="TowerWest" type="Marker3D" parent="World/MapPoints"]
-transform = Transform3D(-2.9802322e-08, 0, -1.0000005, 0, 1, 0, 1.0000005, 0, -2.9802322e-08, -147.53102, 29.279398, 175.52983)
+transform = Transform3D(0.96592635, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.96592635, -100.93747, 19.379404, 169.40244)
 script = ExtResource("6_2chqg")
 point_id = &"TowerWest"
 display_name = "Volcano Tower"
@@ -299,7 +299,7 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 76.6
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 83.95767, 3.8686764, 92.936134)
 
 [node name="MinionRallyPoint3" parent="World/Markers" instance=ExtResource("13_cdgis")]
-transform = Transform3D(1.0000005, 0, 1.3909087e-08, 0, 1, 0, -1.3909087e-08, 0, 1.0000005, -155.73103, 28.7494, 189.73987)
+transform = Transform3D(0.25881898, 0, 0.96592635, 0, 1, 0, -0.96592635, 0, 0.25881898, -89.333954, 18.849405, 181.00087)
 
 [node name="MinionRallyPoint4" parent="World/Markers" instance=ExtResource("13_cdgis")]
 transform = Transform3D(-0.86602557, 0, -0.50000024, 0, 1, 0, 0.50000024, 0, -0.86602557, -84.85549, 0, -209.23233)

@@ -62,7 +62,7 @@
 ; PLACEHOLDER: the place's look is a blockout stand-in (art/world/pois/*.blend), not designed by Austin
 
 [node name="Tower" parent="Volcano Tower" instance=ExtResource("2_tower")]
-transform = Transform3D(-0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866025, 0, 0, 0)
+transform = Transform3D(-0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866025, 0, -9.9, 0)
 ; PLACEHOLDER: which slot (0-3) is which site, and which way each tower faces (toward the map centre unless the ground is steep), not designed
 slot_index = 2
 
@@ -86,13 +86,13 @@ slot_index = 0
 ; ground (+0.1 m, where the navmesh sits). Tools: recompute if a tower or the ground moves.
 
 [node name="JumpPoint" parent="Naf Ishun/Tower/NavigationRegion3D" index="0"]
-end_position = Vector3(-5, -41.8027, 0)
+end_position = Vector3(-5, -41.80021, 0)
 
 [node name="JumpPoint" parent="Forest Tower/Tower/NavigationRegion3D" index="0"]
-end_position = Vector3(-5, -40.3675, 0)
+end_position = Vector3(-5, -40.392654, 0)
 
 [node name="JumpPoint" parent="Volcano Tower/Tower/NavigationRegion3D" index="0"]
-end_position = Vector3(-5, -45.4328, 0)
+end_position = Vector3(-5, -45.3773, 0)
 
 [node name="JumpPoint" parent="Avequel'la/Tower/NavigationRegion3D" index="0"]
-end_position = Vector3(-5, -40.8999, 0)
+end_position = Vector3(-5, -40.89744, 0)
