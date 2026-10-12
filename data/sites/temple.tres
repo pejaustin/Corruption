@@ -4,10 +4,12 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"avatar_site"
-display_name = "PLACEHOLDER: Avatar-control site (unnamed)"
+id = &"temple"
+display_name = "Temple"
 capability = &"avatar_control"
 size = 0
+poi_kind = 1
+encounter = 1
 strength_threshold = 3.0
 corrupt_seconds = 60.0
 slip_seconds = 180.0

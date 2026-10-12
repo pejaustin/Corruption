@@ -5,6 +5,13 @@ class_name SiteType extends Resource
 ## files other than the corrupted chapel are placeholders (PLACEHOLDERS.md).
 
 enum Size { SMALL, LARGE }
+## The four kinds of point of interest (Austin, 2026-10-12). SITE = the older
+## corruption sites (the chapel, the tower, the holy site). Towns and work
+## sites stand in the world as Settlement and ResourceSite.
+enum PoiKind { SITE, TEMPLE, TOWN, WORK_SITE, RUNESTONE }
+## The Paladin encounter a POI holds, fixed per type (Austin, 2026-10-12):
+## temples are mini-dungeons, runestones arena duels, towns and work sites none.
+enum Encounter { NONE, DUNGEON, ARENA }
 
 @export var id: StringName
 @export var display_name: String
@@ -12,6 +19,8 @@ enum Size { SMALL, LARGE }
 @export var capability: StringName = SiteCapability.NONE
 ## "Small sites are easier than large ones" (GDD §7). Sets the defaults below.
 @export var size: Size = Size.SMALL
+@export var poi_kind: PoiKind = PoiKind.SITE
+@export var encounter: Encounter = Encounter.NONE
 
 @export_group("Taking it")
 ## Minimum strength of your forces present before corruption starts (Q11). A

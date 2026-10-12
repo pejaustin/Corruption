@@ -8,7 +8,9 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 
 | What | Stands in for | Where | Ticket |
 |---|---|---|---|
-| Site types other than the corrupted chapel: an unnamed Avatar-control site and an unnamed boss-form site | What each POI type grants beyond GDD §7 (the four types are Austin's, 2026-10-12) | `data/sites/avatar_site.tres`, `data/sites/boss_site.tres` | |
+| Each temple's and runestone's `grant` (crystal upgrade / runestone power): one default `placeholder_grant` that does nothing yet | What each temple's crystal and each runestone's sealed Dark Lord gives (per site, Austin 2026-10-12) | `scenes/sites/corruption_site.gd` `grant`, set per site in `world.tscn` | |
+| Each burial ground's `troop_trait`: one default `placeholder_trait`, recorded on mining but not yet applied to raised troops | What troops each crypt, ancient battlefield and graveyard makes (per burial ground, Austin 2026-10-12) | `scenes/sites/burial_ground.gd` `troop_trait` | |
+| Temple and runestone stats (thresholds, timings) carried over from the old avatar and boss site stand-ins; the temple keeps AVATAR_CONTROL, the runestone BOSS_POWER | Temple and runestone tuning | `data/sites/temple.tres`, `data/sites/runestone.tres` | |
 | Which site type stands where, and how many | The first map's sites | `scenes/world/world.tscn` (`SiteChapel`, `SiteAvatar`, `SiteBoss`) | |
 | Good-faction growth flavour lines | Flavour moments as the good faction grows | `scripts/good_faction.gd` `FLAVOUR_LINES` | #562 |
 | Which undead the summoning circle raises, one body each | Unit types and their cost in remains | `scripts/interactibles/summoning_circle.gd` | — |
@@ -17,10 +19,10 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Boss form: one stand-in type, scaled by sites held (a skeleton in the Undead colours) | The Undead boss form and how sites feed it | `data/minions/boss_form.tres`, `scenes/actors/minion/types/boss_form.tscn`, `scenes/world/places/holy_site.gd` | |
 | Maneuvers: three entries that only record being learned | The list of maneuvers and what each does | `data/maneuvers/*.tres` | |
 | Relics: two entries (a runner on first hit; one more route point) and where they lie (one at each of two sites) | The list of relics, what each does, where they are | `data/relics/*.tres`, `scenes/world/world.tscn` (`RelicAvatarSite`, `RelicBossSite`) | |
-| Temple crystal upgrades: one default, the same for every temple | Which upgrades each temple's crystal gives (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
-| Burial-ground troop traits: one default, the same for every burial ground | Which traits each burial ground's troops get (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 | Domination of a neutral Paladin: no site or faction grants the ability yet, and the corruption level it needs is unset | Which site or faction type gives the domination ability (Austin 2026-10-12) | GDD §8 "Taking him" (not built yet) | |
 | Good faction's march on towers: from growth step 10, every step sends 6 holy knights (+1 per step after) from the city centre at the tower of whoever holds the most sites | When it marches, how many, which unit, and which tower (Austin, 2026-10-12: late in the round) | `scripts/good_faction.gd` `MARCH_*`, `pick_tower_to_march_on` | |
+| The Paladin clearing a temple's dungeon corrupts it at once (Austin: "at once or much faster") | Which of the two | `corruption_site.gd` `paladin_cleared` | |
+| Burial grounds: a crypt under the temple and an ancient battlefield under the runestone, 12-14 m off; one body per 30 s while the parent is held, 20 bodies each; towns have none yet (town control is not built) | Where burial grounds stand, mining rate and depth | `world.tscn` `SiteAvatar/BurialGround`, `SiteBoss/BurialGround`; `burial_ground.gd` | |
 
 ## Art and look
 

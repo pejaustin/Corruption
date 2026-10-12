@@ -23,8 +23,9 @@
 [ext_resource type="Script" path="res://scripts/minion_manager.gd" id="19_suoaf"]
 [ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="20_0xc4y"]
 [ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="21_xk3op"]
-[ext_resource type="Resource" path="res://data/sites/avatar_site.tres" id="22_2nffh"]
-[ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="23_xk3gi"]
+[ext_resource type="Resource" path="res://data/sites/temple.tres" id="22_2nffh"]
+[ext_resource type="Resource" path="res://data/sites/runestone.tres" id="23_xk3gi"]
+[ext_resource type="PackedScene" path="res://scenes/sites/burial_ground.tscn" id="90_burial"]
 [ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="24_lvnmi"]
 [ext_resource type="Script" path="res://scripts/groups/field_work.gd" id="25_dejo2"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="26_dvuhw"]
@@ -339,9 +340,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 362.49707, 5.350536, -1364.99
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -523.865, -0.00022888184, 491.34872)
 site_type = ExtResource("22_2nffh")
 
+; PLACEHOLDER: burial ground placement, not designed (map is Austin's)
+[node name="BurialGround" parent="SiteAvatar" instance=ExtResource("90_burial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+kind = 0
+
 [node name="SiteBoss" parent="." instance=ExtResource("21_xk3op")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1978.7302, -32.64483, 174.13501)
 site_type = ExtResource("23_xk3gi")
+
+; PLACEHOLDER: burial ground placement, not designed (map is Austin's)
+[node name="BurialGround" parent="SiteBoss" instance=ExtResource("90_burial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+kind = 1
 
 [node name="GroupManager" type="Node" parent="."]
 script = ExtResource("24_lvnmi")

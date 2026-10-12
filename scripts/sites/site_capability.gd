@@ -12,7 +12,8 @@ class_name SiteCapability
 const NONE: StringName = &""
 ## Corrupted chapel: bring a live human here to dominate them into a thrall.
 const DOMINATE_THRALLS: StringName = &"dominate_thralls"
-## Strengthens your control of the Paladin (stacks per site held).
+## Strengthens your control of the Paladin (stacks per site held). Temples:
+## their crystals raise control (Austin, 2026-10-12).
 const AVATAR_CONTROL: StringName = &"avatar_control"
 ## Strengthens your boss form in the gauntlet (stacks per site held).
 const BOSS_POWER: StringName = &"boss_power"

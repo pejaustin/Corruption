@@ -14,9 +14,21 @@ class_name CorruptionSite extends Node3D
 ##
 ## Your tower is a permanent site (Q39): `permanent` sites never change hands.
 ## Hostile forces there with no defenders sack it; see Tower.
+##
+## Points of interest (Austin, 2026-10-12; SiteType.poi_kind):
+## - **Temples** raise their holder's control of the Paladin (AVATAR_CONTROL)
+##   and give their own `grant`. Troops take one slowly; the Paladin clearing its
+##   dungeon (`paladin_cleared`) corrupts it at once. The Goddess's forces inside
+##   (`forces_present`) come back whenever it is purified or returns to neutral.
+## - **Runestones**: the Paladin's arena duel with a sealed Dark Lord. The first
+##   to win it (`win_runestone`) takes its `grant` (a power); then it is spent
+##   for the round.
+## - Each site's `grant` is configurable per site, PLACEHOLDER by default.
 
 signal holder_changed(old_holder: int, new_holder: int)
 signal sacked_changed(sacked: bool)
+## A runestone's power was won (host and clients).
+signal runestone_won(peer_id: int, power: StringName)
 
 const GROUP: StringName = &"corruption_sites"
 ## How often the host re-evaluates who is present.
@@ -35,6 +47,10 @@ const NON_COMBAT_TRAITS: Array[StringName] = [&"courier", &"info_courier", &"adv
 @export var radius: float = 10.0
 ## Towers: never changes hands. The holder is set by the owning Tower.
 @export var permanent: bool = false
+## Temples: the upgrade its crystal gives its holder. Runestones: the power won
+## from its sealed Dark Lord. Set per site. PLACEHOLDER: default, not designed
+## (Austin's to set).
+@export var grant: StringName = &"placeholder_grant"
 
 ## Peer holding the site; -1 = neutral.
 var holder_peer_id: int = -1
@@ -50,6 +66,11 @@ var sacked: bool = false
 var unusable: bool = false
 ## Allegiance -> strength present at the last tick (host and clients).
 var present_strength: Dictionary[int, float] = {}
+## Temples: the Goddess's forces hold the dungeon. Cleared by the Paladin; back
+## whenever the temple is purified or returns to neutral.
+var forces_present: bool = true
+## Runestones: who won its power this round (-1 = nobody yet; then it is spent).
+var runestone_winner: int = -1
 
 var _tick_timer: float = 0.0
 var _beacon_timer: float = 0.0
@@ -78,6 +99,46 @@ func get_threshold() -> float:
 
 func is_held() -> bool:
 	return holder_peer_id != -1
+
+func is_kind(kind: SiteType.PoiKind) -> bool:
+	return site_type != null and site_type.poi_kind == kind
+
+func get_encounter() -> SiteType.Encounter:
+	return site_type.encounter if site_type else SiteType.Encounter.NONE
+
+func is_spent() -> bool:
+	## Runestones: its power has been won this round.
+	return is_kind(SiteType.PoiKind.RUNESTONE) and runestone_winner != -1
+
+func paladin_cleared(peer_id: int) -> bool:
+	## Host: the Paladin, driven by `peer_id`, cleared this temple's dungeon.
+	## A shortcut: troops take a temple slowly, the Paladin corrupts it at once.
+	## PLACEHOLDER: rule — "at once" (Austin: "at once or much faster").
+	if not multiplayer.is_server() or not is_kind(SiteType.PoiKind.TEMPLE) or unusable:
+		return false
+	if peer_id <= 0 or not forces_present:
+		return false
+	_change_holder(peer_id)
+	return true
+
+func win_runestone(peer_id: int) -> bool:
+	## Host: `peer_id`'s Paladin beat this runestone's sealed Dark Lord. The first
+	## winner takes the power; after that the runestone is spent for the round.
+	if not multiplayer.is_server() or not is_kind(SiteType.PoiKind.RUNESTONE):
+		return false
+	if peer_id <= 0 or is_spent():
+		return false
+	_set_runestone_winner.rpc(peer_id)
+	return true
+
+static func powers_won(tree: SceneTree, peer_id: int) -> Array[StringName]:
+	## Every runestone power `peer_id` has won this round (for their boss form).
+	var out: Array[StringName] = []
+	for node in tree.get_nodes_in_group(GROUP):
+		var site := node as CorruptionSite
+		if site and site.is_kind(SiteType.PoiKind.RUNESTONE) and site.runestone_winner == peer_id:
+			out.append(site.grant)
+	return out
 
 func set_permanent_holder(peer_id: int) -> void:
 	## Called by Tower when its seat is bound (every peer).
@@ -217,10 +278,18 @@ func _set_holder(new_holder: int, first_taken: bool) -> void:
 		ever_taken = true
 		progress_peer_id = new_holder
 		progress = 1.0
+	if is_kind(SiteType.PoiKind.TEMPLE):
+		# Taken, the Goddess's forces are gone; purified or back to neutral, they return.
+		forces_present = new_holder == -1
 	_refresh_marker()
 	_light_beacon()
 	holder_changed.emit(old, new_holder)
 	GameState.site_changed.emit(self, old, new_holder, first_taken)
+
+@rpc("authority", "call_local", "reliable")
+func _set_runestone_winner(peer_id: int) -> void:
+	runestone_winner = peer_id
+	runestone_won.emit(peer_id, grant)
 
 @rpc("authority", "call_local", "reliable")
 func _set_sacked(value: bool) -> void:

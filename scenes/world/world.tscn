@@ -11,8 +11,9 @@
 [ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="12_xq18t"]
 [ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="15_mxkvs"]
 [ext_resource type="Resource" path="res://data/sites/corrupted_chapel.tres" id="17_chapel"]
-[ext_resource type="Resource" path="res://data/sites/avatar_site.tres" id="18_avsite"]
-[ext_resource type="Resource" path="res://data/sites/boss_site.tres" id="19_bosite"]
+[ext_resource type="Resource" path="res://data/sites/temple.tres" id="18_avsite"]
+[ext_resource type="Resource" path="res://data/sites/runestone.tres" id="19_bosite"]
+[ext_resource type="PackedScene" path="res://scenes/sites/burial_ground.tscn" id="90_burial"]
 [ext_resource type="Script" path="res://scripts/good_faction.gd" id="16_71ii3"]
 [ext_resource type="Script" path="res://scenes/map/map_point.gd" id="21_mappoint"]
 [ext_resource type="PackedScene" path="res://art/world/export/world_landscape_2km.tscn" id="31_landscape"]
@@ -368,10 +369,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -174.62, 0.0, 163.78)
 ; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
 site_type = ExtResource("18_avsite")
 
+; PLACEHOLDER: burial ground placement, not designed (map is Austin's)
+[node name="BurialGround" parent="SiteAvatar" instance=ExtResource("90_burial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+kind = 0
+
 [node name="SiteBoss" parent="." unique_id=1825113212 instance=ExtResource("15_mxkvs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.58, -6.4, 72.71)
 ; PLACEHOLDER: site placement and type, not designed (map is Austin's, ticket #584)
 site_type = ExtResource("19_bosite")
+
+; PLACEHOLDER: burial ground placement, not designed (map is Austin's)
+[node name="BurialGround" parent="SiteBoss" instance=ExtResource("90_burial")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+kind = 1
 
 [node name="GroupManager" type="Node" parent="." unique_id=1301301400]
 script = ExtResource("22_groups")

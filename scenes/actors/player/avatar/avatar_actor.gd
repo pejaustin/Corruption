@@ -6,8 +6,9 @@ class_name AvatarActor extends PlayerActor
 ##   the good faction (-1). Taking and keeping him: PaladinHold.
 ## - **Controller** (`GameState.avatar_peer_id`): the owner when they drive him
 ##   directly from a Palantir; otherwise AvatarAI drives him for whoever owns him.
-## - **Control tiers** (Q18): an owner's control level is 1 + the AVATAR_CONTROL
-##   sites they hold; each action needs a level (`can_use`), and below
+## - **Control tiers** (Q18; tiers plus resistance, Austin 2026-10-12): an
+##   owner's control level is 1 + the AVATAR_CONTROL sites (temples: their
+##   crystals raise control) they hold; each action needs a level (`can_use`), and below
 ##   RESIST_GOOD_BELOW_LEVEL he refuses to strike the good faction.
 ## - **Defeat** (Q14, Q15; Austin, 2026-10-12): unheld, he goes to whoever
 ##   defeated him (`last_hit_by`), no contest. Held, his corruption is wiped
