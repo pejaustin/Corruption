@@ -148,7 +148,8 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
 - **Taking him:** overpower his current controller with raw corruption (hard); or, the easier way, find him, beat him
   and his company with troops, and turn him like a site. (Q14) **Neutral:** whoever defeats him gets control, no
   contest. **Held:** if a controlled Paladin is defeated (for example, losing a runestone boss fight), any player can
-  contest control of him. (Austin, 2026-10-12)
+  contest control of him. A neutral Paladin can also be taken by **domination**, which needs high corruption and a
+  specific ability, from a site or from your faction type. (Austin, 2026-10-12)
 - **Keeping him:** your hold fades over time, unless he's kept near a source of corruption, which holds him
   indefinitely. At zero HP his corruption is wiped and the controller loses him. (Q15)
 - **Unclaimed:** when he's weak, the good faction tries to recover him; at full strength he leads armies out to hunt
