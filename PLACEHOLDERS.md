@@ -20,7 +20,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Temple crystal upgrades: one default, the same for every temple | Which upgrades each temple's crystal gives (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 | Burial-ground troop traits: one default, the same for every burial ground | Which traits each burial ground's troops get (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 | Domination of a neutral Paladin: no site or faction grants the ability yet, and the corruption level it needs is unset | Which site or faction type gives the domination ability (Austin 2026-10-12) | GDD §8 "Taking him" (not built yet) | |
-| Good faction marching on towers late in the round: not built; timing and strength unset | When and how hard it attacks towers (Austin, 2026-10-12) | GDD §9 | |
+| Good faction's march on towers: from growth step 10, every step sends 6 holy knights (+1 per step after) from the city centre at the tower of whoever holds the most sites | When it marches, how many, which unit, and which tower (Austin, 2026-10-12: late in the round) | `scripts/good_faction.gd` `MARCH_*`, `pick_tower_to_march_on` | |
 
 ## Art and look
 

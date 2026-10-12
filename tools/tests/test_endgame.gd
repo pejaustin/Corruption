@@ -102,6 +102,28 @@ func run_tests() -> void:
 
 	# The draw locks the site.
 	var gf := world.get_node("GoodFaction") as GoodFaction
+
+	# Late in the round the good faction marches on a tower (Austin, 2026-10-12, #575).
+	GoodFaction.step = GoodFaction.MARCH_FROM_STEP - 1
+	gf._grow()
+	await frames(10)
+	var target := gf.pick_tower_to_march_on()
+	var marchers: Array[MinionActor] = []
+	for m in mm.get_all_minions():
+		if m.owner_peer_id == -1 and m.waypoint.distance_to(target.courier_spawn.global_position) < 1.0:
+			marchers.append(m)
+	check(target != null and marchers.size() >= GoodFaction.MARCH_SIZE, "a late growth step sends an army at a tower (%d marching)" % marchers.size())
+	var gap_before := 0.0
+	for m in marchers:
+		gap_before += _flat(m.global_position, target.courier_spawn.global_position)
+	await seconds(4.0)
+	var gap_after := 0.0
+	var alive := 0
+	for m in marchers:
+		if is_instance_valid(m):
+			gap_after += _flat(m.global_position, target.courier_spawn.global_position)
+			alive += 1
+	check(alive > 0 and gap_after < gap_before - 1.0, "the army marches toward the tower (%.0f -> %.0f m total)" % [gap_before, gap_after])
 	GoodFaction.step = GoodFaction.DRAW_AT_STEP - 1
 	gf._grow()
 	await frames(5)
@@ -116,3 +138,6 @@ func _boss_of(mm: MinionManager, peer: int) -> MinionActor:
 		if m.minion_type_id == &"boss_form" and m.hp > 0:
 			return m
 	return null
+
+func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()

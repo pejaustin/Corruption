@@ -178,6 +178,7 @@ func _die() -> void:
 	# Not while a contest over him is open: that is the contest's to settle.
 	if not GameState.has_avatar_owner() and not hold.is_contested() and last_hit_by > 0:
 		GameState.set_avatar_owner(last_hit_by)
+		_pending_hp = get_max_hp()  # PLACEHOLDER: rule — he gets up at once, at full HP, for his new owner.
 		return
 	# Held (Q15): his corruption is wiped and the controller loses him; any
 	# player can now contest him (Austin, 2026-10-12).
@@ -262,9 +263,8 @@ func _on_avatar_owner_changed(_old_owner: int, new_owner: int) -> void:
 		avatar_ai.clear_orders()  # a new master's pawn doesn't keep old orders
 	if new_owner > 0:
 		faction = GameState.get_faction(new_owner)
-		# PLACEHOLDER: rule — a player who takes him gets him at full HP (up
-		# again, if he was defeated taking him).
-		if multiplayer.is_server():
+		# PLACEHOLDER: rule — a player who takes him gets him at full HP.
+		if multiplayer.is_server() and hp > 0:
 			_pending_hp = get_max_hp()
 	else:
 		faction = GameConstants.Faction.NEUTRAL

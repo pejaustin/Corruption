@@ -84,6 +84,11 @@ static func order_for(challenger: int) -> Array[int]:
 		return a < b if is_equal_approx(sa, sb) else sa < sb)
 	return peers
 
+static func city_centre(tree: SceneTree) -> Vector3:
+	## The holy site at the city centre, or the world origin if the map has none.
+	var site := tree.get_first_node_in_group(GROUP) as Node3D
+	return site.global_position if site else Vector3.ZERO
+
 static func lock_all(tree: SceneTree) -> void:
 	## The good faction has drawn the match: the city centre can't be corrupted.
 	for node in tree.get_nodes_in_group(GROUP):
