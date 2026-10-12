@@ -42,7 +42,9 @@ const WELD_M: float = 0.3
 ## Triangles smaller than this (square metres) are slivers and are dropped.
 const MIN_AREA_M2: float = 0.2
 const MAX_HEIGHT_CELLS: float = 7500.0   # under Recast's 8191
-const AGENT_HEIGHT: float = 0.4   # as in world.tscn
+## The minion/avatar capsule is 2.86 m tall (actor.tscn). With a lower agent height the bake kept ground under overhangs
+## (POI buildings whose underside is 2.5 m above a slope), the paths ran under them and units jammed against the collider.
+const AGENT_HEIGHT: float = 2.9
 const AGENT_RADIUS: float = 0.5
 const Ground = preload("res://scripts/build/world_ground.gd")
 const WORLD_OUT: String = "res://scenes/world/world_%s_navmesh.res"
