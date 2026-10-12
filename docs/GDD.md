@@ -31,7 +31,7 @@ You start in a **ruined tower** that becomes more whole with every corruption si
 | **Map** | A huge stone floor, illustrated, an imprecise rendering of the terrain. (Q1, Q8) |
 | **Palantir** | Live view of the Paladin; possessing and controlling him. (Overview, Q19) |
 | **Magic mirror** | Live calls and recorded messages to rivals. (Q33, Q34) |
-| **Balcony** | Mostly flavour: nearby territory, the day/night cycle, beacons in the sky when sites change hands. (Q8, Q26) |
+| **Balcony** | Mostly flavour: nearby territory, the day/night cycle, beacons in the sky when sites change hands. (Q8, Q26) Day and night are visual only for the MVP; they may gain rules after playtesting. (Austin, 2026-10-12) |
 | **Summoning circle** | Raises human remains into undead. (Q6, Q8) |
 | **Desk with books** | Records (leaders' maneuvers, relics held, what's been learned) and your own free notes. (Q37) |
 | **Treasure room** | Physically shows the gold and special artifacts held at the tower; a **ledger** there holds the latest reports on goods held elsewhere. (Q24) |
@@ -106,7 +106,8 @@ Wealth is material, never a number in the corner. (Q24, Q25)
 - **You feel it.** Your tower becomes more whole and your character stronger as you gain sites. A beacon in the sky,
   seen from the balcony, marks a site taken for the first time, changing hands, or returning to neutral. (Q26)
 - **Your tower is a corruption site that is permanently yours.** It can be sacked but always comes back, and it spawns
-  units in a way that discourages rivals from killing you and hanging around. (Q39)
+  units in a way that discourages rivals from killing you and hanging around. (Q39) It spawns a steady trickle: a few
+  units over time, so a beaten player can rebuild; rate and unit type are placeholders. (Austin, 2026-10-12)
 
 ### Points of interest and Avatar encounters (Austin, 2026-10-12)
 
@@ -159,7 +160,10 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
   and combat. (Q17)
 - **Imperfect ARPG:** more corruption gives more control. Some actions are locked at first (at the start, maybe only
   walking), and the ones you have can meet resistance; for example, he resists attacking the good faction's priests
-  and soldiers until you're stronger. (Overview, Q18)
+  and soldiers until you're stronger. (Overview, Q18) **Tiers plus resistance:** actions unlock in steps (for example
+  walk, attack, dodge, abilities; which action sits in which tier is a placeholder), and against the Goddess's people
+  he resists until control is high. Temple crystals are what raise control. (Austin, 2026-10-12)
+- **Combat** is built later; the old combat-stream branch stays parked, unmerged. (Austin, 2026-10-12)
 - **Seen by all:** through any Palantir, every player sees and hears him live, and the viewers hear each other. Each
   viewer appears as a ghostly orb orbiting him where their camera is. This can give away your troops and strategy.
   He also lets his controller "see" the field. (Overview, Q19)
@@ -171,12 +175,14 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
   hold (boss-type sites especially). Beat every boss and you corrupt the site and win. (Overview, Q20, Q27, Q28)
 - **Comeback:** a boss who beats the Paladin takes control of him and the gauntlet ends. The winner uses the
   corruption to take him back to their own tower; to win they must bring him to the city center and start a fresh
-  gauntlet. (Q20, Q21, Q22)
+  gauntlet. (Q20, Q21, Q22) He appears at the winner's tower straight away. (Austin, 2026-10-12)
 - **Building for it:** a player can lean on Avatar sites or boss sites. A strong boss collection makes you the wall
   nobody gets past, and the one who ends up holding the Paladin most. (Q27)
 - **Draw:** the good faction slowly grows stronger. Flavour moments mark it, some corruption sites become permanently
   unusable, and site thresholds keep rising, until the city center can't be corrupted and the match ends in a draw.
   (Q29, Q30)
+- **Late in the round** the good faction, once strong, marches on towers, adding pressure toward an ending; timing
+  and strength are placeholders. (Austin, 2026-10-12)
 
 ## 10. Diplomacy
 
@@ -185,13 +191,10 @@ The magic mirror (Q33, Q34): live calls and recorded messages. It captures audio
 
 ## 11. Open questions (for the next session, after playtesting)
 
-- **Good faction, day to day:** patrols, purifying, how fast its threat grows, whether it attacks towers.
-- **Day and night:** do they change anything beyond the balcony view?
+- **Good faction, day to day:** patrols, purifying, how fast its threat grows.
 - **Contested takeover** of the Paladin: how the contest over a defeated, held Paladin resolves. (Q14)
-- **Paladin control tiers:** which actions unlock, and which sites raise control.
+- **Avatar control progress:** does it belong to the player or to the Paladin?
 - **Boss forms:** what each looks like and does; how sites feed them.
-- **How the Paladin gets home** after a gauntlet comeback. (Q22)
-- **Your tower's unit spawning:** what it spawns, and when. (Q39)
 - **Content (Austin's to write):** what each POI type grants beyond the above, relics, maneuvers, the advisor, the map
   and its locations, unit types, boss forms.
 

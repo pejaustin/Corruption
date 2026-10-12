@@ -20,6 +20,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Temple crystal upgrades: one default, the same for every temple | Which upgrades each temple's crystal gives (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 | Burial-ground troop traits: one default, the same for every burial ground | Which traits each burial ground's troops get (configurable per site, Austin 2026-10-12) | GDD §7 "Points of interest and Avatar encounters" (not built yet) | |
 | Domination of a neutral Paladin: no site or faction grants the ability yet, and the corruption level it needs is unset | Which site or faction type gives the domination ability (Austin 2026-10-12) | GDD §8 "Taking him" (not built yet) | |
+| Good faction marching on towers late in the round: not built; timing and strength unset | When and how hard it attacks towers (Austin, 2026-10-12) | GDD §9 | |
 
 ## Art and look
 
@@ -40,7 +41,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Desk look (box table and red book) | Desk and book art | `scenes/interactibles/desk.tscn` | #570 |
 | Balcony look (stone post and brass spyglass) | Balcony art | `scenes/interactibles/balcony.tscn` | — |
 | Balcony wording ("Press E to look out", "E / Q to return") | The balcony's UI copy | `scripts/interactibles/balcony.gd` | — |
-| Sky, sun and moon colours, night light and ambient levels | Day/night look | `scripts/day_night.gd` | #574 |
+| Sky, sun and moon colours, night light and ambient levels | Day/night look | `scripts/day_night.gd` |  |
 | Ruined tower = hidden roof pieces, revealed as sites are held | Tower restoration stages | `scenes/world/env/tower.gd` | #567 |
 | Map floor illustration (parchment + terrain contours, now baked from his 2 km ground by `tools/bake_map_illustration.gd`: 256 px, shading and 20 m contours), point discs, chess pieces, ink ribbons | Map art | `scenes/map/` | #534, #538 |
 | Held scroll (a cylinder at the corner of the view); advisor subtitles and choice panel | Scroll and dialogue look | `overlord_actor.gd`, `scenes/ui/advisor_dialogue.gd` | — |
@@ -96,15 +97,13 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 
 | Rule | Open question | Where | Ticket |
 |---|---|---|---|
-| Day and night are flavour only: only light and sky read the clock | Whether day/night changes play | `scripts/day_night.gd` | #574 |
-| A sacked tower is only flagged (`CorruptionSite.sacked`); it spawns nothing yet | What the tower spawns after a sack, and how often | `scenes/sites/corruption_site.gd` | #577 |
+| A sacked tower is only flagged (`CorruptionSite.sacked`); it spawns nothing yet. Design: a steady trickle (Austin, 2026-10-12) | Trickle rate and unit type | `scenes/sites/corruption_site.gd` | |
 | Contested takeover of the Paladin: the player with the most troop strength near him progresses, a tie freezes everyone; his company (troops of his own allegiance) present freezes it | How a contested takeover works (Q14) | `paladin_hold.gd` `_tick_takeover` | #573 |
-| Control tiers: level 1 walk; 2 + attack; 3 + run, roll, jump; 4 + abilities. Below level 3 he refuses to strike the good faction | Which actions unlock when, and when resistance ends (Q18) | `avatar_actor.gd` `CONTROL_UNLOCKS`, `RESIST_GOOD_BELOW_LEVEL` | #582 |
-| An owned Paladin driven by the AI obeys the same tiers (at level 1 he only walks, and he skips targets he would resist) | Whether the tiers bind him when left alone (Q17/Q18) | `avatar_ai.gd` `_fight`, `_update_target` | #582 |
+| Control tiers: level 1 walk; 2 + attack; 3 + run, roll, jump; 4 + abilities. Below level 3 he refuses to strike the good faction | Which action sits in which tier (tiers plus resistance, temple crystals raise control: Austin, 2026-10-12) | `avatar_actor.gd` `CONTROL_UNLOCKS`, `RESIST_GOOD_BELOW_LEVEL` |  |
+| An owned Paladin driven by the AI obeys the same tiers (at level 1 he only walks, and he skips targets he would resist) | Whether the tiers bind him when left alone (Q17/Q18) | `avatar_ai.gd` `_fight`, `_update_target` |  |
 | Overpowering needs strictly more AVATAR_CONTROL sites than his owner (the good faction counts as none) and runs only while you keep looking through a Palantir; stop looking and it is lost | How "overpower with raw corruption" works (Q14) | `paladin_hold.gd` `can_overpower`, `_tick_overpower` | #554 |
 | A player who takes him (takeover or overpower) gets him at full HP | Whether he heals on changing hands | `avatar_actor.gd` `_on_avatar_owner_changed` | #554 |
-| His abilities are the Undead profile's avatar abilities whoever holds him | Which abilities the Paladin has | `avatar_actor.gd` `ABILITY_PROFILE_FACTION` | #582 |
-| The Paladin is taken to the winning boss's tower gate by a plain teleport (held for 0.5 s so netfox accepts it) | How he gets to the winner's tower (Q21) | `holy_site.gd` `_hand_over` | #576 |
+| His abilities are the Undead profile's avatar abilities whoever holds him | Which abilities the Paladin has | `avatar_actor.gd` `ABILITY_PROFILE_FACTION` |  |
 | The gauntlet starts when his owner has him alive inside the holy site's 10 m; it ends (no winner) if he changes hands another way | When exactly the gauntlet starts and aborts | `holy_site.gd` | #559 |
 | Bosses fight one at a time, weakest first; a boss that dies is replaced by the next; the Paladin falling to any boss hands him to that boss's player | How the gauntlet is staged (Q20, Q28) | `holy_site.gd` | #560, #561 |
 | After the match is won the holy site starts no more gauntlets | Whether play continues after a win | `holy_site.gd` | #559 |
