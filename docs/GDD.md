@@ -146,7 +146,9 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
 (Overview)
 
 - **Taking him:** overpower his current controller with raw corruption (hard); or, the easier way, find him, beat him
-  and his company with troops, and turn him like a site. When he's low on health anyone can begin a takeover. (Q14)
+  and his company with troops, and turn him like a site. (Q14) **Neutral:** whoever defeats him gets control, no
+  contest. **Held:** if a controlled Paladin is defeated (for example, losing a runestone boss fight), any player can
+  contest control of him. (Austin, 2026-10-12)
 - **Keeping him:** your hold fades over time, unless he's kept near a source of corruption, which holds him
   indefinitely. At zero HP his corruption is wiped and the controller loses him. (Q15)
 - **Unclaimed:** when he's weak, the good faction tries to recover him; at full strength he leads armies out to hunt
@@ -184,7 +186,7 @@ The magic mirror (Q33, Q34): live calls and recorded messages. It captures audio
 
 - **Good faction, day to day:** patrols, purifying, how fast its threat grows, whether it attacks towers.
 - **Day and night:** do they change anything beyond the balcony view?
-- **Contested takeover** of the Paladin: Austin wants a rule for when several players try at once. (Q14)
+- **Contested takeover** of the Paladin: how the contest over a defeated, held Paladin resolves. (Q14)
 - **Paladin control tiers:** which actions unlock, and which sites raise control.
 - **Boss forms:** what each looks like and does; how sites feed them.
 - **How the Paladin gets home** after a gauntlet comeback. (Q22)
