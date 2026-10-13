@@ -135,6 +135,8 @@ var _death_timer: float = 0.0
 var _diag_last_pos: Vector3 = Vector3.ZERO
 var _diag_stuck_timer: float = 0.0
 var _pending_raise_pos: Vector3 = Vector3.ZERO
+## Host-only: instance id -> time (s) until which that target is left alone.
+var _ignored_until: Dictionary[int, float] = {}
 
 ## Last avoidance-adjusted velocity from NavigationAgent3D. ChaseState calls
 ## nav.set_velocity(desired) each tick; the agent emits velocity_computed with
@@ -205,6 +207,19 @@ func _refresh_aggro_ring() -> void:
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINE_STRIP, arrays)
 	(_aggro_ring.material_override as StandardMaterial3D).albedo_color = get_faction_color()
 	_aggro_ring.mesh = mesh
+
+func ignore_target(other: Node, seconds: float) -> void:
+	## Leave a lost or unreachable target alone for a while (it is not picked by find_hostile_target).
+	_ignored_until[other.get_instance_id()] = Time.get_ticks_msec() / 1000.0 + seconds
+
+func is_ignoring(other: Node) -> bool:
+	var id: int = other.get_instance_id()
+	if not _ignored_until.has(id):
+		return false
+	if _ignored_until[id] <= Time.get_ticks_msec() / 1000.0:
+		_ignored_until.erase(id)
+		return false
+	return true
 
 func movement_scale() -> float:
 	## Minions are stepped once per physics frame by _physics_process, not by a network tick: no factor.

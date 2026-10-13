@@ -28,6 +28,10 @@ const FORCED_REPATH_INTERVAL: float = 0.5
 ## in: RVO read the target as an obstacle and held chasers about 2.4 m back, outside attack range, for good.
 const ENGAGE_MARGIN: float = 2.0
 
+## PLACEHOLDER: tuning — a finished path ending this far (metres) from a live target means the target is unreachable.
+const UNREACHABLE_GAP: float = 4.0
+const IDLE_IGNORE_SECONDS: float = MinionState.IGNORE_SECONDS
+
 var _stuck_time: float = 0.0
 var _repath_cooldown: float = 0.0
 
@@ -76,6 +80,14 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	if close_in and _repath_cooldown <= 0.0:
 		nav.target_position = destination
 		_repath_cooldown = FORCED_REPATH_INTERVAL
+	# Finished but the path ends well short of a live target: it cannot be reached (roof, island). Leave it alone a while.
+	if target != null and nav.is_navigation_finished() and nav.get_final_position().distance_to(destination) > UNREACHABLE_GAP:
+		minion.ignore_target(target, IDLE_IGNORE_SECONDS)
+		actor.velocity.x = 0
+		actor.velocity.z = 0
+		physics_move()
+		state_machine.transition(&"IdleState")
+		return
 	if nav.is_navigation_finished() and not close_in:
 		actor.velocity.x = 0
 		actor.velocity.z = 0

@@ -36,6 +36,16 @@ const REGEN_PER_SECOND: float = 5.0
 ## Fraction of a site's radius he walks into before holding still there.
 const SITE_STAND_FRACTION: float = 0.5
 
+## PLACEHOLDER: tuning — targets further above or below than this are out of reach (a unit on a roof, the void).
+const MAX_VERTICAL_REACH: float = 4.0
+## PLACEHOLDER: tuning — a target whose nearest navmesh point is further than this cannot be walked to.
+const MAX_NAV_GAP: float = 2.5
+## PLACEHOLDER: tuning — seconds a dropped target is left alone.
+const BLACKLIST_SECONDS: float = 8.0
+## PLACEHOLDER: tuning — drop a target he has not closed on by PROGRESS_METRES within this many seconds.
+const NO_PROGRESS_SECONDS: float = 4.0
+const PROGRESS_METRES: float = 1.0
+
 @onready var _avatar: AvatarActor = get_parent()
 @onready var _nav_agent: NavigationAgent3D = get_node("../NavAgent")
 
@@ -48,6 +58,10 @@ var _route: Array[Vector3] = []
 ## Unclaimed: walking home to recover until whole.
 var _recovering: bool = false
 var _regen_carry: float = 0.0
+## instance id -> time (s) until which that target is left alone.
+var _blacklist: Dictionary[int, float] = {}
+var _best_target_dist: float = INF
+var _progress_since: float = 0.0
 
 func _ready() -> void:
 	var input: AvatarInput = get_node("../AvatarInput")
@@ -154,9 +168,39 @@ func _fight(input: AvatarInput) -> bool:
 		_face(_target.global_position)
 		input.attack_input = true
 	else:
-		_steer_toward(_target.global_position, input)
+		var now := Time.get_ticks_msec() / 1000.0
+		if dist < _best_target_dist - PROGRESS_METRES:
+			_best_target_dist = dist
+			_progress_since = now
+		var steered := _steer_toward(_target.global_position, input)
+		if not steered or now - _progress_since > NO_PROGRESS_SECONDS:
+			_drop_target()
+			return false
 		input.run_input = dist > RUN_DISTANCE
 	return true
+
+func _drop_target() -> void:
+	## Lost or unreachable: leave it alone for a while.
+	if _target and is_instance_valid(_target):
+		_blacklist[_target.get_instance_id()] = Time.get_ticks_msec() / 1000.0 + BLACKLIST_SECONDS
+	_target = null
+
+func _is_blacklisted(minion: Node) -> bool:
+	var id: int = minion.get_instance_id()
+	if not _blacklist.has(id):
+		return false
+	if _blacklist[id] <= Time.get_ticks_msec() / 1000.0:
+		_blacklist.erase(id)
+		return false
+	return true
+
+func _can_reach(minion: MinionActor) -> bool:
+	if absf(minion.global_position.y - _avatar.global_position.y) > MAX_VERTICAL_REACH:
+		return false
+	var map_rid: RID = _nav_agent.get_navigation_map()
+	if not map_rid.is_valid():
+		return true
+	return NavigationServer3D.map_get_closest_point(map_rid, minion.global_position).distance_to(minion.global_position) <= MAX_NAV_GAP
 
 func _walk_to(goal: Vector3, arrive: float, input: AvatarInput) -> void:
 	var dist := _flat_distance(goal)
@@ -196,9 +240,12 @@ func _regenerate(delta: float) -> void:
 func _update_target() -> void:
 	# Sticky: keep the current target while it's alive and inside the leash.
 	if _target and is_instance_valid(_target) and _target.can_take_damage() \
-			and _flat_distance(_target.global_position) <= LEASH_RADIUS:
+			and _flat_distance(_target.global_position) <= LEASH_RADIUS \
+			and absf(_target.global_position.y - _avatar.global_position.y) <= MAX_VERTICAL_REACH:
 		return
 	_target = null
+	_best_target_dist = INF
+	_progress_since = Time.get_ticks_msec() / 1000.0
 	var scene := get_tree().current_scene
 	if not scene:
 		return
@@ -213,23 +260,34 @@ func _update_target() -> void:
 			continue
 		if _avatar.resists_striking(minion):
 			continue  # he won't strike the good faction for a weak owner
+		if _is_blacklisted(minion):
+			continue
 		var d := _flat_distance(minion.global_position)
 		if d < best_dist:
+			if not _can_reach(minion):
+				_blacklist[minion.get_instance_id()] = Time.get_ticks_msec() / 1000.0 + BLACKLIST_SECONDS
+				continue
 			best_dist = d
 			_target = minion
 
-func _steer_toward(goal: Vector3, input: AvatarInput) -> void:
+func _steer_toward(goal: Vector3, input: AvatarInput) -> bool:
+	## Push toward the goal along the path. False when the path is finished well short of it (unreachable).
 	if _repath_timer <= 0.0 or _nav_agent.target_position.distance_to(goal) > 1.0:
 		_nav_agent.target_position = goal
 		_repath_timer = REPATH_INTERVAL
 	var next := _nav_agent.get_next_path_position()
+	if _nav_agent.is_navigation_finished():
+		if _nav_agent.get_final_position().distance_to(goal) > MAX_NAV_GAP + 1.0:
+			return false
+		next = goal  # Close: go straight in.
 	var dir := next - _avatar.global_position
 	dir.y = 0.0
 	if dir.length() < 0.05:
-		return
+		return true
 	_face(_avatar.global_position + dir)
 	# Mount faces the path — "push forward" exactly like a player holding W.
 	input.input_dir = Vector2(0, -1)
+	return true
 
 func _face(world_point: Vector3) -> void:
 	## Point the camera mount at the goal so the movement states'
