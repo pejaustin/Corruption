@@ -12,7 +12,8 @@ func _attack_state(unit: MinionActor) -> Node:
 func _blow(attacker: MinionActor, target: Actor, multiplier := 1.0) -> void:
 	## One landed blow from `attacker` on `target`'s hurtbox, as the attack window reports it.
 	var hitbox: AttackHitbox = partial_double(AttackHitbox).new()
-	stub(hitbox, "get_new_hits").to_return([target.get_node(^"%Hurtbox")])
+	var hits: Array[Hurtbox] = [target.get_node(^"%Hurtbox") as Hurtbox]
+	stub(hitbox, "get_new_hits").to_return(hits)
 	stub(hitbox, "get_damage_multiplier").to_return(multiplier)
 	add_child_autofree(hitbox)
 	_attack_state(attacker)._check_hits(hitbox)
