@@ -25,7 +25,7 @@
 [ext_resource type="Resource" path="res://data/relics/placeholder_b.tres" id="29_relic_b"]
 [ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="30_body"]
 [ext_resource type="PackedScene" uid="uid://b3gujtrkxo5su" path="res://art/world/export/world_landscape_2km.tscn" id="31_landscape"]
-[ext_resource type="NavigationMesh" path="res://scenes/world/world_navmesh.res" id="32_navmesh"]
+[ext_resource type="NavigationMesh" uid="uid://c42tfjo0m31uf" path="res://scenes/world/world_navmesh.res" id="32_navmesh"]
 [ext_resource type="Script" uid="uid://cgc0guyh5exqy" path="res://scripts/world_curve.gd" id="33_curve"]
 [ext_resource type="PackedScene" path="res://scenes/sites/burial_ground.tscn" id="90_burial"]
 [ext_resource type="PackedScene" uid="uid://bqtx1ilgvmfaw" path="res://art/world/export/world_backdrop_2km.tscn" id="91_backdrop"]

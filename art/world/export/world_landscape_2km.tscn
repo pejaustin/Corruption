@@ -3215,6 +3215,12 @@ transform = Transform3D(-1.1297168, 0, -2.2604296, 0, 1.5815096, 0, 4.733441, 0,
 [node name="BridgeWoodRound2" parent="." unique_id=591208520 instance=ExtResource("17_fptcd")]
 transform = Transform3D(-4.8610125, 0, -0.109187126, 0, 1.5815096, 0, 0.22864294, 0, -2.321351, 138.74876, -1.9, -353.69543)
 
+[node name="BridgeWoodRound4" parent="." unique_id=733106935 instance=ExtResource("17_fptcd")]
+transform = Transform3D(4.3263063, 0, 2.3144512, 0, 1.7731013, 0, -4.615723, 0, 2.1693296, 31.488453, -5.6915092, 0)
+
+[node name="BridgeWoodRound3" parent="." unique_id=45790786 instance=ExtResource("17_fptcd")]
+transform = Transform3D(2.6755595, 0, 1.1071227, 0, 1.1747384, 0, -2.4331918, 0, 1.2174025, 79.023796, -6.2289524, -60.878895)
+
 [editable path="Waters/Glittering Ocean"]
 [editable path="Waters/Pale River"]
 [editable path="Waters/The Still Lake"]
