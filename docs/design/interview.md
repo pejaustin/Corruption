@@ -314,3 +314,35 @@ Austin, 2026-10-08:
 > ok yeah I think maybe its enough to just say you can be sacked, but will eventually come back, and that your base is a
 > corruption site that is permanently yours and spawns units in such a way that it will disincentivize people from
 > killing you and hanging around
+
+## 2026-10-13 — Paladin combat interview
+
+For the MVP the Paladin's combat must feel like a real ARPG (Austin, 2026-10-13). Questions are numbered C1, C2, …
+
+**C1. Which game should fighting as the Paladin feel closest to?** (A Dark Souls: slow, deliberate, stamina, dodge
+rolls, lock-on, hard-hitting enemies; B Diablo; C Zelda / Kingdom Hearts; D other)
+Austin, 2026-10-13:
+> A
+
+**C2. What does the Paladin fight with?** (A sword and shield; B two-handed weapon; C weapon plus holy magic; D other)
+Austin, 2026-10-13:
+> three main options: sword and shield, two handed weapon, magic quarterstaff
+
+**C3. How does the Paladin end up with one of the three weapons?** (A swap any time; B pick on possession; C unlocked
+through the world: starts with one, wins others at temples, runestones or relics; D other)
+Austin, 2026-10-13:
+> unlocked through the world
+
+**C4. When the Paladin changes hands, who keeps his unlocked weapons?** (A the player; B the Paladin; C a split)
+Austin, 2026-10-13:
+> the paladin keeps weapons and armor, but the player's held corruption sites determine things like what moves they can
+> use and how well the Paladin follows their commands
+
+**C5. With few sites held, what can the Paladin do when driven?** (A walk only; B a basic Souls kit; C a full kit that
+resists; D other)
+Austin, 2026-10-13:
+> walk and very slow basic attack to start, and he resists attacking humans at the start as well
+
+**C6. When the Paladin resists a command, what does that look like?** (A refuses; B hesitates; C pulls his blow; D mix)
+Austin, 2026-10-13:
+> he will still swing, but after a significant delay, and maybe not in the right direct
