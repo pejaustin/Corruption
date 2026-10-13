@@ -12,6 +12,7 @@ var fw: FieldWork
 
 func before_each() -> void:
 	await super()
+	MatchConfig.humans_kill_only = false  # Captives, thralls and nobles are built, switched off for the MVP.
 	fw = FieldWork.new()
 	fw.name = "FieldWork"
 	stage.add_child(fw)
@@ -183,3 +184,34 @@ func test_killing_their_people_breaks_the_promise() -> void:
 	villager.last_hit_by = 1
 	villager.take_damage(villager.hp)
 	assert_eq(noble.owner_peer_id, -1, "the noble turns back")
+
+# --- MVP switch: humans are only killed (MatchConfig.humans_kill_only) ---
+
+func test_with_the_switch_on_no_capture_or_offer_goal_is_offered() -> void:
+	MatchConfig.humans_kill_only = true
+	var goals := OrderGoal.goals_for(MapPoint.Kind.SETTLEMENT, true)
+	assert_false(OrderGoal.Goal.CAPTURE in goals)
+	assert_false(OrderGoal.Goal.OFFER in goals)
+	assert_true(OrderGoal.Goal.GO_HERE in goals, "undead can still be posted")
+	assert_true(OrderGoal.Goal.GO_HERE in OrderGoal.goals_for(MapPoint.Kind.RESOURCE, true))
+
+func test_with_the_switch_on_nothing_is_captured_or_bought() -> void:
+	MatchConfig.humans_kill_only = true
+	var villager := _human(&"villager", Vector3(0.5, 0, 0))
+	villager.hp = 1
+	var g := _group(1, Vector3.ZERO, OrderGoal.Goal.CAPTURE)
+	assert_true(fw._capture(g), "done at once")
+	assert_eq(gm.get_members(g)[0].carrying, &"")
+	var noble := _settlement_noble()
+	mm.set_carry(gm.get_members(g)[0], &"goods", FieldWork.NOBLE_PRICE)
+	assert_true(fw._offer(g))
+	assert_eq(noble.owner_peer_id, -1)
+
+func test_with_the_switch_on_a_work_site_needs_an_undead_overseer() -> void:
+	MatchConfig.humans_kill_only = true
+	var site := RESOURCE_SITE.instantiate() as ResourceSite
+	stage.add_child(site)
+	_human(&"villager", Vector3(1, 0, 0))
+	assert_false(site.is_worked(), "a human cannot be made to work it")
+	spawn(&"skeleton", 1, Vector3(2, 0, 0))
+	assert_true(site.is_worked(), "one of your undead posted there does")
