@@ -200,7 +200,10 @@ func _can_reach(minion: MinionActor) -> bool:
 	var map_rid: RID = _nav_agent.get_navigation_map()
 	if not map_rid.is_valid():
 		return true
-	return NavigationServer3D.map_get_closest_point(map_rid, minion.global_position).distance_to(minion.global_position) <= MAX_NAV_GAP
+	# A roof or ledge has navmesh of its own, so the closest point alone says "reachable". Ask for the
+	# actual path from him: an island he can't walk onto ends short of the target.
+	var path := NavigationServer3D.map_get_path(map_rid, _avatar.global_position, minion.global_position, true)
+	return not path.is_empty() and path[path.size() - 1].distance_to(minion.global_position) <= MAX_NAV_GAP
 
 func _walk_to(goal: Vector3, arrive: float, input: AvatarInput) -> void:
 	var dist := _flat_distance(goal)
