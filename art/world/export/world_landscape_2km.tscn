@@ -1,11 +1,10 @@
-[gd_scene format=4 uid="uid://b3gujtrkxo5su"]
+[gd_scene format=3 uid="uid://b3gujtrkxo5su"]
 
 [ext_resource type="PackedScene" uid="uid://b5024ats0g83l" path="res://art/world/export/world_landscape_2km.glb" id="1_landscape"]
 [ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="2_tower"]
 [ext_resource type="PackedScene" uid="uid://gpnntnyi7q1w" path="res://scenes/world/env/bridge_woodRound.tscn" id="17_fptcd"]
-[ext_resource type="Material" path="res://art/world/materials/poi/mat_bark.tres" id="areas_1_nfpkv"]
-[ext_resource type="Material" uid="uid://iv3fiy040nng" path="res://art/world/materials/forest_placeholder.tres" id="areas_2_pha8u"]
-[ext_resource type="PackedScene" path="res://scenes/world/water/water_body.tscn" id="areas_3_nfpkv"]
+[ext_resource type="PackedScene" path="res://art/world/export/forests_2km.tscn" id="branch_forests"]
+[ext_resource type="PackedScene" path="res://art/world/export/waters_2km.tscn" id="branch_waters"]
 [ext_resource type="PackedScene" uid="uid://bjlneb8hnj1ni" path="res://art/world/pois/ale_bend.tscn" id="poi_ale_bend"]
 [ext_resource type="PackedScene" uid="uid://c0ahvpcadc8qq" path="res://art/world/pois/avequella.tscn" id="poi_avequella"]
 [ext_resource type="PackedScene" uid="uid://dmxwixx0koisc" path="res://art/world/pois/entbridge.tscn" id="poi_entbridge"]
@@ -19,8 +18,6 @@
 [ext_resource type="PackedScene" uid="uid://bs6sap1d4nbpx" path="res://art/world/pois/teshfield.tscn" id="poi_teshfield"]
 [ext_resource type="PackedScene" uid="uid://cqt5kdyjwyhyd" path="res://art/world/pois/valley_cross.tscn" id="poi_valley_cross"]
 [ext_resource type="PackedScene" uid="uid://fmho8i5wbwb" path="res://art/world/pois/veilton.tscn" id="poi_veilton"]
-[ext_resource type="PackedScene" path="res://art/world/export/forests_2km.tscn" id="branch_forests"]
-[ext_resource type="PackedScene" path="res://art/world/export/waters_2km.tscn" id="branch_waters"]
 
 [node name="WorldLandscape" type="Node3D" unique_id=257760087]
 
@@ -131,4 +128,3 @@ transform = Transform3D(4.3263063, 0, 2.3144512, 0, 1.7731013, 0, -4.615723, 0, 
 
 [node name="BridgeWoodRound3" parent="." unique_id=45790786 instance=ExtResource("17_fptcd")]
 transform = Transform3D(2.6755595, 0, 1.1071227, 0, 1.1747384, 0, -2.4331918, 0, 1.2174025, 79.023796, -6.2289524, -60.878895)
-

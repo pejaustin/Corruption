@@ -593,6 +593,7 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -513
 
 [node name="Nav" type="NavigationRegion3D" parent="World" unique_id=674281798]
 navigation_mesh = ExtResource("32_navmesh")
+metadata/_edit_lock_ = true
 
 [node name="WorldLandscape" parent="World/Nav" unique_id=1130735981 instance=ExtResource("31_landscape")]
 metadata/_edit_lock_ = true
