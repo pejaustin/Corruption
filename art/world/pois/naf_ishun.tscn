@@ -5,4 +5,4 @@
 
 [ext_resource type="PackedScene" uid="uid://dwekw8c4ghuh7" path="res://art/world/pois/export/naf_ishun.glb" id="1_glb"]
 
-[node name="NafIshun" instance=ExtResource("1_glb")]
+[node name="NafIshun" unique_id=1330473293 instance=ExtResource("1_glb")]
