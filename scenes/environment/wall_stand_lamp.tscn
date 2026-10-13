@@ -6,4 +6,5 @@
 
 [node name="OmniLight3D" type="OmniLight3D" parent="." index="1" unique_id=1943277871]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_energy = 2.27
 light_bake_mode = 1
