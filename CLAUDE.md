@@ -687,6 +687,17 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 - **Allegiance, not faction, decides hostility.** `Actor.get_allegiance()` is the owning peer id (minions:
   `owner_peer_id`; the Paladin: his owner; overlords: themselves) or `GameConstants.GOOD_SIDE` (-1) for the good
   faction. MVP: every player is Undead (`PLAYABLE_FACTIONS = [UNDEATH]`), so factions only pick rosters and art.
+- **Towers are picked (Austin, 2026-10-13, #630):** in the lobby each seat (players and, by the host, CPUs) picks one of the
+  four towers on its player panel (`PlayerPanel.TowerSelector`; names are the tower markers' in the landscape scene, read by
+  `TowerPicks.slot_names`). One seat per tower, Start stays disabled until every seat has one, and picking clears your ready like a
+  faction change. `Lobby.player_towers` syncs like the faction (`_sync_all_state`, late joiners included) and `Lobby._on_start_pressed`
+  sends `GameState.sync_tower_picks` -> `GameState.tower_picks` (peer -> `Tower.slot_index`) and `player_slots`. The seat's slot is the pick
+  (`MultiplayerManager.claim_slot` / `get_player_slot`; no picks = join order, for the sandbox and tests). At match start every peer's
+  `MinionManager._setup_minions_node` calls `TowerPicks.remove_unpicked`: a tower in no pick leaves the tree whole (building, spawn point,
+  trickle, map floor, beacon, `TowerSite`, advisor) with its rally point and its gate `MapPoint` (the other points drop it as a
+  neighbour, the floors drop its marker and links). Pair rally points by the tower's authored `slot_index`, never by list position.
+  The baked navmesh still has the removed towers' footprint. A 2-player match runs on two towers. Tests: `tests/unit/test_tower_picks.gd`,
+  `tests/component/test_tower_pick_match.gd`.
 - `GameState.get_player_color(peer)` — seat colour (by tower slot); `get_player_name(peer)`.
 - `GameState.get_held_sites(peer)` / `count_held_sites(peer)` / `has_capability(peer, cap)` — see Corruption sites.
 - `GameState.match_pace` (`MatchConfig.Pace`, picked by the host in the lobby) scales unit speed and the good

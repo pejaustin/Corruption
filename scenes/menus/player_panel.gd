@@ -1,20 +1,25 @@
 class_name PlayerPanel
 extends PanelContainer
 
-## A row in the lobby player list. Owns a name input, faction picker, ready
-## toggle, and (for CPU seats only, host-only) a remove button. Editability is
+## A row in the lobby player list. Owns a name input, faction picker, tower
+## picker, ready toggle, and (for CPU seats only, host-only) a remove button. Editability is
 ## controlled by the lobby — only the local peer's panel is editable, plus
 ## CPU panels for the host.
 
 signal display_name_changed(peer_id: int, new_name: String)
 signal faction_changed(peer_id: int, new_faction: int)
+signal tower_changed(peer_id: int, tower_slot: int)
 signal ready_changed(peer_id: int, ready: bool)
 signal cpu_remove_requested(peer_id: int)
 
 @onready var _name_input: LineEdit = %PlayerNameInput
 @onready var _faction_selector: OptionButton = %FactionSelector
+@onready var _tower_selector: OptionButton = %TowerSelector
 @onready var _ready_button: Button = %ReadyButton
 @onready var _remove_button: Button = %RemoveButton
+
+## The tower picker's first item (no tower yet): never selectable, so a pick can't be taken back, only changed.
+const NO_TOWER_ID: int = 100
 
 var _peer_id: int = -1
 var _suppress_signals: bool = false
@@ -23,6 +28,7 @@ func _ready() -> void:
 	_name_input.text_submitted.connect(_on_name_submitted)
 	_name_input.focus_exited.connect(_on_name_focus_exited)
 	_faction_selector.item_selected.connect(_on_faction_selected)
+	_tower_selector.item_selected.connect(_on_tower_selected)
 	_ready_button.toggled.connect(_on_ready_toggled)
 	_remove_button.pressed.connect(_on_remove_pressed)
 
@@ -35,7 +41,10 @@ func update_view(
 	is_cpu: bool,
 	editable: bool,
 	is_host: bool,
-	available_factions: Array[int]
+	available_factions: Array[int],
+	tower_slot: int,
+	tower_names: Dictionary[int, String],
+	taken_towers: Array[int]
 ) -> void:
 	_peer_id = peer_id
 	_suppress_signals = true
@@ -59,6 +68,22 @@ func update_view(
 		current_index = idx
 	_faction_selector.selected = current_index
 	_faction_selector.disabled = not editable or available_factions.size() <= 1
+
+	# One tower per seat: the ones other seats hold are greyed out.
+	_tower_selector.clear()
+	_tower_selector.add_item("Pick a tower", NO_TOWER_ID)  # PLACEHOLDER: wording
+	_tower_selector.set_item_disabled(0, true)
+	var tower_index: int = 0
+	var slots: Array = tower_names.keys()
+	slots.sort()
+	for slot: int in slots:
+		var idx: int = _tower_selector.get_item_count()
+		_tower_selector.add_item(tower_names[slot], slot)
+		_tower_selector.set_item_disabled(idx, slot in taken_towers and slot != tower_slot)
+		if slot == tower_slot:
+			tower_index = idx
+	_tower_selector.selected = tower_index
+	_tower_selector.disabled = not editable
 
 	if is_cpu:
 		_ready_button.text = "CPU"
@@ -94,6 +119,11 @@ func _on_faction_selected(index: int) -> void:
 		return
 	var fid: int = _faction_selector.get_item_id(index)
 	faction_changed.emit(_peer_id, fid)
+
+func _on_tower_selected(index: int) -> void:
+	if _suppress_signals:
+		return
+	tower_changed.emit(_peer_id, _tower_selector.get_item_id(index))
 
 func _on_ready_toggled(pressed: bool) -> void:
 	if _suppress_signals:

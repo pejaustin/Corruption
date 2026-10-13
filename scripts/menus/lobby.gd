@@ -5,6 +5,8 @@ extends Control
 ## Manages name/faction/ready state across peers and gates a synchronized
 ## game start. MVP: everyone plays Undead (GDD §1), so the faction picker shows
 ## only Undead; per-player faction ids stay so more factions can come later.
+## Each seat picks its own tower (Austin, 2026-10-13; TowerPicks): one seat per tower, every seat needs one to start,
+## and a tower nobody picked is left out of the match. The host picks CPU seats' towers.
 ## The host picks the match pace (MatchConfig, GDD Q31) and the world size (400 m, 2 km, 6 km). CPU slots are host-controlled bots that fill empty seats —
 ## on START they're spawned as dummy players (see DebugManager.spawn_lobby_cpus)
 ## and inherit the lobby's chosen faction + name via GameState.
@@ -20,6 +22,8 @@ var player_factions: Dictionary[int, int] = {}
 var player_names: Dictionary[int, String] = {}
 # peer_id -> ready bool
 var player_ready: Dictionary[int, bool] = {}
+# peer_id -> picked tower slot (Tower.slot_index); a seat with no entry has not picked yet
+var player_towers: Dictionary[int, int] = {}
 
 @onready var _player_list: VBoxContainer = %PlayerList
 @onready var _player_count_label: Label = %PlayerCount
@@ -60,7 +64,7 @@ func _ready() -> void:
 		for pid in multiplayer.get_peers():
 			var f: int = _first_available_faction(player_factions.values())
 			_commit_seat(pid, f, "Player %d" % pid, false)
-		_sync_all_state.rpc(player_factions, player_names, player_ready)
+		_sync_all_state.rpc(player_factions, player_names, player_ready, player_towers)
 	else:
 		# Client: ask the host for the current lobby snapshot.
 		_request_sync.rpc_id(1)
@@ -77,13 +81,13 @@ func _on_peer_connected(peer_id: int) -> void:
 	var faction: int = _first_available_faction(player_factions.values())
 	var default_name: String = "Player %d" % peer_id
 	_commit_seat(peer_id, faction, default_name, false)
-	_sync_all_state.rpc(player_factions, player_names, player_ready)
+	_sync_all_state.rpc(player_factions, player_names, player_ready, player_towers)
 
 func _on_peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server():
 		return
 	_erase_seat(peer_id)
-	_sync_all_state.rpc(player_factions, player_names, player_ready)
+	_sync_all_state.rpc(player_factions, player_names, player_ready, player_towers)
 
 func _commit_seat(peer_id: int, faction: int, display_name: String, ready: bool) -> void:
 	player_factions[peer_id] = faction
@@ -94,6 +98,7 @@ func _erase_seat(peer_id: int) -> void:
 	player_factions.erase(peer_id)
 	player_names.erase(peer_id)
 	player_ready.erase(peer_id)
+	player_towers.erase(peer_id)
 
 func _first_available_faction(_taken: Array) -> int:
 	return GameConstants.PLAYABLE_FACTIONS[0]
@@ -148,6 +153,15 @@ func request_set_faction(peer_id: int, faction: int) -> void:
 	else:
 		_request_faction_change.rpc_id(1, peer_id, faction)
 
+func request_set_tower(peer_id: int, tower_slot: int) -> void:
+	if multiplayer.is_server():
+		if not TowerPicks.can_pick(player_towers, peer_id, tower_slot):
+			_refresh_ui()
+			return
+		_set_tower.rpc(peer_id, tower_slot)
+	else:
+		_request_tower_change.rpc_id(1, peer_id, tower_slot)
+
 func request_toggle_ready(peer_id: int, ready: bool) -> void:
 	if multiplayer.is_server():
 		_set_ready.rpc(peer_id, ready)
@@ -196,7 +210,7 @@ func _request_faction_change(peer_id: int, faction: int) -> void:
 		return
 	if not _faction_available_for(peer_id, faction):
 		# Snap requester back to current truth.
-		_sync_all_state.rpc(player_factions, player_names, player_ready)
+		_sync_all_state.rpc(player_factions, player_names, player_ready, player_towers)
 		return
 	_set_faction.rpc(peer_id, faction)
 
@@ -208,6 +222,35 @@ func _apply_faction(peer_id: int, faction: int) -> void:
 	if peer_id in player_factions:
 		player_factions[peer_id] = faction
 		# Picking a new faction clears your ready so others get a fresh confirmation.
+		if peer_id in player_ready and not is_cpu(peer_id):
+			player_ready[peer_id] = false
+		_refresh_ui()
+
+# --- RPC: tower ---
+
+@rpc("any_peer", "call_local", "reliable")
+func _request_tower_change(peer_id: int, tower_slot: int) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	if sender == 0:
+		sender = 1
+	if peer_id != sender and not is_cpu(peer_id):
+		return
+	if not TowerPicks.can_pick(player_towers, peer_id, tower_slot):
+		# Taken (or not a tower): snap the requester back to current truth.
+		_sync_all_state.rpc(player_factions, player_names, player_ready, player_towers)
+		return
+	_set_tower.rpc(peer_id, tower_slot)
+
+@rpc("authority", "call_local", "reliable")
+func _set_tower(peer_id: int, tower_slot: int) -> void:
+	_apply_tower(peer_id, tower_slot)
+
+func _apply_tower(peer_id: int, tower_slot: int) -> void:
+	if peer_id in player_factions and TowerPicks.can_pick(player_towers, peer_id, tower_slot):
+		player_towers[peer_id] = tower_slot
+		# Picking a new tower clears your ready, like a new faction does.
 		if peer_id in player_ready and not is_cpu(peer_id):
 			player_ready[peer_id] = false
 		_refresh_ui()
@@ -267,17 +310,19 @@ func _request_sync() -> void:
 	var sender: int = multiplayer.get_remote_sender_id()
 	if sender == 0:
 		sender = 1
-	_sync_all_state.rpc_id(sender, player_factions, player_names, player_ready)
+	_sync_all_state.rpc_id(sender, player_factions, player_names, player_ready, player_towers)
 	_set_pace.rpc_id(sender, match_pace)
 	_set_world_size.rpc_id(sender, world_size)
 
 @rpc("authority", "call_local", "reliable")
-func _sync_all_state(factions: Dictionary, names: Dictionary, ready: Dictionary) -> void:
+func _sync_all_state(factions: Dictionary, names: Dictionary, ready: Dictionary, towers: Dictionary) -> void:
 	# call_local on the host hands us the same dict references we passed in,
 	# so we must copy before clearing — otherwise we'd zero out the source.
 	var f := factions.duplicate()
 	var n := names.duplicate()
 	var r := ready.duplicate()
+	var t := towers.duplicate()
+	player_towers.clear()
 	player_factions.clear()
 	player_names.clear()
 	player_ready.clear()
@@ -287,6 +332,8 @@ func _sync_all_state(factions: Dictionary, names: Dictionary, ready: Dictionary)
 		player_names[int(pid)] = String(n[pid])
 	for pid in r:
 		player_ready[int(pid)] = bool(r[pid])
+	for pid in t:
+		player_towers[int(pid)] = int(t[pid])
 	_refresh_ui()
 
 # --- UI refresh ---
@@ -294,6 +341,7 @@ func _sync_all_state(factions: Dictionary, names: Dictionary, ready: Dictionary)
 func _refresh_ui() -> void:
 	var seats: Array = player_factions.keys()
 	seats.sort()
+	var tower_names: Dictionary[int, String] = TowerPicks.slot_names(world_size)
 
 	# Drop panels for departed seats.
 	for pid in _panels.keys():
@@ -311,6 +359,7 @@ func _refresh_ui() -> void:
 			_panels[pid] = panel
 			panel.display_name_changed.connect(request_set_name)
 			panel.faction_changed.connect(request_set_faction)
+			panel.tower_changed.connect(request_set_tower)
 			panel.ready_changed.connect(request_toggle_ready)
 			panel.cpu_remove_requested.connect(request_remove_cpu)
 
@@ -327,14 +376,18 @@ func _refresh_ui() -> void:
 			is_cpu(pid),
 			_can_edit(pid),
 			multiplayer.is_server(),
-			available
+			available,
+			player_towers.get(pid, -1),
+			tower_names,
+			TowerPicks.picked_slots(player_towers)
 		)
 
 	var count: int = seats.size()
 	_player_count_label.text = "%d / %d Players" % [count, GameConstants.MAX_PLAYERS]
 
 	var enough_players: bool = count >= MIN_PLAYERS
-	var all_ready: bool = enough_players
+	var all_towers: bool = TowerPicks.all_picked(seats, player_towers)
+	var all_ready: bool = enough_players and all_towers
 	if all_ready:
 		for pid in player_ready:
 			if not player_ready[pid]:
@@ -346,6 +399,8 @@ func _refresh_ui() -> void:
 
 	if not enough_players:
 		_status_label.text = "Need at least %d players (real or CPU)" % MIN_PLAYERS
+	elif not all_towers:
+		_status_label.text = "Every player needs to pick a tower"  # PLACEHOLDER: wording
 	elif not all_ready:
 		_status_label.text = "Waiting for players to ready up…"
 	elif multiplayer.is_server():
@@ -358,6 +413,8 @@ func _refresh_ui() -> void:
 func _on_start_pressed() -> void:
 	if not multiplayer.is_server():
 		return
+	if not TowerPicks.all_picked(player_factions.keys(), player_towers):
+		return
 	var cpu_seats: Array[int] = []
 	for pid in player_factions:
 		if is_cpu(pid):
@@ -367,6 +424,7 @@ func _on_start_pressed() -> void:
 	DebugManager.pending_cpu_ids = cpu_seats
 	GameState.sync_player_factions.rpc(player_factions)
 	GameState.sync_player_names.rpc(player_names)
+	GameState.sync_tower_picks.rpc(player_towers)
 	GameState.sync_match_pace.rpc(match_pace)
 	GameState.sync_world_size.rpc(world_size)
 	_begin_game.rpc()

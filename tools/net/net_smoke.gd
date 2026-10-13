@@ -223,6 +223,18 @@ func _phase_lobby() -> void:
 		var size_id: int = MatchConfig.WORLD_SIZE_BY_NAME[world_name]
 		var shown := await wait_for(func() -> bool: return lobby.world_size == size_id, 30.0)
 		check(shown, "the host's world size (%s) shows in my lobby" % world_name)
+	# Every seat picks its own tower, in the reverse of join order, so a pass proves the pick (not join order) decides
+	# the seat. The ready comes after: a pick clears it. Starting is blocked until all seats have one.
+	var seats_sorted: Array = lobby.player_factions.keys()
+	seats_sorted.sort()
+	var my_seat: int = seats_sorted.find(me)
+	var my_tower: int = expected - 1 - my_seat
+	lobby.request_set_tower(me, my_tower)
+	var picked := await wait_for(func() -> bool: return lobby.player_towers.size() == expected, 60.0)
+	check(picked, "every peer sees all %d towers picked" % expected)
+	check(lobby.player_towers.get(me, -1) == my_tower, "my pick (%s) stands" % TowerPicks.slot_names(lobby.world_size).get(my_tower, "?"))
+	var picks := await exchange("lobby_towers", str(_sorted_pairs(lobby.player_towers)))
+	check(all_equal(picks), "every peer sees the same tower picks")
 	lobby.request_toggle_ready(me, true)
 	var ready_ok := await wait_for(func() -> bool:
 		if lobby.player_ready.size() != expected:
@@ -283,6 +295,8 @@ func _phase_towers() -> void:
 		if gs.player_slots.get(owners_by_slot[slot], -99) != slot:
 			matches_slots = false
 	check(distinct.size() == expected and matches_slots, "each player has their own tower and it is their seat's slot")
+	check(gs.tower_picks == gs.player_slots, "the seat -> tower slot table is the lobby's picks, not join order")
+	check(Tower.in_slot_order(get_tree()).size() == expected, "only the %d picked towers are left in the match (%d here)" % [expected, Tower.in_slot_order(get_tree()).size()])
 	check(gs.player_factions.size() == expected and gs.player_names.size() == expected, "factions and names reached this peer for all %d seats" % expected)
 	# Overlord bodies: one per peer, owned by that peer, standing at their own tower.
 	var spawn := world.get_node("World/PlayerSpawnPoint")
