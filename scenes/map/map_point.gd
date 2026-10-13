@@ -56,6 +56,8 @@ func get_label() -> String:
 	return display_name if display_name != "" else String(point_id)
 
 func _snap() -> void:
+	if not is_inside_tree():
+		return  # left the match before the deferred snap ran (an unpicked tower's gate, TowerPicks)
 	if tower_slot >= 0:
 		# The tower in this slot (its slot_index, as MinionManager.bind_tower_markers uses it).
 		for n in get_tree().get_nodes_in_group(Tower.GROUP):

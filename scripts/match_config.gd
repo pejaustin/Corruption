@@ -30,6 +30,14 @@ const WORLD_SCENES: Dictionary[int, String] = {
 	WorldSize.LARGE: "res://scenes/world/world_6km.tscn",
 }
 
+## The landscape scene per size: it holds the towers (Austin's names, each tower's slot_index), which the lobby reads
+## (TowerPicks.slot_names) before any world is loaded.
+const LANDSCAPE_SCENES: Dictionary[int, String] = {
+	WorldSize.SMALL: "res://art/world/export/world_landscape_400m.tscn",
+	WorldSize.NORMAL: "res://art/world/export/world_landscape_2km.tscn",
+	WorldSize.LARGE: "res://art/world/export/world_landscape_6km.tscn",
+}
+
 ## PLACEHOLDER: tuning, not designed — unit move-speed multiplier per pace.
 const UNIT_SPEED: Dictionary[int, float] = {
 	Pace.NORMAL: 1.0,

@@ -134,6 +134,20 @@ func model() -> WorldModel:
 func get_marker(point_id: StringName) -> MapPointMarker:
 	return _markers.get(point_id)
 
+func forget_point(point_id: StringName) -> void:
+	## The point left the match (an unpicked tower's gate, TowerPicks.remove_unpicked): drop its marker and every
+	## link line that ends at it.
+	var marker: MapPointMarker = _markers.get(point_id)
+	if marker != null:
+		_markers.erase(point_id)
+		marker.get_parent().remove_child(marker)
+		marker.queue_free()
+	for line in _link_lines.duplicate():
+		if line.from_point == point_id or line.to_point == point_id:
+			_link_lines.erase(line)
+			line.get_parent().remove_child(line)
+			line.queue_free()
+
 # --- Coordinates ---
 
 func world_to_floor(world: Vector3) -> Vector3:
