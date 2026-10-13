@@ -14,7 +14,7 @@
 [ext_resource type="Resource" uid="uid://bgjtnmb8vbhrn" path="res://data/sites/temple.tres" id="18_avsite"]
 [ext_resource type="Resource" uid="uid://buea84dmkhpp7" path="res://data/sites/runestone.tres" id="19_bosite"]
 [ext_resource type="Script" uid="uid://d3l8034osg7kq" path="res://scenes/map/map_point.gd" id="21_mappoint"]
-[ext_resource type="Script" uid="uid://blxols02tr2av" path="res://scripts/groups/group_manager.gd" id="22_groups"]
+[ext_resource type="Script" uid="uid://1ea43cnw2ypi" path="res://scripts/groups/group_manager.gd" id="22_groups"]
 [ext_resource type="Script" uid="uid://8xek4x33cxsl" path="res://scripts/day_night.gd" id="23_daynight"]
 [ext_resource type="Script" uid="uid://dsjhdhkhdgbf" path="res://scripts/groups/field_work.gd" id="23_fieldwork"]
 [ext_resource type="Script" uid="uid://bpdsyugbl08te" path="res://scenes/world/places/settlement.gd" id="24_settlement"]
@@ -82,11 +82,6 @@ volumetric_fog_length = 400.0
 volumetric_fog_detail_spread = 1.5
 volumetric_fog_ambient_inject = 1.0
 volumetric_fog_sky_affect = 0.2
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
-shader = ExtResource("11_mxkvs")
-shader_parameter/pixel_size = 4.0
-shader_parameter/color_steps = 16
 
 [sub_resource type="Curve3D" id="Curve3D_road_TowerEast_RoadEast"]
 _data = {
@@ -241,6 +236,11 @@ _data = {
 "tilts": PackedFloat32Array(0, 0, 0)
 }
 point_count = 3
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
+shader = ExtResource("11_mxkvs")
+shader_parameter/pixel_size = 4.0
+shader_parameter/color_steps = 16
 
 [node name="GameWorld" type="Node3D" unique_id=129504398]
 
@@ -431,114 +431,114 @@ display_name = "Lastford"
 kind = 1
 known_at_start = false
 
-[node name="Roads" type="Node3D" parent="World"]
+[node name="Roads" type="Node3D" parent="World" unique_id=1858534212]
 
-[node name="TowerEast_RoadEast" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="TowerEast_RoadEast" parent="World/Roads" unique_id=1763676674 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_TowerEast_RoadEast")
 from_point = NodePath("../../MapPoints/TowerEast")
 to_point = NodePath("../../MapPoints/RoadEast")
 
-[node name="TowerSouth_RoadSouth" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="TowerSouth_RoadSouth" parent="World/Roads" unique_id=793882905 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_TowerSouth_RoadSouth")
 from_point = NodePath("../../MapPoints/TowerSouth")
 to_point = NodePath("../../MapPoints/RoadSouth")
 
-[node name="TowerWest_RoadWest" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="TowerWest_RoadWest" parent="World/Roads" unique_id=960067906 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_TowerWest_RoadWest")
 from_point = NodePath("../../MapPoints/TowerWest")
 to_point = NodePath("../../MapPoints/RoadWest")
 
-[node name="TowerNorth_RoadNorth" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="TowerNorth_RoadNorth" parent="World/Roads" unique_id=1975720836 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_TowerNorth_RoadNorth")
 from_point = NodePath("../../MapPoints/TowerNorth")
 to_point = NodePath("../../MapPoints/RoadNorth")
 
-[node name="RoadEast_Chapel" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadEast_Chapel" parent="World/Roads" unique_id=1973190809 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadEast_Chapel")
 from_point = NodePath("../../MapPoints/RoadEast")
 to_point = NodePath("../../MapPoints/Chapel")
 
-[node name="RoadEast_SettlementSE" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadEast_SettlementSE" parent="World/Roads" unique_id=1198338540 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadEast_SettlementSE")
 from_point = NodePath("../../MapPoints/RoadEast")
 to_point = NodePath("../../MapPoints/SettlementSE")
 
-[node name="RoadEast_Ford" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadEast_Ford" parent="World/Roads" unique_id=601463627 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadEast_Ford")
 from_point = NodePath("../../MapPoints/RoadEast")
 to_point = NodePath("../../MapPoints/Ford")
 
-[node name="RoadSouth_AvatarSite" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadSouth_AvatarSite" parent="World/Roads" unique_id=1292880911 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadSouth_AvatarSite")
 from_point = NodePath("../../MapPoints/RoadSouth")
 to_point = NodePath("../../MapPoints/AvatarSite")
 
-[node name="RoadSouth_SettlementSE" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadSouth_SettlementSE" parent="World/Roads" unique_id=2030057951 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadSouth_SettlementSE")
 from_point = NodePath("../../MapPoints/RoadSouth")
 to_point = NodePath("../../MapPoints/SettlementSE")
 
-[node name="RoadSouth_Crossing" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadSouth_Crossing" parent="World/Roads" unique_id=1834445542 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadSouth_Crossing")
 from_point = NodePath("../../MapPoints/RoadSouth")
 to_point = NodePath("../../MapPoints/Crossing")
 
-[node name="RoadWest_City" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadWest_City" parent="World/Roads" unique_id=136654137 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadWest_City")
 from_point = NodePath("../../MapPoints/RoadWest")
 to_point = NodePath("../../MapPoints/City")
 
-[node name="RoadWest_BossSite" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadWest_BossSite" parent="World/Roads" unique_id=1596615280 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadWest_BossSite")
 from_point = NodePath("../../MapPoints/RoadWest")
 to_point = NodePath("../../MapPoints/BossSite")
 
-[node name="RoadWest_SettlementNW" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadWest_SettlementNW" parent="World/Roads" unique_id=1143039373 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadWest_SettlementNW")
 from_point = NodePath("../../MapPoints/RoadWest")
 to_point = NodePath("../../MapPoints/SettlementNW")
 
-[node name="RoadWest_Crossing" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadWest_Crossing" parent="World/Roads" unique_id=1669172780 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadWest_Crossing")
 from_point = NodePath("../../MapPoints/RoadWest")
 to_point = NodePath("../../MapPoints/Crossing")
 
-[node name="RoadNorth_BossSite" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadNorth_BossSite" parent="World/Roads" unique_id=1976251704 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadNorth_BossSite")
 from_point = NodePath("../../MapPoints/RoadNorth")
 to_point = NodePath("../../MapPoints/BossSite")
 
-[node name="RoadNorth_SettlementNW" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadNorth_SettlementNW" parent="World/Roads" unique_id=266373225 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadNorth_SettlementNW")
 from_point = NodePath("../../MapPoints/RoadNorth")
 to_point = NodePath("../../MapPoints/SettlementNW")
 
-[node name="RoadNorth_Ford" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="RoadNorth_Ford" parent="World/Roads" unique_id=1213323637 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_RoadNorth_Ford")
 from_point = NodePath("../../MapPoints/RoadNorth")
 to_point = NodePath("../../MapPoints/Ford")
 
-[node name="Chapel_City" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="Chapel_City" parent="World/Roads" unique_id=1957395577 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_Chapel_City")
 from_point = NodePath("../../MapPoints/Chapel")
 to_point = NodePath("../../MapPoints/City")
 
-[node name="AvatarSite_City" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="AvatarSite_City" parent="World/Roads" unique_id=452392509 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_AvatarSite_City")
 from_point = NodePath("../../MapPoints/AvatarSite")
 to_point = NodePath("../../MapPoints/City")
 
-[node name="BossSite_City" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="BossSite_City" parent="World/Roads" unique_id=297264044 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_BossSite_City")
 from_point = NodePath("../../MapPoints/BossSite")
 to_point = NodePath("../../MapPoints/City")
 
-[node name="SettlementSE_MineSE" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="SettlementSE_MineSE" parent="World/Roads" unique_id=216098482 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_SettlementSE_MineSE")
 from_point = NodePath("../../MapPoints/SettlementSE")
 to_point = NodePath("../../MapPoints/MineSE")
 
-[node name="SettlementNW_MineNW" parent="World/Roads" node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
+[node name="SettlementNW_MineNW" parent="World/Roads" unique_id=1569200256 node_paths=PackedStringArray("from_point", "to_point") instance=ExtResource("94_road")]
 curve = SubResource("Curve3D_road_SettlementNW_MineNW")
 from_point = NodePath("../../MapPoints/SettlementNW")
 to_point = NodePath("../../MapPoints/MineNW")
@@ -595,6 +595,7 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -513
 navigation_mesh = ExtResource("32_navmesh")
 
 [node name="WorldLandscape" parent="World/Nav" unique_id=1130735981 instance=ExtResource("31_landscape")]
+metadata/_edit_lock_ = true
 
 [node name="Minions" type="Node3D" parent="World" unique_id=1301301600]
 
