@@ -80,6 +80,9 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		actor.velocity.x = 0
 		actor.velocity.z = 0
 		physics_move()
+		# Arrived: clear the goal so Idle has nothing to walk back to (couriers keep theirs for arrival).
+		if target == null and minion.minion_trait != &"courier":
+			minion.waypoint = Vector3.ZERO
 		state_machine.transition(&"IdleState")
 		return
 

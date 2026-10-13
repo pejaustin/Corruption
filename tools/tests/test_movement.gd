@@ -22,7 +22,7 @@ func run_tests() -> void:
 	_park_paladin()
 
 	# ONLY=<name> runs one section while iterating.
-	for section in [&"_speed_at_rates", &"_jump_lands", &"_chase_closes"]:
+	for section in [&"_speed_at_rates", &"_jump_lands", &"_chase_closes", &"_waypoint_settles"]:
 		if only.is_empty() or only == String(section):
 			await call(section)
 
@@ -135,4 +135,23 @@ func _chase_closes() -> void:
 	check(knight.hp < hp, "the swing lands damage within 20 s (knight %d/%d, %.1f s)" % [knight.hp, hp, elapsed])
 	for m in [skel, knight]:
 		mm.despawn_minion(m)
+	await frames(3)
+
+func _waypoint_settles() -> void:
+	## A goal that is off the navmesh (4 m above the ground) still lets the unit settle: no Idle <-> Chase flipping.
+	var skel := await _spawn(1, &"skeleton", origin)
+	await seconds(0.5)
+	skel.waypoint = _snap(origin + Vector3(14, 0, 0)) + Vector3(0, 4, 0)
+	var changes := 0
+	var last: StringName = skel._state_machine.state
+	var elapsed := 0.0
+	while elapsed < 9.0:
+		await get_tree().physics_frame
+		elapsed += get_physics_process_delta_time()
+		if skel._state_machine.state != last:
+			changes += 1
+			last = skel._state_machine.state
+	check(changes < 4, "an off-mesh waypoint settles: %d state changes in 9 s (ends %s)" % [changes, last])
+	check(last == &"IdleState", "and the unit ends idle at it (%s)" % last)
+	mm.despawn_minion(skel)
 	await frames(3)

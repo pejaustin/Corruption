@@ -31,6 +31,11 @@ func distance_to(target: Node3D) -> float:
 	diff.y = 0
 	return diff.length()
 
+func flat_distance_to_point(point: Vector3) -> float:
+	var diff := actor.global_position - point
+	diff.y = 0
+	return diff.length()
+
 func face_direction(dir: Vector3) -> void:
 	if dir.length() < 0.01:
 		return
