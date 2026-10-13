@@ -62,8 +62,24 @@ func _ready() -> void:
 	call_deferred("_setup_minions_node")
 
 func _setup_minions_node() -> void:
+	# Before anything adopts the towers' advisors: a tower nobody picked in the lobby is out of the match, on every peer.
+	var rallies := _rally_markers()
+	if not GameState.tower_picks.is_empty():
+		TowerPicks.remove_unpicked(get_tree(), TowerPicks.picked_slots(GameState.tower_picks), rallies)
 	_adopt_preplaced_minions()
-	bind_tower_markers()
+	bind_tower_markers(rallies)
+
+func _rally_markers() -> Array[MinionRallyPoint]:
+	## The MinionRallyPoints under World/Markers in child order (the rally of slot N is the Nth).
+	var rallies: Array[MinionRallyPoint] = []
+	var scene := get_tree().current_scene
+	var markers_root := scene.get_node_or_null("World/Markers") if scene else null
+	if markers_root == null:
+		return rallies
+	for child in markers_root.get_children():
+		if child is MinionRallyPoint:
+			rallies.append(child)
+	return rallies
 
 func _adopt_preplaced_minions() -> void:
 	## Moves any MinionActor authored into the scene (e.g. World/Enemies/Guard1)
@@ -117,9 +133,10 @@ func _adopt_preplaced_minions() -> void:
 func _mp_manager() -> MultiplayerManager:
 	return get_tree().current_scene.get_node_or_null("MultiplayerManager") as MultiplayerManager
 
-func bind_tower_markers() -> void:
+func bind_tower_markers(all_rallies: Array[MinionRallyPoint] = []) -> void:
 	## Pair each tower with a rally point: the tower in slot N (its slot_index, authored on
-	## the tower in the landscape scene) gets the Nth MinionRallyPoint under World/Markers.
+	## the tower in the landscape scene) gets the Nth MinionRallyPoint under World/Markers
+	## (`all_rallies`, taken before any unpicked tower was removed; empty = read them now).
 	## Then bind each rally to the connected peer in the matching tower slot.
 	_spawn_points.clear()
 	_rally_points.clear()
@@ -130,17 +147,17 @@ func bind_tower_markers() -> void:
 	if markers_root == null:
 		return
 	var towers := Tower.in_slot_order(get_tree())
-	var rallies: Array[MinionRallyPoint] = []
-	for child in markers_root.get_children():
-		if child is MinionRallyPoint:
-			rallies.append(child)
-	for i in towers.size():
+	var rallies: Array[MinionRallyPoint] = all_rallies if not all_rallies.is_empty() else _rally_markers()
+	for n in towers.size():
+		var tower := towers[n]
+		# The authored slot, not the list position: unpicked towers may be missing from the list.
+		var i: int = tower.slot_index if tower.slot_index >= 0 else n
 		var rally: MinionRallyPoint = rallies[i] if i < rallies.size() else null
-		towers[i].assign_slot(i, rally)
-		if towers[i].spawn_point:
-			_spawn_points[i] = towers[i].spawn_point
-		if towers[i].courier_spawn:
-			_courier_spawns[i] = towers[i].courier_spawn
+		tower.assign_slot(i, rally)
+		if tower.spawn_point:
+			_spawn_points[i] = tower.spawn_point
+		if tower.courier_spawn:
+			_courier_spawns[i] = tower.courier_spawn
 		if rally:
 			_rally_points[i] = rally
 	# Peer binding is host-authoritative: host knows the slot table, clients
@@ -222,6 +239,8 @@ func _slot_for_peer(peer_id: int) -> int:
 	## before bindings have been broadcast.
 	if peer_id in _peer_slots:
 		return _peer_slots[peer_id]
+	if peer_id in GameState.tower_picks:
+		return GameState.tower_picks[peer_id]
 	var mm := _mp_manager()
 	if mm == null:
 		return -1

@@ -4,7 +4,7 @@ class_name Tower extends Node3D
 ## Towers stand under Austin's tower markers in world_landscape_2km.tscn, and each one's
 ## `slot_index` (set there) pairs it with the MinionRallyPoint of the same child position
 ## in World/Markers (slot 0 ↔ MinionRallyPoint, slot 1 ↔ MinionRallyPoint2, …), with the
-## MapPoint whose tower_slot matches, and with a player (joining order).
+## MapPoint whose tower_slot matches, and with the player who picked it in the lobby (GameState.tower_picks).
 
 const GROUP: StringName = &"towers"
 ## PLACEHOLDER: art direction, not designed — how the ruined tower rebuilds.

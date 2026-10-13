@@ -128,8 +128,7 @@ func spawn_lobby_cpus(cpu_ids: Array) -> void:
 			push_error("[Debug] _player_scene.instantiate() returned null — overlord_actor.tscn may be broken")
 			return
 		dummy.name = str(cpu_id)
-		mm._player_slot_order.append(cpu_id)
-		var slot: int = mm._player_slot_order.find(cpu_id)
+		var slot: int = mm.claim_slot(cpu_id)
 		if slot < mm.TOWER_SPAWNS.size():
 			dummy.position = mm.TOWER_SPAWNS[slot]
 		else:
@@ -152,7 +151,7 @@ func reset() -> void:
 
 func get_max_dummy_players() -> int:
 	var mm = _get_multiplayer_manager()
-	if mm:
+	if mm and GameState.tower_picks.is_empty():
 		return GameConstants.MAX_PLAYERS - mm._player_slot_order.size()
 	return 0
 

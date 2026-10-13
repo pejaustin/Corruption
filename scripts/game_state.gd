@@ -48,6 +48,9 @@ var player_names: Dictionary[int, String] = {}
 # peer_id -> tower slot (0..MAX_PLAYERS-1). Set on every peer when the host
 # binds towers (MinionManager._bind_rally_rpc). Drives seat colours.
 var player_slots: Dictionary[int, int] = {}
+## peer_id -> the tower slot (Tower.slot_index) each seat picked in the lobby (Austin, 2026-10-13); empty when no
+## lobby ran (sandbox, tests), then slots come from join order. A tower in no pick is left out of the match.
+var tower_picks: Dictionary[int, int] = {}
 ## Match pace (MatchConfig.Pace), chosen by the host in the lobby.
 var match_pace: int = MatchConfig.Pace.NORMAL
 ## World size (MatchConfig.WorldSize), chosen by the host in the lobby; decides which world scene loads.
@@ -337,6 +340,13 @@ func sync_player_factions(factions: Dictionary) -> void:
 		player_factions[int(pid)] = int(factions[pid])
 
 @rpc("authority", "call_local", "reliable")
+func sync_tower_picks(picks: Dictionary) -> void:
+	tower_picks.clear()
+	for pid in picks:
+		tower_picks[int(pid)] = int(picks[pid])
+		player_slots[int(pid)] = int(picks[pid])
+
+@rpc("authority", "call_local", "reliable")
 func sync_player_names(names: Dictionary) -> void:
 	player_names.clear()
 	for pid in names:
@@ -365,5 +375,6 @@ func reset() -> void:
 	player_factions.clear()
 	player_names.clear()
 	player_slots.clear()
+	tower_picks.clear()
 	match_pace = MatchConfig.Pace.NORMAL
 	world_size = MatchConfig.WorldSize.NORMAL
