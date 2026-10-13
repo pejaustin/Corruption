@@ -204,7 +204,6 @@ The magic mirror (Q33, Q34): live calls and recorded messages. It captures audio
 
 - **Good faction, day to day:** patrols, purifying, how fast its threat grows.
 - **Contested takeover** of the Paladin: how the contest over a defeated, held Paladin resolves. (Q14)
-- **Avatar control progress:** does it belong to the player or to the Paladin?
 - **Boss forms:** what each looks like and does; how sites feed them.
 - **Content (Austin's to write):** what each POI type grants beyond the above, relics, maneuvers, the advisor, the map
   and its locations, unit types, boss forms.
