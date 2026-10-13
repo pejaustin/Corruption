@@ -94,6 +94,15 @@ var carried_orders: Array = []
 var discovered_points: Array[StringName] = []
 ## Courier-only: sent home by its group on attack rather than from the tower.
 var is_runner: bool = false
+## Courier-only (CourierErrand): &"" on its errand, &"homeward" after giving
+## up, &"stranded" when home could not be reached either.
+var errand_state: StringName = &""
+## Courier-only: progress toward the current stop, for giving up.
+var errand_tracked_waypoint: Vector3 = Vector3.INF
+var errand_best_distance: float = INF
+var errand_stall_seconds: float = 0.0
+## Courier-only: seconds stranded (-1 once reported lost).
+var errand_lost_seconds: float = 0.0
 ## Mirrored from MinionType — read by courier_arrival_state to decide visibility
 ## and loiter time at each leg's source. Default zero (non-courier minions).
 var courier_visual_range: float = 0.0
@@ -384,6 +393,8 @@ func _physics_process(delta: float) -> void:
 		if _observe_timer >= OBSERVE_INTERVAL:
 			_observe_timer = 0.0
 			_observe()
+			if minion_trait in KnowledgeManager.COURIER_TRAITS:
+				CourierErrand.look(self)
 
 	# Courier homeward despawn: if our body's CollisionShape3D is overlapping
 	# the return_zone Area3D's CollisionShape3D AND we have nothing left to
@@ -410,6 +421,8 @@ func _physics_process(delta: float) -> void:
 
 	_state_machine._rollback_tick(delta, 0, true)
 
+	if return_pos != Vector3.INF and minion_trait in KnowledgeManager.COURIER_TRAITS:
+		CourierErrand.tick(self, delta)
 	_check_stuck(delta)
 	_update_run_animation(delta)
 

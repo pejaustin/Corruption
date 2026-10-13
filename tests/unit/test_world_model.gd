@@ -60,6 +60,12 @@ func test_coming_home_ends_the_expectation() -> void:
 	_report(Vector3(40, 0, 0), OrderGoal.Goal.GO_HERE, &"returned")
 	assert_false(model.expectations.has(7))
 
+func test_a_stuck_report_stops_the_piece_where_they_gave_up() -> void:
+	model.update_group({"id": 7, "pos": Vector3(30, 0, 0), "count": 3, "goal": OrderGoal.Goal.GO_HERE,
+		"status": &"stuck", "obs_tick": t0}, t0, &"courier")
+	assert_eq(model.piece_state(7), &"stuck")
+	assert_eq(model.group_position(7, t0 + 1000000), Vector3(30, 0, 0), "it does not walk on")
+
 func test_a_courier_searches_ahead_then_back_along_the_route() -> void:
 	model.expect(8, 2, Vector3.ZERO, [Vector3(10, 0, 0), Vector3(20, 0, 0), Vector3(30, 0, 0)], OrderGoal.Goal.GO_HERE, &"X", t0)
 	var ticks := int(WorldModel._rate() * 15.0 / WorldModel.EXPECTED_SPEED)  # 15 m along

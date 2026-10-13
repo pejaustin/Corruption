@@ -68,6 +68,8 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Treasure room: a grid of box crates, one per good (up to 200), and a floating "Goods: N" plaque; ledger: a wooden stand with a flat book | Treasure room and ledger art | `scripts/interactibles/treasure_room.gd`, `scenes/interactibles/ledger.tscn` | #565 |
 | Relic on the ground: a small glowing gold sphere | Relic art | `scenes/world/places/relic_place.gd` | |
 | Boss forms are always AI-driven; no player-controlled boss yet | Playing a boss form | `scenes/world/places/holy_site.gd` | #560 |
+| No look for a stuck group's piece: the model has it (`WorldModel.piece_state` = `&"stuck"`, the piece stays where they gave up) and its prompt shows "(stuck)" from the report's status, but it is drawn like a confirmed piece | How a stuck group looks on the map floor | `scripts/knowledge/world_model.gd`, `scenes/map/map_piece.gd` `refresh` | #627 |
+| A stranded courier (home unreachable too) stands where it stopped, never rejoins the courier pool, and its owner hears only "a courier is lost" (what it carried never arrives; its undelivered orders show as lost) | What happens to a courier that cannot get home | `scripts/knowledge/courier_errand.gd`, `knowledge_manager.gd` `courier_stranded` | #627 |
 
 ## Wording
 
@@ -79,6 +81,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Win and draw screen text ("You beat the gauntlet. VICTORY!", "<name> beat the gauntlet. DEFEAT.", "The city centre can no longer be corrupted. DRAW.") | The ending's copy | `scripts/menus/win_screen.gd` | #559 |
 | Ledger strings ("Press E to read the ledger", "Ledger", "In the treasure room: N", "<place>: N goods, written mm:ss ago", "No report of goods held elsewhere.") and the treasure plaque ("Goods: N") | The ledger's and treasure room's copy | `scripts/interactibles/ledger.gd`, `treasure_room.gd` | #565 |
 | Advisor teaching and goal lines ("Have a leader teach another group...", "Bring back what lies here", teaching and relic report lines) | The advisor's voice | `advisor_handoff.gd`, `order_goal.gd`, `group_manager.gd`, `field_work.gd` | |
+| A courier's errand ("The courier could not reach group N: the way was blocked near X.", "The courier saw group N but could not reach them near X; your orders were not handed over.", "Group N is stuck near X; they have not arrived.", "Group N was seen on its way / where you sent them / coming home", "The courier could not finish its route", "A courier is lost", record title "A courier's errand") | The advisor's voice, desk `courier` records | `scripts/knowledge/knowledge_manager.gd` `_errand_notes`, `courier_stranded`, `_report_title` | #627 |
 
 ## Tuning (playtest ticket #587)
 
@@ -87,6 +90,8 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Pace presets: unit speed ×1.0 / ×0.4; good-faction growth every 360 s / 1200 s | `scripts/match_config.gd` |
 | Starting group size 4; starting couriers 2; 3 route points per order | `scripts/match_config.gd` |
 | Assessing groups watch 20 s; stuck after 8 s without progress | `scripts/groups/group_manager.gd` |
+| A group under orders gives up and forms ranks after 45 s without getting 1 m closer to its next point (fighting pauses the count) | `scripts/groups/group_manager.gd` `GIVE_UP_SECONDS` |
+| A courier turns home after 30 s without getting 1 m closer to its stop (the same on the way home, then it stops); stranded, it is reported lost after 60 s; it recognises its group within 40 m in line of sight (eyes 1.5 m up) | `scripts/knowledge/courier_errand.gd` `GIVE_UP_SECONDS`, `PROGRESS_METRES`, `LOST_SECONDS`, `SIGHT_METRES`, `EYE_HEIGHT` |
 | Courier training 90 s; teaching 120 s; successor keeps each maneuver at 50% and half the experience | `scripts/groups/training.gd` |
 | Ink takes 3 s to darken; pieces show "?" after 90 s | `scenes/map/map_floor.gd` |
 | Site thresholds, corrupt / slip / purify times per type | `data/sites/*.tres` |
