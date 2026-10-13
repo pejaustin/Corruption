@@ -3,19 +3,19 @@ class_name MapFloor extends Node3D
 
 ## The tower's map: a huge stone floor drawn as a rough sketch of the land
 ## (GDD §3, Q1, Q8–Q10). It shows what its owner believes, never the truth:
-## the map points they know, the roads between them, chess pieces where reports
+## the map points they know, the lines between neighbours, chess pieces where reports
 ## last put their groups and the enemy, and the ink of orders already sent.
 ##
-## Authored in map_floor.tscn (Austin, 2026-10-13: "Make the scene and allow me to define where roads are, set a
-## texture for the background"): the picture is `illustration`; every point marker (Markers) and road line (Roads)
-## is a node there, placed and styled by hand. The "Copy map points and roads" button (open map_floor.tscn first)
-## adds a marker and a line for every MapPoint and Road of `source_world` that the floor lacks, scaled onto the floor;
-## it leaves the ones already there alone unless "Overwrite On Copy" is ticked. In play, code only shows the points
-## and roads their owner knows, lights up a route, and draws the pieces and ink.
+## Authored in map_floor.tscn (Austin, 2026-10-13): the picture is `illustration`; every point marker (Markers) and
+## every line between two neighbouring points (Links, MapPoint.neighbors) is a node there, placed and styled by hand.
+## The "Copy map points and links" button (open map_floor.tscn first) adds a marker for every MapPoint of
+## `source_world` and a line for every neighbour pair that the floor lacks, scaled onto the floor; it leaves the ones
+## already there alone unless "Overwrite On Copy" is ticked. In play, code only shows the points and links their
+## owner knows, lights up a way, and draws the pieces and ink.
 ##
 ## Making an order (Austin, 2026-10-13): select one or more of your pieces (E), or E on your own tower's point to send
-## a courier alone; look at a destination point and the way by road lights up on the floor (the shortest by road,
-## through the points you know); E on it takes the order into your hand as a scroll, and its route is pencilled in;
+## a courier alone; look at a destination point and the way there lights up on the floor (the shortest along
+## neighbouring points you know); E on it takes the order into your hand as a scroll, and its route is pencilled in;
 ## give it to the advisor, who asks what the orders are, and the route darkens in ink once a courier carries it.
 ## Pieces can be picked up (left mouse) and put down anywhere to guess or plan (Q10); asking the advisor to update
 ## the map puts them back.
@@ -44,15 +44,15 @@ signal selection_changed
 @export var ink_line_scene: PackedScene
 
 @export_group("Copy from the world")
-## The world whose MapPoints and Roads the button copies onto the floor.
+## The world whose MapPoints and their neighbour links the button copies onto the floor.
 @export_file("*.tscn") var source_world: String = "res://scenes/world/world.tscn"
-## The scenes the button instances for a point and a road.
+## The scenes the button instances for a point and a link.
 @export var marker_scene: PackedScene
-@export var road_line_scene: PackedScene
+@export var link_line_scene: PackedScene
 ## Tick to have the next copy also put back every marker and line already here where the world has it (your hand
 ## edits to them are lost) and remove those the world no longer has. Unticks itself after the copy.
 @export var overwrite_on_copy: bool = false
-@export_tool_button("Copy map points and roads", "Duplicate") var copy_button: Callable = _on_copy_pressed
+@export_tool_button("Copy map points and links", "Duplicate") var copy_button: Callable = _on_copy_pressed
 
 ## Seconds for a sent order's route to darken in ink (ticket #538).
 ## PLACEHOLDER: tuning.
@@ -68,7 +68,7 @@ const PENCIL_WIDTH: float = 0.025
 const INK_WIDTH: float = 0.05
 
 var _markers: Dictionary[StringName, MapPointMarker] = {}
-var _road_lines: Array[MapRoadLine] = []
+var _link_lines: Array[MapLinkLine] = []
 var _pieces: Dictionary[int, MapPiece] = {}
 var _refresh_timer: float = 0.0
 var _ink_started: Dictionary[int, float] = {}
@@ -85,7 +85,7 @@ var _preview_key: String = ""
 
 @onready var _illustration_plane: MeshInstance3D = %Illustration
 @onready var _markers_root: Node3D = %Markers
-@onready var _roads_root: Node3D = %Roads
+@onready var _links_root: Node3D = %Links
 @onready var _pieces_root: Node3D = %Pieces
 @onready var _ink_root: Node3D = %Ink
 @onready var _draft_line: MeshInstance3D = %DraftLine
@@ -100,10 +100,10 @@ func _ready() -> void:
 			marker.floor_map = self
 			_markers[marker.point_id] = marker
 			marker.set_shown(false)
-	for child in _roads_root.get_children():
-		if child is MapRoadLine:
-			_road_lines.append(child)
-			(child as MapRoadLine).visible = false
+	for child in _links_root.get_children():
+		if child is MapLinkLine:
+			_link_lines.append(child)
+			(child as MapLinkLine).visible = false
 
 # --- Ownership ---
 
@@ -164,7 +164,7 @@ func _process(delta: float) -> void:
 		for n in roots:
 			n.visible = active
 		_sync_markers()
-		_sync_road_lines()
+		_sync_link_lines()
 	if not active:
 		return
 	_update_carried_piece()
@@ -176,7 +176,7 @@ func _process(delta: float) -> void:
 		return
 	_refresh_timer = 0.0
 	_sync_markers()
-	_sync_road_lines()
+	_sync_link_lines()
 	_sync_pieces()
 	_sync_ink()
 
@@ -208,19 +208,19 @@ func cancel_authoring() -> void:
 	selection_changed.emit()
 
 func plan_to(point: MapPoint) -> Dictionary:
-	## The way by road for each selected group (or a courier from home) to `point`, through the points this player
-	## knows: { points: every point on any of the ways, route_points / route: the first way's points and waypoints,
-	## paths / routes: group id -> its way's points and waypoints }. Empty when no known road leads there.
+	## The way for each selected group (or a courier from home) to `point`, along neighbouring points this player
+	## knows: { points: every point on any of the ways, route_points / route: the first way's points and where they
+	## stand, paths / routes: group id -> its way's points and where they stand }. Empty when no known way leads there.
 	var tick := KnowledgeManager.current_tick()
 	var m := model()
 	var known := m.is_point_known
-	var graph := RoadGraph.from_tree(get_tree())
+	var graph := PointGraph.from_tree(get_tree())
 	var starts: Dictionary[int, MapPoint] = {}
 	if selected_groups.is_empty():
 		starts[0] = _tower_point()
 	else:
 		for gid in selected_groups:
-			starts[gid] = RoadGraph.nearest_point(get_tree(), m.group_position(gid, tick), known)
+			starts[gid] = PointGraph.nearest_point(get_tree(), m.group_position(gid, tick), known)
 	var points: Array[StringName] = []
 	var paths: Dictionary = {}
 	var routes: Dictionary = {}
@@ -257,7 +257,7 @@ func way_to(point: MapPoint) -> Dictionary:
 	return _preview
 
 func finish_at(point: MapPoint) -> void:
-	## E on a point while authoring: the way there by road is chosen and the order
+	## E on a point while authoring: the way there is chosen and the order
 	## goes into your hand as a scroll.
 	var player := local_player()
 	if player == null or not authoring:
@@ -317,7 +317,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		cancel_authoring()
 		get_viewport().set_input_as_handled()
 
-# --- Points and roads: what the owner knows ---
+# --- Points and links: what the owner knows ---
 
 func _sync_markers() -> void:
 	var m := model()
@@ -327,13 +327,13 @@ func _sync_markers() -> void:
 			marker.point = MapPoint.find(get_tree(), id)
 		marker.set_shown(_active and marker.point != null and m.is_point_known(id))
 
-func _sync_road_lines() -> void:
+func _sync_link_lines() -> void:
 	var m := model()
-	for line in _road_lines:
+	for line in _link_lines:
 		line.visible = _active and m.is_point_known(line.from_point) and m.is_point_known(line.to_point)
 
 func _update_highlights() -> void:
-	## The points of the order in hand, else of the way being looked at.
+	## The points and links of the order in hand, else of the way being looked at.
 	var lit: Array = _preview.get("points", []) if authoring else []
 	var player := local_player()
 	if player and player.is_holding_order():
@@ -342,6 +342,21 @@ func _update_highlights() -> void:
 		var on := id in lit
 		if _markers[id].highlighted != on:
 			_markers[id].set_highlighted(on)
+	var lit_links: Array[MapLinkLine] = []
+	var paths: Array = []
+	if player and player.is_holding_order():
+		paths = _order_paths(player.held_order)
+	elif authoring and not _preview.is_empty():
+		paths = _order_paths(_preview)
+	for path in paths:
+		for i in range(1, (path as Array).size()):
+			var line := _link_line(StringName(path[i - 1]), StringName(path[i]))
+			if line:
+				lit_links.append(line)
+	for line in _link_lines:
+		var on := line in lit_links
+		if line.highlighted != on:
+			line.set_highlighted(on)
 
 # --- Drawing: pieces ---
 
@@ -439,7 +454,7 @@ func _enemy_clusters(m: WorldModel) -> Array[Dictionary]:
 # --- Drawing: the order in hand (pencil) and sent orders (ink) ---
 
 func _update_draft_line() -> void:
-	## The route of the order in hand, pencilled along the floor's roads.
+	## The route of the order in hand, pencilled along the floor's links.
 	var player := local_player()
 	if player == null or not player.is_holding_order():
 		_draft_line.visible = false
@@ -484,25 +499,26 @@ func _superseded(m: WorldModel, cmd: int) -> bool:
 				return true
 	return false
 
-func _order_point_ids(o: Dictionary) -> Array[StringName]:
-	## Every point an order's routes pass.
-	var out: Array[StringName] = []
+func _order_paths(o: Dictionary) -> Array:
+	## An order's (or a planned way's) point paths: one per group, else the courier's.
 	var paths: Array = (o.get("paths", {}) as Dictionary).values()
 	if paths.is_empty():
 		paths = [o.get("route_points", [])]
-	for path in paths:
+	return paths
+
+func _order_point_ids(o: Dictionary) -> Array[StringName]:
+	## Every point an order's routes pass.
+	var out: Array[StringName] = []
+	for path in _order_paths(o):
 		for pid in path:
 			if StringName(pid) not in out:
 				out.append(StringName(pid))
 	return out
 
 func _order_lines(o: Dictionary) -> Array[PackedVector3Array]:
-	## An order's routes on the floor: one line per group (or the courier's), along the floor's road lines.
+	## An order's routes on the floor: one line per group (or the courier's), along the floor's link lines.
 	var out: Array[PackedVector3Array] = []
-	var paths: Array = (o.get("paths", {}) as Dictionary).values()
-	if paths.is_empty():
-		paths = [o.get("route_points", [])]
-	for path in paths:
+	for path in _order_paths(o):
 		var typed: Array[StringName] = []
 		for pid in path:
 			typed.append(StringName(pid))
@@ -512,7 +528,7 @@ func _order_lines(o: Dictionary) -> Array[PackedVector3Array]:
 	return out
 
 func floor_path(path: Array[StringName]) -> PackedVector3Array:
-	## A way through points as a line on this floor: along the road line between each two (straight from marker to
+	## A way through points as a line on this floor: along the link line between each two (straight from marker to
 	## marker where the floor has none).
 	var out := PackedVector3Array()
 	for i in path.size():
@@ -521,7 +537,7 @@ func floor_path(path: Array[StringName]) -> PackedVector3Array:
 			if marker:
 				out.append(marker.position)
 			continue
-		var line := _road_line(path[i - 1], path[i])
+		var line := _link_line(path[i - 1], path[i])
 		if line:
 			var pts := line.points_in(self, path[i - 1])
 			for k in range(0 if out.is_empty() else 1, pts.size()):
@@ -530,8 +546,8 @@ func floor_path(path: Array[StringName]) -> PackedVector3Array:
 			out.append(marker.position)
 	return out
 
-func _road_line(a: StringName, b: StringName) -> MapRoadLine:
-	for line in _road_lines:
+func _link_line(a: StringName, b: StringName) -> MapLinkLine:
+	for line in _link_lines:
 		if line.ends_at(a, b):
 			return line
 	return null
@@ -623,7 +639,7 @@ func _fit_floor() -> void:
 	(_illustration_plane.mesh as PlaneMesh).size = Vector2(floor_size, floor_size)
 	(_illustration_plane.material_override as StandardMaterial3D).albedo_texture = illustration
 
-# --- Copying the world's points and roads onto the floor (editor tool, scripts/build/build_map_floor.gd) ---
+# --- Copying the world's points and links onto the floor (editor tool, scripts/build/build_map_floor.gd) ---
 
 func _on_copy_pressed() -> void:
 	if get_tree().edited_scene_root != self:
@@ -634,31 +650,36 @@ func _on_copy_pressed() -> void:
 	notify_property_list_changed()
 
 func copy_from_world(overwrite: bool) -> String:
-	## Adds a marker under Markers for every MapPoint of `source_world`, and a line under Roads for every Road, that
-	## the floor does not have yet (matched by point id and road name), placed by `world_to_floor`. With `overwrite`,
-	## also puts back those already here and removes those the world no longer has. Returns what it did.
+	## Adds a marker under Markers for every MapPoint of `source_world`, and a line under Links for every pair of
+	## neighbouring points (MapPoint.neighbors, either way round), that the floor does not have yet (matched by point
+	## ids): markers placed by `world_to_floor`, a line's ends on its two markers. With `overwrite`, also puts back those
+	## already here and removes those the world no longer has. Returns what it did.
 	var markers := get_node(^"Markers")
-	var roads := get_node(^"Roads")
+	var links := get_node(^"Links")
 	var world: Node = (load(source_world) as PackedScene).instantiate()
 	var have_markers: Dictionary[StringName, MapPointMarker] = {}
 	for c in markers.get_children():
 		if c is MapPointMarker:
 			have_markers[(c as MapPointMarker).point_id] = c
-	var have_lines: Dictionary[StringName, MapRoadLine] = {}
-	for c in roads.get_children():
-		if c is MapRoadLine:
-			have_lines[(c as MapRoadLine).road] = c
+	var have_lines: Array[MapLinkLine] = []
+	for c in links.get_children():
+		if c is MapLinkLine:
+			have_lines.append(c)
 	var added := 0
 	var reset := 0
-	var seen: Dictionary[StringName, bool] = {}
+	var seen_points: Dictionary[StringName, bool] = {}
+	var spots: Dictionary[StringName, Vector3] = {}
+	var points: Array[MapPoint] = []
 	for p in world.get_node("World/MapPoints").get_children():
 		var point := p as MapPoint
 		if point == null:
 			continue
-		var id := point.point_id if point.point_id != &"" else StringName(point.name)
-		seen[id] = true
+		points.append(point)
+		var id := _id_of(point)
+		seen_points[id] = true
 		var marker: MapPointMarker = have_markers.get(id)
 		if marker != null and not overwrite:
+			spots[id] = marker.position   # A line ends on the marker as it stands here.
 			continue
 		if marker == null:
 			marker = marker_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE) as MapPointMarker
@@ -672,46 +693,50 @@ func copy_from_world(overwrite: bool) -> String:
 		marker.label_text = point.get_label()
 		marker.disc_color = MapPointMarker.kind_color(point.kind)
 		marker.position = world_to_floor(MapPoint.spot_in_world(point, world))
-	for r in world.get_node("World/Roads").get_children():
-		var road := r as Road
-		if road == null or road.curve == null:
-			continue
-		var key := StringName(road.name)
-		seen[key] = true
-		var line: MapRoadLine = have_lines.get(key)
-		if line != null and not overwrite:
-			continue
-		if line == null:
-			line = road_line_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE) as MapRoadLine
-			line.name = "Road_%s" % key
-			roads.add_child(line)
-			line.owner = self
-			added += 1
-		else:
-			reset += 1
-		line.road = key
-		line.from_point = road.from_point.point_id if road.from_point else &""
-		line.to_point = road.to_point.point_id if road.to_point else &""
-		var to_world := _unparented_global(road)
-		var traced := Curve3D.new()   # Data-only: the line's own curve, traced from the road's.
-		for q in road.curve.tessellate():
-			traced.add_point(world_to_floor(to_world * q))
-		line.curve = traced
+		spots[id] = marker.position
+	var kept_lines: Array[MapLinkLine] = []
+	for point in points:
+		for n in point.neighbors:
+			if n == null or n == point:
+				continue
+			var a := _id_of(point)
+			var b := _id_of(n)
+			var line: MapLinkLine = null
+			for l in have_lines + kept_lines:
+				if l.ends_at(a, b):
+					line = l
+					break
+			if line != null and line in kept_lines:
+				continue  # Listed on both points.
+			if line != null:
+				kept_lines.append(line)
+				if not overwrite:
+					continue
+				reset += 1
+			else:
+				line = link_line_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE) as MapLinkLine
+				line.name = "Link_%s_%s" % [a, b]
+				links.add_child(line)
+				line.owner = self
+				set_editable_instance(line, true)   # So the ends' positions are saved, and can be dragged.
+				kept_lines.append(line)
+				added += 1
+			line.from_point = a
+			line.to_point = b
+			(line.get_node(^"%From") as Node3D).position = spots[a] - line.position
+			(line.get_node(^"%To") as Node3D).position = spots[b] - line.position
 	var removed := 0
 	if overwrite:
-		for c in markers.get_children() + roads.get_children():
-			var id: StringName = (c as MapPointMarker).point_id if c is MapPointMarker else ((c as MapRoadLine).road if c is MapRoadLine else &"")
-			if id != &"" and not seen.has(id):
+		for c in markers.get_children():
+			if c is MapPointMarker and not seen_points.has((c as MapPointMarker).point_id):
+				c.free()
+				removed += 1
+		for c in links.get_children():
+			if c is MapLinkLine and c not in kept_lines:
 				c.free()
 				removed += 1
 	world.free()
 	return "[map floor] copied from %s: %d added, %d put back, %d removed" % [source_world, added, reset, removed]
 
-static func _unparented_global(node: Node) -> Transform3D:
-	## Global transform of a node of a scene that is not in the tree.
-	var xf := Transform3D.IDENTITY
-	var n: Node = node
-	while n is Node3D:
-		xf = (n as Node3D).transform * xf
-		n = n.get_parent()
-	return xf
+static func _id_of(point: MapPoint) -> StringName:
+	return point.point_id if point.point_id != &"" else StringName(point.name)

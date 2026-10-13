@@ -92,7 +92,7 @@ func update_group(entry: Dictionary, tick: int, source: StringName) -> void:
 
 func expect(gid: int, cmd_id: int, start: Vector3, route: Array, goal: int, dest_point: StringName, tick: int, stops: Array = []) -> void:
 	## An order was sent: the group should now be walking `route` from `start`.
-	## `stops`: the map points on the way (a road route has many waypoints between them); without them every waypoint is one.
+	## `stops`: the map points on the way; without them every point of `route` is one.
 	var path: Array[Vector3] = [start]
 	for p in route:
 		path.append(p)

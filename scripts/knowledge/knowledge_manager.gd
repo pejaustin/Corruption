@@ -305,7 +305,7 @@ func notify_minion_removed(minion_id: int) -> void:
 func request_dispatch(order: Dictionary) -> int:
 	## Owner-local: the advisor sends an order. `order` = { group_ids, believed
 	## (group id -> Vector3), route_points: Array[StringName], route:
-	## Array[Vector3], dest_point, goal, and per group the way by road (MapFloor.plan_to):
+	## Array[Vector3], dest_point, goal, and per group its way through the map points (MapFloor.plan_to):
 	## paths (group id -> Array[StringName]), routes (group id -> Array[Vector3]) }.
 	## Returns the command id.
 	var cmd_id := _next_command_id
@@ -395,20 +395,20 @@ func _dispatch(peer_id: int, order: Dictionary) -> void:
 			"source_pos": source, "search": look,
 			"sub_orders": [{"group_id": int(gid), "order": _group_order(core, order, int(gid)), "cmd_id": cmd_id}],
 		})
-	legs = _by_road(gate.global_position, _order_legs_greedy(gate.global_position, legs))
+	legs = _by_neighbors(gate.global_position, _order_legs_greedy(gate.global_position, legs))
 	var first: Vector3 = legs[0]["source_pos"] if not legs.is_empty() else gate.global_position
 	var scout_route: Array = []
 	if group_ids.is_empty():
 		scout_route = (order.get("route", []) as Array).duplicate()
 		if not scout_route.is_empty():
 			first = scout_route[0]
-			# Back the way it came, by road.
+			# Back the way it came, point by point.
 			var back := scout_route.duplicate()
 			back.reverse()
 			scout_route.append_array(back.slice(1))
 	else:
-		# Home from the last stop by road.
-		scout_route.assign(RoadGraph.between(get_tree(), legs[legs.size() - 1]["source_pos"], gate.global_position))
+		# Home from the last stop, point by point.
+		scout_route.assign(PointGraph.between(get_tree(), legs[legs.size() - 1]["source_pos"], gate.global_position))
 	var courier_id := mm.spawn_named_minion_for_peer(peer_id, &"courier", gate.global_position, first)
 	if courier_id < 0:
 		_dispatch_result(peer_id, cmd_id, &"refused", -1)
@@ -445,27 +445,28 @@ func _apply_dispatch_result(cmd_id: int, stage: StringName, courier_id: int) -> 
 	model.changed.emit()
 
 static func _group_order(core: Dictionary, order: Dictionary, gid: int) -> Dictionary:
-	## What one group is told: the order, with its own way by road.
+	## What one group is told: the order, with its own way.
 	var own := core.duplicate()
 	own["route"] = _route_of(order, gid)
 	own["route_points"] = _path_of(order, gid)
 	return own
 
 static func _route_of(order: Dictionary, gid: int) -> Array:
-	## A group's own way by road, else the order's route.
+	## A group's own way, else the order's route.
 	return (order.get("routes", {}) as Dictionary).get(gid, order.get("route", []))
 
 static func _path_of(order: Dictionary, gid: int) -> Array:
 	return (order.get("paths", {}) as Dictionary).get(gid, order.get("route_points", []))
 
-func _by_road(start: Vector3, legs: Array[Dictionary]) -> Array[Dictionary]:
-	## A courier travels by road (Austin, 2026-10-13): before each stop, a stop with nothing to hand over at every
-	## waypoint of the road from the map point nearest where it is to the one nearest where it is going.
+func _by_neighbors(start: Vector3, legs: Array[Dictionary]) -> Array[Dictionary]:
+	## A courier walks from map point to map point like a group (Austin, 2026-10-13): before each stop, a stop with
+	## nothing to hand over at every point on the way (PointGraph) from the point nearest where it is to the one nearest
+	## where it is going.
 	var out: Array[Dictionary] = []
 	var cursor := start
 	for leg in legs:
 		var target: Vector3 = leg["source_pos"]
-		for p in RoadGraph.between(get_tree(), cursor, target):
+		for p in PointGraph.between(get_tree(), cursor, target):
 			out.append({"source_pos": p, "search": [], "sub_orders": [], "via": true})
 		out.append(leg)
 		cursor = target
@@ -509,7 +510,7 @@ func courier_arrived_home(courier: MinionActor) -> void:
 	deliver_report(peer, report)
 
 func courier_lost(courier: MinionActor, killer_peer: int) -> void:
-	## Host-only: a courier died on the road. Killed by a rival, it counts as
+	## Host-only: a courier died on the way. Killed by a rival, it counts as
 	## captured; with the ability, the captor reads what it carried.
 	if killer_peer <= 0 or killer_peer == courier.owner_peer_id:
 		return

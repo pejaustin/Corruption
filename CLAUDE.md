@@ -46,7 +46,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
   `input_driver.gd` pushes real `InputEvent`s through `Input.parse_input_event()` (actions, keys, mouse look, the
   interaction raycast) and has `walk_to`, `aim_at`, `press_action`, `key`, `look`, `click` and `screenshot`, logging
   the on-screen prompt at each step. `playtest_order.tscn` plays the order loop: select your group's piece on the map
-  floor (E), look at the Chapel (the way by the East road lights up), E on it, hand the scroll to the advisor, pick "Corrupt the site" with
+  floor (E), look at the Chapel (the way there, by the East road point, lights up), E on it, hand the scroll to the advisor, pick "Corrupt the site" with
   the 1-9 key, wait for the courier's report. It prints `ok`/`FAIL` per step and `[playtest] N steps, M failed`, and
   exits with the failure count. Run it windowed (needs a display and GPU; screenshots go to `$PLAYTEST_DIR`, default
   `/tmp/claude-1000/playtest`): `godot --path . --resolution 1280x720 res://tools/playtest/playtest_order.tscn`.
@@ -511,13 +511,15 @@ draw.
 - **No free information.** Each player's `WorldModel` (`scripts/knowledge/world_model.gd`, on their own machine) changes
   only through `KnowledgeManager` reports: groups at their own tower gate (live), couriers and groups coming home,
   beacons (`site_changed`, seen by all), and what the Paladin's controller sees. The simulation never reads it.
-- **Roads (Austin, 2026-10-13):** orders follow roads. A `Road` (`scenes/map/road.tscn`, a `Path3D` with `from_point` /
-  `to_point` MapPoints) under `World/Roads` in `world.tscn` is drawn on the terrain; a bridge is a curve point on a
-  bridge. `RoadGraph` (`scripts/map/road_graph.gd`) finds the shortest way by road (Dijkstra, cost = curve
-  length) through the points the player knows; an order's `route` is every curve point on that way (`Road.waypoints`),
-  per group (`routes`/`paths`), and couriers travel by road too (`KnowledgeManager._by_road`: road stops with nothing to
-  hand over). The navmesh stays whole: units leave the road to fight or chase and come back. The shipped roads are
-  stand-ins (drawn once by `tools/deprecated/build_placeholder_roads.gd`); `MapPoint.links` is gone. Tests: `tests/unit/test_road_graph.gd`, `tests/component/test_roads.gd`.
+- **Neighbours (Austin, 2026-10-13):** "Get rid of the roads mechanism ... add a type to all walkable locations, build
+  a node tree of neighbors, and then the walk paths from each can be emergent" (roads as models may come back later).
+  Every walkable place is a `MapPoint` under `World/MapPoints` with a `kind` and `neighbors` (`Array[MapPoint]`, picked
+  in the Inspector; two-way: A–B counts if either lists the other). `PointGraph` (`scripts/map/point_graph.gd`) finds
+  the shortest way along neighbours (Dijkstra, cost = straight-line distance) through the points the player knows; an
+  order's `route` is where each point on that way stands, per group (`routes`/`paths`). A group walks it point to point
+  (`GroupManager`) and the navmesh finds the way between two points; couriers do the same
+  (`KnowledgeManager._by_neighbors`: point stops with nothing to hand over). The shipped neighbours are stand-ins (one
+  pair per old road). Tests: `tests/unit/test_point_graph.gd`, `tests/component/test_point_routes.gd`.
 - **Groups** (`scripts/groups/`): every player unit is in a `UnitGroup` (host-side, `GroupManager` node in the world).
   Orders go to groups: walk the route's points, then the goal (`OrderGoal`): hold (`GO_HERE`, `CORRUPT`), watch and
   come home (`ASSESS`), or a registered `goal_handlers` callable (haul, capture, the dead, offers). A group that can't
@@ -536,15 +538,16 @@ draw.
   `auto_courier` send a runner home on the first hit. Training: `request_train_courier()`.
 - **The map floor** (`scenes/map/`, `MapFloor` in each tower, 14 m on the hall floor) is an authored scene (Austin,
   2026-10-13): `illustration` is the background texture; every point marker (`Markers/*`, `map_point_marker.tscn`,
-  `point_id`, `label_text`, `disc_color`) and road line (`Roads/*`, `map_road_line.tscn`, a `Path3D`) is a node in
-  `map_floor.tscn`. The root's "Copy map points and roads" inspector button (open `map_floor.tscn` first), or
-  `godot --headless --path . -s res://scripts/build/build_map_floor.gd`, adds the ones the world's `World/MapPoints` /
-  `World/Roads` have and the floor lacks, scaled; existing ones are left alone unless `overwrite_on_copy`
-  (`OVERWRITE=1`). In play, code only shows known points and roads, highlights, and draws pieces, pencil and ink.
+  `point_id`, `label_text`, `disc_color`) and neighbour link (`Links/*`, `map_link_line.tscn`: a straight strip between
+  its `From` and `To` ends, editable children) is a node in `map_floor.tscn`. The root's "Copy map points and links"
+  inspector button (open `map_floor.tscn` first), or `godot --headless --path . res://scripts/build/build_map_floor.tscn`,
+  adds a marker for each `World/MapPoints` point and a line for each neighbour pair that the floor lacks (markers scaled,
+  a line's ends on its markers); existing ones are left alone unless `overwrite_on_copy` (`OVERWRITE=1`). In play, code
+  only shows known points and links, highlights, and draws pieces, pencil and ink.
   `MapPoint`s (`World/MapPoints`) are known at start or discovered by reports. `MapPiece` chess pieces from beliefs (E
-  select, LMB move by hand); looking at a point while authoring lights up the way by road (`MapFloor.plan_to`, the
-  markers' `Highlight`); E on it = destination → a scroll in hand (`OverlordActor.held_order`, Q tears it up; its route
-  pencilled along the floor's roads) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and
+  select, LMB move by hand); looking at a point while authoring lights up the way there (`MapFloor.plan_to`, the
+  markers' and links' `Highlight`); E on it = destination → a scroll in hand (`OverlordActor.held_order`, Q tears it up; its route
+  pencilled along the floor's links) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and
   dispatches. Sent orders darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tests/unit/test_world_model.gd`; milestone `tests/integration/test_orders.tscn`.
 - **Expected state (Austin, 2026-10-09):** a unit that leaves the tower's range never becomes unorderable or "stale".
   `request_dispatch` gives each ordered group a `WorldModel.expectations[gid]` (path = where the map had it + the

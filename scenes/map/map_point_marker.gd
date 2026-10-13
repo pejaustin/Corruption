@@ -2,7 +2,7 @@
 class_name MapPointMarker extends Interactable
 
 ## A map point drawn on the tower floor. Authored in map_floor.tscn under Markers, one per world MapPoint (MapFloor's
-## "Copy map points and roads" button adds the missing ones); move it, rename its label or recolour it there by hand.
+## "Copy map points and links" button adds the missing ones); move it, rename its label or recolour it there by hand.
 ## In play it shows only once its owner knows the point, lights up when an order's route passes it, and E on it picks
 ## the destination; E on your own tower's point starts an order for a courier alone (GDD Q2: couriers can be sent to
 ## "go and come back").
@@ -88,7 +88,7 @@ func get_prompt_text() -> String:
 		if _is_home() and floor_map.selected_groups.is_empty():
 			return "%s — now E on where the courier should go" % point.get_label()
 		if floor_map.way_to(point).is_empty():
-			return "%s — no road you know leads there" % point.get_label()
+			return "%s — no way you know leads there" % point.get_label()
 		return "[E] Destination: %s" % point.get_label()
 	if _is_home():
 		return "[E] Send a courier from here — %s" % point.get_label()

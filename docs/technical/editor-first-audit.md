@@ -194,11 +194,12 @@ action taken. Sites that added `add_child` without `.new()` (reparenting, `insta
 ## Map floor, second pass (2026-10-13)
 
 Austin (#629): the floor still made a marker per known point and a road line per known link at runtime. Now every
-marker and road line is a node in `scenes/map/map_floor.tscn` (`Markers/*`, `Roads/*`), added once by the floor's
-"Copy map points and roads" button (`MapFloor.copy_from_world`, also `scripts/build/build_map_floor.gd`) and edited by
-hand there; play only shows, hides and highlights them. Still made in play (genuinely dynamic): a piece per reported
-group or sighting (`map_piece.tscn`) and an ink line per sent order (`map_line.tscn`). The ribbons' `ImmediateMesh`
-geometry is refilled from data (road lines from their own curve).
+marker and link line is a node in `scenes/map/map_floor.tscn` (`Markers/*`, `Links/*`; roads were dropped for map-point
+neighbours on 2026-10-13, #636), added once by the floor's "Copy map points and links" button
+(`MapFloor.copy_from_world`, also `scripts/build/build_map_floor.tscn`) and edited by hand there; play only shows,
+hides and highlights them. Still made in play (genuinely dynamic): a piece per reported group or sighting
+(`map_piece.tscn`) and an ink line per sent order (`map_line.tscn`). The ink and pencil ribbons' `ImmediateMesh`
+geometry is refilled from data; a link line is a plane stretched between its two ends.
 
 ## Notes for editing the new scenes
 

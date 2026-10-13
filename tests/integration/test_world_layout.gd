@@ -1,7 +1,8 @@
 extends "res://tests/integration/test_base.gd"
 
 ## The game world on Austin's 2 km map: one tower per tower site, paired with its slot's rally point,
-## map point and player; every place and site stands on the ground and can be walked to from every tower (the holy knights are adopted into the unit root at start, so only the Avatar is checked).
+## map point and player; every place and site stands on the ground and can be walked to from every tower (the holy knights are adopted into the unit root at start, so only the Avatar is checked);
+## a group can walk between every two neighbouring map points (orders go point to point, the navmesh finds the way).
 
 const GROUND_TOLERANCE: float = 3.0
 ## How near the navmesh a place must be, and how near a path must end, in metres (a unit gives up circling a goal it cannot get within ~1.5 m of).
@@ -60,6 +61,17 @@ func run_tests() -> void:
 			if path.is_empty() or not _arrives(path[path.size() - 1], s.global_position):
 				bad.append(String(s.name))
 		check(bad.is_empty(), "slot %d's courier spawn can walk to everything (unreachable: %s)" % [t.slot_index, ", ".join(bad)])
+	# Orders walk point to point along neighbours: each step must be walkable (GroupManager._reachable's rule).
+	var graph := PointGraph.from_tree(get_tree())
+	for link in graph.links():
+		var pa := MapPoint.find(get_tree(), link[0])
+		var pb := MapPoint.find(get_tree(), link[1])
+		for way in [[pa, pb], [pb, pa]]:
+			var from_p: MapPoint = way[0]
+			var to_p: MapPoint = way[1]
+			var path := _path(map, from_p.global_position, to_p.global_position)
+			var gap := INF if path.is_empty() else Vector2(path[path.size() - 1].x - to_p.global_position.x, path[path.size() - 1].z - to_p.global_position.z).length()
+			check(gap <= GroupManager.UNREACHABLE_GAP, "a group can walk from %s to its neighbour %s (path ends %.1f m off)" % [from_p.point_id, to_p.point_id, gap])
 
 func _arrives(end: Vector3, target: Vector3) -> bool:
 	## A path ends where it should: within NAV_TOLERANCE across the ground, and within 3 m of height (a tower's gate

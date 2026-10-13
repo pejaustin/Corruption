@@ -6,14 +6,21 @@ class_name MapPoint extends Marker3D
 ## known at the start; others are missing and get filled in from what couriers
 ## bring home"). Authored in the world scene under World/MapPoints at the real
 ## place it stands for; the tower map floors draw them scaled down. Orders
-## target points, never free positions. Roads between points are Road nodes
-## under World/Roads (RoadGraph); orders follow them.
+## target points, never free positions.
 ##
-## Which points exist, their names and roads are Austin's (ticket #584): the
+## Every walkable place is a point with a `kind`, joined to the points next to it
+## by `neighbors` (Austin, 2026-10-13: "add a type to all walkable locations, build
+## a node tree of neighbors, and then the walk paths from each can be emergent").
+## An order walks from point to point along the neighbours (PointGraph); between
+## two points the navmesh finds the way.
+##
+## Which points exist, their names and neighbours are Austin's (ticket #584): the
 ## shipped layout is a placeholder.
 
 const GROUP: StringName = &"map_points"
 
+## What kind of place a point is (every walkable point has one): the goals an order there offers (OrderGoal) and its
+## marker's colour on the map floor follow it.
 enum Kind { ROAD, CROSSING, SETTLEMENT, CITY, SITE, RESOURCE, TOWER, LANDMARK }
 
 ## Stable id used in orders and per-player knowledge. Defaults to the node name.
@@ -27,6 +34,10 @@ enum Kind { ROAD, CROSSING, SETTLEMENT, CITY, SITE, RESOURCE, TOWER, LANDMARK }
 @export var target: NodePath
 ## Tower points: snap onto the courier gate of the tower in this slot.
 @export var tower_slot: int = -1
+## The points next to this one: a unit here may walk straight to any of them. Two-way: listing B on A is enough for
+## A–B (listing it on both is harmless). Pick them in the Inspector (drag MapPoints from the scene tree).
+## PLACEHOLDER: the shipped neighbours are one pair per old road (2026-10-13), not designed (PLACEHOLDERS.md).
+@export var neighbors: Array[MapPoint] = []
 
 func _ready() -> void:
 	if point_id == &"":

@@ -290,3 +290,8 @@ the ground is steep), are placeholders.
 | Avatar, HolyKnights | beside Hopes Gate | no |
 
 Unused markers: Veilton, Hell's Mouth, far harbor, Valley Cross's neighbours. The war table's floor shows the whole map.
+
+**Neighbours:** orders walk from map point to map point along each point's `neighbors` (set in the Inspector on the nodes
+under `World/MapPoints`, per world size; the navmesh finds the way between two points). There is no road mechanism
+(Austin, 2026-10-13); the shipped neighbours are a placeholder, one pair per old stand-in road. A pair across water
+needs a bridge on the way, or the group stops there.

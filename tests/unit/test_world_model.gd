@@ -83,7 +83,7 @@ func test_path_helpers() -> void:
 	assert_almost_eq(WorldModel.project_on_path(path, Vector3(12, 0, 4)), 14.0, 0.001)
 	assert_almost_eq(WorldModel.distance_to_path(path, Vector3(12, 0, 4)), 2.0, 0.001)
 
-func test_a_road_route_is_searched_at_its_map_points_not_every_waypoint() -> void:
+func test_a_route_is_searched_at_its_map_points_not_every_waypoint() -> void:
 	var route: Array[Vector3] = []
 	for x in range(5, 105, 5):
 		route.append(Vector3(x, 0, 0))

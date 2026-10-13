@@ -1,7 +1,7 @@
 extends Node
 
 ## Input-driven playtest of the order loop (CLAUDE.md §2 "Input playtests"):
-## select a group piece on the map floor, look at the Chapel (the way by road lights up), pick it,
+## select a group piece on the map floor, look at the Chapel (the way there lights up), pick it,
 ## hand the scroll to the advisor, corrupt it, wait for the report. Only
 ## InputDriver events act; game state is read for assertions.
 ## Windowed run:
