@@ -22,7 +22,7 @@
 #      are fitted against the fresh meshes
 #
 # Environment:
-#   GODOT    Godot 4.6 binary (default: godot).
+#   GODOT    Godot 4.6+ binary (default: godot, else /Applications/Godot.app on a Mac).
 #   BLENDER  Blender 4.5 binary. Default: the Windows one under WSL, /Applications/Blender.app on a Mac, else `blender`.
 #   VERBOSE=1 shows all engine output instead of the lines that matter.
 set -euo pipefail
@@ -103,8 +103,11 @@ trap 'rm -f "$LOG"; restore_project' EXIT
 
 # --- checks ---
 
-if ! "$GODOT" --version 2>/dev/null | grep -q '^4\.6'; then
-  echo "GODOT must be Godot 4.6 (got: $("$GODOT" --version 2>&1 | head -1)); set GODOT=/path/to/godot" >&2
+if ! command -v "$GODOT" >/dev/null 2>&1 && [ -x /Applications/Godot.app/Contents/MacOS/Godot ]; then
+  GODOT=/Applications/Godot.app/Contents/MacOS/Godot
+fi
+if ! "$GODOT" --version 2>/dev/null | grep -qE '^4\.([6-9]|[1-9][0-9])\.'; then
+  echo "GODOT must be Godot 4.6 or later (got: $("$GODOT" --version 2>&1 | head -1)); set GODOT=/path/to/godot" >&2
   exit 1
 fi
 
