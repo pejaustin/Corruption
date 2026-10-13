@@ -135,6 +135,21 @@ func disable_stagger_immunity() -> void:
 func apply_gravity(delta: float) -> void:
 	velocity.y -= gravity * delta
 
+func movement_scale() -> float:
+	## Factor applied to velocity around move_and_slide. Rollback actors tick at the network rate but
+	## move_and_slide steps one physics frame, so they scale by physics rate / tick rate. netfox's
+	## NetworkTime.physics_factor does that division on ints (0 below 30 Hz, 1 at 45 Hz), so it is redone here.
+	## Guarded: never 0, inf or NaN.
+	var factor: float = 1.0
+	var tickrate: float = float(NetworkTime.tickrate)
+	if Engine.is_in_physics_frame() and tickrate > 0.0:
+		factor = float(Engine.physics_ticks_per_second) / tickrate
+	else:
+		factor = NetworkTime.physics_factor
+	if not is_finite(factor) or factor <= 0.0:
+		return 1.0
+	return factor
+
 func force_update_is_on_floor() -> void:
 	var old_velocity = velocity
 	velocity *= 0

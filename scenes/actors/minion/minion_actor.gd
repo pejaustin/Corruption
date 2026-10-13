@@ -206,6 +206,10 @@ func _refresh_aggro_ring() -> void:
 	(_aggro_ring.material_override as StandardMaterial3D).albedo_color = get_faction_color()
 	_aggro_ring.mesh = mesh
 
+func movement_scale() -> float:
+	## Minions are stepped once per physics frame by _physics_process, not by a network tick: no factor.
+	return 1.0
+
 func _on_velocity_computed(safe_vel: Vector3) -> void:
 	safe_velocity = safe_vel
 
