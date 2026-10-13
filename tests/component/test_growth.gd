@@ -131,11 +131,9 @@ func test_a_relic_applies_its_flags() -> void:
 	relic.id = &"test_relic"
 	relic.display_name = "Test relic"
 	relic.grants_auto_courier = true
-	relic.route_point_bonus = 1
 	var g := _group()
 	relic.apply(1, g)
 	assert_true(g.auto_courier)
-	assert_eq(GameState.get_route_point_bonus(1), 1)
 
 func test_unloading_a_relic_records_it() -> void:
 	var g := _group()

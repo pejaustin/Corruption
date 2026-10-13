@@ -66,8 +66,10 @@ scale with the size's width and drop onto the ground; towers keep their size; ea
 a tower whose gate would hang over a drop or whose units could not walk out is turned in 15 degree steps until it fits), and the
 game world with every placed node (map points, places, sites, rally points, spawn points, Avatar, enemies) moved by the
 size's width around the origin and put on that size's ground at the same height above it. What stands beside a tower (its
-rally point, courier spawn, player spawn) keeps its offset from the tower; roads, mines and the Avatar that scaling drops on
-a cliff move to the nearest walkable spot. Shadow distance, the balcony's far plane and the map floor's rectangle and picture
+rally point, courier spawn, player spawn) keeps its offset from the tower; road points, mines and the Avatar that scaling drops on
+a cliff move to the nearest walkable spot. Each road (`World/Roads`, a `Path3D`) is moved point by point: its ends on its map
+points (a tower point on its tower's gate), a point within a `RiverCrossing`'s radius at the same (scaled) offset from that crossing,
+the rest like any placed node. Shadow distance, the balcony's far plane and the map floor's rectangle and picture
 follow the size (`SIZE_TUNING`; all PLACEHOLDER, listed in `PLACEHOLDERS.md`).
 
 ### What to run after which edit
@@ -77,6 +79,7 @@ follow the size (`SIZE_TUNING`; all PLACEHOLDER, listed in `PLACEHOLDERS.md`).
 | The map in Blender (ground, markers, paint) | save it, then `tools/sync_world_sizes.sh` (exports all sizes, re-imports, bakes pictures and navmeshes, rebuilds the derived scenes, about 3 minutes). With the add-on below, saving already does the export; then `tools/sync_world_sizes.sh --no-export` |
 | Something under a marker (a tower, its `slot_index` or rotation) in `world_landscape_2km.tscn` | `tools/sync_world_sizes.sh --no-export` (the 2 km navmesh is rebaked, 400 m and 6 km are rebuilt) |
 | Where places, sites or points stand in `world.tscn`, or what they are | `tools/sync_world_sizes.sh --no-export --no-bake` (rebuilds only the derived scenes; the navmeshes depend on the ground, not the places) |
+| A road in `world.tscn` (`World/Roads`: add a `scenes/map/road.tscn`, set From Point and To Point, draw its points on the terrain with the Path3D tools; "Drop points onto the ground" snaps them; a bridge is a point on a `RiverCrossing`) | `tools/sync_world_sizes.sh --no-export --no-bake --all-sizes` for the other sizes; and the map floor's "Copy map points and roads" (in `scenes/map/map_floor.tscn`) to draw a new road on the floor |
 | A shared scene (a tower, the map floor, a place scene) | nothing: the derived scenes instance it |
 | A POI blockout `pois/<snake>.blend` or `props.blend` (the trees) | save it, then `tools/sync_world_sizes.sh` (exports every POI and the props again; the navmeshes are rebaked because the buildings' collision cuts them). A new POI marker in `world_landscape.blend` needs its `pois/<snake>.blend` first (duplicate `_template.blend`) |
 | The forest or water guides (`elder wood`, `northwood`, `Pale River`, `The Still Lake`) | save the map, then `tools/sync_world_sizes.sh --no-bake` (new footprints, the trees and water are regrown in all sizes; no navmesh depends on them) |

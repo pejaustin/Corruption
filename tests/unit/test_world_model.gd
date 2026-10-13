@@ -82,3 +82,11 @@ func test_path_helpers() -> void:
 	assert_eq(WorldModel.point_along(path, 15.0), Vector3(10, 0, 5))
 	assert_almost_eq(WorldModel.project_on_path(path, Vector3(12, 0, 4)), 14.0, 0.001)
 	assert_almost_eq(WorldModel.distance_to_path(path, Vector3(12, 0, 4)), 2.0, 0.001)
+
+func test_a_road_route_is_searched_at_its_map_points_not_every_waypoint() -> void:
+	var route: Array[Vector3] = []
+	for x in range(5, 105, 5):
+		route.append(Vector3(x, 0, 0))
+	model.expect(9, 3, Vector3.ZERO, route, OrderGoal.Goal.GO_HERE, &"X", t0, [Vector3(50, 0, 0), Vector3(100, 0, 0)])
+	var ticks := int(WorldModel._rate() * 20.0 / WorldModel.EXPECTED_SPEED)  # 20 m along
+	assert_eq(model.search_points(9, t0 + ticks, 10), [Vector3(50, 0, 0), Vector3(100, 0, 0), Vector3.ZERO] as Array[Vector3])

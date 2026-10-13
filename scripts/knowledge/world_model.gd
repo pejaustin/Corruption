@@ -28,8 +28,10 @@ var believed_sites: Dictionary[StringName, Dictionary] = {}
 var orders: Dictionary[int, Dictionary] = {}
 ## What this player expects of a group they ordered (Austin, 2026-10-09): group
 ## id -> { cmd_id, path: Array[Vector3] (where it was, then the route, ending
-##   at the destination), goal, dest_point, anchor_dist (metres along path at
-##   anchor_tick), anchor_tick, state: &"expected", &"confirmed" (a report agreed), &"missing" or
+##   at the destination), stops: Array[Vector3] (where it was, then the map
+##   points the route passes; where a courier looks), goal, dest_point,
+##   anchor_dist (metres along path at anchor_tick), anchor_tick,
+##   state: &"expected", &"confirmed" (a report agreed), &"missing" or
 ##   &"stuck" (a report says they gave up; the piece stays at stuck_pos), missing_pos, stuck_pos }.
 ## The piece walks the path at EXPECTED_SPEED from the order; it is only
 ## "missing" when information contradicts the expectation. Age never does.
@@ -88,12 +90,16 @@ func update_group(entry: Dictionary, tick: int, source: StringName) -> void:
 
 # --- Expectations ---
 
-func expect(gid: int, cmd_id: int, start: Vector3, route: Array, goal: int, dest_point: StringName, tick: int) -> void:
+func expect(gid: int, cmd_id: int, start: Vector3, route: Array, goal: int, dest_point: StringName, tick: int, stops: Array = []) -> void:
 	## An order was sent: the group should now be walking `route` from `start`.
+	## `stops`: the map points on the way (a road route has many waypoints between them); without them every waypoint is one.
 	var path: Array[Vector3] = [start]
 	for p in route:
 		path.append(p)
-	expectations[gid] = {"cmd_id": cmd_id, "path": path, "goal": goal, "dest_point": dest_point,
+	var places: Array[Vector3] = [start]
+	for p in (stops if not stops.is_empty() else route):
+		places.append(p)
+	expectations[gid] = {"cmd_id": cmd_id, "path": path, "stops": places, "goal": goal, "dest_point": dest_point,
 		"anchor_dist": 0.0, "anchor_tick": tick, "state": &"expected", "missing_pos": start}
 
 func piece_state(gid: int) -> StringName:
@@ -128,23 +134,20 @@ func group_position(gid: int, tick: int) -> Vector3:
 
 func search_points(gid: int, tick: int, max_points: int) -> Array[Vector3]:
 	## Where a courier looks, in order, if the group is not where the map puts
-	## it: the rest of the route ahead, then back along it.
+	## it: the places on the route ahead (its map points), then back along it.
 	var out: Array[Vector3] = []
 	var x: Dictionary = expectations.get(gid, {})
 	if x.is_empty():
 		return out
 	var path: Array = x["path"]
 	var dist := float(x["anchor_dist"]) + EXPECTED_SPEED * maxf(0.0, float(tick - int(x["anchor_tick"]))) / _rate()
-	var at := 0.0
 	var ahead: Array[Vector3] = []
 	var behind: Array[Vector3] = []
-	for i in path.size():
-		if i > 0:
-			at += (path[i - 1] as Vector3).distance_to(path[i])
-		if at > dist:
-			ahead.append(path[i])
+	for place in x.get("stops", path):
+		if project_on_path(path, place) > dist:
+			ahead.append(place)
 		else:
-			behind.append(path[i])
+			behind.append(place)
 	behind.reverse()
 	out.append_array(ahead)
 	out.append_array(behind)

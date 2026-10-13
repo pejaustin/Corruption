@@ -11,9 +11,18 @@ top_radius = 0.14
 bottom_radius = 0.16
 height = 0.03
 
-; Local to scene: the script tints each marker by its point's kind.
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_disc"]
 resource_local_to_scene = true
+
+[sub_resource type="TorusMesh" id="TorusMesh_highlight"]
+inner_radius = 0.19
+outer_radius = 0.24
+rings = 24
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_highlight"]
+shading_mode = 0
+albedo_color = Color(0.85, 0.15, 0.1, 1)
 
 [node name="MapPointMarker" type="Area3D"]
 collision_layer = 16
@@ -21,13 +30,22 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("1_script")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="Shape" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
 shape = SubResource("CylinderShape3D_marker")
 
 [node name="Disc" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
 material_override = SubResource("StandardMaterial3D_disc")
 mesh = SubResource("CylinderMesh_disc")
+
+[node name="Highlight" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.3, 0, 0, 0, 1, 0, 0.01, 0)
+visible = false
+material_override = SubResource("StandardMaterial3D_highlight")
+cast_shadow = 0
+mesh = SubResource("TorusMesh_highlight")
 
 [node name="Label" type="Label3D" parent="."]
 unique_name_in_owner = true

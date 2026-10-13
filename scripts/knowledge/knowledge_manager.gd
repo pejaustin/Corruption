@@ -305,7 +305,9 @@ func notify_minion_removed(minion_id: int) -> void:
 func request_dispatch(order: Dictionary) -> int:
 	## Owner-local: the advisor sends an order. `order` = { group_ids, believed
 	## (group id -> Vector3), route_points: Array[StringName], route:
-	## Array[Vector3], dest_point, goal }. Returns the command id.
+	## Array[Vector3], dest_point, goal, and per group the way by road (MapFloor.plan_to):
+	## paths (group id -> Array[StringName]), routes (group id -> Array[Vector3]) }.
+	## Returns the command id.
 	var cmd_id := _next_command_id
 	_next_command_id += 1
 	var entry := order.duplicate(true)
@@ -330,9 +332,15 @@ func request_dispatch(order: Dictionary) -> int:
 		var g := int(gid)
 		if g == AVATAR_ID or goal == OrderGoal.Goal.CHECK:
 			continue
-		model.expect(g, cmd_id, believed[g], order.get("route", []), goal, StringName(order.get("dest_point", &"")), tick)
+		var stops: Array = []
+		for pid in _path_of(order, g):
+			var p := MapPoint.find(get_tree(), StringName(pid))
+			if p:
+				stops.append(p.global_position)
+		model.expect(g, cmd_id, believed[g], _route_of(order, g), goal, StringName(order.get("dest_point", &"")), tick, stops)
 	model.orders[cmd_id] = {
 		"group_ids": order.get("group_ids", []), "route_points": order.get("route_points", []),
+		"paths": order.get("paths", {}),
 		"dest_point": order.get("dest_point", &""), "goal": order.get("goal", OrderGoal.Goal.GO_HERE),
 		"stage": &"requested", "courier_id": -1, "tick": current_tick(),
 	}
@@ -365,7 +373,7 @@ func _dispatch(peer_id: int, order: Dictionary) -> void:
 	var group_ids: Array = order.get("group_ids", [])
 	if INSTANT_COMMANDS:
 		for gid in group_ids:
-			gm.set_order(int(gid), core)
+			gm.set_order(int(gid), _group_order(core, order, int(gid)))
 		_dispatch_result(peer_id, cmd_id, &"delivered", -1)
 		return
 	if get_couriers_home(peer_id) <= 0:
@@ -385,15 +393,22 @@ func _dispatch(peer_id: int, order: Dictionary) -> void:
 				look.append(sp)
 		legs.append({
 			"source_pos": source, "search": look,
-			"sub_orders": [{"group_id": int(gid), "order": core, "cmd_id": cmd_id}],
+			"sub_orders": [{"group_id": int(gid), "order": _group_order(core, order, int(gid)), "cmd_id": cmd_id}],
 		})
-	legs = _order_legs_greedy(gate.global_position, legs)
+	legs = _by_road(gate.global_position, _order_legs_greedy(gate.global_position, legs))
 	var first: Vector3 = legs[0]["source_pos"] if not legs.is_empty() else gate.global_position
 	var scout_route: Array = []
 	if group_ids.is_empty():
 		scout_route = (order.get("route", []) as Array).duplicate()
 		if not scout_route.is_empty():
 			first = scout_route[0]
+			# Back the way it came, by road.
+			var back := scout_route.duplicate()
+			back.reverse()
+			scout_route.append_array(back.slice(1))
+	else:
+		# Home from the last stop by road.
+		scout_route.assign(RoadGraph.between(get_tree(), legs[legs.size() - 1]["source_pos"], gate.global_position))
 	var courier_id := mm.spawn_named_minion_for_peer(peer_id, &"courier", gate.global_position, first)
 	if courier_id < 0:
 		_dispatch_result(peer_id, cmd_id, &"refused", -1)
@@ -428,6 +443,33 @@ func _apply_dispatch_result(cmd_id: int, stage: StringName, courier_id: int) -> 
 	elif stage == &"dispatched":
 		advisor_spoke.emit("PLACEHOLDER: The courier is on its way.")
 	model.changed.emit()
+
+static func _group_order(core: Dictionary, order: Dictionary, gid: int) -> Dictionary:
+	## What one group is told: the order, with its own way by road.
+	var own := core.duplicate()
+	own["route"] = _route_of(order, gid)
+	own["route_points"] = _path_of(order, gid)
+	return own
+
+static func _route_of(order: Dictionary, gid: int) -> Array:
+	## A group's own way by road, else the order's route.
+	return (order.get("routes", {}) as Dictionary).get(gid, order.get("route", []))
+
+static func _path_of(order: Dictionary, gid: int) -> Array:
+	return (order.get("paths", {}) as Dictionary).get(gid, order.get("route_points", []))
+
+func _by_road(start: Vector3, legs: Array[Dictionary]) -> Array[Dictionary]:
+	## A courier travels by road (Austin, 2026-10-13): before each stop, a stop with nothing to hand over at every
+	## waypoint of the road from the map point nearest where it is to the one nearest where it is going.
+	var out: Array[Dictionary] = []
+	var cursor := start
+	for leg in legs:
+		var target: Vector3 = leg["source_pos"]
+		for p in RoadGraph.between(get_tree(), cursor, target):
+			out.append({"source_pos": p, "search": [], "sub_orders": [], "via": true})
+		out.append(leg)
+		cursor = target
+	return out
 
 func _order_legs_greedy(start: Vector3, legs: Array[Dictionary]) -> Array[Dictionary]:
 	## Nearest-first visiting order for a courier's stops.
