@@ -8,7 +8,9 @@ class_name GroupManager extends Node
 ##   - goals that fetch something (haul, capture, the dead, an offer) hand off
 ##     to a registered goal handler and then walk home.
 ## A group that can't reach its next point stops there, confused, until a
-## courier brings new orders (GDD Q2 — the army stuck at the river).
+## courier brings new orders (GDD Q2 — the army stuck at the river). One that
+## gets no closer for GIVE_UP_SECONDS gives up too, even when the navmesh says
+## the point is reachable, and forms ranks where it stands (Austin, 2026-10-13).
 ##
 ## Groups at their own tower are watched from it and report live. Everything
 ## else reaches the owner only by courier or by a group coming home.
@@ -28,6 +30,9 @@ const STALL_PROGRESS: float = 1.0
 const STALL_SECONDS: float = 8.0
 ## A path that ends farther than this from the point means "can't get there".
 const UNREACHABLE_GAP: float = 4.0
+## PLACEHOLDER: tuning — seconds a group under orders may go without getting
+## closer to its next point (fighting does not count) before it gives up.
+const GIVE_UP_SECONDS: float = 45.0
 ## PLACEHOLDER: tuning, not designed — seconds an assessing group watches its
 ## destination before heading home.
 const ASSESS_SECONDS: float = 20.0
@@ -99,6 +104,17 @@ func get_centroid(group: UnitGroup) -> Vector3:
 		sum += m.global_position
 	return sum / float(members.size())
 
+static func progress_of(group: UnitGroup) -> StringName:
+	## How far along its order a group is: &"stuck" (gave up), &"en_route",
+	## &"arrived" (at its goal), &"returning" (walking home) or &"holding" (no order).
+	if group.status == &"stuck":
+		return &"stuck"
+	if not group.has_order():
+		return &"holding"
+	if group.order.get("homeward", false):
+		return &"returning"
+	return &"arrived" if group.current_waypoint() == Vector3.INF else &"en_route"
+
 func snapshot(group: UnitGroup) -> Dictionary:
 	## What a report says about a group.
 	return {
@@ -107,6 +123,8 @@ func snapshot(group: UnitGroup) -> Dictionary:
 		"pos": get_centroid(group),
 		"count": get_members(group).size(),
 		"status": group.status,
+		"progress": progress_of(group),
+		"stuck_pos": group.stuck_pos,
 		"goal": group.get_goal() if group.has_order() else -1,
 		"dest_point": group.order.get("dest_point", &""),
 		"leader_id": group.leader_id,
@@ -250,6 +268,7 @@ func _tick_group(g: UnitGroup, dt: float) -> void:
 		g.route_index += 1
 		g.best_distance = INF
 		g.stall_timer = 0.0
+		g.give_up_timer = 0.0
 		if g.current_waypoint() == Vector3.INF:
 			_arrive(g)
 		else:
@@ -261,8 +280,13 @@ func _tick_group(g: UnitGroup, dt: float) -> void:
 	if d < g.best_distance - STALL_PROGRESS:
 		g.best_distance = d
 		g.stall_timer = 0.0
+		g.give_up_timer = 0.0
 		return
 	g.stall_timer += dt
+	g.give_up_timer += dt
+	if g.give_up_timer >= GIVE_UP_SECONDS:
+		_halt(g)
+		return
 	if g.stall_timer >= STALL_SECONDS:
 		g.stall_timer = 0.0
 		if not _reachable(members[0], centroid, wp):
@@ -315,6 +339,7 @@ func _head_home(g: UnitGroup) -> void:
 	g.route_index = 0
 	g.best_distance = INF
 	g.stall_timer = 0.0
+	g.give_up_timer = 0.0
 	g.status = &"returning"
 	if back.is_empty():
 		_arrive(g)
@@ -322,10 +347,25 @@ func _head_home(g: UnitGroup) -> void:
 		_send_to_waypoint(g)
 
 func _halt(g: UnitGroup) -> void:
+	## Give up: form ranks where they stand and wait for new orders (nothing
+	## re-paths while stuck, see _tick_group).
 	g.status = &"stuck"
+	g.stuck_pos = get_centroid(g)
+	var members := get_members(g)
+	if members.is_empty():
+		return
+	# Around the member nearest the middle: on walkable ground, unlike the
+	# centroid of a group strung out along a bank.
+	var anchor := members[0]
+	for m in members:
+		if _flat(m.global_position - g.stuck_pos) < _flat(anchor.global_position - g.stuck_pos):
+			anchor = m
 	var mm := _mm()
-	for m in get_members(g):
-		m.waypoint = m.global_position
+	if mm:
+		mm.command_selection_move(g.member_ids, anchor.global_position)
+	else:
+		for m in members:
+			m.waypoint = m.global_position
 
 func _send_to_waypoint(g: UnitGroup) -> void:
 	var wp := g.current_waypoint()

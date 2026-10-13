@@ -31,6 +31,12 @@ var goal_timer: float = 0.0
 ## confused, until new orders arrive).
 var best_distance: float = INF
 var stall_timer: float = 0.0
+## Seconds since the group last got closer to its next point (fighting does not
+## count); at GroupManager.GIVE_UP_SECONDS it gives up and forms ranks there
+## (Austin, 2026-10-13, #626).
+var give_up_timer: float = 0.0
+## Where the group gave up (Vector3.INF while it has not).
+var stuck_pos: Vector3 = Vector3.INF
 
 ## Sightings since the last report: observed id -> { id, pos, owner_peer_id,
 ## faction, observed_tick }.
@@ -62,6 +68,8 @@ func clear_order() -> void:
 	goal_timer = 0.0
 	best_distance = INF
 	stall_timer = 0.0
+	give_up_timer = 0.0
+	stuck_pos = Vector3.INF
 
 func take_log() -> Array:
 	## The group's sightings since the last report, emptied.

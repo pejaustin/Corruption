@@ -500,12 +500,18 @@ draw.
 - **Groups** (`scripts/groups/`): every player unit is in a `UnitGroup` (host-side, `GroupManager` node in the world).
   Orders go to groups: walk the route's points, then the goal (`OrderGoal`): hold (`GO_HERE`, `CORRUPT`), watch and
   come home (`ASSESS`), or a registered `goal_handlers` callable (haul, capture, the dead, offers). A group that can't
-  reach its next point stops (`status = &"stuck"`) until new orders. Units log sightings into their group's log; a
+  reach its next point, or gets no closer for `GIVE_UP_SECONDS` (fighting pauses it), stops and forms ranks
+  (`status = &"stuck"`, `stuck_pos`; snapshots carry `progress`: en_route / arrived / stuck / returning / holding) until
+  new orders (Austin, 2026-10-13, #626). Units log sightings into their group's log; a
   report is `GroupManager.make_report(group)`.
 - **Couriers**: a pool per player (`KnowledgeManager.get_couriers_home`, starting `MatchConfig.STARTING_COURIERS`).
   `request_dispatch(order)` (owner) → host spawns a courier that visits each group's believed position, hands over the
   order, takes the group's report, walks any scouting route, and reports at home (`courier_arrived_home`). Couriers
-  killed by a rival count as captured (`courier_lost`; readable with `can_read_couriers`). Groups with
+  killed by a rival count as captured (`courier_lost`; readable with `can_read_couriers`). `CourierErrand`
+  (`scripts/knowledge/courier_errand.gd`, #627): a courier that gets no closer to its stop turns home and reports what it
+  could not do (`undelivered`, desk records of kind `courier`); blocked on the way home it stops and is reported lost
+  (`courier_stranded`); a group it was sent to, seen in line of sight, is recognised (its state comes home; a check
+  needs nothing more). Groups with
   `auto_courier` send a runner home on the first hit. Training: `request_train_courier()`.
 - **The map floor** (`scenes/map/`, `MapFloor` in each tower, 14 m on the hall floor): `MapPoint` markers authored under
   `World/MapPoints` (known at start or discovered by reports), `MapPiece` chess pieces from beliefs (E select, LMB move

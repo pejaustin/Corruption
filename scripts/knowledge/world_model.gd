@@ -29,7 +29,8 @@ var orders: Dictionary[int, Dictionary] = {}
 ## What this player expects of a group they ordered (Austin, 2026-10-09): group
 ## id -> { cmd_id, path: Array[Vector3] (where it was, then the route, ending
 ##   at the destination), goal, dest_point, anchor_dist (metres along path at
-##   anchor_tick), anchor_tick, state: &"expected", &"confirmed" (a report agreed) or &"missing", missing_pos }.
+##   anchor_tick), anchor_tick, state: &"expected", &"confirmed" (a report agreed), &"missing" or
+##   &"stuck" (a report says they gave up; the piece stays at stuck_pos), missing_pos, stuck_pos }.
 ## The piece walks the path at EXPECTED_SPEED from the order; it is only
 ## "missing" when information contradicts the expectation. Age never does.
 var expectations: Dictionary[int, Dictionary] = {}
@@ -96,7 +97,7 @@ func expect(gid: int, cmd_id: int, start: Vector3, route: Array, goal: int, dest
 		"anchor_dist": 0.0, "anchor_tick": tick, "state": &"expected", "missing_pos": start}
 
 func piece_state(gid: int) -> StringName:
-	## &"confirmed" (the last report stands), &"expected" or &"missing".
+	## &"confirmed" (the last report stands), &"expected", &"missing" or &"stuck".
 	var x: Dictionary = expectations.get(gid, {})
 	var state: StringName = x.get("state", &"confirmed")
 	if state == &"confirmed" and not x.is_empty() and float(NetworkTime.tick - int(x["anchor_tick"])) / _rate() > CONFIRMED_SECONDS:
@@ -112,6 +113,8 @@ func expected_position(gid: int, tick: int) -> Vector3:
 		return Vector3.INF
 	if x["state"] == &"missing":
 		return x["missing_pos"]
+	if x["state"] == &"stuck":
+		return x["stuck_pos"]
 	var dist := float(x["anchor_dist"]) + EXPECTED_SPEED * maxf(0.0, float(tick - int(x["anchor_tick"]))) / _rate()
 	return point_along(x["path"], dist)
 
@@ -187,6 +190,12 @@ func _check_expectation(gid: int, report: Dictionary, source: StringName) -> voi
 		finished = true  # The order was taken, and now they are home without one.
 	if finished:
 		expectations.erase(gid)
+		return
+	if report.get("status", &"") == &"stuck" and not before:
+		# They gave up short of the destination: the piece stops where they are.
+		x["state"] = &"stuck"
+		x["stuck_pos"] = pos
+		x["anchor_tick"] = seen_tick
 		return
 	if before and near_start or goal == -1 and near_start:
 		# Seen before (or without) the order reaching it; the walk goes on.

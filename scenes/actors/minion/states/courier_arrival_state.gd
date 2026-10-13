@@ -12,6 +12,8 @@ extends MinionState
 ##   3. Next stop; with no stops left, walk the scouting route if sent alone to
 ##      look, then head home. MinionActor despawns it at its gate and hands
 ##      the report to KnowledgeManager.courier_arrived_home.
+## Giving up when blocked, and recognising the group from afar, are
+## CourierErrand's (run from MinionActor whatever the state).
 
 ## Arrival tolerance at a stop (wider than the nav agent's own).
 const DELIVERY_DISTANCE: float = 4.0
@@ -21,6 +23,8 @@ const DELIVERY_DISTANCE: float = 4.0
 const SEARCH_WAIT_FRACTION: float = 0.5
 
 var _wait_remaining: float = -1.0
+## The leg being waited at: CourierErrand may finish legs early (a check seen from afar).
+var _leg: Dictionary = {}
 
 func enter(_previous_state: RewindableState, _tick: int) -> void:
 	_wait_remaining = -1.0
@@ -36,6 +40,9 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	if minion.delivery_legs.is_empty():
 		_tick_scouting_or_home()
 		return
+	if not is_same(minion.delivery_legs[0], _leg):
+		_leg = minion.delivery_legs[0]
+		_wait_remaining = -1.0
 	if _wait_remaining < 0.0:
 		if actor.global_position.distance_to(minion.waypoint) > DELIVERY_DISTANCE:
 			state_machine.transition(&"ChaseState")
@@ -135,7 +142,9 @@ func _record_failures() -> void:
 		if sub.get("done", false):
 			continue
 		var gid := int(sub.get("group_id", -1))
-		minion.delivery_failures.append({"group_id": gid, "cmd_id": int(sub.get("cmd_id", -1))})
+		minion.delivery_failures.append({"group_id": gid, "cmd_id": int(sub.get("cmd_id", -1)),
+			"reason": &"not_found", "at": actor.global_position})
+		CourierErrand.merge_sighting(minion, sub)
 		_note_order(sub, &"undelivered")
 		var gm := _gm()
 		if gm and gm.get_group(gid) == null:
@@ -144,9 +153,7 @@ func _record_failures() -> void:
 			minion.carried_report["lost_groups"] = lost
 
 func _note_order(sub: Dictionary, stage: StringName) -> void:
-	var orders: Array = minion.carried_report.get("orders", [])
-	orders.append({"cmd_id": int(sub.get("cmd_id", -1)), "stage": stage})
-	minion.carried_report["orders"] = orders
+	CourierErrand.note_order(minion, sub, stage)
 
 func _merge_report(part: Dictionary, before_cmd: int = -1) -> void:
 	## `before_cmd`: the order about to be handed over; the snapshot shows the
@@ -161,12 +168,7 @@ func _merge_report(part: Dictionary, before_cmd: int = -1) -> void:
 func _advance() -> void:
 	_wait_remaining = -1.0
 	minion.delivery_legs.pop_front()
-	if not minion.delivery_legs.is_empty():
-		minion.waypoint = minion.delivery_legs[0].get("source_pos", minion.return_pos)
-	elif not minion.scout_route.is_empty():
-		minion.waypoint = minion.scout_route[0]
-	else:
-		minion.waypoint = minion.return_pos
+	minion.waypoint = CourierErrand.next_waypoint(minion)
 
 func _find_commandable_avatar() -> AvatarActor:
 	if GameState.avatar_owner_peer_id != minion.owner_peer_id:

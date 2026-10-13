@@ -151,6 +151,14 @@ func _apply_report(report: Dictionary) -> void:
 		var cmd := int(o.get("cmd_id", -1))
 		if cmd in model.orders:
 			model.orders[cmd]["stage"] = o.get("stage", &"delivered")
+	for cmd in report.get("lost_orders", []):
+		# Orders a lost courier carried and had not been heard of since.
+		if int(cmd) in model.orders and model.orders[int(cmd)].get("stage", &"") == &"dispatched":
+			model.orders[int(cmd)]["stage"] = &"lost"
+	var errand := _errand_notes(report)
+	if not errand.is_empty():
+		# PLACEHOLDER: wording, not written by Austin.
+		model.add_record(&"courier", "A courier's errand", "\n".join(errand), tick)
 	var lines := _report_lines(report, new_points)
 	if source != &"home" or not lines.is_empty():
 		pass
@@ -173,6 +181,8 @@ func _report_title(report: Dictionary) -> String:
 			return "Captured papers"
 		&"training":
 			return "Training"
+		&"lost":
+			return "A courier is lost"
 	return "A courier came home"
 
 func _report_lines(report: Dictionary, new_points: Array[StringName]) -> Array[String]:
@@ -198,9 +208,57 @@ func _report_lines(report: Dictionary, new_points: Array[StringName]) -> Array[S
 		for p in new_points:
 			names.append(_point_name(p))
 		out.append("New places for the map: %s." % ", ".join(names))
+	out.append_array(_errand_notes(report))
+	return out
+
+func _errand_notes(report: Dictionary) -> Array[String]:
+	## What a courier says about errands it could not finish and groups it saw
+	## from afar (Austin, 2026-10-13, #627). PLACEHOLDER: wording, not written by Austin.
+	var out: Array[String] = []
+	for u in report.get("undelivered", []):
+		var gid := int(u.get("group_id", -1))
+		var where := _near(u.get("at", Vector3.INF))
+		if gid < 0:
+			out.append("The courier could not finish its route: the way was blocked%s." % where)
+		elif u.get("reason", &"") == &"unreachable":
+			out.append("The courier saw group %d but could not reach them%s; your orders were not handed over." % [gid, where])
+		else:
+			out.append("The courier could not reach group %d: the way was blocked%s." % [gid, where])
 	for f in report.get("failures", []):
 		out.append("Could not find group %d where you thought it was, nor along its route." % int(f.get("group_id", 0)))
+	for g in report.get("groups", []):
+		if not g.get("sighted", false) and g.get("progress", &"") != &"stuck":
+			continue
+		var gid := int(g.get("id", 0))
+		var where := _near(g.get("pos", Vector3.INF))
+		match g.get("progress", &""):
+			&"stuck":
+				out.append("Group %d is stuck%s; they have not arrived." % [gid, where])
+			&"en_route":
+				out.append("Group %d was seen on its way%s." % [gid, where])
+			&"arrived":
+				out.append("Group %d was seen where you sent them%s." % [gid, where])
+			&"returning":
+				out.append("Group %d was seen coming home%s." % [gid, where])
+			_:
+				out.append("Group %d was seen holding%s." % [gid, where])
 	return out
+
+func _near(pos: Vector3) -> String:
+	## " near <the nearest place on this player's map>", or "".
+	if pos == Vector3.INF or get_tree() == null or get_tree().current_scene == null:
+		return ""
+	var model := local_model()
+	var best: MapPoint = null
+	var best_d := INF
+	for p in MapPoint.all_points(get_tree()):
+		if not model.is_point_known(p.point_id):
+			continue
+		var d := Vector2(p.global_position.x - pos.x, p.global_position.z - pos.z).length()
+		if d < best_d:
+			best_d = d
+			best = p
+	return " near %s" % best.get_label() if best else ""
 
 func _point_name(point_id: StringName) -> String:
 	if point_id == &"":
@@ -425,6 +483,19 @@ func courier_lost(courier: MinionActor, killer_peer: int) -> void:
 	report["lines"] = lines
 	report.erase("groups")  # Their groups, not yours: kept as text only.
 	deliver_report(killer_peer, report)
+
+func courier_stranded(courier: MinionActor) -> void:
+	## Host-only: a courier that could reach neither its errand nor home
+	## (CourierErrand). What it carries never arrives; its owner only learns,
+	## after a while, that it is lost. It does not rejoin the pool.
+	var cmds: Array = []
+	for o in courier.carried_orders:
+		cmds.append(int(o.get("cmd_id", -1)))
+	# PLACEHOLDER: wording, not written by Austin.
+	deliver_report(courier.owner_peer_id, {"source": &"lost", "lost_orders": cmds,
+		"lines": ["PLACEHOLDER: A courier has not come back. It is lost."],
+		"records": [{"kind": &"courier", "title": "A courier is lost",
+			"text": "PLACEHOLDER: A courier has not come back. Whatever it carried has not arrived."}]})
 
 func send_runner_home(group: UnitGroup, from_pos: Vector3) -> void:
 	## Host-only: a group sends a runner home with its report (ticket #544).
