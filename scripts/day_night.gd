@@ -112,8 +112,13 @@ func _apply() -> void:
 		_light.light_color = NIGHT_LIGHT_COLOR.lerp(_day_light_color, day)
 		_light.light_energy = lerpf(NIGHT_LIGHT_ENERGY, DAY_LIGHT_ENERGY, day)
 	if _sky != null:
+		var horizon: Color = NIGHT_SKY_HORIZON.lerp(_day_sky_horizon, day)
 		_sky_set(&"sky_top_color", NIGHT_SKY_TOP.lerp(_day_sky_top, day))
-		_sky_set(&"sky_horizon_color", NIGHT_SKY_HORIZON.lerp(_day_sky_horizon, day))
+		_sky_set(&"sky_horizon_color", horizon)
+		# The backdrop sea ends a little below eye level; the sky's lower half shows in that gap, so it matches the
+		# horizon instead of keeping its own colour.
+		_sky_set(&"ground_horizon_color", horizon)
+		_sky_set(&"ground_bottom_color", horizon)
 	if _environment != null:
 		_environment.ambient_light_color = NIGHT_AMBIENT_COLOR.lerp(_day_ambient_color, day)
 		_environment.ambient_light_energy = lerpf(NIGHT_AMBIENT_ENERGY, _day_ambient_energy, day)
