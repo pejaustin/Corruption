@@ -165,3 +165,6 @@ Numbers I changed so the old tuning fits the 2 km map; none is designed (playtes
 Known: at 6 km the Volcano Tower (slot 2) stands on ground the baked mesh does not connect to the rest of the map, so units
 summoned there cannot walk out (`test_world_layout` fails two checks for it); no yaw fixes it.
 
+
+## Movement and pathing tuning (audit 2026-10-13)
+- PLACEHOLDER: tuning — all in code, marked `PLACEHOLDER: tuning`: `ChaseState` (FORCED_REPATH_INTERVAL, ENGAGE_MARGIN, UNREACHABLE_GAP), `IdleState` (REENTER_MARGIN), `MinionState` (MAX_VERTICAL_REACH, MAX_NAV_GAP, IGNORE_SECONDS, SCAN_INTERVAL, SCAN_STAGGER_MSEC), `AvatarAI` (reach, blacklist and no-progress numbers), `MinionActor` (stuck-check and Run-to-Idle numbers, floor_max_angle 53.2 deg), `JumpState.MAX_AIR_TIME`, `RetreatState.REPATH_DISTANCE`, bake `AGENT_HEIGHT` 3.1 / `AGENT_RADIUS` 0.7 (2 km navmesh not rebaked yet).
