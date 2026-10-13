@@ -128,7 +128,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 39.4, -6)
 [node name="Balcony" parent="." instance=ExtResource("43_balcony")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 39.4, 5)
 
-; PLACEHOLDER: where the treasure room and ledger stand in the hall (ticket #565)
 
 [node name="TreasureRoom" parent="." instance=ExtResource("44_treasure")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 39.4, -8)

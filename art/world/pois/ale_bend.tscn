@@ -1,6 +1,3 @@
-; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Ale Bend's place scene. Its look is
-; art/world/pois/export/ale_bend.glb (from ale_bend.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
-; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
 [gd_scene format=3 uid="uid://bjlneb8hnj1ni"]
 
 [ext_resource type="PackedScene" uid="uid://co0otq1ew40v3" path="res://art/world/pois/export/ale_bend.glb" id="1_glb"]

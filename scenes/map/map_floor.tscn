@@ -9,9 +9,6 @@
 [ext_resource type="PackedScene" path="res://scenes/map/map_line_pencil.tscn" id="7_pencil"]
 [ext_resource type="Texture2D" path="res://scenes/map/map_illustration.png" id="8_picture"]
 
-; PLACEHOLDER: art — the illustration is generated from Austin's ground heights
-; (hill shading on parchment; tools/bake_map_illustration.gd) until his map art
-; (ticket #534). The script sizes the plane to floor_size.
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
 resource_local_to_scene = true
 size = Vector2(14, 14)

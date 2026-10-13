@@ -76,7 +76,6 @@ max_value = 1.0
 step = 0.001
 show_percentage = false
 
-; PLACEHOLDER: wording — label on the hold bar.
 [node name="HoldLabel" type="Label" parent="HoldBar"]
 layout_mode = 0
 offset_top = -26.0

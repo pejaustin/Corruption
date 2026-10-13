@@ -8,8 +8,6 @@
 height = 2.887085
 radius = 2.6015625
 
-; PLACEHOLDER: art direction — the stand-in ring look: a pulsing coloured halo
-; quad and light on the mirror (the script drives their alpha and energy).
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ring"]
 resource_local_to_scene = true
 transparency = 1
@@ -49,8 +47,6 @@ light_color = Color(0.7, 0.5, 1, 1)
 light_energy = 0.0
 omni_range = 5.0
 
-; PLACEHOLDER: art direction — the stand-in chime is two synthesized sine tones
-; (the script fills in the stream).
 [node name="ChimePlayer" type="AudioStreamPlayer3D" parent="Model/Mirror3D" index="2"]
 unique_name_in_owner = true
 volume_db = -6.0206

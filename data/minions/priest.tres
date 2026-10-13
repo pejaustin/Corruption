@@ -1,7 +1,5 @@
 [gd_resource type="Resource" script_class="MinionType" format=3]
 
-; PLACEHOLDER: the Goddess's priest — name, stats and look are not designed (temple dungeons).
-; Good faction, so the Paladin resists striking it below control level 3 (AvatarActor).
 
 [ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
 

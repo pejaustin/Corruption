@@ -4,7 +4,6 @@
 [ext_resource type="Resource" path="res://data/sites/corrupted_chapel.tres" id="2_type"]
 [ext_resource type="PackedScene" path="res://scenes/sites/encounter/site_encounter.tscn" id="3_encounter"]
 
-; PLACEHOLDER: art — a stone disc, a pillar tinted by holder, and a beacon of light.
 [sub_resource type="CylinderMesh" id="CylinderMesh_base"]
 top_radius = 1.6
 bottom_radius = 1.9

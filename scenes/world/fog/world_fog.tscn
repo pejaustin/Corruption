@@ -43,7 +43,6 @@ shader_parameter/noise = SubResource("NoiseTexture3D_fog")
 shader_parameter/noise_scale = 70.0
 shader_parameter/noise_strength = 0.85
 
-; PLACEHOLDER: the whole fog look and how thick (PLACEHOLDERS.md "Fog"); where: the woods (Austin, 2026-10-13)
 [node name="WorldFog" type="Node"]
 script = ExtResource("1_fog")
 

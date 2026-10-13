@@ -1,6 +1,5 @@
 [gd_scene format=3]
 
-; PLACEHOLDER: look — one record in the desk book: a heading and its text.
 
 [node name="DeskEntry" type="VBoxContainer"]
 

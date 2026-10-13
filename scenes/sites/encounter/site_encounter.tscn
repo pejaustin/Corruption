@@ -1,6 +1,5 @@
 [gd_scene format=3]
 
-; PLACEHOLDER: how entering works — an interact prompt at the site (E, aimed at it). Not designed.
 
 [ext_resource type="PackedScene" uid="uid://cwic18lbd6p1g" path="res://scenes/interactibles/interactable.tscn" id="1_base"]
 [ext_resource type="Script" path="res://scenes/sites/encounter/site_encounter.gd" id="2_script"]

@@ -1,7 +1,5 @@
 [gd_scene format=3]
 
-; PLACEHOLDER: TempleDungeon placeholder temple dungeon — layout, room count, enemy mix and counts, look: all stand-ins, not designed (PLACEHOLDERS.md).
-; Greyboxed with primitive meshes. Navmesh baked by tools/bake_encounter_navmesh.gd into temple_dungeon_navmesh.res.
 
 [ext_resource type="Script" path="res://scenes/sites/encounter/encounter_space.gd" id="1_space"]
 [ext_resource type="Script" path="res://scenes/sites/encounter/encounter_spawn.gd" id="2_spawn"]

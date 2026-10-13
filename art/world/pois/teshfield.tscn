@@ -1,6 +1,3 @@
-; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Teshfield's place scene. Its look is
-; art/world/pois/export/teshfield.glb (from teshfield.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
-; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
 [gd_scene format=3 uid="uid://bs6sap1d4nbpx"]
 
 [ext_resource type="PackedScene" uid="uid://b8dlo58n2wjln" path="res://art/world/pois/export/teshfield.glb" id="1_glb"]

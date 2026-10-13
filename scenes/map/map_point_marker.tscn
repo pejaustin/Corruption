@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scenes/map/map_point_marker.gd" id="1_script"]
 
-; PLACEHOLDER: art — an ink disc with the point's name written beside it.
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_marker"]
 height = 0.3
 radius = 0.25

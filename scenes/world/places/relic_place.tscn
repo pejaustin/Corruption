@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scenes/world/places/relic_place.gd" id="1_script"]
 
-; PLACEHOLDER: art — a small gold gem on the ground.
 [sub_resource type="SphereMesh" id="SphereMesh_gem"]
 radius = 0.3
 height = 0.6

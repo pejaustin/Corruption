@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scenes/world/places/body.gd" id="1_script"]
 
-; PLACEHOLDER: art — a pale slab.
 [sub_resource type="BoxMesh" id="BoxMesh_slab"]
 size = Vector3(0.5, 0.2, 1.6)
 

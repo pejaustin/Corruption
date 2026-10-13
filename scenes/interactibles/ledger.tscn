@@ -35,7 +35,6 @@ content_margin_top = 18.0
 content_margin_right = 18.0
 content_margin_bottom = 18.0
 
-; PLACEHOLDER: art — a stand with a flat book
 
 [node name="Ledger" instance=ExtResource("1_base")]
 script = ExtResource("2_ledger")
@@ -55,8 +54,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, 0)
 mesh = SubResource("BoxMesh_book")
 surface_material_override/0 = SubResource("StandardMaterial3D_book")
 
-; The open page: hidden until E at your own ledger.
-; PLACEHOLDER: look and wording — paper, ink and sizes.
 [node name="LedgerLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
 visible = false

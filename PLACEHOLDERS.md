@@ -1,7 +1,8 @@
 # Placeholders
 
 Everything here stands in for something Austin hasn't designed yet (CLAUDE.md, "Austin designs; placeholders are
-marked"). Each entry is marked `PLACEHOLDER:` at its source. Only Austin replaces one; when he does, drop the entry.
+marked"). Each entry is marked `PLACEHOLDER:` at its source, except in `.tscn`, `.tres` and `project.godot`: the Godot editor deletes
+comments when it saves those, so their placeholders are listed under "Scenes and resources" below by file and node instead. Only Austin replaces one; when he does, drop the entry.
 Numbers are collected for the playtest ticket (#587); content is Austin's to write later and has no tickets (Austin, 2026-10-12).
 
 ## Content (Austin's to write)
@@ -171,3 +172,78 @@ summoned there cannot walk out (`test_world_layout` fails two checks for it); no
 
 ## Movement and pathing tuning (audit 2026-10-13)
 - PLACEHOLDER: tuning — all in code, marked `PLACEHOLDER: tuning`: `ChaseState` (FORCED_REPATH_INTERVAL, ENGAGE_MARGIN, UNREACHABLE_GAP), `IdleState` (REENTER_MARGIN), `MinionState` (MAX_VERTICAL_REACH, MAX_NAV_GAP, IGNORE_SECONDS, SCAN_INTERVAL, SCAN_STAGGER_MSEC), `AvatarAI` (reach, blacklist and no-progress numbers), `MinionActor` (stuck-check and Run-to-Idle numbers, floor_max_angle 53.2 deg), `JumpState.MAX_AIR_TIME`, `RetreatState.REPATH_DISTANCE`, bake `AGENT_HEIGHT` 3.1 / `AGENT_RADIUS` 0.7 (2 km navmesh not rebaked yet).
+
+## Scenes and resources (no comments in these files; moved here 2026-10-13)
+
+- `art/world/export/world_backdrop_2km.tscn`, whole file: the backdrop is generated (tools/blender/build_backdrop.py) for Austin to sculpt in art/world/source/world_backdrop.blend
+- `art/world/pois/ale_bend.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Ale Bend's place scene. Its look is art/world/pois/export/ale_bend.glb (from ale_bend.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/avequella.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Avequel'la's place scene. Its look is art/world/pois/export/avequella.glb (from avequella.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/entbridge.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Entbridge's place scene. Its look is art/world/pois/export/entbridge.glb (from entbridge.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/far_harbor.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is far harbor's place scene. Its look is art/world/pois/export/far_harbor.glb (from far_harbor.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/forest_ruins.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Forest Ruins's place scene. Its look is art/world/pois/export/forest_ruins.glb (from forest_ruins.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/hells_mouth.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Hell's Mouth's place scene. Its look is art/world/pois/export/hells_mouth.glb (from hells_mouth.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/hopes_gate.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Hopes Gate's place scene. Its look is art/world/pois/export/hopes_gate.glb (from hopes_gate.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/lastford.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Lastford's place scene. Its look is art/world/pois/export/lastford.glb (from lastford.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/mountain_pass.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Mountain Pass's place scene. Its look is art/world/pois/export/mountain_pass.glb (from mountain_pass.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/naf_ishun.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Naf Ishun's place scene. Its look is art/world/pois/export/naf_ishun.glb (from naf_ishun.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/teshfield.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Teshfield's place scene. Its look is art/world/pois/export/teshfield.glb (from teshfield.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/valley_cross.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Valley Cross's place scene. Its look is art/world/pois/export/valley_cross.glb (from valley_cross.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `art/world/pois/veilton.tscn`, whole file: Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Veilton's place scene. Its look is art/world/pois/export/veilton.glb (from veilton.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here. the look is a blockout stand-in, not designed by Austin
+- `data/maneuvers/placeholder_a.tres`, whole file: not designed by Austin (ticket #581)
+- `data/maneuvers/placeholder_b.tres`, whole file: not designed by Austin (ticket #581)
+- `data/maneuvers/placeholder_c.tres`, whole file: not designed by Austin (ticket #581)
+- `data/minions/boss_form.tres`, whole file: boss forms are not designed (ticket #583). One stand-in type, scaled in the gauntlet by the sites its player holds (HolySite._scale_boss).
+- `data/minions/priest.tres`, whole file: the Goddess's priest — name, stats and look are not designed (temple dungeons). Good faction, so the Paladin resists striking it below control level 3 (AvatarActor).
+- `data/relics/placeholder_a.tres`, whole file: not designed by Austin (ticket #580)
+- `data/relics/placeholder_b.tres`, whole file: not designed by Austin (ticket #580)
+- `project.godot`, `3d/default_edge_connection_margin` on section `[navigation]`: tuning — the 2 km map's towers stand at different heights above their ground, so the towers' own navmesh (cell 0.25) and the world's (cell 1) only join within these distances (the tower's jump-off link lands on the ground).
+- `scenes/actors/minion/minion_actor.tscn`, BoxMesh `BoxMesh_carry`: art — a box on the back while carrying; the script tints it by what it is.
+- `scenes/actors/minion/minion_actor.tscn`, `path_desired_distance` on `NavigationAgent3D`: tuning — the 2 km map's navmesh has ~24k polygons; the default 4096 gave up on long routes, and the mesh sits up to ~1 m off the ground in places, so a waypoint counts as reached within 2.5 m (the default 1 m made units oscillate at a spot where the path's first point was 1 m below them)
+- `scenes/actors/minion/types/boss_form.tscn`, whole file: art — a skeleton stands in for a boss form (ticket #583)
+- `scenes/actors/minion/types/noble.tscn`, whole file: art — a holy knight stands in for a noble
+- `scenes/actors/minion/types/priest.tscn`, whole file: art — a holy knight stands in for a priest
+- `scenes/actors/minion/types/thrall.tscn`, whole file: art — a skeleton stands in for a thrall
+- `scenes/actors/minion/types/villager.tscn`, whole file: art — a holy knight stands in for a villager
+- `scenes/actors/player/avatar/avatar_actor.tscn`, `path_desired_distance` on `NavAgent`: tuning — path_desired_distance was 0.5; the 2 km navmesh sits up to ~1 m off the ground
+- `scenes/actors/player/avatar/avatar_actor.tscn`, `path_search_max_polygons` on `NavAgent`: tuning — the 2 km map's navmesh has ~24k polygons; the default 4096 gave up on long routes
+- `scenes/actors/player/avatar/avatar_actor.tscn`, node `ResistLabel`: wording — flashed when he refuses an order he resists.
+- `scenes/actors/player/avatar/watcher_orb.tscn`, SphereMesh `SphereMesh_orb`: art — a ghostly orb at a remote viewer's scry camera; the script tints it with the viewer's colour. One is instanced per viewer.
+- `scenes/actors/player/overlord/overlord_actor.tscn`, CylinderMesh `CylinderMesh_scroll`: art — a rolled scroll held at the bottom right of the view.
+- `scenes/interactibles/balcony.tscn`, node `LookoutPivot`: The lookout rig: turned with the mouse while the balcony is open. tuning — where the lookout sits, the wide view and a far plane long enough for beacons over sites anywhere on the 2 km map and the backdrop around it (5 km out; was 3500 m).
+- `scenes/interactibles/crate.tscn`, BoxMesh `BoxMesh_crate`: art — a plain box; one is instanced per good in the treasure room.
+- `scenes/interactibles/desk.tscn`, StyleBoxFlat `StyleBoxFlat_paper`: look — the book's paper, ink and sizes.
+- `scenes/interactibles/desk.tscn`, node `BookLayer/Panel/Column/Scroll/Body/NotesEdit`: wording — the notes hint.
+- `scenes/interactibles/desk_entry.tscn`, node `DeskEntry`: look — one record in the desk book: a heading and its text.
+- `scenes/interactibles/desk_tab_button.tscn`, StyleBoxFlat `StyleBoxFlat_tab`: look — one tab on the desk book (the selected tab shows paper).
+- `scenes/interactibles/ledger.tscn`, node `Ledger`: art — a stand with a flat book
+- `scenes/interactibles/ledger.tscn`, node `LedgerLayer`: The open page: hidden until E at your own ledger. look and wording — paper, ink and sizes.
+- `scenes/interactibles/ledger_line.tscn`, node `LedgerLine`: look — one line of the ledger page.
+- `scenes/interactibles/mirror.tscn`, StandardMaterial3D `StandardMaterial3D_ring`: art direction — the stand-in ring look: a pulsing coloured halo quad and light on the mirror (the script drives their alpha and energy).
+- `scenes/interactibles/mirror.tscn`, node `Model/Mirror3D/ChimePlayer`: art direction — the stand-in chime is two synthesized sine tones (the script fills in the stream).
+- `scenes/interactibles/scry_rig.tscn`, node `ScryPivot`: The palantir's scrying camera: orbits the Paladin. The pivot is moved onto him and turned with the mouse; the camera sits behind and above (CamRot pitches it). Instanced when someone looks in and freed when they stop. tuning — the orbit distance and height.
+- `scenes/interactibles/treasure_room.tscn`, node `Crates`: art and layout — a crate per good is instanced under here, stacked by the script
+- `scenes/interactibles/treasure_room.tscn`, node `Plaque`: wording and spot — the plaque says the exact number of goods
+- `scenes/map/map_floor.tscn`, PlaneMesh `PlaneMesh_floor`: art — the illustration is generated from Austin's ground heights (hill shading on parchment; tools/bake_map_illustration.gd) until his map art (ticket #534). The script sizes the plane to floor_size.
+- `scenes/map/map_line_pencil.tscn`, whole file: art direction — the pencil line of the order being drafted.
+- `scenes/map/map_line_route.tscn`, whole file: art direction — thin pencil road between two known points.
+- `scenes/map/map_piece.tscn`, CylinderShape3D `CylinderShape3D_piece`: art — a primitive chess piece tinted by owner.
+- `scenes/map/map_piece_avatar.tscn`, whole file: art — the Paladin's piece: the same chess piece, 1.6 times larger.
+- `scenes/map/map_point_marker.tscn`, CylinderShape3D `CylinderShape3D_marker`: art — an ink disc with the point's name written beside it.
+- `scenes/sites/corruption_site.tscn`, CylinderMesh `CylinderMesh_base`: art — a stone disc, a pillar tinted by holder, and a beacon of light.
+- `scenes/sites/encounter/runestone_arena.tscn`, whole file: RunestoneArena placeholder runestone arena — layout, room count, enemy mix and counts, look: all stand-ins, not designed (PLACEHOLDERS.md). Greyboxed with primitive meshes. Navmesh baked by tools/bake_encounter_navmesh.gd into runestone_arena_navmesh.res.
+- `scenes/sites/encounter/site_encounter.tscn`, whole file: how entering works — an interact prompt at the site (E, aimed at it). Not designed.
+- `scenes/sites/encounter/temple_dungeon.tscn`, whole file: TempleDungeon placeholder temple dungeon — layout, room count, enemy mix and counts, look: all stand-ins, not designed (PLACEHOLDERS.md). Greyboxed with primitive meshes. Navmesh baked by tools/bake_encounter_navmesh.gd into temple_dungeon_navmesh.res.
+- `scenes/ui/advisor_dialogue.tscn`, node `AdvisorDialogue`: wording and look — the advisor's character is Austin's (#585).
+- `scenes/ui/avatar_hud.tscn`, node `HoldBar/HoldLabel`: wording — label on the hold bar.
+- `scenes/world/env/tower.tscn`, node `TreasureRoom`: where the treasure room and ledger stand in the hall (ticket #565)
+- `scenes/world/fog/world_fog.tscn`, node `WorldFog`: the whole fog look and how thick (PLACEHOLDERS.md "Fog"); where: the woods (Austin, 2026-10-13)
+- `scenes/world/places/body.tscn`, BoxMesh `BoxMesh_slab`: art — a pale slab.
+- `scenes/world/places/holy_site.tscn`, CylinderMesh `CylinderMesh_disc`: art — a pale disc on the ground marks the holy site. The script sizes the disc to the site's radius.
+- `scenes/world/places/relic_place.tscn`, SphereMesh `SphereMesh_gem`: art — a small gold gem on the ground.
+- `scenes/world/places/resource_site.tscn`, BoxMesh `BoxMesh_stack`: art — a crate stack that grows with the pile.
+- `scenes/world/world.tscn`, ShaderMaterial `ShaderMaterial_sky`: clouds (PLACEHOLDERS.md "Clouds"); the sky colours below are the ones set in the editor before the clouds
+- `scenes/world/world.tscn`, `volumetric_fog_enabled` on `Environment_s4jie`: volumetric fog look (thin haze everywhere; length = how far it is drawn, beyond that the view is clear)
+- `scenes/world/world.tscn`, `light_volumetric_fog_energy` on `DirectionalLight3D`: fog look, how much the sun tints the fog (1 = fully)
+- `scenes/world/world.tscn`, `directional_shadow_max_distance` on `DirectionalLight3D`: tuning — shadows reach this far (the default is 100 m; the map is 2 km)
+- `scenes/world/world.tscn`, node `World/Atmosphere/WorldFog`: the fog (scenes/world/fog/, PLACEHOLDERS.md "Fog")
+- `scenes/world/world.tscn`, node `World/Atmosphere/WorldBackdrop`: the land, mountains and sea around the map (art/world/README.md "Backdrop around the map", #620)

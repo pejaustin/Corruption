@@ -1,6 +1,3 @@
-; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is Mountain Pass's place scene. Its look is
-; art/world/pois/export/mountain_pass.glb (from mountain_pass.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
-; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
 [gd_scene format=3 uid="uid://vl7b1d7aspgb"]
 
 [ext_resource type="PackedScene" uid="uid://suofatglmfie" path="res://art/world/pois/export/mountain_pass.glb" id="1_glb"]

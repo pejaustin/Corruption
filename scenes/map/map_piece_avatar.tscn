@@ -1,6 +1,5 @@
 [gd_scene format=3]
 
-; PLACEHOLDER: art — the Paladin's piece: the same chess piece, 1.6 times larger.
 
 [ext_resource type="PackedScene" path="res://scenes/map/map_piece.tscn" id="1_piece"]
 

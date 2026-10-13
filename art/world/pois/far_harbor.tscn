@@ -1,6 +1,3 @@
-; Created by scripts/build/build_world_sizes.gd, once, and never rewritten: this is far harbor's place scene. Its look is
-; art/world/pois/export/far_harbor.glb (from far_harbor.blend, Austin edits that); add Godot-only things (lights, sites, sounds) here.
-; PLACEHOLDER: the look is a blockout stand-in, not designed by Austin
 [gd_scene format=3 uid="uid://cnkqc3m05qerk"]
 
 [ext_resource type="PackedScene" uid="uid://c2w1pof4b0nqc" path="res://art/world/pois/export/far_harbor.glb" id="1_glb"]

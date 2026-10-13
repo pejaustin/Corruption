@@ -7,11 +7,9 @@
 script = ExtResource("1_room")
 crate_scene = ExtResource("2_crate")
 
-; PLACEHOLDER: art and layout — a crate per good is instanced under here, stacked by the script
 [node name="Crates" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-; PLACEHOLDER: wording and spot — the plaque says the exact number of goods
 [node name="Plaque" type="Label3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 2.2, 0)

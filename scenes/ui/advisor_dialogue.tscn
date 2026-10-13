@@ -3,7 +3,6 @@
 [ext_resource type="Script" path="res://scenes/ui/advisor_dialogue.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/advisor_option_button.tscn" id="2_option"]
 
-; PLACEHOLDER: wording and look — the advisor's character is Austin's (#585).
 
 [node name="AdvisorDialogue" type="CanvasLayer"]
 layer = 20

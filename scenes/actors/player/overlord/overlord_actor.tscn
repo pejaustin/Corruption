@@ -19,7 +19,6 @@
 radius = 0.4
 height = 2.8598633
 
-; PLACEHOLDER: art — a rolled scroll held at the bottom right of the view.
 [sub_resource type="CylinderMesh" id="CylinderMesh_scroll"]
 top_radius = 0.03
 bottom_radius = 0.03

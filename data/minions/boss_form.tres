@@ -1,7 +1,5 @@
 [gd_resource type="Resource" script_class="MinionType" format=3]
 
-; PLACEHOLDER: boss forms are not designed (ticket #583). One stand-in type,
-; scaled in the gauntlet by the sites its player holds (HolySite._scale_boss).
 
 [ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
 
