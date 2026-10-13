@@ -21,6 +21,8 @@ This file gives Claude Code the context it needs to make informed changes to a G
 ## 2. How to run, lint, and validate
 
 - **Run:** open `project.godot` in Godot 4.6 and press F5 (main menu → host → lobby → start).
+- **Sandbox:** `tools/sandbox/sandbox_400m.tscn` opens the 400 m world on its own as an offline host (you are player 1, no
+  lobby): open it and press F6, or `godot --path . res://tools/sandbox/sandbox_400m.tscn`. Esc → Debug panel to spawn units.
 - **Headless tests** (`tools/tests/`): each test is a small scene that loads the real world as an offline host and
   exits with the number of failed checks, e.g. `godot --headless --path . res://tools/tests/test_sites.tscn`.
   A fresh clone needs the editor opened once first (netfox autoload UIDs and the import cache).
