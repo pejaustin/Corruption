@@ -135,3 +135,7 @@ skeleton = NodePath("")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="tmpParent/bridge_woodRound/StaticBody3D" unique_id=1971900037]
 shape = SubResource("ConcavePolygonShape3D_d21rg")
+
+[node name="CrossLink" type="NavigationLink3D" parent="." unique_id=1363730878]
+start_position = Vector3(-3, 0, 0)
+end_position = Vector3(3, 0, 0)

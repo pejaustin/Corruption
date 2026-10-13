@@ -84,8 +84,7 @@ WorldLandscape (Node3D)
 ├── Ground            the geo-only glb (Ground/geo; its trimesh collision is set in the .glb.import)
 ├── <marker> ...      one Node3D per place, named as Austin spelled it (Naf Ishun, Avequel'la, Forest Tower,
 │   ├── POI           Volcano Tower, Hell's Mouth, far harbor, ...): what hangs under it (the place's
-│   ├── Tower         pois/<snake>.tscn, a tower with its slot_index, RiverCrossing fords)
-│   └── RiverCrossing
+│   └── Tower         pois/<snake>.tscn, a tower with its slot_index)
 ├── Forests/<wood>/chunk_*   stand-in trees (MultiMeshInstance3D, no collision)
 ├── Waters/<body>     water_body.tscn per water: Surface (the look) and Blockers (navmesh blockers)
 └── BridgeWoodRound*  Austin's bridges (2 km)
@@ -93,7 +92,7 @@ WorldLandscape (Node3D)
 
 Until 2026-10-13 the markers were empties in the glb and the size build placed things under them; the conversion kept
 every node, transform, property and unique id (checked node by node, including through `world.tscn` / `world_400m.tscn`).
-400 m keeps the old 400 m export's sea look as an `Ocean` node; its RiverCrossings are the 2 km ones at 1/5 (radius too).
+400 m keeps the old 400 m export's sea look as an `Ocean` node.
 
 ### POI scenes
 
@@ -104,7 +103,7 @@ scene's materials come from `pois/poi_post_import.gd` (`mat_<texture>` -> `mater
 `shaders/poi_uv.gdshader`). The POI collision is parsed by the navmesh bake, so units walk around buildings. No
 `.gdignore` in `pois/`: it would hide the scenes and glbs too.
 
-### Water: blockers, bridges and fords (Austin, 2026-10-13)
+### Water: blockers and bridges (Austin, 2026-10-13)
 
 **No bank walls** (Austin, 2026-10-13: "get rid of walls"): bodies can walk into water; only the navmesh keeps units out.
 
@@ -112,7 +111,7 @@ scene's materials come from `pois/poi_post_import.gd` (`mat_<texture>` -> `mater
   carves within its vertical band (from its `position.y` up `height`): Recast marks the spans whose top lies in it. Each band
   runs from under the lowest ground inside it to just over the water (`WATER_CLEARANCE_M`, 0.3 m, PLACEHOLDER). So ground
   above the water inside an outline stays walkable (e.g. the hill under the Forest Tower once restored), and so do bridge
-  decks and fords above the band.
+  decks above the band.
   - The sea (`Glittering Ocean`): one band up to the sea level + 0.3 m. 400 m: under `Waters/Glittering Ocean/Blockers`
     (the look is the `Ocean` node).
   - Pale River: the outline cut into 25 m squares (5 m at 400 m), each with its own band up to the highest river surface
@@ -121,12 +120,10 @@ scene's materials come from `pois/poi_post_import.gd` (`mat_<texture>` -> `mater
   They were written once (2026-10-13, `tools/deprecated/gen_water_blockers.gd`, from the guide outlines in
   `export/areas_<size>.json` and the surface meshes); they are ordinary nodes now: move or reshape them in the editor and
   rebake. Nothing regenerates them.
-- **Bridges** (`scenes/world/env/bridge_woodRound.tscn`, a StaticBody3D box deck on collision layer 1) are parsed by the bake
+- **Bridges** (`scenes/world/env/bridge_woodRound.tscn`, collision: ramps up to the deck and rails along both sides, layer 1) are parsed by the bake
   like the ground: place one across the water, rebake, and its deck joins the banks.
-- **Fords**: a `RiverCrossing` (`scenes/world/water/river_crossing.tscn`) is a ford by placement. Its `Ford` child is an
-  invisible 0.2 m walkable slab of radius `radius_m` whose top is the node's origin (unless `Ford` is moved): put the
-  crossing on the river, with the slab's top a little over the river's blocker band, and rebake. The existing fords' slabs
-  were set over their bands once (`Ford` moved in each instance).
+- **No fords** (Austin, 2026-10-13): rivers are crossed by bridges only. The flat ford slabs left vertical edges that
+  bodies could not climb and baked as islands, so groups halted before them.
 
 Forests: `Forests/<wood>/chunk_*` are stand-in trees grown once from the guide outlines (200 m chunks, hidden beyond
 1500 m at 2 km / 500 m at 400 m, no collision, no shadows); they are plain nodes now. The water surfaces are as they were

@@ -57,11 +57,11 @@ This file gives Claude Code the context it needs to make informed changes to a G
   saved as `scenes/world/world_navmesh.res`, not at runtime: re-bake after any ground, tower, bridge, ford or water change:
   bake it in the editor: open `world.tscn` (or `world_400m.tscn`), select `World/Nav`, **Bake NavigationMesh** (Austin, 2026-10-13; the bake settings are on that region's NavigationMesh resource). The old custom bake tool is in `tools/deprecated/`. The map floor's picture is `tools/bake_map_illustration.gd`'s.
   **From Blender:** `tools/export_world.sh [2km|400m|all]` exports only the ground (`geo`) and the backdrop to glb and reimports
-  (Austin, 2026-10-13); everything else (markers, towers, POIs, fords, bridges, forests, water and its blockers) is authored
+  (Austin, 2026-10-13); everything else (markers, towers, POIs, bridges, forests, water and its blockers) is authored
   in `art/world/export/world_landscape_<size>.tscn`, per size, and never placed by script. Rebake the navmesh (and the map
   picture after a ground change) by hand. **Water:** no bank walls; `NavigationObstacle3D` blockers under
-  `Waters/<body>/Blockers` carve only up to just over the water, so bridges and `RiverCrossing` fords (an invisible walkable
-  slab) work by being placed, then rebaking. The old pipeline is in `tools/deprecated/` (one-time use, not maintained).
+  `Waters/<body>/Blockers` carve only up to just over the water, so bridges work by being placed, then rebaking. No fords:
+  rivers are crossed by bridges only (Austin, 2026-10-13). The old pipeline is in `tools/deprecated/` (one-time use, not maintained).
 
 
 ### Debug Access
@@ -511,7 +511,7 @@ draw.
   beacons (`site_changed`, seen by all), and what the Paladin's controller sees. The simulation never reads it.
 - **Roads (Austin, 2026-10-13):** orders follow roads. A `Road` (`scenes/map/road.tscn`, a `Path3D` with `from_point` /
   `to_point` MapPoints) under `World/Roads` in `world.tscn` is drawn on the terrain; a bridge is a curve point on a
-  `RiverCrossing`. `RoadGraph` (`scripts/map/road_graph.gd`) finds the shortest way by road (Dijkstra, cost = curve
+  bridge. `RoadGraph` (`scripts/map/road_graph.gd`) finds the shortest way by road (Dijkstra, cost = curve
   length) through the points the player knows; an order's `route` is every curve point on that way (`Road.waypoints`),
   per group (`routes`/`paths`), and couriers travel by road too (`KnowledgeManager._by_road`: road stops with nothing to
   hand over). The navmesh stays whole: units leave the road to fight or chase and come back. The shipped roads are

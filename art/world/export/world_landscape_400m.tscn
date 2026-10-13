@@ -1,6 +1,5 @@
 [gd_scene format=4]
 
-[ext_resource type="PackedScene" path="res://scenes/world/water/river_crossing.tscn" id="crossing_400m"]
 [ext_resource type="PackedScene" uid="uid://c8cgonvfixk27" path="res://art/world/export/world_landscape_400m.glb" id="1_landscape"]
 [ext_resource type="PackedScene" uid="uid://dqbatka7l1bfl" path="res://art/world/pois/naf_ishun.tscn" id="3_naf_ishun"]
 [ext_resource type="PackedScene" uid="uid://d0ru2yjmgd6dt" path="res://art/world/pois/forest_ruins.tscn" id="4_forest_ruins"]
@@ -337,30 +336,6 @@ end_position = Vector3(-5, -39.841724, 0)
 
 [node name="JumpPoint" parent="Avequel'la/Tower/NavigationRegion3D" index="3"]
 end_position = Vector3(-5, -40.89726, 0)
-
-[node name="RiverCrossing" parent="Forest Ruins" instance=ExtResource("crossing_400m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0, -1)
-radius_m = 4
-
-[node name="RiverCrossing" parent="Teshfield" instance=ExtResource("crossing_400m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.6, 0, 13.72)
-radius_m = 4
-
-[node name="RiverCrossingEast" parent="Hopes Gate" instance=ExtResource("crossing_400m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 0, 6)
-radius_m = 4
-
-[node name="RiverCrossingNorth" parent="Hopes Gate" instance=ExtResource("crossing_400m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.1, 0, -7.4)
-radius_m = 4
-
-[node name="RiverCrossingWest" parent="Hopes Gate" instance=ExtResource("crossing_400m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 0, -4.6)
-radius_m = 4
-
-[node name="RiverCrossing" parent="Entbridge" instance=ExtResource("crossing_400m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.56, 0, -5.9)
-radius_m = 9
 
 [node name="Forests" type="Node3D" parent="."]
 
@@ -2578,32 +2553,3 @@ affect_navigation_mesh = true
 carve_navigation_mesh = true
 avoidance_enabled = false
 
-[node name="Ford" parent="Forest Ruins/RiverCrossing" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.81, 0)
-
-[node name="Ford" parent="Teshfield/RiverCrossing" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-
-[node name="Ford" parent="Hopes Gate/RiverCrossingEast" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
-
-[node name="Ford" parent="Hopes Gate/RiverCrossingNorth" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
-
-[node name="Ford" parent="Hopes Gate/RiverCrossingWest" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.43, 0)
-
-[node name="Ford" parent="Entbridge/RiverCrossing" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
-
-[editable path="Forest Ruins/RiverCrossing"]
-
-[editable path="Teshfield/RiverCrossing"]
-
-[editable path="Hopes Gate/RiverCrossingEast"]
-
-[editable path="Hopes Gate/RiverCrossingNorth"]
-
-[editable path="Hopes Gate/RiverCrossingWest"]
-
-[editable path="Entbridge/RiverCrossing"]

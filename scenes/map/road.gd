@@ -3,7 +3,7 @@ class_name Road extends Path3D
 
 ## A road between two map points (Austin, 2026-10-13: "Each road is a Path3D in world.tscn between two MapPoints,
 ## with bridges as points on it; you draw them on the real terrain"). Orders follow roads: a group walks every point
-## of the curve on its way, so a bridge is simply a curve point placed on a RiverCrossing. Lives under World/Roads.
+## of the curve on its way, so a bridge is simply a curve point placed on a bridge. Lives under World/Roads.
 ##
 ## To draw one: instance scenes/map/road.tscn under World/Roads, set From Point and To Point, then add points with
 ## the Path3D toolbar from one end to the other. "Drop points onto the ground" puts every point on the terrain and
