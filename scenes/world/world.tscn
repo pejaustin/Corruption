@@ -31,16 +31,32 @@
 [ext_resource type="PackedScene" path="res://scenes/sites/burial_ground.tscn" id="90_burial"]
 [ext_resource type="PackedScene" path="res://art/world/export/world_backdrop_2km.tscn" id="91_backdrop"]
 [ext_resource type="PackedScene" path="res://scenes/world/fog/world_fog.tscn" id="92_fog"]
+[ext_resource type="Shader" path="res://shaders/sky_clouds.gdshader" id="93_sky"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
-sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
-sky_horizon_color = Color(0.937255, 0.529412, 0.388235, 1)
-sky_curve = 0.032645747
-ground_bottom_color = Color(0.9372549, 0.5294118, 0.3882353, 1)
-ground_horizon_color = Color(0.9372549, 0.5294118, 0.3882353, 1)
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_clouds"]
+frequency = 0.004
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_clouds"]
+width = 512
+height = 512
+seamless = true
+generate_mipmaps = true
+noise = SubResource("FastNoiseLite_clouds")
+
+; PLACEHOLDER: clouds (PLACEHOLDERS.md "Clouds"); the sky colours below are the ones set in the editor before the clouds
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("93_sky")
+shader_parameter/sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
+shader_parameter/sky_horizon_color = Color(0.937255, 0.529412, 0.388235, 1)
+shader_parameter/sky_curve = 0.032645747
+shader_parameter/ground_bottom_color = Color(0.9372549, 0.5294118, 0.3882353, 1)
+shader_parameter/ground_horizon_color = Color(0.9372549, 0.5294118, 0.3882353, 1)
+shader_parameter/cloud_noise = SubResource("NoiseTexture2D_clouds")
 
 [sub_resource type="Sky" id="Sky_sn0nk"]
-sky_material = SubResource("ProceduralSkyMaterial_unvu4")
+sky_material = SubResource("ShaderMaterial_sky")
+process_mode = 1
 
 [sub_resource type="Environment" id="Environment_s4jie"]
 background_mode = 2

@@ -43,3 +43,24 @@ func test_the_sun_turns_with_the_hour() -> void:
 	var a := light.rotation.x
 	clock.set_time(0.4)
 	assert_ne(light.rotation.x, a)
+
+func test_night_darkens_the_cloud_sky() -> void:
+	var env_node := WorldEnvironment.new()
+	env_node.name = "WorldEnvironment"
+	var env := Environment.new()
+	env.sky = Sky.new()
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/sky_clouds.gdshader")
+	mat.set_shader_parameter(&"sky_top_color", Color(0.4, 0.7, 0.9))
+	env.sky.sky_material = mat
+	env_node.environment = env
+	stage.get_node("World/Atmosphere").add_child(env_node)
+	var sky_clock := DayNight.new()
+	sky_clock.set_process(false)
+	stage.add_child(sky_clock)
+	var sky := env_node.environment.sky.sky_material as ShaderMaterial
+	sky_clock.set_time(0.5)
+	var noon: Color = sky.get_shader_parameter(&"sky_top_color")
+	sky_clock.set_time(0.0)
+	var midnight: Color = sky.get_shader_parameter(&"sky_top_color")
+	assert_lt(midnight.v, noon.v)

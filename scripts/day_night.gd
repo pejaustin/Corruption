@@ -34,7 +34,9 @@ var time_of_day: float = START_TIME
 
 var _light: DirectionalLight3D = null
 var _environment: Environment = null
-var _sky: ProceduralSkyMaterial = null
+## The sky material: a ProceduralSkyMaterial, or the cloud sky (ShaderMaterial, shaders/sky_clouds.gdshader) with the
+## same colour parameter names.
+var _sky: Material = null
 var _day_sky_top: Color = Color.WHITE
 var _day_sky_horizon: Color = Color.WHITE
 var _day_ambient_color: Color = Color.WHITE
@@ -56,10 +58,10 @@ func _ready() -> void:
 			_environment.sky = _environment.sky.duplicate() as Sky
 			if _environment.sky.sky_material != null:
 				_environment.sky.sky_material = _environment.sky.sky_material.duplicate()
-			_sky = _environment.sky.sky_material as ProceduralSkyMaterial
+			_sky = _environment.sky.sky_material
 	if _sky != null:
-		_day_sky_top = _sky.sky_top_color
-		_day_sky_horizon = _sky.sky_horizon_color
+		_day_sky_top = _sky_get(&"sky_top_color")
+		_day_sky_horizon = _sky_get(&"sky_horizon_color")
 	if _light != null:
 		_day_light_color = _light.light_color
 	_apply()
@@ -110,9 +112,25 @@ func _apply() -> void:
 		_light.light_color = NIGHT_LIGHT_COLOR.lerp(_day_light_color, day)
 		_light.light_energy = lerpf(NIGHT_LIGHT_ENERGY, DAY_LIGHT_ENERGY, day)
 	if _sky != null:
-		_sky.sky_top_color = NIGHT_SKY_TOP.lerp(_day_sky_top, day)
-		_sky.sky_horizon_color = NIGHT_SKY_HORIZON.lerp(_day_sky_horizon, day)
+		_sky_set(&"sky_top_color", NIGHT_SKY_TOP.lerp(_day_sky_top, day))
+		_sky_set(&"sky_horizon_color", NIGHT_SKY_HORIZON.lerp(_day_sky_horizon, day))
 	if _environment != null:
 		_environment.ambient_light_color = NIGHT_AMBIENT_COLOR.lerp(_day_ambient_color, day)
 		_environment.ambient_light_energy = lerpf(NIGHT_AMBIENT_ENERGY, _day_ambient_energy, day)
 	time_changed.emit(time_of_day)
+
+func _sky_get(param: StringName) -> Color:
+	if _sky is ShaderMaterial:
+		var mat := _sky as ShaderMaterial
+		var value: Variant = mat.get_shader_parameter(param)
+		# A parameter never set on the material reads null; it is the shader's default.
+		if value == null and mat.shader != null:
+			value = RenderingServer.shader_get_parameter_default(mat.shader.get_rid(), param)
+		return value if value is Color else Color.WHITE
+	return _sky.get(param)
+
+func _sky_set(param: StringName, value: Color) -> void:
+	if _sky is ShaderMaterial:
+		(_sky as ShaderMaterial).set_shader_parameter(param, value)
+	else:
+		_sky.set(param, value)
