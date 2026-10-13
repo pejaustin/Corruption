@@ -27,11 +27,16 @@ var actor: Actor:
 	get: return state_machine.get_parent() as Actor
 
 func physics_move() -> void:
-	## Apply physics_factor, move_and_slide, restore velocity.
+	## Scale velocity by the actor's movement scale, move_and_slide, restore velocity.
 	## Gravity is already applied by the Actor before the state ticks.
-	actor.velocity *= NetworkTime.physics_factor
+	var scale: float = actor.movement_scale()
+	if not actor.velocity.is_finite():
+		actor.velocity = Vector3.ZERO
+	actor.velocity *= scale
 	actor.move_and_slide()
-	actor.velocity /= NetworkTime.physics_factor
+	actor.velocity /= scale
+	if not actor.velocity.is_finite():
+		actor.velocity = Vector3.ZERO
 
 # --- Animation-method-track setters ---
 # Keep these as methods (not raw property access) so AnimationPlayer Call

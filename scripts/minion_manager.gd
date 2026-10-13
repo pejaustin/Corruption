@@ -371,6 +371,8 @@ func _spawn_minion_rpc(id: int, owner_id: int, faction: int, pos: Vector3, type_
 	_minions_node.add_child(minion)
 	minion.global_position = pos
 	minion.waypoint = initial_waypoint if initial_waypoint != Vector3.INF else pos
+	if multiplayer.is_server():
+		minion.waypoint = snap_to_navmesh_point(minion.waypoint)
 	minion_spawned.emit(minion)
 
 func _resolve_minion_type(faction: int, type_id: StringName) -> MinionType:
@@ -524,7 +526,7 @@ func request_move_rally(new_pos: Vector3) -> void:
 		return
 	if rally.owning_peer_id != sender:
 		return
-	_apply_rally_move.rpc(rally.slot_index, new_pos)
+	_apply_rally_move.rpc(rally.slot_index, snap_to_navmesh_point(new_pos))
 
 @rpc("authority", "call_local", "reliable")
 func _apply_rally_move(slot_index: int, new_pos: Vector3) -> void:
@@ -547,7 +549,7 @@ func command_minions_move(target_pos: Vector3) -> void:
 	# muster at the latest command point.
 	var rally := get_rally_point_for(sender)
 	if rally and rally.owning_peer_id == sender:
-		_apply_rally_move.rpc(rally.slot_index, target_pos)
+		_apply_rally_move.rpc(rally.slot_index, snap_to_navmesh_point(target_pos))
 
 func _assign_formation_waypoints(minions: Array[MinionActor], target: Vector3) -> void:
 	## Phalanx slot assignment. Each minion gets its own waypoint inside a
@@ -583,7 +585,16 @@ func _assign_formation_waypoints(minions: Array[MinionActor], target: Vector3) -
 func _snap_to_navmesh(minion: MinionActor, point: Vector3) -> Vector3:
 	if minion == null or minion.nav_agent == null:
 		return point
-	var map_rid: RID = minion.nav_agent.get_navigation_map()
+	return snap_to_map(minion.nav_agent.get_navigation_map(), point)
+
+func snap_to_navmesh_point(point: Vector3) -> Vector3:
+	## The nearest walkable point to `point`; `point` itself when there is no usable navmesh yet.
+	## Every waypoint is snapped: a goal off the mesh never counts as arrived (Idle <-> Chase ping-pong).
+	if _minions_node == null or not _minions_node.is_inside_tree():
+		return point
+	return snap_to_map(_minions_node.get_world_3d().navigation_map, point)
+
+static func snap_to_map(map_rid: RID, point: Vector3) -> Vector3:
 	if not map_rid.is_valid():
 		return point
 	var snapped: Vector3 = NavigationServer3D.map_get_closest_point(map_rid, point)
@@ -607,7 +618,7 @@ func command_minion_move(minion_id: int, target_pos: Vector3) -> void:
 	if sender == 0:
 		sender = 1
 	if minion.owner_peer_id == sender:
-		minion.waypoint = target_pos
+		minion.waypoint = _snap_to_navmesh(minion, target_pos)
 
 func command_selection_move(minion_ids: Array, target_pos: Vector3) -> void:
 	## Host-only. Distribute a set of minions across formation slots around
@@ -641,16 +652,17 @@ func _sync_all_minions() -> void:
 			minion.global_position,
 			minion.rotation.y,
 			minion._state_machine.state,
-			minion.hp
+			minion.hp,
+			minion.swing_count
 		)
 
 @rpc("authority", "call_remote", "unreliable")
-func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
+func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, swings: int = 0) -> void:
 	if not _minions_node:
 		return
 	var minion := _minions_node.get_node_or_null(str(id)) as MinionActor
 	if minion:
-		minion.sync_from_server(pos, rot_y, new_state, new_hp)
+		minion.sync_from_server(pos, rot_y, new_state, new_hp, swings)
 
 func despawn_minion(minion: MinionActor) -> void:
 	## Host-only: remove a unit that left play without dying (a courier home,

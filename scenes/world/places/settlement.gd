@@ -57,7 +57,10 @@ func _random_spot() -> Vector3:
 	var p := global_position + Vector3(cos(a) * r, 0.0, sin(a) * r)
 	var space := get_world_3d().direct_space_state
 	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(p + Vector3.UP * 100.0, p + Vector3.DOWN * 100.0, 1))
-	return hit.position if not hit.is_empty() else p
+	# The ray can land on a rooftop or an unwalkable spot: a wander goal is always a point on the navmesh.
+	var spot: Vector3 = hit.position if not hit.is_empty() else p
+	var mm := _mm()
+	return mm.snap_to_navmesh_point(spot) if mm else spot
 
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
