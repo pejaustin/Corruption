@@ -54,11 +54,11 @@ fog_depth_begin = 0.0
 fog_depth_end = 231.2
 ; PLACEHOLDER: volumetric fog look (thin haze everywhere; length = how far it is drawn, beyond that the view is clear)
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.0015
+volumetric_fog_density = 0.0
 volumetric_fog_albedo = Color(0.85, 0.88, 0.92, 1)
 volumetric_fog_length = 400.0
 volumetric_fog_detail_spread = 1.5
-volumetric_fog_ambient_inject = 0.4
+volumetric_fog_ambient_inject = 1.0
 volumetric_fog_sky_affect = 0.2
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
@@ -87,6 +87,8 @@ light_color = Color(0.980392, 0.717647, 0.0470588, 1)
 shadow_enabled = true
 ; PLACEHOLDER: tuning — shadows reach this far (the default is 100 m; the map is 2 km)
 directional_shadow_max_distance = 400.0
+; PLACEHOLDER: fog look, how much the sun tints the fog (1 = fully)
+light_volumetric_fog_energy = 0.3
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere" unique_id=446517867]
 environment = SubResource("Environment_s4jie")
