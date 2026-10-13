@@ -71,6 +71,8 @@ func _gather_dead(g: UnitGroup) -> bool:
 	return all_carry or free.is_empty() or _timed_out(g)
 
 func _capture(g: UnitGroup) -> bool:
+	if MatchConfig.humans_kill_only:
+		return true  # Off for the MVP (MatchConfig.humans_kill_only): no captives.
 	var mm := _mm()
 	var dest := _destination(g)
 	var humans: Array[Node3D] = []
@@ -147,6 +149,8 @@ func _retrieve(g: UnitGroup) -> bool:
 	return true
 
 func _offer(g: UnitGroup) -> bool:
+	if MatchConfig.humans_kill_only:
+		return true  # Off for the MVP (MatchConfig.humans_kill_only): nobles are not bought.
 	var mm := _mm()
 	var dest := _destination(g)
 	var goods := 0
@@ -296,6 +300,8 @@ func _timed_out(g: UnitGroup) -> bool:
 func _held_chapel(peer_id: int, near_pos: Vector3, max_dist: float = INF) -> CorruptionSite:
 	var best: CorruptionSite = null
 	var best_d := max_dist
+	if MatchConfig.humans_kill_only:
+		return null  # No thralls for the MVP.
 	for n in GameState.get_held_sites(peer_id):
 		var site := n as CorruptionSite
 		if site == null or not site.grants(SiteCapability.DOMINATE_THRALLS):

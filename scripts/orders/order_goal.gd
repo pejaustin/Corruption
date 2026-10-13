@@ -52,8 +52,9 @@ static func goals_for(kind: int, has_groups: bool) -> Array[int]:
 		MapPoint.Kind.RESOURCE:
 			out.append(Goal.HAUL)
 		MapPoint.Kind.SETTLEMENT, MapPoint.Kind.CITY:
-			out.append(Goal.CAPTURE)
-			out.append(Goal.OFFER)
+			if not MatchConfig.humans_kill_only:  # Austin, 2026-10-13: MVP kills humans, no captives or nobles.
+				out.append(Goal.CAPTURE)
+				out.append(Goal.OFFER)
 	out.append(Goal.GATHER_DEAD)
 	# Austin, 2026-10-09: always possible, for any group, so none is ever beyond reach.
 	out.append(Goal.CHECK)

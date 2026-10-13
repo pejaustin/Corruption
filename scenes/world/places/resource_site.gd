@@ -1,7 +1,7 @@
 class_name ResourceSite extends Node3D
 
 ## A resource location (GDD §6): it produces goods only while an intelligent
-## overseer works it — a human or one of a player's units standing in it.
+## overseer works it — one of a player's undead standing in it (a human too, unless MatchConfig.humans_kill_only).
 ## Goods pile up here until hauled away by order. Which goods exist is
 ## Austin's (ticket #586); there is one placeholder kind, "goods".
 
@@ -23,7 +23,8 @@ var _timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group(GROUP)
-	if multiplayer.is_server():
+	# Humans can't be made to work a site while MatchConfig.humans_kill_only (Austin, 2026-10-13).
+	if multiplayer.is_server() and not MatchConfig.humans_kill_only:
 		_spawn_overseers.call_deferred()
 
 func _spawn_overseers() -> void:
@@ -52,7 +53,7 @@ func is_worked() -> bool:
 			continue
 		if Vector2(m.global_position.x - global_position.x, m.global_position.z - global_position.z).length() > radius:
 			continue
-		if m.is_human and m.owner_peer_id <= 0:
+		if m.is_human and m.owner_peer_id <= 0 and not MatchConfig.humans_kill_only:
 			return true
 		if m.owner_peer_id > 0 and m.minion_trait == &"":
 			return true

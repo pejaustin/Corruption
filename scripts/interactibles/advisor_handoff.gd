@@ -41,7 +41,9 @@ func _ask_goal(dialogue: AdvisorDialogue) -> void:
 	var actions: Array[Callable] = []
 	for goal in goals:
 		# Captives are only worth taking with a corrupted chapel to bring them to.
-		if goal == OrderGoal.Goal.CAPTURE and not GameState.has_capability(get_local_peer_id(), SiteCapability.DOMINATE_THRALLS):
+		if goal == OrderGoal.Goal.CAPTURE and (MatchConfig.humans_kill_only or not GameState.has_capability(get_local_peer_id(), SiteCapability.DOMINATE_THRALLS)):
+			continue
+		if goal == OrderGoal.Goal.OFFER and MatchConfig.humans_kill_only:
 			continue
 		labels.append(OrderGoal.name_of(goal))
 		if goal == OrderGoal.Goal.OFFER:

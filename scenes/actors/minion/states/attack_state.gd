@@ -102,7 +102,7 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 			# via MinionManager._sync_minion_actor.
 			other.last_hit_by = minion.owner_peer_id
 			# Out to take captives: blows against humans stop short of death.
-			if minion.capture_mode and other is MinionActor and (other as MinionActor).is_human:
+			if minion.capture_mode and not MatchConfig.humans_kill_only and other is MinionActor and (other as MinionActor).is_human:
 				dmg = mini(dmg, other.hp - 1)
 				if dmg <= 0:
 					continue
