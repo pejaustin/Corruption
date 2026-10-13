@@ -3,7 +3,6 @@
 [ext_resource type="PackedScene" uid="uid://btjx4a4g25xj3" path="res://scenes/network/multiplayer_manager.tscn" id="1_srmg5"]
 [ext_resource type="PackedScene" uid="uid://cys03q34jt762" path="res://scenes/menus/in_game_menu.tscn" id="2_umvgx"]
 [ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_m114p"]
-[ext_resource type="PackedScene" path="res://art/world/export/world_backdrop_2km.tscn" id="4_wnndm"]
 [ext_resource type="PackedScene" uid="uid://bt4ygfe5wcduv" path="res://scenes/actors/minion/types/holy_knight.tscn" id="5_umvgx"]
 [ext_resource type="PackedScene" uid="uid://bblv3fe3c2a5k" path="res://scenes/actors/minion/minion_rally_point.tscn" id="6_bt7bg"]
 [ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="9_t634p"]
@@ -29,20 +28,17 @@
 [ext_resource type="NavigationMesh" path="res://scenes/world/world_navmesh.res" id="32_navmesh"]
 [ext_resource type="Script" uid="uid://cgc0guyh5exqy" path="res://scripts/world_curve.gd" id="33_curve"]
 [ext_resource type="PackedScene" path="res://scenes/sites/burial_ground.tscn" id="90_burial"]
-[ext_resource type="PackedScene" path="res://art/world/export/world_backdrop_2km.tscn" id="91_backdrop"]
+[ext_resource type="PackedScene" uid="uid://bqtx1ilgvmfaw" path="res://art/world/export/world_backdrop_2km.tscn" id="91_backdrop"]
 [ext_resource type="PackedScene" path="res://scenes/world/fog/world_fog.tscn" id="92_fog"]
-[ext_resource type="Shader" path="res://shaders/sky_clouds.gdshader" id="93_sky"]
+[ext_resource type="Shader" uid="uid://ufomconspa6r" path="res://shaders/sky_clouds.gdshader" id="93_sky"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_clouds"]
 frequency = 0.004
 fractal_octaves = 4
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_clouds"]
-width = 512
-height = 512
-seamless = true
-generate_mipmaps = true
 noise = SubResource("FastNoiseLite_clouds")
+seamless = true
 
 ; PLACEHOLDER: clouds (PLACEHOLDERS.md "Clouds"); the sky colours below are the ones set in the editor before the clouds
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
@@ -52,7 +48,18 @@ shader_parameter/sky_horizon_color = Color(0.937255, 0.529412, 0.388235, 1)
 shader_parameter/sky_curve = 0.032645747
 shader_parameter/ground_bottom_color = Color(0.9372549, 0.5294118, 0.3882353, 1)
 shader_parameter/ground_horizon_color = Color(0.9372549, 0.5294118, 0.3882353, 1)
+shader_parameter/ground_curve = 0.02
+shader_parameter/sun_angle_max = 0.5236
+shader_parameter/sun_curve = 0.15
 shader_parameter/cloud_noise = SubResource("NoiseTexture2D_clouds")
+shader_parameter/cloud_coverage = 0.45
+shader_parameter/cloud_softness = 0.25
+shader_parameter/cloud_scale = 0.35
+shader_parameter/cloud_wind = Vector2(0.004, 0.0015)
+shader_parameter/cloud_color = Color(1, 1, 1, 1)
+shader_parameter/cloud_shadow_color = Color(0.55, 0.58, 0.66, 1)
+shader_parameter/cloud_sun_tint = 0.3
+shader_parameter/cloud_horizon_fade = 0.2
 
 [sub_resource type="Sky" id="Sky_sn0nk"]
 sky_material = SubResource("ShaderMaterial_sky")
@@ -100,11 +107,11 @@ _player_spawn_point = NodePath("../World/PlayerSpawnPoint")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="World/Atmosphere" unique_id=442470144]
 transform = Transform3D(1, 0, 0, 0, 0.696001, 0.718041, 0, -0.718041, 0.696001, 0, 11.4862, 6.19946)
 light_color = Color(0.980392, 0.717647, 0.0470588, 1)
+; PLACEHOLDER: fog look, how much the sun tints the fog (1 = fully)
+light_volumetric_fog_energy = 0.3
 shadow_enabled = true
 ; PLACEHOLDER: tuning — shadows reach this far (the default is 100 m; the map is 2 km)
 directional_shadow_max_distance = 400.0
-; PLACEHOLDER: fog look, how much the sun tints the fog (1 = fully)
-light_volumetric_fog_energy = 0.3
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere" unique_id=446517867]
 environment = SubResource("Environment_s4jie")
@@ -119,9 +126,7 @@ script = ExtResource("33_curve")
 horizon_m = 0.0
 
 ; PLACEHOLDER: the land, mountains and sea around the map (art/world/README.md "Backdrop around the map", #620)
-[node name="Backdrop" parent="World/Atmosphere" unique_id=1820463917 instance=ExtResource("91_backdrop")]
-
-[node name="WorldBackdrop" parent="World/Atmosphere" unique_id=1804268699 instance=ExtResource("4_wnndm")]
+[node name="WorldBackdrop" parent="World/Atmosphere" unique_id=1804268699 instance=ExtResource("91_backdrop")]
 
 [node name="Env" type="Node3D" parent="World" unique_id=932413741]
 
