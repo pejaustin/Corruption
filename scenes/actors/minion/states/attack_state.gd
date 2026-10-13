@@ -61,6 +61,7 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 			if actor._animation_player:
 				actor._animation_player.seek(0.0)
 				actor._animation_player.play(animation_name)
+			minion.swing_count += 1  # synced: clients restart their Attack animation per swing
 		elif target and distance_to(target) < minion.aggro_radius:
 			state_machine.transition(&"ChaseState")
 		else:

@@ -44,8 +44,10 @@ const MIN_AREA_M2: float = 0.2
 const MAX_HEIGHT_CELLS: float = 7500.0   # under Recast's 8191
 ## The minion/avatar capsule is 2.86 m tall (actor.tscn). With a lower agent height the bake kept ground under overhangs
 ## (POI buildings whose underside is 2.5 m above a slope), the paths ran under them and units jammed against the collider.
-const AGENT_HEIGHT: float = 2.9
-const AGENT_RADIUS: float = 0.5
+## PLACEHOLDER: tuning — raised to clear the 3.0 m type capsules (ghoul 3.002); the 2 km navmesh needs a rebake to apply these.
+const AGENT_HEIGHT: float = 3.1
+## PLACEHOLDER: tuning — erosion covers the capsule's 0.5 m radius plus its 0.2 m forward offset.
+const AGENT_RADIUS: float = 0.7
 const Ground = preload("res://scripts/build/world_ground.gd")
 const WORLD_OUT: String = "res://scenes/world/world_%s_navmesh.res"
 const WORLD_OUT_2KM: String = "res://scenes/world/world_navmesh.res"

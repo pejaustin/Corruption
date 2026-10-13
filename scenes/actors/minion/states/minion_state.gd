@@ -13,7 +13,26 @@ const MAX_NAV_GAP: float = 2.5
 ## PLACEHOLDER: tuning — seconds a lost or unreachable target is left alone before it can be picked again.
 const IGNORE_SECONDS: float = 6.0
 
+## PLACEHOLDER: tuning — seconds between a unit's scans of every actor for a target (kept target in between).
+const SCAN_INTERVAL: float = 0.25
+## PLACEHOLDER: tuning — random extra milliseconds per scan, so units do not all scan on the same frame.
+const SCAN_STAGGER_MSEC: int = 100
+
 func find_hostile_target() -> Actor:
+	## Throttled per unit: the O(n) scan runs every SCAN_INTERVAL, and between scans the current target is kept
+	## while it is still a valid one (a dead or lost target forces an immediate rescan).
+	var now: int = Time.get_ticks_msec()
+	if now < minion.next_scan_msec:
+		var kept: Actor = minion.scan_target
+		if kept == null:
+			return null
+		if is_instance_valid(kept) and kept.can_take_damage() and not minion.is_ignoring(kept):
+			return kept
+	minion.scan_target = _scan_for_target()
+	minion.next_scan_msec = now + int(SCAN_INTERVAL * 1000.0) + randi() % SCAN_STAGGER_MSEC
+	return minion.scan_target
+
+func _scan_for_target() -> Actor:
 	var best: Actor = null
 	var best_dist: float = INF
 	for node in actor.get_tree().get_nodes_in_group(&"actors"):

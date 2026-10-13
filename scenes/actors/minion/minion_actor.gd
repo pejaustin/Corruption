@@ -131,11 +131,23 @@ var _field_log: Dictionary[int, Dictionary] = {}
 
 var attack_timer: float = 0.0
 var _death_timer: float = 0.0
-# TEMP DIAGNOSTIC (courier-stuck): progress tracking, see _physics_process.
+# Stuck recovery: progress tracking, see _check_stuck.
 var _diag_last_pos: Vector3 = Vector3.ZERO
 var _diag_stuck_timer: float = 0.0
+var _stuck_stage: int = 0
+var _last_stuck_log_msec: int = 0
+# Run animation: shown only while the unit actually moves, see _update_run_animation.
+var _anim_last_pos: Vector3 = Vector3.ZERO
+var _still_time: float = 0.0
+var _run_paused: bool = false
+## Host-only: counts swings replayed by AttackState; synced so clients restart the animation per swing.
+var swing_count: int = 0
+var _swing_seen: int = 0
 var _pending_raise_pos: Vector3 = Vector3.ZERO
 ## Host-only: instance id -> time (s) until which that target is left alone.
+## Host-only: the target found by the last throttled scan (MinionState.find_hostile_target) and when the next is due.
+var scan_target: Actor = null
+var next_scan_msec: int = 0
 var _ignored_until: Dictionary[int, float] = {}
 
 ## Last avoidance-adjusted velocity from NavigationAgent3D. ChaseState calls
@@ -176,6 +188,9 @@ func _ready() -> void:
 	if nav_agent:
 		nav_agent.link_reached.connect(_on_link_reached)
 		nav_agent.velocity_computed.connect(_on_velocity_computed)
+	# PLACEHOLDER: tuning — matches the navmesh bake's steepest walkable triangle (acos(MIN_NORMAL_Y) = 53.1 deg);
+	# the body default of 45 deg stopped units at slopes the mesh says are walkable.
+	floor_max_angle = deg_to_rad(53.2)
 	_setup_aggro_ring()
 	if minion_type != null:
 		apply_type(minion_type.duplicate_for_match())
@@ -354,9 +369,11 @@ func _die() -> void:
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
 		_interpolate_client(delta)
+		_update_run_animation(delta)
 		return
 
-	force_update_is_on_floor()
+	# No force_update_is_on_floor() here: it is an extra zero-velocity move_and_slide per minion per frame, and the
+	# state's own move_and_slide of the previous frame already left is_on_floor() current.
 	if not is_on_floor():
 		apply_gravity(delta)
 
@@ -393,37 +410,8 @@ func _physics_process(delta: float) -> void:
 
 	_state_machine._rollback_tick(delta, 0, true)
 
-	# TEMP DIAGNOSTIC (stuck): any minion that is actively trying to move
-	# (ChaseState/JumpState) but barely moved in the last second — report its
-	# state, where it stopped, whether that spot is on the navmesh, and what it
-	# is colliding against (name + layer). Distinguishes a stray collider vs a
-	# navmesh dead-end vs a failed jump-link trigger. Remove when fixed.
-	if _state_machine != null:
-		_diag_stuck_timer += delta
-		if _diag_stuck_timer >= 1.0:
-			var moved := global_position.distance_to(_diag_last_pos)
-			var st: StringName = _state_machine.state
-			# Report a non-moving minion if it's either up on the tower (y>15, the
-			# balcony — catches the "gave up to Idle" case) OR actively trying to
-			# move anywhere (Chase/Jump). The y-gate keeps resting ground minions
-			# from spamming.
-			var trying: bool = st == &"ChaseState" or st == &"JumpState"
-			if moved < 0.3 and st != &"DeathState" and (global_position.y > 15.0 or trying):
-				var nmap := get_world_3d().navigation_map
-				var onmesh := -1.0
-				if nmap.is_valid():
-					onmesh = NavigationServer3D.map_get_closest_point(nmap, global_position).distance_to(global_position)
-				var hits := ""
-				for ci in range(get_slide_collision_count()):
-					var col := get_slide_collision(ci).get_collider()
-					if col:
-						var lyr: int = col.collision_layer if (col is CollisionObject3D) else -1
-						hits += " hit=%s(layer=%d)" % [col.name, lyr]
-				print("[StuckMinion] %s trait=%s state=%s pos=%v onmesh=%.2fm wp=%v dist_wp=%.1f jump_tgt=%v%s" % [
-					name, minion_trait, st, global_position, onmesh, waypoint,
-					global_position.distance_to(waypoint), jump_target, hits])
-			_diag_last_pos = global_position
-			_diag_stuck_timer = 0.0
+	_check_stuck(delta)
+	_update_run_animation(delta)
 
 	if _state_machine.state == &"DeathState":
 		_death_timer += delta
@@ -432,6 +420,93 @@ func _physics_process(delta: float) -> void:
 				_minion_manager.notify_minion_died(self)
 			else:
 				queue_free()
+
+## PLACEHOLDER: tuning — seconds between stuck checks, the distance that counts as moving, and the minimum seconds
+## between [StuckMinion] log lines per unit.
+const STUCK_CHECK_INTERVAL: float = 1.0
+const STUCK_MOVED_METRES: float = 0.3
+const STUCK_LOG_INTERVAL_MSEC: int = 10000
+## PLACEHOLDER: tuning — Run is swapped for Idle after this many seconds below RUN_MIN_SPEED (m/s).
+const RUN_STILL_SECONDS: float = 0.4
+const RUN_MIN_SPEED: float = 0.1
+
+func _check_stuck(delta: float) -> void:
+	## A unit that is trying to move (Chase/Jump) but moved under STUCK_MOVED_METRES in a second climbs a ladder, one
+	## rung per second: re-path, snap to the nearest navmesh point, then drop its target and waypoint.
+	if _state_machine == null:
+		return
+	_diag_stuck_timer += delta
+	if _diag_stuck_timer < STUCK_CHECK_INTERVAL:
+		return
+	_diag_stuck_timer = 0.0
+	var st: StringName = _state_machine.state
+	var moved := global_position.distance_to(_diag_last_pos)
+	_diag_last_pos = global_position
+	var trying: bool = st == &"ChaseState" or st == &"JumpState" or st == &"RetreatState"
+	if moved >= STUCK_MOVED_METRES or not trying:
+		_stuck_stage = 0
+		return
+	_stuck_stage += 1
+	var map_rid := get_world_3d().navigation_map
+	match _stuck_stage:
+		1:
+			if nav_agent:
+				nav_agent.target_position = nav_agent.target_position  # forces a fresh path
+		2:
+			if map_rid.is_valid():
+				global_position = NavigationServer3D.map_get_closest_point(map_rid, global_position)
+		_:
+			if scan_target != null:
+				ignore_target(scan_target, MinionState.IGNORE_SECONDS)
+				scan_target = null
+			if minion_trait != &"courier":
+				waypoint = Vector3.ZERO
+			jump_target = Vector3.INF
+			_state_machine.transition(&"IdleState")
+			_stuck_stage = 0
+	var now: int = Time.get_ticks_msec()
+	if now - _last_stuck_log_msec >= STUCK_LOG_INTERVAL_MSEC:
+		_last_stuck_log_msec = now
+		var onmesh := -1.0
+		if map_rid.is_valid():
+			onmesh = NavigationServer3D.map_get_closest_point(map_rid, global_position).distance_to(global_position)
+		print("[StuckMinion] %s trait=%s state=%s rung=%d pos=%v onmesh=%.2fm wp=%v target=%s nav_finished=%s path=%d jump_tgt=%v" % [
+			name, minion_trait, st, _stuck_stage, global_position, onmesh, waypoint,
+			scan_target.name if scan_target != null and is_instance_valid(scan_target) else "none",
+			nav_agent.is_navigation_finished() if nav_agent else "n/a",
+			nav_agent.get_current_navigation_path().size() if nav_agent else 0, jump_target])
+
+func _on_display_state_changed(old_state: RewindableState, new_state: RewindableState) -> void:
+	super(old_state, new_state)
+	_run_paused = false
+	_still_time = 0.0
+
+func _update_run_animation(delta: float) -> void:
+	## The run cycle follows the state alone, so a unit pushing against a wall kept running on the spot. Show Idle
+	## while it is effectively stationary and Run again once it moves (host and clients alike).
+	if _animation_player == null or _state_machine == null or delta <= 0.0:
+		return
+	var st: StringName = _state_machine.state
+	var flat := Vector2(global_position.x - _anim_last_pos.x, global_position.z - _anim_last_pos.z)
+	_anim_last_pos = global_position
+	if st != &"ChaseState" and st != &"RetreatState":
+		_still_time = 0.0
+		_run_paused = false
+		return
+	if flat.length() / delta < RUN_MIN_SPEED:
+		_still_time += delta
+	else:
+		_still_time = 0.0
+	if not _run_paused and _still_time >= RUN_STILL_SECONDS:
+		var idle := _state_machine.get_node_or_null("IdleState") as ActorState
+		if idle and idle.animation_name != "":
+			_animation_player.play(idle.animation_name)
+			_run_paused = true
+	elif _run_paused and _still_time == 0.0:
+		var cur := _current_state()
+		if cur and cur.animation_name != "":
+			_animation_player.play(cur.animation_name)
+		_run_paused = false
 
 func _interpolate_client(delta: float) -> void:
 	global_position = global_position.lerp(_target_pos, INTERPOLATION_SPEED * delta)
@@ -483,9 +558,17 @@ func _group_manager() -> GroupManager:
 	var scene := get_tree().current_scene
 	return scene.get_node_or_null("GroupManager") as GroupManager if scene else null
 
-func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
+func sync_from_server(pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, swings: int = 0) -> void:
 	_target_pos = pos
 	_target_rot = rot_y
+	# The host replays the Attack animation per swing without leaving AttackState: restart it here per swing.
+	if swings != _swing_seen:
+		_swing_seen = swings
+		if _state_machine and _state_machine.state == &"AttackState" and new_state == &"AttackState" and _animation_player:
+			var atk := _current_state()
+			if atk and atk.animation_name != "":
+				_animation_player.seek(0.0)
+				_animation_player.play(atk.animation_name)
 	if _state_machine and _state_machine.state != new_state:
 		_state_machine.state = new_state
 	hp = new_hp

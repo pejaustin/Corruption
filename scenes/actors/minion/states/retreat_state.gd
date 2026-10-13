@@ -16,6 +16,8 @@ extends MinionState
 ## Host-only logic; clients receive position and state via MinionManager sync.
 
 const ARRIVAL_DISTANCE: float = 1.5
+## PLACEHOLDER: tuning — same re-path guard as ChaseState (metres).
+const REPATH_DISTANCE: float = 1.5
 
 func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 	if not multiplayer.is_server():
@@ -38,7 +40,9 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
-	nav.target_position = target
+	# Only re-path when the goal moves: a new target every tick is a full navmesh search.
+	if nav.target_position.distance_to(target) > REPATH_DISTANCE:
+		nav.target_position = target
 	if nav.is_navigation_finished():
 		_arrive_home()
 		return

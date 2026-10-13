@@ -120,6 +120,10 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	var next_pos: Vector3 = destination if close_in else nav.get_next_path_position()
 	var dir := next_pos - actor.global_position
 	dir.y = 0
+	if dir.length() <= 0.01:
+		# No usable path direction: do not slide on last tick's velocity.
+		actor.velocity.x = 0
+		actor.velocity.z = 0
 	if dir.length() > 0.01:
 		dir = dir.normalized()
 		# Hand the desired velocity to the agent; it computes an
