@@ -74,6 +74,8 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | No look for a stuck group's piece: the model has it (`WorldModel.piece_state` = `&"stuck"`, the piece stays where they gave up) and its prompt shows "(stuck)" from the report's status, but it is drawn like a confirmed piece | How a stuck group looks on the map floor | `scripts/knowledge/world_model.gd`, `scenes/map/map_piece.gd` `refresh` | #627 |
 | A stranded courier (home unreachable too) stands where it stopped, never rejoins the courier pool, and its owner hears only "a courier is lost" (what it carried never arrives; its undelivered orders show as lost) | What happens to a courier that cannot get home | `scripts/knowledge/courier_errand.gd`, `knowledge_manager.gd` `courier_stranded` | #627 |
 
+- `scenes/map/map_piece.gd` debug truth pieces (Toggle True Positions): pale see-through owner colour, "TRUE <count> <status>" label.
+
 ## Wording
 
 | What | Stands in for | Where | Ticket |

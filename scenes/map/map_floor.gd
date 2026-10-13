@@ -379,10 +379,37 @@ func _sync_pieces() -> void:
 		if carried_piece != key:
 			piece.position = world_to_floor(m.piece_position(key, cluster["pos"]))
 		piece.refresh()
+	_sync_truth_pieces(wanted)
 	for key in _pieces.keys():
 		if not wanted.has(key):
 			_pieces[key].queue_free()
 			_pieces.erase(key)
+
+## Debug (DebugManager.show_true_pieces): every group also where it really is, on the host (groups are host-side).
+const TRUTH_KEY_BASE: int = -2000000
+
+func _sync_truth_pieces(wanted: Dictionary[int, bool]) -> void:
+	if not DebugManager.show_true_pieces or not multiplayer.is_server():
+		return
+	var gm := get_tree().current_scene.get_node_or_null("GroupManager") as GroupManager
+	if gm == null:
+		return
+	for g in gm.all_groups():
+		var at := gm.get_centroid(g)
+		if at == Vector3.INF:
+			continue
+		var key: int = TRUTH_KEY_BASE - g.id
+		wanted[key] = true
+		var piece := _get_piece(key, g.owner_peer_id, false)
+		piece.group_id = g.id
+		piece.count = g.member_ids.size()
+		piece.selected = false
+		piece.stale = false
+		piece.status = g.status
+		piece.belief = &"truth"
+		piece.truth_waypoint = g.current_waypoint()
+		piece.position = world_to_floor(at)
+		piece.refresh()
 
 func _get_piece(key: int, owner: int, is_avatar: bool) -> MapPiece:
 	var piece: MapPiece = _pieces.get(key)

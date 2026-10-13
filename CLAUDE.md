@@ -77,6 +77,8 @@ This file gives Claude Code the context it needs to make informed changes to a G
   - Order Avatar to Camera (host) — move order for the released (AI-driven) avatar, same routing as war-table orders
   - Give Me the Paladin (host) — makes you his owner at once; scry at a Palantir, then E again to possess him
   - Toggle Aggro Rings (shows each minion's aggro radius, faction-colored)
+  - Toggle True Positions (host) — the map floor also shows every group where it really is: pale "TRUE" pieces with
+    their status; the prompt gives the next waypoint (Austin, 2026-10-13, for debugging pathing)
 
   One-shot buttons auto-close the menu. Toggles (god mode, aggro rings) keep it open.
   Host-only buttons are disabled for clients.

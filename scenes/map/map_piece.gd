@@ -8,7 +8,8 @@ class_name MapPiece extends Interactable
 ## piece stands where it should be by now; drawn translucent) or &"missing"
 ## (information contradicted the expectation; a "?" and grey). Age alone only
 ## makes a piece "old news" in its prompt (Austin, 2026-10-09).
-## PLACEHOLDER: the expected and missing looks.
+## Debug: &"truth" is where the group really is (DebugManager.show_true_pieces); not selectable.
+## PLACEHOLDER: the expected, missing and truth looks.
 ## PLACEHOLDER: art — a primitive chess piece tinted by owner.
 
 var floor_map: MapFloor
@@ -21,6 +22,8 @@ var belief: StringName = &"confirmed"
 var selected: bool = false
 var status: StringName = &""
 var is_avatar: bool = false
+## Debug truth pieces: the group's current route point.
+var truth_waypoint: Vector3 = Vector3.INF
 
 @onready var _base: MeshInstance3D = %Base
 @onready var _label: Label3D = %Label
@@ -43,17 +46,22 @@ func refresh() -> void:
 	var color := GameState.get_player_color(owner_peer_id)
 	if selected:
 		color = color.lightened(0.5)
-	if belief == &"missing":
+	if belief == &"truth":
+		color = color.lerp(Color.WHITE, 0.6)
+		color.a = 0.6
+	elif belief == &"missing":
 		color = color.lerp(Color(0.5, 0.5, 0.5), 0.7)
 	elif belief == &"expected":
 		color.a = 0.5
-	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if belief == &"expected" else BaseMaterial3D.TRANSPARENCY_DISABLED
+	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if belief in [&"expected", &"truth"] else BaseMaterial3D.TRANSPARENCY_DISABLED
 	_mat.albedo_color = color
 	_mat.emission_enabled = selected
 	_mat.emission = color
 	var text := ("PALADIN" if is_avatar else str(count))
 	if belief == &"missing":
 		text += " ?"
+	elif belief == &"truth":
+		text = "TRUE %s%s" % [text, (" " + String(status)) if status != &"" else ""]
 	_label.text = text
 
 func get_prompt_text() -> String:
@@ -62,6 +70,8 @@ func get_prompt_text() -> String:
 		return ""
 	if floor_map.carried_piece == key:
 		return "[LMB] put it down"
+	if belief == &"truth":
+		return "TRUE position of group %d (%s), next waypoint %s" % [group_id, status, truth_waypoint]
 	var who := "the Paladin" if is_avatar else ("your group %d" % group_id if is_mine() else "%d of %s" % [count, GameState.get_player_name(owner_peer_id)])
 	var lines := "%s%s%s" % [who, (" (%s)" % status) if status != &"" and is_mine() else "", _belief_note()]
 	if is_mine():
@@ -84,7 +94,7 @@ func get_prompt_color() -> Color:
 	return Color(1, 1, 0.6) if is_mine() else Color(0.9, 0.8, 0.8)
 
 func _on_interact() -> void:
-	if not is_mine():
+	if belief == &"truth" or not is_mine():
 		return
 	var player := floor_map.local_player()
 	if player and player.is_holding_order():
@@ -94,6 +104,8 @@ func _on_interact() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	super(event)
 	if not _is_focused or floor_map == null:
+		return
+	if belief == &"truth":
 		return
 	if event.is_action_pressed("primary_ability") and floor_map.carried_piece == 0:
 		floor_map.pick_up(key)

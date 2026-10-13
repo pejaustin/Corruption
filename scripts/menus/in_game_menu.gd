@@ -136,6 +136,9 @@ func _on_add_remains_pressed() -> void:
 func _on_aggro_rings_pressed() -> void:
 	DebugManager.toggle_aggro_rings()
 
+func _on_true_pieces_pressed() -> void:
+	DebugManager.toggle_true_pieces()
+
 func _on_combat_boxes_pressed() -> void:
 	DebugManager.toggle_combat_boxes()
 

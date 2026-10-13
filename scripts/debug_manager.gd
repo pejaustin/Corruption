@@ -25,11 +25,17 @@ var show_combat_boxes: bool = false
 ## MinionActor (when its MinionType has a non-zero courier_visual_range)
 ## subscribes to courier_visual_range_toggled.
 var show_courier_visual_range: bool = false
+## Debug (Austin, 2026-10-13): the map floor also shows each group where it really is (host only; groups are host-side).
+var show_true_pieces: bool = false
 
 func toggle_aggro_rings() -> void:
 	show_aggro_rings = not show_aggro_rings
 	aggro_rings_toggled.emit(show_aggro_rings)
 	print("[Debug] Minion aggro rings: %s" % ("ON" if show_aggro_rings else "OFF"))
+
+func toggle_true_pieces() -> void:
+	show_true_pieces = not show_true_pieces
+	print("[Debug] True positions on the map floor: %s" % ("ON" if show_true_pieces else "OFF"))
 
 func toggle_combat_boxes() -> void:
 	show_combat_boxes = not show_combat_boxes
