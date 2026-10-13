@@ -1,7 +1,7 @@
 extends "res://tests/integration/test_base.gd"
 
 ## Orders and information (GDD §3–§4): a group is selected on the floor map,
-## a route walked, a destination picked, the scroll handed to the advisor,
+## a destination picked (the way by road lights up), the scroll handed to the advisor,
 ## a courier carries it, the group corrupts the site, and the courier brings
 ## the news home. A courier sent alone discovers an unknown point.
 
@@ -24,10 +24,15 @@ func run_tests() -> void:
 	check(floor_map != null, "my tower has a map floor")
 	floor_map.toggle_group(g.id)
 	check(floor_map.authoring, "selecting a piece starts an order")
-	floor_map.path_points.append(&"RoadEast")
 	var player := floor_map.local_player()
+	var chapel_marker := floor_map.get_marker(&"Chapel")
+	check(floor_map.get_marker(&"RoadEast") != null and chapel_marker != null and chapel_marker.visible, "the floor shows its authored markers for known points")
+	floor_map.preview_destination(chapel_marker)
+	await frames(2)
+	check(floor_map.get_marker(&"RoadEast").highlighted and chapel_marker.highlighted, "looking at the chapel lights up the way there by road")
 	floor_map.finish_at(MapPoint.find(get_tree(), &"Chapel"))
 	check(player.is_holding_order(), "picking the destination puts a scroll in hand")
+	check(&"RoadEast" in player.held_order.get("route_points", []), "the way to the chapel goes by the east road (%s)" % [player.held_order.get("route_points", [])])
 	var order := player.take_order()
 	order["goal"] = OrderGoal.Goal.CORRUPT
 	var cmd := KnowledgeManager.request_dispatch(order)
@@ -142,8 +147,9 @@ func run_tests() -> void:
 	check(not fresh.expectations.has(7), "model: a report far off the route replaces the expectation")
 
 	# A courier alone, sent past the unknown ford and back.
-	var scout := {"group_ids": [], "believed": {}, "route_points": [&"RoadEast", &"Ford"],
-		"route": [MapPoint.find(get_tree(), &"RoadEast").global_position, MapPoint.find(get_tree(), &"Ford").global_position],
+	# (The ford is not on the map yet, so this way is planned by hand, through every road.)
+	var way := RoadGraph.plan(get_tree(), floor_map._tower_point(), MapPoint.find(get_tree(), &"Ford"))
+	var scout := {"group_ids": [], "believed": {}, "route_points": way["points"], "route": way["route"],
 		"dest_point": &"Ford", "dest_kind": MapPoint.Kind.CROSSING, "goal": OrderGoal.Goal.SCOUT}
 	KnowledgeManager.request_dispatch(scout)
 	t = 0.0

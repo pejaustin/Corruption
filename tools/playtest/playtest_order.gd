@@ -1,7 +1,7 @@
 extends Node
 
 ## Input-driven playtest of the order loop (CLAUDE.md §2 "Input playtests"):
-## select a group piece on the map floor, walk the route, pick the Chapel,
+## select a group piece on the map floor, look at the Chapel (the way by road lights up), pick it,
 ## hand the scroll to the advisor, corrupt it, wait for the report. Only
 ## InputDriver events act; game state is read for assertions.
 ## Windowed run:
@@ -75,17 +75,8 @@ func _play() -> void:
 	step(floor_map.authoring and g.id in floor_map.selected_groups, "E on the piece starts an order")
 	await drv.screenshot("01_piece_selected")
 
-	# 2. Walk over the East road marker.
-	var road: MapPointMarker = floor_map._markers[&"RoadEast"]
-	var reached: bool = await drv.walk_to(Vector2(road.global_position.x, road.global_position.z), 0.2)
-	step(reached, "walked onto the East road marker")
-	drv.say("player %s, road marker %s (%.2f m apart)" % [player.global_position, road.global_position, Vector2(player.global_position.x - road.global_position.x, player.global_position.z - road.global_position.z).length()])
-	await drv.seconds(0.3)
-	step(&"RoadEast" in floor_map.path_points, "the pencil route records the East road")
-	await drv.screenshot("02_route_pencilled")
-
 	# 3. Pick the Chapel as the destination.
-	var chapel: MapPointMarker = floor_map._markers[&"Chapel"]
+	var chapel: MapPointMarker = floor_map.get_marker(&"Chapel")
 	var cp := chapel.global_position
 	await drv.walk_to(_stand_off(player.global_position, cp, 1.9), 0.25)
 	aimed = await drv.aim_at(cp + Vector3(0, 0.05, 0))
@@ -94,9 +85,11 @@ func _play() -> void:
 	var adv0 := _my_advisor(mm)
 	step(adv0 != null and not Placement.on_floor(floor_map, adv0.global_position), "the advisor is off the map floor while I stand at it")
 	step(not drv.prompt().to_lower().contains("advisor"), "aiming at the Chapel marker does not hit the advisor (prompt: %s)" % drv.prompt())
+	step(floor_map.get_marker(&"RoadEast").highlighted and chapel.highlighted, "looking at the Chapel lights up the way there by the East road")
 	await drv.screenshot("03_aim_chapel")
 	await drv.press_action(&"interaction")
 	step(player.is_holding_order(), "E on the Chapel puts a scroll in hand")
+	step(&"RoadEast" in player.held_order.get("route_points", []), "the order's way goes by the East road")
 	await drv.screenshot("04_scroll_in_hand")
 
 	# 3b. Stand at the desk: the advisor should come to stand beside it, off the floor.

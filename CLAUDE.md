@@ -46,7 +46,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
   `input_driver.gd` pushes real `InputEvent`s through `Input.parse_input_event()` (actions, keys, mouse look, the
   interaction raycast) and has `walk_to`, `aim_at`, `press_action`, `key`, `look`, `click` and `screenshot`, logging
   the on-screen prompt at each step. `playtest_order.tscn` plays the order loop: select your group's piece on the map
-  floor (E), walk over the East road, E on the Chapel, hand the scroll to the advisor, pick "Corrupt the site" with
+  floor (E), look at the Chapel (the way by the East road lights up), E on it, hand the scroll to the advisor, pick "Corrupt the site" with
   the 1-9 key, wait for the courier's report. It prints `ok`/`FAIL` per step and `[playtest] N steps, M failed`, and
   exits with the failure count. Run it windowed (needs a display and GPU; screenshots go to `$PLAYTEST_DIR`, default
   `/tmp/claude-1000/playtest`): `godot --path . --resolution 1280x720 res://tools/playtest/playtest_order.tscn`.
@@ -497,6 +497,13 @@ draw.
 - **No free information.** Each player's `WorldModel` (`scripts/knowledge/world_model.gd`, on their own machine) changes
   only through `KnowledgeManager` reports: groups at their own tower gate (live), couriers and groups coming home,
   beacons (`site_changed`, seen by all), and what the Paladin's controller sees. The simulation never reads it.
+- **Roads (Austin, 2026-10-13):** orders follow roads. A `Road` (`scenes/map/road.tscn`, a `Path3D` with `from_point` /
+  `to_point` MapPoints) under `World/Roads` in `world.tscn` is drawn on the terrain; a bridge is a curve point on a
+  `RiverCrossing`. `RoadGraph` (`scripts/map/road_graph.gd`) finds the shortest way by road (Dijkstra, cost = curve
+  length) through the points the player knows; an order's `route` is every curve point on that way (`Road.waypoints`),
+  per group (`routes`/`paths`), and couriers travel by road too (`KnowledgeManager._by_road`: road stops with nothing to
+  hand over). The navmesh stays whole: units leave the road to fight or chase and come back. The shipped roads are
+  stand-ins (`scripts/build/build_placeholder_roads.gd`); `MapPoint.links` is gone. Tests: `tests/unit/test_road_graph.gd`, `tests/component/test_roads.gd`.
 - **Groups** (`scripts/groups/`): every player unit is in a `UnitGroup` (host-side, `GroupManager` node in the world).
   Orders go to groups: walk the route's points, then the goal (`OrderGoal`): hold (`GO_HERE`, `CORRUPT`), watch and
   come home (`ASSESS`), or a registered `goal_handlers` callable (haul, capture, the dead, offers). A group that can't
@@ -507,12 +514,18 @@ draw.
   order, takes the group's report, walks any scouting route, and reports at home (`courier_arrived_home`). Couriers
   killed by a rival count as captured (`courier_lost`; readable with `can_read_couriers`). Groups with
   `auto_courier` send a runner home on the first hit. Training: `request_train_courier()`.
-- **The map floor** (`scenes/map/`, `MapFloor` in each tower, 14 m on the hall floor): `MapPoint` markers authored under
-  `World/MapPoints` (known at start or discovered by reports), `MapPiece` chess pieces from beliefs (E select, LMB move
-  by hand), walking over points records the route (limit `MatchConfig.STARTING_ROUTE_POINTS` +
-  `GameState.get_route_point_bonus`), E on a point = destination → a scroll in hand (`OverlordActor.held_order`, Q
-  tears it up) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and dispatches. Sent orders
-  darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tests/unit/test_world_model.gd`; milestone `tests/integration/test_orders.tscn`.
+- **The map floor** (`scenes/map/`, `MapFloor` in each tower, 14 m on the hall floor) is an authored scene (Austin,
+  2026-10-13): `illustration` is the background texture; every point marker (`Markers/*`, `map_point_marker.tscn`,
+  `point_id`, `label_text`, `disc_color`) and road line (`Roads/*`, `map_road_line.tscn`, a `Path3D`) is a node in
+  `map_floor.tscn`. The root's "Copy map points and roads" inspector button (open `map_floor.tscn` first), or
+  `godot --headless --path . -s res://scripts/build/build_map_floor.gd`, adds the ones the world's `World/MapPoints` /
+  `World/Roads` have and the floor lacks, scaled; existing ones are left alone unless `overwrite_on_copy`
+  (`OVERWRITE=1`). In play, code only shows known points and roads, highlights, and draws pieces, pencil and ink.
+  `MapPoint`s (`World/MapPoints`) are known at start or discovered by reports. `MapPiece` chess pieces from beliefs (E
+  select, LMB move by hand); looking at a point while authoring lights up the way by road (`MapFloor.plan_to`, the
+  markers' `Highlight`); E on it = destination → a scroll in hand (`OverlordActor.held_order`, Q tears it up; its route
+  pencilled along the floor's roads) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and
+  dispatches. Sent orders darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tests/unit/test_world_model.gd`; milestone `tests/integration/test_orders.tscn`.
 - **Expected state (Austin, 2026-10-09):** a unit that leaves the tower's range never becomes unorderable or "stale".
   `request_dispatch` gives each ordered group a `WorldModel.expectations[gid]` (path = where the map had it + the
   route; position walks the path at `EXPECTED_SPEED` from the order, clamped at the destination). The piece stands at
@@ -620,8 +633,8 @@ Test: `tests/component/test_treasure.gd`.
   `Training.TEACHING_SECONDS` (`UnitGroup.busy_seconds`) and refuse orders. Succession keeps some maneuvers (already built).
 - **Relics:** `Relic` (`relic.gd`, `data/relics/*.tres`, placeholders, #580) lie at `RelicPlace` nodes under `World/Places`.
   Goal `OrderGoal.Goal.RETRIEVE` ("bring back what lies here", offered at sites) -> `FieldWork._retrieve` picks one up
-  (`carrying = &"relic"`, `carry_amount` = relic index); unloaded at home it calls `Relic.apply` (sets `UnitGroup.auto_courier`,
-  `GameState.add_route_point_bonus`) and writes a `relic` desk record. A fallen carrier drops it back (`RelicPlace.restore`).
+  (`carrying = &"relic"`, `carry_amount` = relic index); unloaded at home it calls `Relic.apply` (sets `UnitGroup.auto_courier`;
+  the old route-point relic does nothing now, a placeholder) and writes a `relic` desk record. A fallen carrier drops it back (`RelicPlace.restore`).
 - Offers: groups with `MinionActor.parley_mode` do not attack nobles; captures skip nobles.
 - Test: `tests/component/test_growth.gd`.
 

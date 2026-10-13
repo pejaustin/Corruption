@@ -6,9 +6,10 @@ class_name MapPoint extends Marker3D
 ## known at the start; others are missing and get filled in from what couriers
 ## bring home"). Authored in the world scene under World/MapPoints at the real
 ## place it stands for; the tower map floors draw them scaled down. Orders
-## target points, never free positions.
+## target points, never free positions. Roads between points are Road nodes
+## under World/Roads (RoadGraph); orders follow them.
 ##
-## Which points exist, their names and links are Austin's (ticket #584): the
+## Which points exist, their names and roads are Austin's (ticket #584): the
 ## shipped layout is a placeholder.
 
 const GROUP: StringName = &"map_points"
@@ -22,8 +23,6 @@ enum Kind { ROAD, CROSSING, SETTLEMENT, CITY, SITE, RESOURCE, TOWER, LANDMARK }
 ## Known to every player from the first minute; otherwise discovered when a
 ## courier or group returns from passing near it.
 @export var known_at_start: bool = true
-## Neighbouring points (drawn as routes on the map once both ends are known).
-@export var links: Array[NodePath] = []
 ## Optional: the corruption site / resource / settlement node this point is for.
 @export var target: NodePath
 ## Tower points: snap onto the courier gate of the tower in this slot.
@@ -41,14 +40,6 @@ func get_target_node() -> Node:
 	if target.is_empty():
 		return null
 	return get_node_or_null(target)
-
-func get_linked_points() -> Array[MapPoint]:
-	var out: Array[MapPoint] = []
-	for path in links:
-		var p := get_node_or_null(path) as MapPoint
-		if p:
-			out.append(p)
-	return out
 
 func get_label() -> String:
 	return display_name if display_name != "" else String(point_id)
@@ -68,6 +59,21 @@ func _snap() -> void:
 	var hit := space.intersect_ray(query)
 	if not hit.is_empty():
 		global_position = hit.position
+
+static func spot_in_world(p: MapPoint, world: Node) -> Vector3:
+	## Where `p` stands in play, read from a world scene that is not in the tree (tools): a tower point on its
+	## tower's courier gate (as _snap puts it), any other where it is authored.
+	var xf := Transform3D.IDENTITY
+	var n: Node = p
+	if p.tower_slot >= 0:
+		for t in world.find_children("Tower", "Node3D", true, false):
+			if int(t.get("slot_index")) == p.tower_slot and t.has_node("CourierSpawn"):
+				n = t.get_node("CourierSpawn")
+				break
+	while n is Node3D:
+		xf = (n as Node3D).transform * xf
+		n = n.get_parent()
+	return xf.origin
 
 static func all_points(tree: SceneTree) -> Array[MapPoint]:
 	var out: Array[MapPoint] = []
