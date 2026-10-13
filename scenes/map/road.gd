@@ -35,13 +35,9 @@ func _ready() -> void:
 func get_length() -> float:
 	return curve.get_baked_length() if curve else 0.0
 
-func connects(a: StringName, b: StringName) -> bool:
-	return from_point != null and to_point != null and (
-		(from_point.point_id == a and to_point.point_id == b) or (from_point.point_id == b and to_point.point_id == a))
-
 func waypoints(forward: bool = true) -> Array[Vector3]:
 	## The road's points in world space, from `from_point` to `to_point` (or back): every curve point (bridges
-	## included), bends tessellated, and long spans cut to MAX_STEP_M.
+	## included), bends tessellated, and long spans cut to MAX_STEP_M. The two ends are its map points.
 	var out: Array[Vector3] = []
 	if curve == null or curve.point_count == 0:
 		return out
@@ -49,6 +45,11 @@ func waypoints(forward: bool = true) -> Array[Vector3]:
 	var xf := global_transform
 	for i in pts.size():
 		var p: Vector3 = xf * pts[i]
+		# The ends are where the points stand in play (a tower point stands on its tower's gate, MapPoint._snap).
+		if i == 0 and from_point:
+			p = from_point.global_position
+		elif i == pts.size() - 1 and to_point:
+			p = to_point.global_position
 		if i > 0:
 			var prev := out[out.size() - 1]
 			var steps := ceili(prev.distance_to(p) / MAX_STEP_M)
