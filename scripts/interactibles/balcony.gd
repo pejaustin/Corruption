@@ -17,8 +17,20 @@ const PITCH_MAX: float = deg_to_rad(40.0)
 const PROMPT_OPEN: String = "Press E to look out"
 const PROMPT_CLOSE: String = "E / Q to return"
 
+## Debug (Austin, 2026-10-13): with this project setting on (Project Settings, Advanced, "Corruption > Debug > Free
+## Lookout"), the lookout is a free camera to inspect the whole map: WASD flies where you look, Space up, C down,
+## Shift faster. Off by default; read when the lookout opens. It breaks "no free information", so debug only.
+const FREE_LOOKOUT_SETTING: String = "corruption/debug/free_lookout"
+## PLACEHOLDER: tuning — free-camera speed (m/s), the Shift multiplier and how far it may look up and down.
+const FREE_SPEED: float = 60.0
+const FREE_FAST_MULTIPLIER: float = 5.0
+const FREE_PITCH_LIMIT: float = deg_to_rad(89.0)
+
 var _open: bool = false
 var _player: OverlordActor = null
+var _free: bool = false
+## Where the lookout rig stands in balcony.tscn, put back when a free lookout closes.
+var _home: Transform3D
 
 ## The lookout rig (position, field of view and far plane) is authored in balcony.tscn.
 @onready var _pivot: Node3D = %LookoutPivot
@@ -54,6 +66,8 @@ func open_lookout(player: OverlordActor) -> void:
 		return
 	_player = player
 	_open = true
+	_free = ProjectSettings.get_setting(FREE_LOOKOUT_SETTING, false)
+	_home = _pivot.transform
 	_claim_modal()
 	_set_player_input(false)
 	_face_towards(Vector3.ZERO)
@@ -64,6 +78,10 @@ func close_lookout() -> void:
 	if not _open:
 		return
 	_open = false
+	if _free:
+		_pivot.transform = _home
+		_pitch.rotation = Vector3.ZERO
+		_free = false
 	_release_modal()
 	_camera.current = false
 	if _player != null and is_instance_valid(_player):
@@ -75,7 +93,10 @@ func close_lookout() -> void:
 func rotate_lookout(move: Vector2) -> void:
 	## Turns the view by a mouse-motion-sized step.
 	_pivot.rotate_y(-move.x)
-	_pitch.rotation.x = clampf(_pitch.rotation.x - move.y, PITCH_MIN, PITCH_MAX)
+	if _free:
+		_pitch.rotation.x = clampf(_pitch.rotation.x - move.y, -FREE_PITCH_LIMIT, FREE_PITCH_LIMIT)
+	else:
+		_pitch.rotation.x = clampf(_pitch.rotation.x - move.y, PITCH_MIN, PITCH_MAX)
 
 func _on_interact() -> void:
 	if _open:
@@ -101,6 +122,22 @@ func _process(delta: float) -> void:
 	var joy: Vector2 = Input.get_vector("camera_left", "camera_right", "camera_up", "camera_down")
 	if joy != Vector2.ZERO:
 		rotate_lookout(joy * JOYSTICK_ROTATION_SPEED * delta)
+	if _free:
+		_fly(delta)
+
+func _fly(delta: float) -> void:
+	## Free lookout: WASD along the view (pitch included), Space / C straight up / down, Shift faster.
+	var move: Vector2 = Input.get_vector("left", "right", "forward", "backward")
+	var basis: Basis = _camera.global_transform.basis
+	var dir: Vector3 = basis.x * move.x + basis.z * move.y
+	if Input.is_action_pressed("jump"):
+		dir += Vector3.UP
+	if Input.is_action_pressed("roll"):
+		dir += Vector3.DOWN
+	if dir == Vector3.ZERO:
+		return
+	var speed: float = FREE_SPEED * (FREE_FAST_MULTIPLIER if Input.is_action_pressed("run") else 1.0)
+	_pivot.global_position += dir.normalized() * speed * delta
 
 func _exit_tree() -> void:
 	if _open:

@@ -41,6 +41,10 @@ NetworkPerformance="*uid://cqgf7aqmjfoa3"
 InteractionUI="*res://scripts/interaction_ui.gd"
 KnowledgeManager="*res://scripts/knowledge/knowledge_manager.gd"
 
+[corruption]
+
+debug/free_lookout=false
+
 [display]
 
 window/size/viewport_width=1280

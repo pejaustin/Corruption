@@ -571,7 +571,8 @@ UI: tabs for "All" (newest first, ticks as mm:ss), one per record `kind` in `Wor
 
 `Balcony` is one per tower (`tower.tscn`, on the west balcony, hall floor), owner-only like the desk. E takes the camera to
 a code-built lookout (`LookoutPivot` -> `LookoutPitch` -> `LookoutCamera`, 90 deg, far 1500) five metres above the post,
-facing the map centre; mouse or right stick turns it, E / Q returns. It claims the modal lock and calls
+facing the map centre; mouse or right stick turns it, E / Q returns. Debug: with the project setting `corruption/debug/free_lookout` on (Austin, 2026-10-13; off by default)
+the lookout is a free camera over the whole map (WASD where you look, Space/C up/down, Shift faster). It claims the modal lock and calls
 `set_overlord_active(false)` / `PlayerInput.input_enabled`, restoring both on close. Beacons (`CorruptionSite`) are
 unshaded with `disable_fog`, so they read from there day or night. `DayNight` (`world.tscn`, one node) is the host's clock
 (`time_of_day` 0 = midnight, 0.5 = noon, `DAY_SECONDS` long), pushed to clients with a reliable RPC on connect and every
