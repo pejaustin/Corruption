@@ -58,6 +58,10 @@ func _run() -> void:
 		# Optional 5th field: curve_horizon_m for this shot (the curved-world bend; 0 = off). Default: the project setting.
 		if parts.size() > 4:
 			RenderingServer.global_shader_parameter_set("curve_horizon_m", float(parts[4]))
+		# The pause menu opens when the window loses focus (a background run); keep it out of the picture.
+		var menu := world.get_node_or_null("InGameMenu") as CanvasItem
+		if menu != null:
+			menu.visible = false
 		for i in 8:
 			await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()

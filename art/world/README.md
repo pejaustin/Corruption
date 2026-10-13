@@ -157,6 +157,27 @@ materials by name.
 - **Screenshots:** needs a rendering Godot (no headless). `WORLD=res://scenes/world/open_world/open_world_2km.tscn SHOT_FAR=6000
   SHOTS="overview:0,2900,0:0,0,0:50" godot --path . res://tools/shots/shot.tscn`.
 
+## Backdrop around the map (ticket #620)
+
+**Settled (Austin, 2026-10-12):** the world must not visibly stop from the high lookouts, and the edge is real geometry,
+not just fog; GameCube / Wii / PS2-era vistas are the reference. Beyond the map: **north a mountain wall, east ocean (the
+Glittering Ocean carries on), south a mountain wall, west rolling hills.** I generate a stand-in; Austin sculpts it.
+
+- `source/world_backdrop.blend` (2 km scale, +Y north): `backdrop`, a low-poly ring of land from the map's square edge
+  (tucked 12 m under `geo` and 1.5 m below it, so editing `geo` never opens a crack) to a circle 5 km from the centre,
+  rows further apart outward; `backdrop sea`, water at the Glittering Ocean's level (0.25 m below, no z-fighting where
+  they overlap). Splat/Col corner colours as on `geo`. **Austin's to sculpt**; regenerating needs `--force` and loses it:
+  `Blender -b --python tools/blender/build_backdrop.py -- <repo> [--force]`.
+- `tools/blender/export_backdrop.py` -> `export/world_backdrop_<size>.glb` (size presets as `geo`; never saves the
+  .blend); `tools/sync_world_sizes.sh` runs it. The .glb.import maps `ground_placeholder` / `water_placeholder` (both
+  curved) and makes no collision; `export/world_backdrop_2km.tscn` turns off its shadows. Not walkable, not on the navmesh.
+- The balcony lookout's far plane is 6 km so it reaches the ring's far edge.
+- The curved-world bend (`WorldCurve`) hides the ring past the horizon like a planet; with the bend off the ring ends at the
+  far plane, so the far rows should stay high (mountains) or be fogged.
+- PLACEHOLDER: every shape (heights, distances, noise, corner blends), the ring's radius and the rock/sand rule.
+- The map's north-east sea floor (east edge north of the Glittering Ocean, y > 503 m in Blender) is above the sea level
+  with no water over it, so it shows as two dry slabs against the backdrop sea.
+
 ## Curved world (PLACEHOLDER tuning)
 
 Ground, water, forests and the castle kit (so towers) bend down with horizontal distance from the camera

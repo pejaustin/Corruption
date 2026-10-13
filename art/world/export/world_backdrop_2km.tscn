@@ -1,0 +1,12 @@
+; PLACEHOLDER: the backdrop is generated (tools/blender/build_backdrop.py) for Austin to sculpt in art/world/source/world_backdrop.blend
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://cnqw3l74b3tst" path="res://art/world/export/world_backdrop_2km.glb" id="1_backdrop"]
+
+[node name="WorldBackdrop" instance=ExtResource("1_backdrop")]
+
+[node name="backdrop" parent="." index="0"]
+cast_shadow = 0
+
+[node name="backdrop sea" parent="." index="1"]
+cast_shadow = 0

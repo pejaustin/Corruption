@@ -10,6 +10,7 @@
 #
 # What it does:
 #   1. exports every size from art/world/source/world_landscape.blend (tools/blender/export_landscape.py; never saves the .blend),
+#      and the backdrop around it from world_backdrop.blend (tools/blender/export_backdrop.py; never saves it either),
 #      with the forest and water guide outlines (art/world/export/areas_<size>.json), then every POI blockout
 #      (art/world/pois/<snake>.blend -> pois/export/<snake>.glb) and the shared props (props.blend -> export/props/*.glb)
 #      (tools/blender/export_pois.py; never saves those either)
@@ -121,6 +122,11 @@ if [ "$DO_EXPORT" = 1 ]; then
     run 300 "$BLENDER" -b "$(conv "$ROOT/art/world/source/world_landscape.blend")" --python "$(conv "$ROOT/tools/blender/export_landscape.py")" -- "$(conv "$ROOT")" "$size" >"$LOG" 2>&1 || { cat "$LOG" >&2; echo "Blender export failed for $size" >&2; exit 1; }
     grep -E '^EXPORTED|GEOMETRY_AND_NAMES_UNCHANGED' "$LOG" | sed "s/^/  [$size] /"
     grep -q 'GEOMETRY_AND_NAMES_UNCHANGED True' "$LOG" || { echo "the export changed the scene in memory ($size); stop" >&2; exit 1; }
+    # the backdrop around the map (generated once by tools/blender/build_backdrop.py, then Austin's to sculpt)
+    if [ -f "$ROOT/art/world/source/world_backdrop.blend" ]; then
+      run 300 "$BLENDER" -b "$(conv "$ROOT/art/world/source/world_backdrop.blend")" --python "$(conv "$ROOT/tools/blender/export_backdrop.py")" -- "$(conv "$ROOT")" "$size" >"$LOG" 2>&1 || { cat "$LOG" >&2; echo "Blender backdrop export failed for $size" >&2; exit 1; }
+      grep -E '^EXPORTED' "$LOG" | sed "s/^/  [$size] /"
+    fi
   done
   # one POI blockout per marker of his map (snake_case name; tower markers have none), and the shared props
   for snake in $(poi_snakes); do

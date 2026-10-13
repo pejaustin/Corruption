@@ -77,11 +77,11 @@ const POI_TOWER_CLEAR_M: float = 60.0
 ## moved to the nearest spot whose ground it does not (the bake moves with every geometry change).
 const NAV_SNAP_M: float = 1.0
 ## PLACEHOLDER: tuning, not designed. Per size: sun shadow distance (2 km: 400 m, in world.tscn) and the balcony lookout's
-## far plane (2 km: 3500 m, in balcony.tscn): about the width of the map.
+## far plane (2 km: 6000 m, in balcony.tscn): reaches the backdrop ring (5 km from the centre at 2 km).
 const SIZE_TUNING: Dictionary[String, Dictionary] = {
-	"400m": {"shadow": 200.0, "balcony_far": 800.0},
-	"2km": {"shadow": 400.0, "balcony_far": 3500.0},
-	"6km": {"shadow": 800.0, "balcony_far": 10500.0},
+	"400m": {"shadow": 200.0, "balcony_far": 1200.0},
+	"2km": {"shadow": 400.0, "balcony_far": 6000.0},
+	"6km": {"shadow": 800.0, "balcony_far": 18000.0},
 }
 
 var _failed: bool = false
