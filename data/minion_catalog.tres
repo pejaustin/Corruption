@@ -14,14 +14,13 @@
 [ext_resource type="PackedScene" uid="uid://d2ufj7ipn0h41" path="res://scenes/actors/minion/types/eye_horror_actor.tscn" id="12_eye_horror"]
 [ext_resource type="PackedScene" uid="uid://bdxg7rfisg4g" path="res://scenes/actors/minion/types/shoggoth_actor.tscn" id="13_shoggoth"]
 [ext_resource type="PackedScene" uid="uid://dwg2fjh1jdh28" path="res://scenes/actors/enemy/zombie/zombie_actor.tscn" id="14_zombie"]
-[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/advisor_actor.tscn" id="16_advisor"]
-[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/courier_actor.tscn" id="17_courier"]
+[ext_resource type="PackedScene" uid="uid://71btovk3inad" path="res://scenes/actors/minion/types/advisor_actor.tscn" id="16_advisor"]
+[ext_resource type="PackedScene" uid="uid://j43tcafvxx3m" path="res://scenes/actors/minion/types/courier_actor.tscn" id="17_courier"]
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/scout_actor.tscn" id="18_scout"]
-
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/villager.tscn" id="20_villager"]
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/noble.tscn" id="21_noble"]
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/thrall.tscn" id="22_thrall"]
-[ext_resource type="PackedScene" path="res://scenes/actors/minion/types/holy_knight.tscn" id="23_knight"]
+[ext_resource type="PackedScene" uid="uid://bt4ygfe5wcduv" path="res://scenes/actors/minion/types/holy_knight.tscn" id="23_knight"]
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/boss_form.tscn" id="24_boss"]
 [ext_resource type="PackedScene" path="res://scenes/actors/minion/types/priest.tscn" id="25_priest"]
 

@@ -25,18 +25,18 @@ fog_density = 0.00012
 fog_sky_affect = 0.5
 metadata/PLACEHOLDER = "stand-in sky and fog, not designed by Austin"
 
-[node name="OpenWorld2km" type="Node3D"]
+[node name="OpenWorld2km" type="Node3D" unique_id=752310617]
 
-[node name="Nav" type="NavigationRegion3D" parent="."]
+[node name="Nav" type="NavigationRegion3D" parent="." unique_id=1132107989]
 navigation_mesh = ExtResource("2_navmesh")
 
-[node name="WorldLandscape" parent="Nav" instance=ExtResource("1_landscape")]
+[node name="WorldLandscape" parent="Nav" unique_id=75698185 instance=ExtResource("1_landscape")]
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1076125895]
 transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 200, 0)
 shadow_enabled = true
 directional_shadow_max_distance = 600.0
 metadata/PLACEHOLDER = "stand-in sun, not designed by Austin"
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=169895094]
 environment = SubResource("Environment_world")
