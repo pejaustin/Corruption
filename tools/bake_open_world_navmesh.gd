@@ -70,6 +70,10 @@ func _init() -> void:
 		for t in towers:
 			t.get_parent().remove_child(t)
 			t.queue_free()
+	# The water's bank walls stop bodies, not the bake: its blockers cut the river and the sea out (scripts/build/world_areas.gd).
+	for wall in world.find_children("Wall", "StaticBody3D", true, false):
+		if wall.get_parent().get_parent() != null and wall.get_parent().get_parent().name == &"Waters":
+			(wall as StaticBody3D).collision_layer = 0
 	var ground := Ground.new()
 	ground.load_size(size)
 	var ref_ground := Ground.new()

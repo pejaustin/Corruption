@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://bs6sap1d4nbpx" path="res://art/world/pois/teshfield.tscn" id="poi_teshfield"]
 [ext_resource type="PackedScene" uid="uid://cqt5kdyjwyhyd" path="res://art/world/pois/valley_cross.tscn" id="poi_valley_cross"]
 [ext_resource type="PackedScene" uid="uid://fmho8i5wbwb" path="res://art/world/pois/veilton.tscn" id="poi_veilton"]
+[ext_resource type="PackedScene" path="res://scenes/world/water/river_crossing.tscn" id="3_crossing"]
 
 [node name="WorldLandscape" unique_id=257760087 instance=ExtResource("1_landscape")]
 
@@ -61,4 +62,23 @@ slot_index = 1
 transform = Transform3D(-0.7967303, 0, -0.60433465, 0, 1, 0, 0.60433465, 0, -0.7967303, 0, -10.266426, 20.587952)
 slot_index = 2
 
-[node name="Areas" parent="." index="17" unique_id=887051825 instance=ExtResource("areas_2km")]
+[node name="Areas" parent="." unique_id=887051825 instance=ExtResource("areas_2km")]
+
+[node name="RiverCrossing" parent="Forest Ruins" parent_id_path=PackedInt32Array(1366641987) unique_id=1111327140 instance=ExtResource("3_crossing")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -5.0)
+
+[node name="RiverCrossing" parent="Entbridge" parent_id_path=PackedInt32Array(993496290) unique_id=1621054947 instance=ExtResource("3_crossing")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.8, 0, -29.5)
+radius_m = 45.0
+
+[node name="RiverCrossing" parent="Teshfield" parent_id_path=PackedInt32Array(1859933283) unique_id=780815012 instance=ExtResource("3_crossing")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.0, 0, 68.6)
+
+[node name="RiverCrossingEast" parent="Hopes Gate" parent_id_path=PackedInt32Array(1731954550) unique_id=2079989857 instance=ExtResource("3_crossing")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62.5, 0, 30.0)
+
+[node name="RiverCrossingNorth" parent="Hopes Gate" parent_id_path=PackedInt32Array(1731954550) unique_id=314335998 instance=ExtResource("3_crossing")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 0, -37.0)
+
+[node name="RiverCrossingWest" parent="Hopes Gate" parent_id_path=PackedInt32Array(1731954550) unique_id=887235714 instance=ExtResource("3_crossing")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.5, 0, -23.0)

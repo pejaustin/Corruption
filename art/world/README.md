@@ -41,15 +41,15 @@ lobby (**World: 400 m / 2 km / 6 km**, default 2 km, next to the pace picker; `M
 `export_landscape.py -- <repo> 400m|2km|6km` writes `export/world_landscape_<size>.glb`; each is the file scaled in
 memory around the origin to the preset (relative to 2 km: 6 km is 3x wide and 5x tall, 400 m is a uniform 1/5 miniature for quick tests).
 
-**The ocean (2026-10-12):** Austin's flat sea mesh is exported as real geometry. It is found as any mesh whose name contains "ocean" (any case; his is
-`Glittering Ocean`), else the first version's `Plane`; the Godot node keeps his exact name (`Plane` becomes `Ocean`), with `water_placeholder` (curved-world shader), no collision (so no navmesh on its surface; the ground beneath is the
-sea floor) and not a guide. PLACEHOLDER look. **The sea blocks movement (Austin, 2026-10-12)**; not built yet: units can still walk the sea floor under it (Vikunja #615).
-
-**Water plan (Austin, 2026-10-12):** the river, lake and ocean planes are rough location markers only. The ground under them is
-sunk once in Blender (`tools/blender/carve_water.py`, run by Austin in his Blender; depths PLACEHOLDER) and the water surfaces
-become Godot `.tscn` scenes. **Pale River blocks movement except at crossings; every town on the river is a crossing:** Forest
-Ruins, Hopes Gate, Entbridge and Teshfield. **Hopes Gate is three crossings:** its city gates span three river openings. Not
-built yet.
+**Water (Austin, 2026-10-12):** the river, lake and ocean planes (`Pale River`, `The Still Lake`, `Glittering Ocean`; an
+ocean is any mesh named *ocean*, else the first version's `Plane`) are rough location markers only, all guides now: none is in
+the glb. The ground under them is sunk once in Blender by `tools/blender/carve_water.py` (Austin runs it in his own Blender; depths
+PLACEHOLDER) and each becomes a `scenes/world/water/water_body.tscn` in the areas build (see "Forests and water"). **The sea and
+Pale River block movement; the river can be crossed at its towns:** Forest Ruins, Hopes Gate, Entbridge and Teshfield, and Hopes
+Gate is three crossings, its city gates spanning three river openings. Each crossing is a `RiverCrossing`
+(`scenes/world/water/river_crossing.tscn`, `radius_m`) under the town's marker in `export/world_landscape_2km.tscn`; their spots
+are PLACEHOLDER (the middle of the river nearest the town; Hopes Gate one per branch). Move one in the editor, then run
+`tools/sync_world_sizes.sh --no-export`. The lake can be waded (Vikunja #615).
 
 **Two files are hand-edited sources, the rest is generated from them:**
 
@@ -123,9 +123,13 @@ bake, so units walk around buildings.
 `export_landscape.py` writes each guide's footprint (x, z in that size's metres, its triangles and outline loops) to
 `export/areas_<size>.json`; `scripts/build/world_areas.gd` (run by the size build) writes `export/world_areas_<size>.tscn`,
 which each landscape instances as `Areas`: `Forests/<guide>/chunk_*` (a MultiMeshInstance3D per 200 m chunk and tree kind, trees
-standing on the ground) and `Waters/<guide>` (a lake: flat surface over the low ground; a river, any water guide named `*River*`: a
-strip draped on the ground; no channel is carved). Trees have no collision (units walk through them) and the water none (units
-wade through it): the navmeshes do not depend on them. Counts (2 km / 6 km): 6,677 / 61,711 trees (`elder wood` 4,412 / 40,640,
+standing on the ground) and `Waters/<guide>`, a `water_body.tscn` (editable children) per water guide: `Surface` (a river,
+any water guide named `*River*`: a strip 1 m under its nearest bank; a lake: flat 0.3 m under the lowest ground on its outline;
+the sea: flat at the ocean plane's height), and for the river and the sea `Blockers` (a NavigationObstacle3D per outline piece,
+which cuts the water out of the baked navmesh; the river's outline has a disc cut out at each `RiverCrossing`) and `Wall` (bank
+walls along the same pieces, 4 m over the higher bank, so bodies cannot walk in either; the navmesh bake ignores them). Before
+the sink the river and lake surfaces sit under the ground. The water's look is `water_body.tscn`'s. Trees have no collision
+(units walk through them); the navmeshes depend on the river and sea blockers, so after a change to them or the crossings rebake. Counts (2 km / 6 km): 6,677 / 61,711 trees (`elder wood` 4,412 / 40,640,
 `northwood` 2,265 / 21,071; 400 m: 42), in 33 / 208 chunks, hidden beyond 1500 m / 3500 m (no far stand-in yet: from the
 towers a forest more than that away is bare ground). The generated scene is 0.8 MB at 2 km, 5.4 MB at 6 km (the transforms are
 written by hand into the scene text, because a headless Godot has no renderer to read them back from).

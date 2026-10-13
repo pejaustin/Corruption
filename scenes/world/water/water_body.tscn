@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://art/world/materials/water_placeholder.tres" id="1_water"]
+
+[node name="WaterBody" type="Node3D"]
+
+[node name="Surface" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+material_override = ExtResource("1_water")
+
+[node name="Blockers" type="Node3D" parent="."]
+
+[node name="Wall" type="StaticBody3D" parent="."]
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Wall"]
