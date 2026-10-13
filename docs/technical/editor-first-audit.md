@@ -174,10 +174,8 @@ action taken. Sites that added `add_child` without `.new()` (reparenting, `insta
 | `tools/playtest/input_driver.gd:101` | `InputEventMouseMotion.new()` | d | Tool: tests, playtest driver, shot rig |
 | `tools/playtest/playtest_order.gd:41` | `Driver.new()` | d | Tool: tests, playtest driver, shot rig |
 | `tools/shots/shot.gd:33` | `Camera3D.new()` | d | Tool: tests, playtest driver, shot rig |
-| `tools/tests/test_endgame.gd:36` | `Marker3D.new()` | d | Tool: tests, playtest driver, shot rig |
-| `tools/tests/test_mirror.gd:24` | `RandomNumberGenerator.new()` | d | Tool: tests, playtest driver, shot rig |
-| `tools/tests/test_mirror.gd:50` | `MirrorMessage.new()` | d | Tool: tests, playtest driver, shot rig |
-| `tools/tests/test_orders.gd:127` | `WorldModel.new()` | d | Tool: tests, playtest driver, shot rig |
+| `tests/integration/test_endgame.gd:36` | `Marker3D.new()` | d | Tool: tests, playtest driver, shot rig |
+| `tests/integration/test_orders.gd:127` | `WorldModel.new()` | d | Tool: tests, playtest driver, shot rig |
 
 ## Left in code, and why
 

@@ -167,4 +167,4 @@ fi
 
 step "done"
 git status --short -- art/world/export scenes/world scenes/map | grep -v '\.uid$' || true
-echo "Check it: tools/tests/test_world_layout.tscn with WORLD_SIZE=400m, 2km and 6km (README: art/world/README.md, Sizes)."
+echo "Check it: tests/integration/test_world_layout.tscn with WORLD_SIZE=400m, 2km and 6km (README: art/world/README.md, Sizes)."

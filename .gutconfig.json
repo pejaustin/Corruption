@@ -1,0 +1,5 @@
+{
+	"dirs": ["res://tests/unit", "res://tests/component"],
+	"include_subdirs": true,
+	"should_exit": true
+}

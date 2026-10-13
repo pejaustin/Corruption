@@ -1,4 +1,4 @@
-extends "res://tools/tests/test_base.gd"
+extends "res://tests/integration/test_base.gd"
 
 ## 4-player network smoke test. tools/net/smoke.sh starts four of these (one host, three joiners) as separate
 ## headless Godot processes on localhost; each runs the same flow through the real lobby and world, and checks

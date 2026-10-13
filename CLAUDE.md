@@ -23,9 +23,16 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Run:** open `project.godot` in Godot 4.6 and press F5 (main menu → host → lobby → start).
 - **Sandbox:** `tools/sandbox/sandbox_400m.tscn` opens the 400 m world on its own as an offline host (you are player 1, no
   lobby): open it and press F6, or `godot --path . res://tools/sandbox/sandbox_400m.tscn`. Esc → Debug panel to spawn units.
-- **Headless tests** (`tools/tests/`): each test is a small scene that loads the real world as an offline host and
-  exits with the number of failed checks, e.g. `godot --headless --path . res://tools/tests/test_sites.tscn`.
-  A fresh clone needs the editor opened once first (netfox autoload UIDs and the import cache).
+- **Tests (Austin, 2026-10-13):** most tests take milliseconds and check one thing. Tests compound: drive the
+  subject directly and trust what other tests cover (kill a boss with `notify_minion_died`, not by fighting it; set a
+  site's `present_strength`, don't walk units in). Inject or split code only where a test needs it.
+  - **Fast tier (GUT), every change:** `tests/unit/` (no scene tree) and `tests/component/` (one node or scene on a
+    bare stage, `tests/support/stage_test.gd`: MinionManager + GroupManager as `current_scene`, no world).
+    `tools/gut.sh test_paladin.gd` runs one file; run only the touched system's file, `tools/gut.sh` for all (about 2 s).
+    Physics tests (`test_movement`) use a small baked navmesh (`add_ground`) and `--fixed-fps`.
+  - **Milestone tier, only before a version or when asked:** `tests/integration/` (load the real world, e.g.
+    `godot --headless --path . res://tests/integration/test_orders.tscn`; a fresh clone needs one
+    `godot --headless --import` first), the net smoke and the input playtests below. See `tests/integration/README.md`.
 - **4-player network smoke** (`tools/net/`): `tools/net/smoke.sh` starts a listen-server host and three joiners as separate
   headless processes on localhost (free UDP port, `timeout`, trap-killed) and drives lobby -> Start -> seats/towers -> orders
   and couriers -> site changes -> Paladin (defeat, possess, Palantir viewers, recall) -> mirror calls -> gauntlet, win and
@@ -413,7 +420,7 @@ When making changes:
 1. **Read before writing.** Look at the existing scene and any sibling scripts to match conventions before adding new code.
 2. **Match the surrounding style** even if it differs slightly from this guide. Consistency within a file beats global purity.
 3. **Make the smallest change that solves the problem.** Don't refactor adjacent code unless asked.
-4. **Don't invoke the Godot CLI** (no `godot --headless --check-only` or similar). Hand off to the user for in-editor verification after non-trivial changes.
+4. **Don't invoke the Godot CLI** (no `godot --headless --check-only` or similar), except `tools/gut.sh` for the touched system's tests. Hand off to the user for in-editor verification after non-trivial changes.
 5. **For scene changes, do the safe edits yourself** (instancing, new built-in nodes, property/transform tweaks — see Section 6). Hand off to the editor only for the unsafe categories listed there. Whichever path you take, summarize the change so the user can verify in-editor.
 6. **Surface architectural decisions** — if a request requires a new autoload, a new signal between distant systems, or changing the scene tree shape, propose the change and wait for confirmation before implementing.
 7. **Never silently install plugins** into `addons/`. Ask first.
@@ -505,7 +512,7 @@ draw.
   by hand), walking over points records the route (limit `MatchConfig.STARTING_ROUTE_POINTS` +
   `GameState.get_route_point_bonus`), E on a point = destination → a scroll in hand (`OverlordActor.held_order`, Q
   tears it up) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and dispatches. Sent orders
-  darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tools/tests/test_orders.tscn`.
+  darken in ink. Debug: `KnowledgeManager.INSTANT_COMMANDS`. Tests: `tests/unit/test_world_model.gd`; milestone `tests/integration/test_orders.tscn`.
 - **Expected state (Austin, 2026-10-09):** a unit that leaves the tower's range never becomes unorderable or "stale".
   `request_dispatch` gives each ordered group a `WorldModel.expectations[gid]` (path = where the map had it + the
   route; position walks the path at `EXPECTED_SPEED` from the order, clamped at the destination). The piece stands at
@@ -527,7 +534,7 @@ draw.
 `Desk` is one per tower (`tower.tscn`, hall floor). E at your own desk (`is_active_for_local_peer`) opens a code-built book
 UI: tabs for "All" (newest first, ticks as mm:ss), one per record `kind` in `WorldModel.records`, and a Notes page bound to
 `WorldModel.notes`. It claims the modal lock, frees the mouse, disables the rig's `PlayerInput`, refreshes on
-`record_added`, and closes on Esc / E / Q (E/Q ignored while typing in Notes). Test: `tools/tests/test_desk.tscn`.
+`record_added`, and closes on Esc / E / Q (E/Q ignored while typing in Notes). Test: `tests/component/test_desk.gd`.
 
 ### Balcony and day/night (`scripts/interactibles/balcony.gd`, `scripts/day_night.gd`)
 
@@ -538,7 +545,7 @@ facing the map centre; mouse or right stick turns it, E / Q returns. It claims t
 unshaded with `disable_fog`, so they read from there day or night. `DayNight` (`world.tscn`, one node) is the host's clock
 (`time_of_day` 0 = midnight, 0.5 = noon, `DAY_SECONDS` long), pushed to clients with a reliable RPC on connect and every
 `SYNC_SECONDS`; it rotates `World/Atmosphere/DirectionalLight3D` (a moon by night) and tints light, sky and ambient.
-**Flavour only** until the open question (#574) says otherwise. Tests: `tools/tests/test_balcony.tscn`. Shot rig:
+**Flavour only** until the open question (#574) says otherwise. Tests: `tests/component/test_balcony.gd`, `test_day_night.gd`. Shot rig:
 `SHOT_GIVE_SITE=SiteChapel SHOT_TIME=0.95` in `tools/shots/shot.gd`.
 
 ### Mirror (GDD §10, `scripts/interactibles/mirror.gd`)
@@ -554,7 +561,7 @@ unreliable, `LIVE_POSE_RATE`) plus voice chunks (`mirror_live_audio`, int16, dow
 relative to the mirror plus every `Skeleton3D` bone rotation (int16 quaternion) into one `PackedByteArray` frame;
 `MirrorMessage` stores recorded frames as `pose_data` / `pose_frame_size`. The ghost's AnimationPlayer is stopped and
 `MirrorCodec.apply_pose` writes the bones. All RPCs are `rpc_id` to the target peer; the sender id comes from
-`get_remote_sender_id()`. Test: `tools/tests/test_mirror.tscn` (offline; real two-peer streaming is untested).
+`get_remote_sender_id()`. Tests: `tests/unit/test_mirror_codec.gd`, `tests/component/test_mirror.gd` (real two-peer streaming is untested).
 
 ### The Paladin (GDD §8, `scenes/actors/player/avatar/`)
 
@@ -578,10 +585,10 @@ One shared `AvatarActor` (`World/Avatar`), always awake: unowned he fights for t
 - **Palantir** (`scripts/interactibles/palantir.gd`): anyone scries (E, Q to leave); the owner presses E while scrying
   to possess; others may E to overpower. It stands on the tower's second floor where Austin placed it, with a 1 m
   trigger sphere: the interaction ray (3.5 m) never hits an Area it starts inside, so a bigger sphere made it dead
-  up close. Test: `tools/tests/test_palantir.tscn`. Viewers are seat-coloured orbs at their cameras (`_update_watcher_orbs`).
+  up close. Tests: `tests/component/test_palantir.gd`; milestone (the interaction ray) `tests/integration/test_palantir.tscn`. Viewers are seat-coloured orbs at their cameras (`_update_watcher_orbs`).
 - **`PaladinVoice`** (`paladin_voice.gd`): proximity-free voice among `get_paladin_voice_peers()`, the mirror's
   capture-bus + `MirrorCodec` approach (bus `PaladinMic`). Real multi-peer voice is untested.
-- Test: `tools/tests/test_paladin.tscn` (starts `NetworkTime` so his rollback tick runs).
+- Tests: `tests/component/test_paladin.gd`, `test_site_encounter.gd`.
 
 ### Endgame (GDD §9, `scenes/world/places/holy_site.gd`)
 
@@ -592,7 +599,7 @@ hp and damage scaled by strength; they are AI-driven (no player control yet). Ea
 left -> `GameState.announce_win(owner)`. If the Paladin dies (`AvatarActor.died`) the current boss's player takes him
 (`set_avatar_owner`, deferred past his own owner wipe), the gauntlet ends and he is pinned at that player's tower gate
 (`PLACEHOLDER: #576`). Losing his owner some other way aborts. `GoodFaction`'s draw step calls `HolySite.lock_all`. State is
-mirrored in static vars (`HolySite.state`, `boss_peer`, ...) for the F3 overlay. Test: `tools/tests/test_endgame.tscn`.
+mirrored in static vars (`HolySite.state`, `boss_peer`, ...) for the F3 overlay. Tests: `tests/component/test_holy_site.gd`; milestone `tests/integration/test_endgame.tscn`.
 
 ### Treasure room and ledger (`scripts/interactibles/treasure_room.gd`, `ledger.gd`)
 
@@ -600,7 +607,7 @@ Each `tower.tscn` has a `TreasureRoom` (a MultiMesh of crates, one per good up t
 by `MinionManager.get_treasury(tower owner)`; invisible unless the tower is yours) and a `Ledger` interactable (E opens a
 panel: the treasury, then `WorldModel.ledger` entries newest first with their age; modal like the desk). The ledger fills
 from `report["resources"]`; groups note the resource sites they pass (`UnitGroup.seen_resources`) so a haul reports the mine.
-Test: `tools/tests/test_treasure.tscn`.
+Test: `tests/component/test_treasure.gd`.
 
 ### Getting better (GDD §5, `scripts/groups/`)
 
@@ -616,7 +623,7 @@ Test: `tools/tests/test_treasure.tscn`.
   (`carrying = &"relic"`, `carry_amount` = relic index); unloaded at home it calls `Relic.apply` (sets `UnitGroup.auto_courier`,
   `GameState.add_route_point_bonus`) and writes a `relic` desk record. A fallen carrier drops it back (`RelicPlace.restore`).
 - Offers: groups with `MinionActor.parley_mode` do not attack nobles; captures skip nobles.
-- Test: `tools/tests/test_growth.tscn`.
+- Test: `tests/component/test_growth.gd`.
 
 ### Interactable focus — raycast-pull, not poll-push
 

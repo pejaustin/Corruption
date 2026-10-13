@@ -46,7 +46,7 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 - [x] 1 Corruption sites
 - [x] 2 Information
 - [x] 3 Map and orders
-- [x] 4 Troops and humans (bodies, remains, thralls at a chapel, nobles; `tools/tests/test_fieldwork`)
+- [x] 4 Troops and humans (bodies, remains, thralls at a chapel, nobles; `tests/component/test_field_work.gd`)
 - [x] 5 Goods (resource locations, overseers, hauling, treasure room, ledger; `test_fieldwork`, `test_treasure`)
 - [x] 6 The Paladin (takeover, hold, control tiers, shared Palantir; `test_paladin`)
 - [x] 7 Endgame (holy site, boss gauntlet, comeback, draw lock; `test_endgame`). Boss forms are AI-driven
@@ -59,7 +59,7 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
   four towers (paired by `slot_index`), every place and site stands on his map (PLACEHOLDER layout, `art/world/README.md`),
   saved navmesh `scenes/world/world_navmesh.res`; `test_world_layout`.
 
-Tests (`tools/tests/`): sites, orders, desk, mirror, fieldwork, paladin, balcony, endgame, treasure, growth, world_layout.
+Tests: the GUT fast tier in `tests/unit/` and `tests/component/` (`tools/gut.sh`), milestone suites in `tests/integration/` (CLAUDE.md "Tests").
 
 Still open: player control of boss forms (#560), every placeholder in `PLACEHOLDERS.md`, how the Paladin gets to the
 winner's tower (#576), the GDD §11 questions, and real multi-peer testing of the mirror and Palantir voice.

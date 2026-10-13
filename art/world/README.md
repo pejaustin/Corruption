@@ -81,7 +81,7 @@ follow the size (`SIZE_TUNING`; all PLACEHOLDER, listed in `PLACEHOLDERS.md`).
 the Windows install under WSL, `/Applications/Blender.app` on a Mac, else `blender`). It switches the `.blend` importer
 off in `project.godot` for the Godot runs (a headless import stops at the first `.blend` otherwise) and puts it back.
 `VERBOSE=1` shows the full engine output. Afterwards check with `WORLD_SIZE=400m|2km|6km godot --headless --path .
-res://tools/tests/test_world_layout.tscn` (the other tests and the shot rig take `WORLD_SIZE` too).
+res://tests/integration/test_world_layout.tscn` (the other tests and the shot rig take `WORLD_SIZE` too).
 
 **Blender add-on (optional):** `tools/blender/addons/corruption_world_sync.py`. Install it from Edit > Preferences > Add-ons >
 Install from Disk, tick "Corruption: world sync". Saving `world_landscape.blend` then exports all three sizes in

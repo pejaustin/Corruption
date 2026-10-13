@@ -159,6 +159,10 @@ func _tick_hold(dt: float) -> void:
 
 func _tick_takeover(dt: float) -> void:
 	_measure_presence()
+	_advance_takeover(dt)
+
+func _advance_takeover(dt: float) -> void:
+	## The takeover rules over `present_strength` (split from the measuring so tests can set it).
 	var taker := -1
 	var frozen := false
 	if is_contested():
