@@ -1,0 +1,63 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/world/fog/world_fog.gd" id="1_fog"]
+[ext_resource type="Shader" path="res://shaders/drifting_fog.gdshader" id="2_fog"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_fog"]
+frequency = 0.06
+
+[sub_resource type="NoiseTexture3D" id="NoiseTexture3D_fog"]
+width = 64
+height = 64
+depth = 64
+seamless = true
+noise = SubResource("FastNoiseLite_fog")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pool"]
+shader = ExtResource("2_fog")
+shader_parameter/density = 0.003
+shader_parameter/full_below = 4.0
+shader_parameter/clear_above = 24.0
+shader_parameter/edge_fade = 150.0
+shader_parameter/noise = SubResource("NoiseTexture3D_fog")
+shader_parameter/noise_scale = 220.0
+shader_parameter/noise_strength = 0.6
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_patch"]
+shader = ExtResource("2_fog")
+shader_parameter/density = 0.03
+shader_parameter/full_below = 2.0
+shader_parameter/clear_above = 25.0
+shader_parameter/edge_fade = 80.0
+shader_parameter/noise = SubResource("NoiseTexture3D_fog")
+shader_parameter/noise_scale = 120.0
+shader_parameter/noise_strength = 0.8
+
+; PLACEHOLDER: the whole fog look, where it gathers and how thick (PLACEHOLDERS.md "Fog")
+[node name="WorldFog" type="Node"]
+script = ExtResource("1_fog")
+
+; PLACEHOLDER: low ground fog over the whole map, fading out 5-30 m above y = 0
+[node name="ValleyPool" type="FogVolume" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 250, 0, 0)
+size = Vector3(1900, 80, 2000)
+shape = 3
+material = SubResource("ShaderMaterial_pool")
+
+; PLACEHOLDER: thicker patches over The Still Lake and the two forests (from their guide outlines in art/world/export/areas_2km.json)
+[node name="Patches" type="Node3D" parent="."]
+
+[node name="StillLake" type="FogVolume" parent="Patches"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -370, 14, -808)
+size = Vector3(420, 60, 240)
+material = SubResource("ShaderMaterial_patch")
+
+[node name="ElderWood" type="FogVolume" parent="Patches"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 504, 29, 602)
+size = Vector3(980, 70, 600)
+material = SubResource("ShaderMaterial_patch")
+
+[node name="Northwood" type="FogVolume" parent="Patches"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 223, 23, -472)
+size = Vector3(800, 70, 560)
+material = SubResource("ShaderMaterial_patch")

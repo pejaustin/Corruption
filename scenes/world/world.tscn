@@ -30,6 +30,7 @@
 [ext_resource type="Script" uid="uid://cgc0guyh5exqy" path="res://scripts/world_curve.gd" id="33_curve"]
 [ext_resource type="PackedScene" path="res://scenes/sites/burial_ground.tscn" id="90_burial"]
 [ext_resource type="PackedScene" path="res://art/world/export/world_backdrop_2km.tscn" id="91_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/world/fog/world_fog.tscn" id="92_fog"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_unvu4"]
 sky_top_color = Color(0.431373, 0.721569, 0.933333, 1)
@@ -51,7 +52,14 @@ fog_aerial_perspective = 0.768
 fog_sky_affect = 0.0
 fog_depth_begin = 0.0
 fog_depth_end = 231.2
-volumetric_fog_length = 50.0
+; PLACEHOLDER: volumetric fog look (thin haze everywhere; length = how far it is drawn, beyond that the view is clear)
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0015
+volumetric_fog_albedo = Color(0.85, 0.88, 0.92, 1)
+volumetric_fog_length = 400.0
+volumetric_fog_detail_spread = 1.5
+volumetric_fog_ambient_inject = 0.4
+volumetric_fog_sky_affect = 0.2
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5nagr"]
 shader = ExtResource("11_mxkvs")
@@ -82,6 +90,11 @@ directional_shadow_max_distance = 400.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Atmosphere" unique_id=446517867]
 environment = SubResource("Environment_s4jie")
+
+; PLACEHOLDER: the fog (scenes/world/fog/, PLACEHOLDERS.md "Fog")
+[node name="WorldFog" parent="World/Atmosphere" unique_id=446517869 node_paths=PackedStringArray("day_night", "world_environment") instance=ExtResource("92_fog")]
+day_night = NodePath("../../../DayNight")
+world_environment = NodePath("../WorldEnvironment")
 
 [node name="WorldCurve" type="Node" parent="World/Atmosphere" unique_id=446517868]
 script = ExtResource("33_curve")

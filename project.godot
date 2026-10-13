@@ -199,3 +199,7 @@ curve_eye_height_m={
 "type": "float",
 "value": 40.0
 }
+fog_night={
+"type": "float",
+"value": 0.0
+}

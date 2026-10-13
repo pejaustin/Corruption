@@ -52,6 +52,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 | Desk look (box table and red book) | Desk and book art | `scenes/interactibles/desk.tscn` | #570 |
 | Balcony look (stone post and brass spyglass) | Balcony art | `scenes/interactibles/balcony.tscn` | — |
 | Balcony wording ("Press E to look out", "E / Q to return") | The balcony's UI copy | `scripts/interactibles/balcony.gd` | — |
+| Fog: where it gathers (a low-ground layer over the whole map, fading out 4-24 m above y = 0, plus thicker patches over The Still Lake, elder wood and northwood from their guide outlines), how thick by day and at night (haze x2.5, volumes x2), its colour, drift speed and direction, wisp size, how far it is drawn (400 m) and how much it veils the sky (20%) | The world's real fog | `scenes/world/fog/world_fog.tscn`, `shaders/drifting_fog.gdshader`, `world.tscn` Environment `volumetric_fog_*` | |
 | Sky, sun and moon colours, night light and ambient levels | Day/night look | `scripts/day_night.gd` |  |
 | Ruined tower = hidden roof pieces, revealed as sites are held | Tower restoration stages | `scenes/world/env/tower.gd` | #567 |
 | Map floor illustration (parchment + terrain contours, now baked from his 2 km ground by `tools/bake_map_illustration.gd`: 256 px, shading and 20 m contours), point discs, chess pieces, ink ribbons | Map art | `scenes/map/` | #534, #538 |
