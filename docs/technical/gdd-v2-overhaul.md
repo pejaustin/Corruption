@@ -59,6 +59,8 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
   four towers (paired by `slot_index`), every place and site stands on his map (PLACEHOLDER layout, `art/world/README.md`),
   saved navmesh `scenes/world/world_navmesh.res`; `test_world_layout`.
 
+- [x] MVP switch (2026-10-13, #632/#563): `MatchConfig.humans_kill_only` turns off captives, thralls and bought nobles (humans are only killed) and makes work sites need an undead overseer; `test_field_work`, `test_combat`.
+
 Tests: the GUT fast tier in `tests/unit/` and `tests/component/` (`tools/gut.sh`), milestone suites in `tests/integration/` (CLAUDE.md "Tests").
 
 Still open: player control of boss forms (#560), every placeholder in `PLACEHOLDERS.md`, how the Paladin gets to the

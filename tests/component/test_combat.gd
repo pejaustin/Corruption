@@ -6,6 +6,10 @@ extends "res://tests/support/stage_test.gd"
 
 const CATALOG := preload("res://data/minion_catalog.tres")
 
+func before_each() -> void:
+	await super()
+	MatchConfig.humans_kill_only = false  # Capture and offer behaviour; the switch-on tests set it back.
+
 func _attack_state(unit: MinionActor) -> Node:
 	return unit.get_node(^"RewindableStateMachine/AttackState")
 
@@ -56,6 +60,18 @@ func test_a_capture_group_stops_at_a_beaten_human_and_at_nobles() -> void:
 	villager.hp = 1
 	assert_false(a.is_hostile_to(villager))
 	assert_false(a.is_hostile_to(noble))
+
+func test_with_the_switch_on_a_capture_mode_unit_kills_and_nobles_are_fair_game() -> void:
+	MatchConfig.humans_kill_only = true
+	var a := spawn(&"skeleton", 1)
+	var villager := spawn(&"villager", GameConstants.GOOD_SIDE)
+	var noble := spawn(&"noble", GameConstants.GOOD_SIDE)
+	a.capture_mode = true
+	a.parley_mode = true
+	a.attack_damage = villager.hp * 10
+	assert_true(a.is_hostile_to(noble))
+	_blow(a, villager)
+	assert_true(villager.hp <= 0, "not stopped at 1 HP")
 
 # --- A landed blow ---
 

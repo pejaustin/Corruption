@@ -42,6 +42,7 @@ func after_each() -> void:
 	get_tree().current_scene = _previous_scene
 	stage.free()
 	GameState.reset()
+	MatchConfig.humans_kill_only = true  # The MVP default; tests of captives and nobles turn it off for themselves.
 
 func add_overlord(peer := 1) -> OverlordActor:
 	## Player `peer`'s overlord body, idle (its input and physics off).

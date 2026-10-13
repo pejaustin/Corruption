@@ -660,6 +660,10 @@ Test: `tests/component/test_treasure.gd`.
   (`carrying = &"relic"`, `carry_amount` = relic index); unloaded at home it calls `Relic.apply` (sets `UnitGroup.auto_courier`;
   the old route-point relic does nothing now, a placeholder) and writes a `relic` desk record. A fallen carrier drops it back (`RelicPlace.restore`).
 - Offers: groups with `MinionActor.parley_mode` do not attack nobles; captures skip nobles.
+- **MVP switch (Austin, 2026-10-13, #632/#563):** `MatchConfig.humans_kill_only` (static var, default true; tests reset it in
+  `StageTest.after_each`). On: no `CAPTURE`/`OFFER` goals offered (`OrderGoal.goals_for`, advisor), their handlers finish at once,
+  `capture_mode`/`parley_mode` no longer spare humans (they kill), no thralls at a chapel (`_held_chapel`), and a `ResourceSite`
+  is worked only by one of your undead (`GO_HERE` posts them there; no villager overseers spawn). Off restores all of it.
 - Test: `tests/component/test_growth.gd`.
 
 ### Interactable focus — raycast-pull, not poll-push

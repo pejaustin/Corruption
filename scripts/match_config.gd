@@ -5,6 +5,11 @@ class_name MatchConfig
 ## match to 4–5 hours. The host picks it in the lobby; GameState.match_pace
 ## holds it for the match.
 
+## MVP switch (Austin, 2026-10-13): the only way to deal with humans is to kill them. While true, capturing live humans,
+## making thralls at a corrupted chapel and buying nobles are off (built, not deleted), and a work site is worked only by
+## your undead. A var, not a const, so tests can turn it off; set it false to bring the mechanics back after the MVP.
+static var humans_kill_only: bool = true
+
 enum Pace { NORMAL, SLOW }
 
 const PACE_NAMES: Dictionary[int, String] = {
