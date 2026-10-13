@@ -11,7 +11,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Game type:** 4-player PvP Dark Lord simulator — 3D third-person (Avatar) + 3D first-person (Overlords)
 - **Scripting language:** GDScript only
 - **Target platforms:** Desktop
-- **Entry scene:** `scenes/world/world.tscn`, the 2 km world; the host picks 400 m / 2 km / 6 km in the lobby (`GameState.world_size`, `MatchConfig.WORLD_SCENES`; the other two are generated, see `art/world/README.md` "Sizes"). Project main scene is `scenes/menus/main_menu.tscn`
+- **Entry scene:** `scenes/world/world.tscn`, the 2 km world; the host picks 400 m / 2 km / 6 km in the lobby (`GameState.world_size`, `MatchConfig.WORLD_SCENES`). 400 m and 2 km are separate works (each its own Blender map and Godot scenes); 6 km is legacy (not maintained, not for MVP). See `art/world/README.md` "Sizes". Project main scene is `scenes/menus/main_menu.tscn`
 - **Key autoloads:** `NetworkManager`, `DebugManager`, plus netfox autoloads (`NetworkTime`, `NetworkRollback`, etc.)
 - **Game constants:** `scripts/game_constants.gd` — Factions enum, MAX_PLAYERS, GOOD_SIDE, seat colours; match pace in `scripts/match_config.gd`
 - **Full overview:** `docs/one-pager.md`
@@ -54,9 +54,14 @@ This file gives Claude Code the context it needs to make informed changes to a G
   floor markers: the overlord's camera is 2.3 m up and cannot look down past 70 degrees.
 - **World ground and navmesh:** the game world is Austin's 2 km map (`art/world/export/world_landscape_2km.tscn`, under
   `World/Nav` in `world.tscn`); the old Terrain3D ground is gone (the addon stays installed). The navmesh is baked and
-  saved as `scenes/world/world_navmesh.res`, not at runtime: re-bake after any ground, tower or tower-rotation change with
-  `WORLD=1 SIZE=2km godot --headless --path . -s res://tools/bake_open_world_navmesh.gd` (needs the headless-import
-  workaround in `art/world/README.md`; it puts the baked vertices on the ground and splits triangles, see the README). The map floor's picture is `tools/bake_map_illustration.gd`'s. The 400 m and 6 km worlds are generated from the 2 km scenes: after editing the map or the 2 km scenes run `tools/sync_world_sizes.sh` (see `art/world/README.md`, "Sizes" for which flags after which edit).
+  saved as `scenes/world/world_navmesh.res`, not at runtime: re-bake after any ground, tower, bridge, ford or water change:
+  bake it in the editor: open `world.tscn` (or `world_400m.tscn`), select `World/Nav`, **Bake NavigationMesh** (Austin, 2026-10-13; the bake settings are on that region's NavigationMesh resource). The old custom bake tool is in `tools/deprecated/`. The map floor's picture is `tools/bake_map_illustration.gd`'s.
+  **From Blender:** `tools/export_world.sh [2km|400m|all]` exports only the ground (`geo`) and the backdrop to glb and reimports
+  (Austin, 2026-10-13); everything else (markers, towers, POIs, fords, bridges, forests, water and its blockers) is authored
+  in `art/world/export/world_landscape_<size>.tscn`, per size, and never placed by script. Rebake the navmesh (and the map
+  picture after a ground change) by hand. **Water:** no bank walls; `NavigationObstacle3D` blockers under
+  `Waters/<body>/Blockers` carve only up to just over the water, so bridges and `RiverCrossing` fords (an invisible walkable
+  slab) work by being placed, then rebaking. The old pipeline is in `tools/deprecated/` (one-time use, not maintained).
 
 
 ### Debug Access
@@ -420,10 +425,16 @@ When making changes:
 1. **Read before writing.** Look at the existing scene and any sibling scripts to match conventions before adding new code.
 2. **Match the surrounding style** even if it differs slightly from this guide. Consistency within a file beats global purity.
 3. **Make the smallest change that solves the problem.** Don't refactor adjacent code unless asked.
-4. **Don't invoke the Godot CLI** (no `godot --headless --check-only` or similar), except `tools/gut.sh` for the touched system's tests. Hand off to the user for in-editor verification after non-trivial changes.
-5. **For scene changes, do the safe edits yourself** (instancing, new built-in nodes, property/transform tweaks — see Section 6). Hand off to the editor only for the unsafe categories listed there. Whichever path you take, summarize the change so the user can verify in-editor.
-6. **Surface architectural decisions** — if a request requires a new autoload, a new signal between distant systems, or changing the scene tree shape, propose the change and wait for confirmation before implementing.
-7. **Never silently install plugins** into `addons/`. Ask first.
+4. **Engine settings before tools (Austin, 2026-10-13).** When something misbehaves, understand it as Godot sees it and
+   find the built-in setting that fixes it; tell Austin the setting and value (or ask if it sounds right) and let him
+   change or approve it. Never build a custom tool, script or pipeline around an engine problem. This has gone wrong
+   at least three times: the runtime-generated map floor, the sync/size/areas build pipeline, and the navmesh "refine"
+   bake tool (a slow GDScript pass compensating for Recast's `detail_sample_max_error`, a one-field setting). Each was
+   expensive, against Godot conventions and slowed the whole development cycle. All are now deprecated.
+5. **Don't invoke the Godot CLI** (no `godot --headless --check-only` or similar), except `tools/gut.sh` for the touched system's tests. Hand off to the user for in-editor verification after non-trivial changes.
+6. **For scene changes, do the safe edits yourself** (instancing, new built-in nodes, property/transform tweaks — see Section 6). Hand off to the editor only for the unsafe categories listed there. Whichever path you take, summarize the change so the user can verify in-editor.
+7. **Surface architectural decisions** — if a request requires a new autoload, a new signal between distant systems, or changing the scene tree shape, propose the change and wait for confirmation before implementing.
+8. **Never silently install plugins** into `addons/`. Ask first.
 
 ---
 
@@ -454,17 +465,18 @@ lands the killing blow, and the four-faction picker.
 PLACEHOLDER geography built in Blender 4.5 from Austin's sketch: `art/world/source/world_landscape.blend` (the whole
 landscape, 1 unit = 1 m, 2000 x 1500 m until the scale test #603; `.gdignore`d, tiles come with #605), `props.blend`
 (linked props), `pois/<name>.blend` (one per sketch place, plus `_template`, `holy_site`, `graveyard`) and 32 px nearest-
-filtered textures. Austin edits the .blends by hand from here; `tools/blender/build_all.sh` regenerates them and
-overwrites hand edits, so don't re-run it casually. The four towers are left unplaced (`tower_slot_1..4`). Names and
+filtered textures. Austin edits the .blends by hand from here; the old generators are in `tools/deprecated/blender/` and
+overwrite hand edits, so don't run them. The four towers are left unplaced (`tower_slot_1..4`). Names and
 layout are unconfirmed (#606). See `art/world/README.md`.
 
 **Update 2026-10-09 (second version):** `source/world_landscape.blend` is AUSTIN'S hand-made map (original:
 `source/reference/corruption-map-original.blend`; generated blockout: `world_landscape_generated_placeholder.blend`). +Y is
-north. Ground = `geo` (authored at 2000 x 2000 m; exported at 2 km and 6 km, see README "Two sizes"; 2 km is in the game); `elder wood`, `northwood`, `Pale River`, `The Still Lake` are position guides only (not in the glb; their footprints grow stand-in forests and water in the size build, Austin 2026-10-10; `art/world/README.md` "Forests and water"); **every
-empty is a POI marker** (his spellings, e.g. `Avequel'la`, `Hopes Gate`, `far harbor`) whose snake_case name (lowercase, spaces
-to `_`, apostrophes dropped) is its `art/world/pois/<snake>.blend` (exported to glb) and its Godot scene `art/world/pois/<snake>.tscn`, instanced under the marker by the size build. Placeholder textures come from
-`tools/blender/texture_austin_map.py`; the ground's texture choice is his vertex paint (`Splat` layer, `add_splat.py`, README "Painting the ground"); geometry untouched, checksummed. POI files with no marker yet: `northwood`, `old_gate`,
-`elder_woods`, `holy_site`, `graveyard`. Tower markers: empties named `Volcano Tower`, `Forest Tower` (plus the `Avequel'la` and `Naf Ishun` POI markers); see README "Tower locations". No roads or scale figure in his file.
+north. Ground = `geo` (authored at 2000 x 2000 m; the 400 m map is its own file, `world_landscape_400m.blend`); `elder wood`, `northwood`, `Pale River`, `The Still Lake` are position guides only (not in the glb; their stand-in forests and water were grown once and now live in the landscape scenes); the empties were the POI and tower
+markers (his spellings, e.g. `Avequel'la`, `Hopes Gate`, `far harbor`); since 2026-10-13 the markers are Node3Ds of the same names in
+`art/world/export/world_landscape_<size>.tscn`, edited in Godot, each with its place scene `art/world/pois/<snake>.tscn` (snake_case: lowercase, spaces
+to `_`, apostrophes dropped) under it. Placeholder textures came from
+`tools/deprecated/blender/texture_austin_map.py`; the ground's texture choice is his vertex paint (`Splat` layer, `add_splat.py`, README "Painting the ground"); geometry untouched, checksummed. POI files with no marker yet: `northwood`, `old_gate`,
+`elder_woods`, `holy_site`, `graveyard`. Tower markers: `Volcano Tower`, `Forest Tower` (plus the `Avequel'la` and `Naf Ishun` POI markers); see README "Tower locations". No roads or scale figure in his file.
 
 ### Resource-driven data (Tier 4 refactor)
 
@@ -503,7 +515,7 @@ draw.
   length) through the points the player knows; an order's `route` is every curve point on that way (`Road.waypoints`),
   per group (`routes`/`paths`), and couriers travel by road too (`KnowledgeManager._by_road`: road stops with nothing to
   hand over). The navmesh stays whole: units leave the road to fight or chase and come back. The shipped roads are
-  stand-ins (`scripts/build/build_placeholder_roads.gd`); `MapPoint.links` is gone. Tests: `tests/unit/test_road_graph.gd`, `tests/component/test_roads.gd`.
+  stand-ins (drawn once by `tools/deprecated/build_placeholder_roads.gd`); `MapPoint.links` is gone. Tests: `tests/unit/test_road_graph.gd`, `tests/component/test_roads.gd`.
 - **Groups** (`scripts/groups/`): every player unit is in a `UnitGroup` (host-side, `GroupManager` node in the world).
   Orders go to groups: walk the route's points, then the goal (`OrderGoal`): hold (`GO_HERE`, `CORRUPT`), watch and
   come home (`ASSESS`), or a registered `goal_handlers` callable (haul, capture, the dead, offers). A group that can't

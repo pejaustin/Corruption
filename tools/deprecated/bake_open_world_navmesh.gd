@@ -70,10 +70,8 @@ func _init() -> void:
 		for t in towers:
 			t.get_parent().remove_child(t)
 			t.queue_free()
-	# The water's bank walls stop bodies, not the bake: its blockers cut the river and the sea out (scripts/build/world_areas.gd).
-	for wall in world.find_children("Wall", "StaticBody3D", true, false):
-		if wall.get_parent().get_parent() != null and wall.get_parent().get_parent().name == &"Waters":
-			(wall as StaticBody3D).collision_layer = 0
+	# The water's NavigationObstacle3D blockers (Waters/<body>/Blockers in the landscape scene) carve the sea and the river
+	# out up to just over the water; bridge decks and RiverCrossing Ford slabs above that stay walkable.
 	var ground := Ground.new()
 	ground.load_size(size)
 	var ref_ground := Ground.new()
@@ -258,7 +256,7 @@ func _ray_y(x: float, z: float) -> float:
 	var inv := _ground_xf.affine_inverse()
 	var a: Vector3 = inv * Vector3(x, 5000.0, z)
 	var b: Vector3 = inv * Vector3(x, -5000.0, z)
-	var hit := _ground_tri.intersect_ray(a, (b - a).normalized())
+	var hit := _ground_tri.intersect_segment(a, b)   # intersect_ray misses ~5% of hits on this scaled mesh
 	return NAN if hit.is_empty() else (_ground_xf * (hit["position"] as Vector3)).y
 
 func _ground_y(v: Vector3) -> float:

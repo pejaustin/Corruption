@@ -1,5 +1,6 @@
 [gd_scene format=4]
 
+[ext_resource type="PackedScene" path="res://scenes/world/water/river_crossing.tscn" id="crossing_400m"]
 [ext_resource type="PackedScene" uid="uid://c8cgonvfixk27" path="res://art/world/export/world_landscape_400m.glb" id="1_landscape"]
 [ext_resource type="PackedScene" uid="uid://dqbatka7l1bfl" path="res://art/world/pois/naf_ishun.tscn" id="3_naf_ishun"]
 [ext_resource type="PackedScene" uid="uid://d0ru2yjmgd6dt" path="res://art/world/pois/forest_ruins.tscn" id="4_forest_ruins"]
@@ -337,6 +338,30 @@ end_position = Vector3(-5, -39.841724, 0)
 [node name="JumpPoint" parent="Avequel'la/Tower/NavigationRegion3D" index="3"]
 end_position = Vector3(-5, -40.89726, 0)
 
+[node name="RiverCrossing" parent="Forest Ruins" instance=ExtResource("crossing_400m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16, 0, -1)
+radius_m = 4
+
+[node name="RiverCrossing" parent="Teshfield" instance=ExtResource("crossing_400m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.6, 0, 13.72)
+radius_m = 4
+
+[node name="RiverCrossingEast" parent="Hopes Gate" instance=ExtResource("crossing_400m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 0, 6)
+radius_m = 4
+
+[node name="RiverCrossingNorth" parent="Hopes Gate" instance=ExtResource("crossing_400m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.1, 0, -7.4)
+radius_m = 4
+
+[node name="RiverCrossingWest" parent="Hopes Gate" instance=ExtResource("crossing_400m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 0, -4.6)
+radius_m = 4
+
+[node name="RiverCrossing" parent="Entbridge" instance=ExtResource("crossing_400m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.56, 0, -5.9)
+radius_m = 9
+
 [node name="Forests" type="Node3D" parent="."]
 
 [node name="elder wood" type="Node3D" parent="Forests"]
@@ -370,3 +395,2215 @@ mesh = SubResource("ArrayMesh_p7ksm")
 [node name="The Still Lake" type="MeshInstance3D" parent="Waters"]
 cast_shadow = 0
 mesh = SubResource("ArrayMesh_2528v")
+
+[node name="Glittering Ocean" type="Node3D" parent="Waters"]
+
+[node name="Blockers" type="Node3D" parent="Waters/Glittering Ocean"]
+
+[node name="Blockers" type="Node3D" parent="Waters/Pale River"]
+
+[node name="Blocker0" type="NavigationObstacle3D" parent="Waters/Glittering Ocean/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -14.42, 0)
+height = 11.37
+vertices = PackedVector3Array(208.3, 0, -62.56, 209.39, 0, -44.12, 203.12, 0, -34.41, 201.75, 0, -25.51, 198.17, 0, -10.27, 200.45, 0, 6.11, 199.94, 0, 13.42, 200.47, 0, 18.98, 201.06, 0, 24.32, 200.71, 0, 29.79, 199.27, 0, 35.61, 198.47, 0, 41.43, 198.41, 0, 46.97, 198.99, 0, 52.34, 199.95, 0, 57.73, 200.27, 0, 63.25, 200.68, 0, 68.87, 201.52, 0, 74.53, 202.2, 0, 80.15, 201.27, 0, 85.05, 200.14, 0, 89.79, 199.87, 0, 95.08, 190.92, 0, 93.35, 183.58, 0, 92.54, 179.52, 0, 93.34, 177.43, 0, 95.09, 175.23, 0, 96.8, 170.85, 0, 97.49, 165.03, 0, 97.49, 159.3, 0, 97.49, 153.61, 0, 97.49, 147.91, 0, 97.49, 142.21, 0, 97.49, 137.4, 0, 97.05, 133.88, 0, 95.96, 133.88, 0, 90.27, 133.85, 0, 84.61, 133.67, 0, 79.26, 133.62, 0, 73.67, 133.14, 0, 68.08, 128.9, 0, 68.18, 125.95, 0, 70.03, 124.8, 0, 71.39, 125.26, 0, 65.86, 125.02, 0, 67.52, 123.46, 0, 68.84, 122.36, 0, 72.12, 116.77, 0, 74.61, 120.42, 0, 75.74, 106.41, 0, 77.14, 96.63, 0, 75.02, 88.21, 0, 72.79, 87.47, 0, 71.72, 88.02, 0, 70.51, 83.86, 0, 69.58, 79.67, 0, 66, 76.53, 0, 60.26, 73.95, 0, 52.89, 70.17, 0, 47.1, 68.42, 0, 41.3, 66.66, 0, 34.1, 64.7, 0, 29.37, 63.49, 0, 26.78, 62.35, 0, 24.7, 61.32, 0, 17.55, 67.69, 0, 6.33, 75.66, 0, -1.91, 84.2, 0, -6.72, 90.13, 0, -9.21, 95.27, 0, -11.84, 99.56, 0, -13.47, 104, 0, -15.95, 108.3, 0, -19.58, 114.32, 0, -23.23, 121.31, 0, -26.45, 128.5, 0, -28.92, 134.31, 0, -31.53, 139.74, 0, -34.38, 145.57, 0, -36.65, 146.52, 0, -39.87, 148.62, 0, -41.58, 150.8, 0, -45.56, 153.27, 0, -52.38, 159.55, 0, -62.14, 169.24, 0, -73.96, 182.5, 0, -88.39, 193.78, 0, -100.53, 199.35, 0, -98.45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker0" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.57, 0)
+height = 2.87
+vertices = PackedVector3Array(-90, 0, -70, -90.27, 0, -70, -90.83, 0, -70.07, -90.83, 0, -72.37, -90, 0, -72.47)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker1" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.09, 0)
+height = 2.35
+vertices = PackedVector3Array(-90, 0, -69.97, -90.27, 0, -70, -90, 0, -70)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker2" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.41, 0)
+height = 3.67
+vertices = PackedVector3Array(-85, 0, -70, -90, 0, -70, -90, 0, -72.47, -85, 0, -73.08)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker3" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.13, 0)
+height = 3.39
+vertices = PackedVector3Array(-85, 0, -69.35, -90, 0, -69.97, -90, 0, -70, -85, 0, -70)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker4" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.01, 0)
+height = 3.57
+vertices = PackedVector3Array(-80, 0, -73.01, -80, 0, -70, -85, 0, -70, -85, 0, -73.08, -80.83, 0, -73.6)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker5" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.01, 0)
+height = 3.58
+vertices = PackedVector3Array(-80, 0, -68.31, -80.83, 0, -68.84, -85, 0, -69.35, -85, 0, -70, -80, 0, -70)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker6" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.18, 0)
+height = 3.11
+vertices = PackedVector3Array(-75.69, 0, -70, -80, 0, -70, -80, 0, -73.01)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker7" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.52, 0)
+height = 3.46
+vertices = PackedVector3Array(-75, 0, -69.52, -75, 0, -65.13, -80, 0, -68.31, -80, 0, -70, -75.69, 0, -70)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker8" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 3.02
+vertices = PackedVector3Array(-70.64, 0, -66.47, -70, 0, -65.13, -70, 0, -65, -74.8, 0, -65, -75, 0, -65.13, -75, 0, -69.52)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker9" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 2.97
+vertices = PackedVector3Array(-70, 0, -60, -71.95, 0, -60, -74.14, 0, -64.58, -74.8, 0, -65, -70, 0, -65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker10" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 2.96
+vertices = PackedVector3Array(-70, 0, -55.92, -71.95, 0, -60, -70, 0, -60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker11" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.01, 0)
+height = 2.37
+vertices = PackedVector3Array(-69.94, 0, -65, -70, 0, -65, -70, 0, -65.13)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker12" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 2.95
+vertices = PackedVector3Array(-67.55, 0, -60, -70, 0, -60, -70, 0, -65, -69.94, 0, -65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker13" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.97
+vertices = PackedVector3Array(-65.15, 0, -55, -69.56, 0, -55, -70, 0, -55.92, -70, 0, -60, -67.55, 0, -60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker14" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(-65, 0, -54.68, -65, 0, -50, -67.17, 0, -50, -69.56, 0, -55, -65.15, 0, -55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker15" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-65, 0, -45, -65.17, 0, -45, -66.47, 0, -48.53, -67.17, 0, -50, -65, 0, -50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker16" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.06, 0)
+height = 2.41
+vertices = PackedVector3Array(-65, 0, -44.55, -65.17, 0, -45, -65, 0, -45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker17" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-62.96, 0, -50.41, -62.81, 0, -50, -65, 0, -50, -65, 0, -54.68)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker18" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-60.97, 0, -45, -65, 0, -45, -65, 0, -50, -62.81, 0, -50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker19" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-60, 0, -42.38, -60, 0, -40, -63.32, 0, -40, -65, 0, -44.55, -65, 0, -45, -60.97, 0, -45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker20" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-60, 0, -35, -60.62, 0, -35, -61.58, 0, -35.27, -63.32, 0, -40, -60, 0, -40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker21" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.06, 0)
+height = 2.41
+vertices = PackedVector3Array(-60, 0, -34.83, -60.62, 0, -35, -60, 0, -35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker22" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.44, 0)
+height = 2.79
+vertices = PackedVector3Array(-59.12, 0, -40, -60, 0, -40, -60, 0, -42.38)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker23" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-58.08, 0, -37.15, -55, 0, -36.56, -55, 0, -35, -60, 0, -35, -60, 0, -40, -59.12, 0, -40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker24" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-55, 0, -33.43, -60, 0, -34.83, -60, 0, -35, -55, 0, -35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker25" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-50, 0, -35.58, -50, 0, -35, -55, 0, -35, -55, 0, -36.56)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker26" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-50, 0, -32.04, -55, 0, -33.43, -55, 0, -35, -50, 0, -35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker27" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.29, 0)
+height = 2.64
+vertices = PackedVector3Array(-46.99, 0, -35, -50, 0, -35, -50, 0, -35.58)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker28" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(-45, 0, -34.61, -45, 0, -30.65, -50, 0, -32.04, -50, 0, -35, -46.99, 0, -35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker29" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.72, 0)
+height = 3.07
+vertices = PackedVector3Array(-43.11, 0, -34.25, -40, 0, -31.6, -40, 0, -30, -43.86, 0, -30, -44.43, 0, -30.49, -45, 0, -30.65, -45, 0, -34.61)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker30" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.74, 0)
+height = 3.08
+vertices = PackedVector3Array(-40, 0, -26.67, -43.86, 0, -30, -40, 0, -30)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker31" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.72, 0)
+height = 2.95
+vertices = PackedVector3Array(-38.13, 0, -30, -40, 0, -30, -40, 0, -31.6)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker32" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.04, 0)
+height = 3.26
+vertices = PackedVector3Array(-35, 0, -27.34, -35, 0, -25, -38.07, 0, -25, -40, 0, -26.67, -40, 0, -30, -38.13, 0, -30)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker33" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.04, 0)
+height = 3.11
+vertices = PackedVector3Array(-35, 0, -22.36, -38.07, 0, -25, -35, 0, -25)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker34" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.05, 0)
+height = 2.98
+vertices = PackedVector3Array(-33.23, 0, -25.83, -32.4, 0, -25, -35, 0, -25, -35, 0, -27.34)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker35" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.56, 0)
+height = 3.46
+vertices = PackedVector3Array(-30, 0, -22.6, -30, 0, -20, -32.53, 0, -20, -34.77, 0, -22.16, -35, 0, -22.36, -35, 0, -25, -32.4, 0, -25)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker36" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.56, 0)
+height = 3.18
+vertices = PackedVector3Array(-30, 0, -17.57, -32.53, 0, -20, -30, 0, -20)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker37" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.6, 0)
+height = 3.04
+vertices = PackedVector3Array(-27.4, 0, -20, -30, 0, -20, -30, 0, -22.6)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker38" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.73, 0)
+height = 3.15
+vertices = PackedVector3Array(-26.95, 0, -19.55, -25.35, 0, -15, -27.99, 0, -15, -28.22, 0, -15.86, -30, 0, -17.57, -30, 0, -20, -27.4, 0, -20)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker39" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.74, 0)
+height = 3.2
+vertices = PackedVector3Array(-25.03, 0, -14.1, -25.59, 0, -10.85, -25.56, 0, -10, -27.9, 0, -10, -27.62, 0, -13.65, -27.99, 0, -15, -25.35, 0, -15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker40" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.49, 0)
+height = 3.03
+vertices = PackedVector3Array(-25.55, 0, -9.62, -25, 0, -8.69, -25, 0, -6.21, -25.73, 0, -6.06, -27.48, 0, -7.88, -27.92, 0, -9.74, -27.9, 0, -10, -25.56, 0, -10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker41" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+height = 2.99
+vertices = PackedVector3Array(-20, 0, -10, -21.19, 0, -10, -20, 0, -13.18)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker42" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4, 0)
+height = 3.48
+vertices = PackedVector3Array(-20, 0, -8.19, -22.04, 0, -6.8, -25, 0, -6.21, -25, 0, -8.69, -24.69, 0, -8.17, -23.56, 0, -8.95, -21.33, 0, -9.64, -21.19, 0, -10, -20, 0, -10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker43" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.28, 0)
+height = 2.9
+vertices = PackedVector3Array(-15, 0, -15.05, -15.2, 0, -15, -19.32, 0, -15, -19.23, 0, -15.23, -15, 0, -17.1)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker44" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.3, 0)
+height = 3.2
+vertices = PackedVector3Array(-16.67, 0, -14.61, -18.4, 0, -10, -20, 0, -10, -20, 0, -13.18, -19.32, 0, -15, -15.2, 0, -15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker45" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.06, 0)
+height = 3.09
+vertices = PackedVector3Array(-18.76, 0, -9.03, -20, 0, -8.19, -20, 0, -10, -18.4, 0, -10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker46" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.07, 0)
+height = 2.51
+vertices = PackedVector3Array(-10, 0, -35, -10.22, 0, -35, -10.44, 0, -36.82, -10, 0, -37.42)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker47" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.01, 0)
+height = 2.45
+vertices = PackedVector3Array(-10, 0, -33.17, -10.22, 0, -35, -10, 0, -35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker48" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.58, 0)
+height = 3.06
+vertices = PackedVector3Array(-10, 0, -16.63, -10, 0, -15, -11.58, 0, -15, -12.51, 0, -15.71, -15, 0, -15.05, -15, 0, -17.1, -12.22, 0, -18.33)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker49" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.49, 0)
+height = 2.91
+vertices = PackedVector3Array(-10, 0, -13.79, -11.58, 0, -15, -10, 0, -15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker50" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.69, 0)
+height = 3.03
+vertices = PackedVector3Array(-5, 0, -40, -8.09, 0, -40, -6.78, 0, -41.76, -5, 0, -42.8)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker51" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.65, 0)
+height = 3.08
+vertices = PackedVector3Array(-5, 0, -39.52, -7.56, 0, -36.6, -7.45, 0, -35, -10, 0, -35, -10, 0, -37.42, -8.09, 0, -40, -5, 0, -40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker52" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.6, 0)
+height = 3.03
+vertices = PackedVector3Array(-7.21, 0, -31.69, -5, 0, -30.91, -5, 0, -30, -9.38, 0, -30, -9.63, 0, -30.1, -10, 0, -33.17, -10, 0, -35, -7.45, 0, -35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker53" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.64, 0)
+height = 3.05
+vertices = PackedVector3Array(-5, 0, -28.22, -9.38, 0, -30, -5, 0, -30)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker54" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.49, 0)
+height = 2.87
+vertices = PackedVector3Array(-7.86, 0, -15, -10, 0, -15, -10, 0, -16.63)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker55" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.51, 0)
+height = 3.15
+vertices = PackedVector3Array(-5, 0, -12.82, -5, 0, -10, -5.08, 0, -10, -5.18, 0, -10.12, -10, 0, -13.79, -10, 0, -15, -7.86, 0, -15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker56" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.73, 0)
+height = 2.38
+vertices = PackedVector3Array(-5, 0, -9.9, -5.08, 0, -10, -5, 0, -10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker57" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.42, 0)
+height = 2.67
+vertices = PackedVector3Array(0, 0, -45, -1.23, 0, -45, 0, 0, -45.72)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker58" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.74, 0)
+height = 2.99
+vertices = PackedVector3Array(0, 0, -42.86, -4.24, 0, -40.39, -4.58, 0, -40, -5, 0, -40, -5, 0, -42.8, -1.23, 0, -45, 0, 0, -45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker59" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.24, 0)
+height = 2.49
+vertices = PackedVector3Array(-5, 0, -39.52, -5, 0, -40, -4.58, 0, -40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker60" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.58, 0)
+height = 2.83
+vertices = PackedVector3Array(-2.41, 0, -30, -5, 0, -30, -5, 0, -30.91)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker61" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.72, 0)
+height = 2.97
+vertices = PackedVector3Array(-1.31, 0, -29.61, 0, 0, -29.53, 0, 0, -27.76, -3.31, 0, -27.53, -5, 0, -28.22, -5, 0, -30, -2.41, 0, -30)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker62" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.34, 0)
+height = 2.98
+vertices = PackedVector3Array(-4.89, 0, -12.74, -1.4, 0, -10, -5, 0, -10, -5, 0, -12.82)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker63" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.28, 0)
+height = 3.2
+vertices = PackedVector3Array(0, 0, -8.9, 0, 0, -5, -0.99, 0, -5, -5, 0, -9.9, -5, 0, -10, -1.4, 0, -10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker64" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.88, 0)
+height = 2.83
+vertices = PackedVector3Array(0, 0, -3.8, -0.38, 0, -4.25, -0.99, 0, -5, 0, 0, -5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker65" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.72, 0)
+height = 2.98
+vertices = PackedVector3Array(5, 0, -45.73, 3.7, 0, -45, 0, 0, -45, 0, 0, -45.72, 0.2, 0, -45.83, 5, 0, -48.52)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker66" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.71, 0)
+height = 2.95
+vertices = PackedVector3Array(2.74, 0, -44.46, 0, 0, -42.86, 0, 0, -45, 3.7, 0, -45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker67" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.67, 0)
+height = 2.88
+vertices = PackedVector3Array(3.89, 0, -29.28, 5, 0, -28.98, 5, 0, -26.89, 1.37, 0, -27.86, 0, 0, -27.76, 0, 0, -29.53)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker68" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.19, 0)
+height = 3.07
+vertices = PackedVector3Array(0.08, 0, -8.84, 3.9, 0, -5, 0, 0, -5, 0, 0, -8.9)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker69" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.16, 0)
+height = 3.23
+vertices = PackedVector3Array(5, 0, -3.9, 5, 0, 0, 3.21, 0, 0, 0, 0, -3.8, 0, 0, -5, 3.9, 0, -5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker70" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.94, 0)
+height = 3.11
+vertices = PackedVector3Array(5, 0, 2.12, 3.21, 0, 0, 5, 0, 0)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker71" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.81, 0)
+height = 2.7
+vertices = PackedVector3Array(10, 0, -137.3, 8.51, 0, -137.64, 10, 0, -138.03)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker72" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.73, 0)
+height = 2.95
+vertices = PackedVector3Array(10, 0, -50, 7.63, 0, -50, 10, 0, -51.42)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker73" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.74, 0)
+height = 2.95
+vertices = PackedVector3Array(10, 0, -48.53, 5, 0, -45.73, 5, 0, -48.52, 7.47, 0, -49.9, 7.63, 0, -50, 10, 0, -50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker74" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.74, 0)
+height = 2.95
+vertices = PackedVector3Array(8.25, 0, -28.12, 10, 0, -26.76, 10, 0, -25, 7.92, 0, -25, 5.74, 0, -26.7, 5, 0, -26.89, 5, 0, -28.98)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker75" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.72, 0)
+height = 2.93
+vertices = PackedVector3Array(10, 0, -20, 8.55, 0, -20, 8.35, 0, -24.66, 7.92, 0, -25, 10, 0, -25)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker76" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.73, 0)
+height = 2.96
+vertices = PackedVector3Array(10, 0, -16.46, 8.64, 0, -17.97, 8.55, 0, -20, 10, 0, -20)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker77" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.09, 0)
+height = 3.09
+vertices = PackedVector3Array(8.88, 0, 0, 5, 0, 0, 5, 0, -3.9)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker78" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.99, 0)
+height = 3.32
+vertices = PackedVector3Array(9.45, 0, 0.58, 10, 0, 1.09, 10, 0, 5, 7.64, 0, 5, 7, 0, 4.48, 5, 0, 2.12, 5, 0, 0, 8.88, 0, 0)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker79" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.66, 0)
+height = 3.1
+vertices = PackedVector3Array(10, 0, 6.91, 7.64, 0, 5, 10, 0, 5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker80" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.02, 0)
+height = 3.61
+vertices = PackedVector3Array(15, 0, -137.47, 15, 0, -135.92, 14.91, 0, -136.18, 10, 0, -137.3, 10, 0, -138.03, 11.18, 0, -138.34)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker81" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.73, 0)
+height = 3.16
+vertices = PackedVector3Array(15, 0, -51.53, 12.46, 0, -50, 10, 0, -50, 10, 0, -51.42, 15, 0, -54.42)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker82" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.73, 0)
+height = 2.96
+vertices = PackedVector3Array(10.01, 0, -48.53, 10, 0, -48.53, 10, 0, -50, 12.46, 0, -50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker83" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.62, 0)
+height = 2.83
+vertices = PackedVector3Array(10.87, 0, -26.08, 10.92, 0, -25, 10, 0, -25, 10, 0, -26.76)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker84" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.69, 0)
+height = 2.9
+vertices = PackedVector3Array(11.14, 0, -20, 10, 0, -20, 10, 0, -25, 10.92, 0, -25)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker85" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.75, 0)
+height = 2.98
+vertices = PackedVector3Array(11.16, 0, -19.39, 15, 0, -15.11, 15, 0, -15, 11.31, 0, -15, 10, 0, -16.46, 10, 0, -20, 11.14, 0, -20)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker86" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.75, 0)
+height = 2.98
+vertices = PackedVector3Array(15, 0, -10.88, 11.31, 0, -15, 15, 0, -15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker87" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.82, 0)
+height = 3.11
+vertices = PackedVector3Array(14.13, 0, 5, 10, 0, 5, 10, 0, 1.09)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker88" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.7, 0)
+height = 3.4
+vertices = PackedVector3Array(15, 0, 5.82, 15, 0, 10, 13.81, 0, 10, 10, 0, 6.91, 10, 0, 5, 14.13, 0, 5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker89" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.05, 0)
+height = 2.79
+vertices = PackedVector3Array(15, 0, 10.96, 13.81, 0, 10, 15, 0, 10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker90" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.82, 0)
+height = 3.97
+vertices = PackedVector3Array(17.57, 0, -136.89, 18.23, 0, -135, 15.32, 0, -135, 15, 0, -135.92, 15, 0, -137.47)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker91" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.89, 0)
+height = 5.12
+vertices = PackedVector3Array(19.96, 0, -130, 17.05, 0, -130, 15.32, 0, -135, 18.23, 0, -135)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker92" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 0)
+height = 3.93
+vertices = PackedVector3Array(20, 0, -129.88, 20, 0, -126.3, 17.53, 0, -128.62, 17.05, 0, -130, 19.96, 0, -130)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker93" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.34, 0)
+height = 2.95
+vertices = PackedVector3Array(20, 0, -90, 19.12, 0, -90, 19.37, 0, -90.69, 20, 0, -91.04)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker94" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.56, 0)
+height = 3.07
+vertices = PackedVector3Array(20, 0, -85, 17.26, 0, -85, 19.12, 0, -90, 20, 0, -90)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker95" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.69, 0)
+height = 3.09
+vertices = PackedVector3Array(20, 0, -84.41, 18.62, 0, -80.53, 18.9, 0, -80, 16.07, 0, -80, 15.73, 0, -80.72, 17.18, 0, -84.79, 17.26, 0, -85, 20, 0, -85)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker96" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.93, 0)
+height = 3.15
+vertices = PackedVector3Array(20, 0, -77.96, 20, 0, -75, 18.45, 0, -75, 16.07, 0, -80, 18.9, 0, -80)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker97" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.9, 0)
+height = 2.89
+vertices = PackedVector3Array(20, 0, -73.96, 18.72, 0, -74.42, 18.45, 0, -75, 20, 0, -75)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker98" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.33, 0)
+height = 3.09
+vertices = PackedVector3Array(20, 0, -55.07, 19.93, 0, -55, 15.96, 0, -55, 16.19, 0, -55.14, 20, 0, -58.46)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker99" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.51, 0)
+height = 3.14
+vertices = PackedVector3Array(18.74, 0, -53.77, 15, 0, -51.53, 15, 0, -54.42, 15.96, 0, -55, 19.93, 0, -55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker100" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.18, 0)
+height = 2.38
+vertices = PackedVector3Array(15.1, 0, -15, 15, 0, -15, 15, 0, -15.11)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker101" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.75, 0)
+height = 3.01
+vertices = PackedVector3Array(18.72, 0, -10.96, 19.23, 0, -10, 15.79, 0, -10, 15, 0, -10.88, 15, 0, -15, 15.1, 0, -15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker102" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.69, 0)
+height = 3.12
+vertices = PackedVector3Array(20, 0, -8.53, 20, 0, -5, 18.59, 0, -5, 16.2, 0, -9.54, 15.79, 0, -10, 19.23, 0, -10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker103" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.53, 0)
+height = 3.07
+vertices = PackedVector3Array(20, 0, -2.33, 18.59, 0, -5, 20, 0, -5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker104" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.46, 0)
+height = 3.16
+vertices = PackedVector3Array(16.47, 0, 7.21, 20, 0, 6.94, 20, 0, 10, 15, 0, 10, 15, 0, 5.82)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker105" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.27, 0)
+height = 3.14
+vertices = PackedVector3Array(20, 0, 12.12, 16.04, 0, 11.81, 15, 0, 10.96, 15, 0, 10, 20, 0, 10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker106" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
+height = 4.76
+vertices = PackedVector3Array(20.19, 0, -129.33, 24.59, 0, -125.74, 25, 0, -125.54, 25, 0, -125, 21.39, 0, -125, 20, 0, -126.3, 20, 0, -129.88)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker107" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.7, 0)
+height = 3.61
+vertices = PackedVector3Array(25, 0, -122.49, 23.01, 0, -123.48, 21.39, 0, -125, 25, 0, -125)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker108" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.52, 0)
+height = 3.23
+vertices = PackedVector3Array(25, 0, -90.59, 23.93, 0, -90, 20, 0, -90, 20, 0, -91.04, 25, 0, -93.85)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker109" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.52, 0)
+height = 3.01
+vertices = PackedVector3Array(21.37, 0, -88.6, 20.2, 0, -85, 20, 0, -85, 20, 0, -90, 23.93, 0, -90)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker110" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.06, 0)
+height = 2.43
+vertices = PackedVector3Array(20.07, 0, -84.6, 20, 0, -84.41, 20, 0, -85, 20.2, 0, -85)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker111" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.93, 0)
+height = 3.06
+vertices = PackedVector3Array(20.86, 0, -76.37, 23.97, 0, -75, 20, 0, -75, 20, 0, -77.96)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker112" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.93, 0)
+height = 3.04
+vertices = PackedVector3Array(25, 0, -74.55, 25, 0, -72.17, 20, 0, -73.96, 20, 0, -75, 23.97, 0, -75)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker113" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.88, 0)
+height = 2.41
+vertices = PackedVector3Array(25, 0, -65, 24.75, 0, -65, 25, 0, -65.47)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker114" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.8, 0)
+height = 3.29
+vertices = PackedVector3Array(25, 0, -60.24, 24.77, 0, -60, 21.77, 0, -60, 22.42, 0, -60.56, 24.75, 0, -65, 25, 0, -65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker115" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.21, 0)
+height = 3.31
+vertices = PackedVector3Array(20, 0, -55.07, 20, 0, -58.46, 21.77, 0, -60, 24.77, 0, -60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker116" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.55, 0)
+height = 2.97
+vertices = PackedVector3Array(21.86, 0, -5, 20, 0, -5, 20, 0, -8.53)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker117" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.53, 0)
+height = 3.29
+vertices = PackedVector3Array(24.49, 0, 0, 21.22, 0, 0, 20, 0, -2.33, 20, 0, -5, 21.86, 0, -5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker118" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.23, 0)
+height = 3.39
+vertices = PackedVector3Array(24.54, 0, 0.09, 24.67, 0, 5, 21.9, 0, 5, 22.02, 0, 1.51, 21.22, 0, 0, 24.49, 0, 0)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker119" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.82, 0)
+height = 3.5
+vertices = PackedVector3Array(24.72, 0, 7.03, 25, 0, 7.1, 25, 0, 10, 20, 0, 10, 20, 0, 6.94, 21.84, 0, 6.79, 21.9, 0, 5, 24.67, 0, 5)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker120" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.42, 0)
+height = 3.27
+vertices = PackedVector3Array(25, 0, 12.52, 20, 0, 12.12, 20, 0, 10, 25, 0, 10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker121" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, 0)
+height = 2.59
+vertices = PackedVector3Array(26.07, 0, -125, 25, 0, -125, 25, 0, -125.54)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker122" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.32, 0)
+height = 3.7
+vertices = PackedVector3Array(30, 0, -123.04, 30, 0, -120, 29.98, 0, -120, 25, 0, -122.49, 25, 0, -125, 26.07, 0, -125)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker123" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.79, 0)
+height = 2.36
+vertices = PackedVector3Array(30, 0, -119.99, 29.98, 0, -120, 30, 0, -120)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker124" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.14, 0)
+height = 2.54
+vertices = PackedVector3Array(30, 0, -95, 28.61, 0, -95, 30, 0, -95.44)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker125" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.57, 0)
+height = 3.22
+vertices = PackedVector3Array(30, 0, -92.41, 26.13, 0, -91.2, 25, 0, -90.59, 25, 0, -93.85, 25.09, 0, -93.9, 28.61, 0, -95, 30, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker126" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
+height = 3.11
+vertices = PackedVector3Array(28.39, 0, -73.06, 28.31, 0, -70, 25.6, 0, -70, 25.73, 0, -71.91, 25, 0, -72.17, 25, 0, -74.55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker127" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.3, 0)
+height = 3.25
+vertices = PackedVector3Array(28.22, 0, -66.08, 27.65, 0, -65, 25, 0, -65, 25, 0, -65.47, 25.32, 0, -66.09, 25.6, 0, -70, 28.31, 0, -70)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker128" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.57, 0)
+height = 3.2
+vertices = PackedVector3Array(25.31, 0, -60.56, 25, 0, -60.24, 25, 0, -65, 27.65, 0, -65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker129" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.58, 0)
+height = 3.11
+vertices = PackedVector3Array(29.6, 0, 8.29, 30, 0, 8.83, 30, 0, 10, 25, 0, 10, 25, 0, 7.1)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker130" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.56, 0)
+height = 3.3
+vertices = PackedVector3Array(30, 0, 14.79, 28.73, 0, 12.82, 25, 0, 12.52, 25, 0, 10, 30, 0, 10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker131" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.48, 0)
+height = 3.14
+vertices = PackedVector3Array(33.9, 0, -121.09, 35, 0, -120.3, 35, 0, -120, 30, 0, -120, 30, 0, -123.04)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker132" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.57, 0)
+height = 3.14
+vertices = PackedVector3Array(35, 0, -116.9, 32.32, 0, -118.83, 30, 0, -119.99, 30, 0, -120, 35, 0, -120)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker133" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.03, 0)
+height = 2.4
+vertices = PackedVector3Array(35, 0, -105, 34.95, 0, -105, 35, 0, -105.09)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker134" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.58, 0)
+height = 3
+vertices = PackedVector3Array(35, 0, -100, 33.52, 0, -100, 33.07, 0, -101.62, 34.95, 0, -105, 35, 0, -105)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker135" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 2.99
+vertices = PackedVector3Array(35, 0, -95, 30, 0, -95, 30, 0, -95.44, 34.39, 0, -96.81, 33.52, 0, -100, 35, 0, -100)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker136" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.58, 0)
+height = 2.98
+vertices = PackedVector3Array(35, 0, -93.98, 30, 0, -92.41, 30, 0, -95, 35, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker137" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.36, 0)
+height = 2.72
+vertices = PackedVector3Array(30.86, 0, 10, 30, 0, 10, 30, 0, 8.83)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker138" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.5, 0)
+height = 3.19
+vertices = PackedVector3Array(34.56, 0, 15, 30.14, 0, 15, 30, 0, 14.79, 30, 0, 10, 30.86, 0, 10)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker139" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.36, 0)
+height = 3.18
+vertices = PackedVector3Array(35, 0, 15.6, 35, 0, 20, 33.36, 0, 20, 30.14, 0, 15, 34.56, 0, 15)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker140" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.21, 0)
+height = 3.03
+vertices = PackedVector3Array(35, 0, 22.54, 33.36, 0, 20, 35, 0, 20)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker141" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.07, 0)
+height = 2.45
+vertices = PackedVector3Array(35.41, 0, -120, 35, 0, -120, 35, 0, -120.3)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker142" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.97
+vertices = PackedVector3Array(40, 0, -116.7, 40, 0, -115, 37.64, 0, -115, 35, 0, -116.9, 35, 0, -120, 35.41, 0, -120)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker143" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(40, 0, -110, 37.66, 0, -110, 39.59, 0, -113.6, 37.64, 0, -115, 40, 0, -115)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker144" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(40, 0, -108.2, 38.91, 0, -106.25, 38.22, 0, -105, 35, 0, -105, 35, 0, -105.09, 35.98, 0, -106.85, 37.66, 0, -110, 40, 0, -110)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker145" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.97
+vertices = PackedVector3Array(36.01, 0, -101.02, 36.38, 0, -100, 35, 0, -100, 35, 0, -105, 38.22, 0, -105)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker146" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(37.01, 0, -98.26, 40, 0, -98.69, 40, 0, -95.84, 38.05, 0, -95.56, 37.03, 0, -95, 35, 0, -95, 35, 0, -100, 36.38, 0, -100)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker147" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.51, 0)
+height = 2.86
+vertices = PackedVector3Array(35.43, 0, -94.11, 35, 0, -93.98, 35, 0, -95, 37.03, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker148" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.31, 0)
+height = 3.04
+vertices = PackedVector3Array(38.25, 0, 20, 35, 0, 20, 35, 0, 15.6)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker149" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.46, 0)
+height = 3.22
+vertices = PackedVector3Array(40, 0, 22.37, 40, 0, 25, 36.58, 0, 25, 35, 0, 22.54, 35, 0, 20, 38.25, 0, 20)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker150" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.46, 0)
+height = 3.14
+vertices = PackedVector3Array(40, 0, 28.72, 38.22, 0, 27.54, 36.58, 0, 25, 40, 0, 25)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker151" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.58, 0)
+height = 2.98
+vertices = PackedVector3Array(45, 0, -115, 40, 0, -115, 40, 0, -116.7, 41.17, 0, -115.85, 45, 0, -117.88)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker152" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(45, 0, -114.85, 43.61, 0, -114.12, 42.29, 0, -112.3, 41, 0, -110, 40, 0, -110, 40, 0, -115, 45, 0, -115)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker153" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.43, 0)
+height = 2.78
+vertices = PackedVector3Array(40, 0, -108.2, 40, 0, -110, 41, 0, -110)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker154" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(45, 0, -96.14, 42.12, 0, -96.15, 40, 0, -95.84, 40, 0, -98.69, 41.08, 0, -98.84, 45, 0, -98.85)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker155" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.46, 0)
+height = 2.96
+vertices = PackedVector3Array(41.94, 0, 25, 40, 0, 25, 40, 0, 22.37)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker156" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.66, 0)
+height = 3.19
+vertices = PackedVector3Array(42.44, 0, 25.68, 45, 0, 27.3, 45, 0, 30, 41.93, 0, 30, 40, 0, 28.72, 40, 0, 25, 41.94, 0, 25)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker157" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.66, 0)
+height = 3.07
+vertices = PackedVector3Array(45, 0, 32.03, 41.93, 0, 30, 45, 0, 30)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker158" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.33, 0)
+height = 2.81
+vertices = PackedVector3Array(50, 0, -120, 48.51, 0, -120, 50, 0, -120.96)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker159" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.57, 0)
+height = 3.03
+vertices = PackedVector3Array(50, 0, -117.66, 48.56, 0, -116.74, 45.28, 0, -115, 45, 0, -115, 45, 0, -117.88, 46.12, 0, -118.47, 48.51, 0, -120, 50, 0, -120)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker160" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.06, 0)
+height = 2.42
+vertices = PackedVector3Array(45, 0, -114.85, 45, 0, -115, 45.28, 0, -115)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker161" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.57, 0)
+height = 2.92
+vertices = PackedVector3Array(50, 0, -96.07, 49.87, 0, -96.12, 45, 0, -96.14, 45, 0, -98.85, 50, 0, -98.87)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker162" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.68, 0)
+height = 2.98
+vertices = PackedVector3Array(49.26, 0, 30, 45, 0, 30, 45, 0, 27.3)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker163" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.8, 0)
+height = 3.08
+vertices = PackedVector3Array(50, 0, 30.47, 50, 0, 35, 49.48, 0, 35, 45, 0, 32.03, 45, 0, 30, 49.26, 0, 30)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker164" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.32, 0)
+height = 2.48
+vertices = PackedVector3Array(50, 0, 35.35, 49.48, 0, 35, 50, 0, 35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker165" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.51, 0)
+height = 3.73
+vertices = PackedVector3Array(55, 0, -166.21, 53.41, 0, -169.23, 55, 0, -169.38)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker166" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.09, 0)
+height = 3.51
+vertices = PackedVector3Array(55, 0, -125, 53.83, 0, -125, 55, 0, -130)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker167" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.49, 0)
+height = 3.38
+vertices = PackedVector3Array(55, 0, -120.86, 53.66, 0, -120, 50, 0, -120, 50, 0, -120.96, 53.39, 0, -123.12, 53.83, 0, -125, 55, 0, -125)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker168" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.51, 0)
+height = 2.97
+vertices = PackedVector3Array(50, 0, -117.66, 50, 0, -120, 53.66, 0, -120)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker169" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(55, 0, -96.99, 55, 0, -95, 52.4, 0, -95, 50, 0, -96.07, 50, 0, -98.87, 50.78, 0, -98.87)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker170" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.56, 0)
+height = 2.91
+vertices = PackedVector3Array(55, 0, -93.84, 52.4, 0, -95, 55, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker171" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.86, 0)
+height = 3.02
+vertices = PackedVector3Array(55, 0, 33.64, 55, 0, 35, 50, 0, 35, 50, 0, 30.47)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker172" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.91, 0)
+height = 3.06
+vertices = PackedVector3Array(55, 0, 40, 54.5, 0, 40, 51.28, 0, 36.2, 50, 0, 35.35, 50, 0, 35, 55, 0, 35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker173" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.51, 0)
+height = 2.51
+vertices = PackedVector3Array(55, 0, 40.6, 54.5, 0, 40, 55, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker174" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.73, 0)
+height = 4.67
+vertices = PackedVector3Array(58.77, 0, -165, 55.64, 0, -165, 55, 0, -166.21, 55, 0, -169.38, 56.39, 0, -169.51)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker175" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+height = 5.59
+vertices = PackedVector3Array(60, 0, -162.67, 60, 0, -160, 58.28, 0, -160, 55.64, 0, -165, 58.77, 0, -165)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker176" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.89, 0)
+height = 4.24
+vertices = PackedVector3Array(60, 0, -155, 59.99, 0, -155, 58.93, 0, -158.76, 58.28, 0, -160, 60, 0, -160)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker177" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.91, 0)
+height = 2.4
+vertices = PackedVector3Array(60, 0, -154.96, 59.99, 0, -155, 60, 0, -155)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker178" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.52, 0)
+height = 2.9
+vertices = PackedVector3Array(60, 0, -145, 59.03, 0, -145, 60, 0, -146.71)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker179" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.6, 0)
+height = 3.38
+vertices = PackedVector3Array(60, 0, -140, 56.97, 0, -140, 58.4, 0, -143.88, 59.03, 0, -145, 60, 0, -145)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker180" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.34, 0)
+height = 3.33
+vertices = PackedVector3Array(60, 0, -139.6, 59.25, 0, -137.57, 58.88, 0, -135, 55.88, 0, -135, 56.36, 0, -138.35, 56.97, 0, -140, 60, 0, -140)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker181" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.64, 0)
+height = 3.46
+vertices = PackedVector3Array(58.43, 0, -131.85, 57.97, 0, -130, 55, 0, -130, 55.44, 0, -131.85, 55.88, 0, -135, 58.88, 0, -135)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker182" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.1, 0)
+height = 3.52
+vertices = PackedVector3Array(56.73, 0, -125, 55, 0, -125, 55, 0, -130, 55, 0, -130, 57.97, 0, -130)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker183" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.36, 0)
+height = 3.21
+vertices = PackedVector3Array(55.83, 0, -121.39, 55, 0, -120.86, 55, 0, -125, 56.73, 0, -125)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker184" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(56.02, 0, -96.54, 60, 0, -96.76, 60, 0, -95, 55, 0, -95, 55, 0, -96.99)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker185" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.57, 0)
+height = 2.93
+vertices = PackedVector3Array(60, 0, -93.94, 55.11, 0, -93.8, 55, 0, -93.84, 55, 0, -95, 60, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker186" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.82, 0)
+height = 2.9
+vertices = PackedVector3Array(55.21, 0, 33.77, 56.66, 0, 35, 55, 0, 35, 55, 0, 33.64)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker187" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.12, 0)
+height = 3.21
+vertices = PackedVector3Array(60, 0, 37.82, 60, 0, 40, 55, 0, 40, 55, 0, 35, 56.66, 0, 35)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker188" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.15, 0)
+height = 3.15
+vertices = PackedVector3Array(60, 0, 45, 58.72, 0, 45, 55, 0, 40.6, 55, 0, 40, 60, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker189" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.08, 0)
+height = 2.94
+vertices = PackedVector3Array(60, 0, 46.51, 58.72, 0, 45, 60, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker190" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.27, 0)
+height = 4
+vertices = PackedVector3Array(61.41, 0, -160, 60, 0, -160, 60, 0, -162.67)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker191" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.52, 0)
+height = 4.74
+vertices = PackedVector3Array(61.91, 0, -159.04, 63.05, 0, -155, 60, 0, -155, 60, 0, -160, 61.41, 0, -160)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker192" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.29, 0)
+height = 3.78
+vertices = PackedVector3Array(64.46, 0, -150, 61.4, 0, -150, 60, 0, -154.96, 60, 0, -155, 63.05, 0, -155)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker193" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.27, 0)
+height = 3.52
+vertices = PackedVector3Array(64.53, 0, -149.74, 62.22, 0, -145, 60, 0, -145, 60, 0, -146.71, 61.55, 0, -149.45, 61.4, 0, -150, 64.46, 0, -150)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker194" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.78, 0)
+height = 3.21
+vertices = PackedVector3Array(61.29, 0, -143.09, 60.15, 0, -140, 60, 0, -140, 60, 0, -145, 62.22, 0, -145)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker195" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.02, 0)
+height = 2.45
+vertices = PackedVector3Array(60, 0, -139.6, 60, 0, -140, 60.15, 0, -140)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker196" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 2.99
+vertices = PackedVector3Array(65, 0, -95.59, 64.12, 0, -95, 60, 0, -95, 60, 0, -96.76, 62.44, 0, -96.9, 65, 0, -98.61)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker197" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.54, 0)
+height = 2.94
+vertices = PackedVector3Array(62.65, 0, -94.02, 60, 0, -93.94, 60, 0, -95, 64.12, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker198" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.15, 0)
+height = 3.01
+vertices = PackedVector3Array(62.58, 0, 40, 60, 0, 40, 60, 0, 37.82)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker199" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.62, 0)
+height = 3.45
+vertices = PackedVector3Array(65, 0, 42.04, 65, 0, 45, 60, 0, 45, 60, 0, 40, 62.58, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker200" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.62, 0)
+height = 3.42
+vertices = PackedVector3Array(65, 0, 50, 62.95, 0, 50, 60, 0, 46.51, 60, 0, 45, 65, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker201" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.54, 0)
+height = 3.1
+vertices = PackedVector3Array(65, 0, 52.43, 62.95, 0, 50, 65, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker202" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 3.01
+vertices = PackedVector3Array(70, 0, -96.92, 67.01, 0, -96.93, 65, 0, -95.59, 65, 0, -98.61, 66.8, 0, -99.81, 70, 0, -99.81)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker203" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.94, 0)
+height = 3.27
+vertices = PackedVector3Array(68.46, 0, 44.96, 70, 0, 44.68, 70, 0, 45, 65, 0, 45, 65, 0, 42.04)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker204" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.3, 0)
+height = 3.71
+vertices = PackedVector3Array(70, 0, 50, 65, 0, 50, 65, 0, 45, 70, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker205" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.19, 0)
+height = 3.66
+vertices = PackedVector3Array(70, 0, 55, 67.18, 0, 55, 65, 0, 52.43, 65, 0, 50, 70, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker206" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.91, 0)
+height = 3.3
+vertices = PackedVector3Array(70, 0, 57.96, 69.51, 0, 57.77, 67.18, 0, 55, 70, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker207" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 3.11
+vertices = PackedVector3Array(75, 0, -99.2, 75, 0, -96.31, 71.85, 0, -96.92, 70, 0, -96.92, 70, 0, -99.81, 71.85, 0, -99.81)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker208" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.76, 0)
+height = 4.33
+vertices = PackedVector3Array(75, 0, 45, 70, 0, 45, 70, 0, 44.68, 75, 0, 43.76)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker209" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.76, 0)
+height = 4.53
+vertices = PackedVector3Array(75, 0, 50, 70, 0, 50, 70, 0, 45, 75, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker210" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.19, 0)
+height = 4.23
+vertices = PackedVector3Array(75, 0, 55, 70, 0, 55, 70, 0, 50, 75, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker211" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.57, 0)
+height = 3.78
+vertices = PackedVector3Array(75, 0, 59.98, 70, 0, 57.96, 70, 0, 55, 75, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker212" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 3.1
+vertices = PackedVector3Array(80, 0, -98.23, 80, 0, -95.34, 75, 0, -96.31, 75, 0, -99.2)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker213" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.33, 0)
+height = 3.97
+vertices = PackedVector3Array(80, 0, 45, 75, 0, 45, 75, 0, 43.76, 80, 0, 42.84)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker214" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.33, 0)
+height = 4.3
+vertices = PackedVector3Array(80, 0, 50, 75, 0, 50, 75, 0, 45, 80, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker215" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.97, 0)
+height = 4.35
+vertices = PackedVector3Array(80, 0, 55, 75, 0, 55, 75, 0, 50, 80, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker216" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.79, 0)
+height = 4.67
+vertices = PackedVector3Array(80, 0, 60, 75.04, 0, 60, 75, 0, 59.98, 75, 0, 55, 80, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker217" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.15, 0)
+height = 4.01
+vertices = PackedVector3Array(80, 0, 62, 75.04, 0, 60, 80, 0, 60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker218" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.55, 0)
+height = 3.02
+vertices = PackedVector3Array(82.32, 0, -97.78, 85, 0, -96.67, 85, 0, -95, 81.73, 0, -95, 80, 0, -95.34, 80, 0, -98.23)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker219" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.45, 0)
+height = 2.87
+vertices = PackedVector3Array(85, 0, -93.69, 82.32, 0, -94.89, 81.73, 0, -95, 85, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker220" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.42, 0)
+height = 4.05
+vertices = PackedVector3Array(85, 0, 45, 80, 0, 45, 80, 0, 42.84, 85, 0, 41.93)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker221" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.33, 0)
+height = 4.33
+vertices = PackedVector3Array(85, 0, 50, 80, 0, 50, 80, 0, 45, 85, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker222" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.95, 0)
+height = 4.48
+vertices = PackedVector3Array(85, 0, 55, 80, 0, 55, 80, 0, 50, 85, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker223" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.32, 0)
+height = 4.54
+vertices = PackedVector3Array(85, 0, 60, 80, 0, 60, 80, 0, 55, 85, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker224" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.95, 0)
+height = 4.61
+vertices = PackedVector3Array(85, 0, 63.78, 82.5, 0, 63.01, 80, 0, 62, 80, 0, 60, 85, 0, 60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker225" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.51, 0)
+height = 2.9
+vertices = PackedVector3Array(89.02, 0, -95, 85, 0, -95, 85, 0, -96.67)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker226" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.59, 0)
+height = 3.01
+vertices = PackedVector3Array(90, 0, -94.59, 90, 0, -91.51, 89.81, 0, -91.55, 85, 0, -93.69, 85, 0, -95, 89.02, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker227" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.4, 0)
+height = 4.03
+vertices = PackedVector3Array(90, 0, 45, 85, 0, 45, 85, 0, 41.93, 88.58, 0, 41.27, 90, 0, 40.92)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker228" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.31, 0)
+height = 4.31
+vertices = PackedVector3Array(90, 0, 50, 85, 0, 50, 85, 0, 45, 90, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker229" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.95, 0)
+height = 4.59
+vertices = PackedVector3Array(90, 0, 55, 85, 0, 55, 85, 0, 50, 90, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker230" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.25, 0)
+height = 4.7
+vertices = PackedVector3Array(90, 0, 60, 85, 0, 60, 85, 0, 55, 90, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker231" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.32, 0)
+height = 4.72
+vertices = PackedVector3Array(90, 0, 65, 88.96, 0, 65, 85, 0, 63.78, 85, 0, 60, 90, 0, 60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker232" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.69, 0)
+height = 3.83
+vertices = PackedVector3Array(90, 0, 65.32, 88.96, 0, 65, 90, 0, 65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker233" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(91.11, 0, -94.13, 95, 0, -93.3, 95, 0, -90.41, 90, 0, -91.51, 90, 0, -94.59)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker234" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.98, 0)
+height = 2.75
+vertices = PackedVector3Array(95, 0, 40, 93.73, 0, 40, 95, 0, 39.69)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker235" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10.48, 0)
+height = 4.12
+vertices = PackedVector3Array(95, 0, 45, 90, 0, 45, 90, 0, 40.92, 93.73, 0, 40, 95, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker236" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10.38, 0)
+height = 4.37
+vertices = PackedVector3Array(95, 0, 50, 90, 0, 50, 90, 0, 45, 95, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker237" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.99, 0)
+height = 4.69
+vertices = PackedVector3Array(95, 0, 55, 90, 0, 55, 90, 0, 50, 95, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker238" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.16, 0)
+height = 4.79
+vertices = PackedVector3Array(95, 0, 60, 90, 0, 60, 90, 0, 55, 95, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker239" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.1, 0)
+height = 5.09
+vertices = PackedVector3Array(95, 0, 65, 90, 0, 65, 90, 0, 60, 95, 0, 60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker240" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.95, 0)
+height = 4.03
+vertices = PackedVector3Array(95, 0, 66.86, 90, 0, 65.32, 90, 0, 65, 95, 0, 65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker241" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.95
+vertices = PackedVector3Array(100, 0, -92.22, 100, 0, -90, 96.86, 0, -90, 95, 0, -90.41, 95, 0, -93.3)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker242" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.35, 0)
+height = 2.7
+vertices = PackedVector3Array(100, 0, -89.31, 96.86, 0, -90, 100, 0, -90)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker243" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -11.51, 0)
+height = 4.02
+vertices = PackedVector3Array(100, 0, 40, 95, 0, 40, 95, 0, 39.69, 100, 0, 38.45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker244" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -11.61, 0)
+height = 4.19
+vertices = PackedVector3Array(100, 0, 45, 95, 0, 45, 95, 0, 40, 100, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker245" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -11.5, 0)
+height = 4.47
+vertices = PackedVector3Array(100, 0, 50, 95, 0, 50, 95, 0, 45, 100, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker246" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -11.06, 0)
+height = 4.86
+vertices = PackedVector3Array(100, 0, 55, 95, 0, 55, 95, 0, 50, 100, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker247" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10.08, 0)
+height = 4.93
+vertices = PackedVector3Array(100, 0, 60, 95, 0, 60, 95, 0, 55, 100, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker248" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.87, 0)
+height = 5.15
+vertices = PackedVector3Array(100, 0, 65, 95, 0, 65, 95, 0, 60, 100, 0, 60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker249" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.32, 0)
+height = 4.14
+vertices = PackedVector3Array(100, 0, 68.4, 95, 0, 66.86, 95, 0, 65, 100, 0, 65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker250" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(103.95, 0, -91.37, 105, 0, -91.51, 105, 0, -90, 100, 0, -90, 100, 0, -92.22)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker251" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.97
+vertices = PackedVector3Array(105, 0, -88.65, 103.72, 0, -88.49, 100, 0, -89.31, 100, 0, -90, 105, 0, -90)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker252" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.51, 0)
+height = 4.03
+vertices = PackedVector3Array(105, 0, 40, 100, 0, 40, 100, 0, 38.45, 105, 0, 37.22)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker253" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.75, 0)
+height = 4.19
+vertices = PackedVector3Array(105, 0, 45, 100, 0, 45, 100, 0, 40, 105, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker254" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.54, 0)
+height = 4.45
+vertices = PackedVector3Array(105, 0, 50, 100, 0, 50, 100, 0, 45, 105, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker255" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -11.93, 0)
+height = 4.79
+vertices = PackedVector3Array(105, 0, 52.62, 104.86, 0, 55, 100, 0, 55, 100, 0, 50, 105, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker256" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -10.73, 0)
+height = 4.82
+vertices = PackedVector3Array(104.55, 0, 60, 100, 0, 60, 100, 0, 55, 104.86, 0, 55)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker257" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -9.33, 0)
+height = 4.97
+vertices = PackedVector3Array(104.25, 0, 65, 100, 0, 65, 100, 0, 60, 104.55, 0, 60)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker258" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.63, 0)
+height = 4.44
+vertices = PackedVector3Array(103.97, 0, 69.62, 100, 0, 68.4, 100, 0, 65, 104.25, 0, 65)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker259" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 2.96
+vertices = PackedVector3Array(110, 0, -90, 105, 0, -90, 105, 0, -91.51, 110, 0, -92.13)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker260" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.58, 0)
+height = 2.97
+vertices = PackedVector3Array(110, 0, -89.28, 105, 0, -88.65, 105, 0, -90, 110, 0, -90)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker261" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.48, 0)
+height = 2.98
+vertices = PackedVector3Array(105.77, 0, 40, 105, 0, 40, 105, 0, 37.22, 105.95, 0, 36.99)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker262" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.59, 0)
+height = 2.88
+vertices = PackedVector3Array(105.46, 0, 45, 105, 0, 45, 105, 0, 40, 105.77, 0, 40)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker263" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -12.34, 0)
+height = 3.11
+vertices = PackedVector3Array(105.16, 0, 50, 105, 0, 50, 105, 0, 45, 105.46, 0, 45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker264" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -11.66, 0)
+height = 2.96
+vertices = PackedVector3Array(105, 0, 52.62, 105, 0, 50, 105.16, 0, 50)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker265" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.6, 0)
+height = 3.03
+vertices = PackedVector3Array(115, 0, -90.44, 113.89, 0, -90, 110, 0, -90, 110, 0, -92.13, 113.26, 0, -92.54, 115, 0, -93.23)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker266" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.37, 0)
+height = 2.76
+vertices = PackedVector3Array(113.03, 0, -89.66, 110, 0, -89.28, 110, 0, -90, 113.89, 0, -90)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker267" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.48, 0)
+height = 2.46
+vertices = PackedVector3Array(120, 0, -95, 119.41, 0, -95, 120, 0, -95.23)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker268" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.52, 0)
+height = 3.48
+vertices = PackedVector3Array(120, 0, -92.44, 115, 0, -90.44, 115, 0, -93.23, 119.41, 0, -95, 120, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker269" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.44, 0)
+height = 2.49
+vertices = PackedVector3Array(120.49, 0, -95, 120, 0, -95, 120, 0, -95.23, 120.53, 0, -95.45)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Blocker270" type="NavigationObstacle3D" parent="Waters/Pale River/Blockers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.68, 0)
+height = 2.69
+vertices = PackedVector3Array(120.3, 0, -92.56, 120, 0, -92.44, 120, 0, -95, 120.49, 0, -95)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_enabled = false
+
+[node name="Ford" parent="Forest Ruins/RiverCrossing" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.81, 0)
+
+[node name="Ford" parent="Teshfield/RiverCrossing" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+
+[node name="Ford" parent="Hopes Gate/RiverCrossingEast" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+
+[node name="Ford" parent="Hopes Gate/RiverCrossingNorth" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+
+[node name="Ford" parent="Hopes Gate/RiverCrossingWest" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.43, 0)
+
+[node name="Ford" parent="Entbridge/RiverCrossing" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+
+[editable path="Forest Ruins/RiverCrossing"]
+
+[editable path="Teshfield/RiverCrossing"]
+
+[editable path="Hopes Gate/RiverCrossingEast"]
+
+[editable path="Hopes Gate/RiverCrossingNorth"]
+
+[editable path="Hopes Gate/RiverCrossingWest"]
+
+[editable path="Entbridge/RiverCrossing"]

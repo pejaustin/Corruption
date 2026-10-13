@@ -1,6 +1,6 @@
 extends RefCounted
 ## The ground (`geo`) of one exported landscape size, for the build and bake tools (tools/bake_*.gd,
-## scripts/build/build_world_sizes.gd): height lookups by ray, and the size's factors against the 2 km map.
+## the navmesh and map-picture bakes): height lookups by segment, and the size's factors against the 2 km map.
 ## Used as `const Ground = preload("res://scripts/build/world_ground.gd")` (tools run before the class cache exists).
 
 const LANDSCAPE: String = "res://art/world/export/world_landscape_%s.glb"

@@ -9,8 +9,3 @@ cast_shadow = 0
 material_override = ExtResource("1_water")
 
 [node name="Blockers" type="Node3D" parent="."]
-
-[node name="Wall" type="StaticBody3D" parent="."]
-collision_mask = 0
-
-[node name="Shape" type="CollisionShape3D" parent="Wall"]

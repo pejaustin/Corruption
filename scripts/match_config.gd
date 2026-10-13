@@ -23,7 +23,7 @@ const WORLD_SIZE_NAMES: Dictionary[int, String] = {
 	WorldSize.LARGE: "6 km",
 }
 
-## The game world scene per size (the 400 m and 6 km ones are generated: scripts/build/build_world_sizes.gd).
+## The game world scene per size (400 m and 2 km are separate works; 6 km is legacy, not maintained).
 const WORLD_SCENES: Dictionary[int, String] = {
 	WorldSize.SMALL: "res://scenes/world/world_400m.tscn",
 	WorldSize.NORMAL: "res://scenes/world/world.tscn",

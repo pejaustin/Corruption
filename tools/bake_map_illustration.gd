@@ -3,11 +3,11 @@ extends SceneTree
 ## and saves it as a PNG, which map_floor.tscn uses as the floor's texture.
 ## Run: SIZE=2km godot --headless --path . -s res://tools/bake_map_illustration.gd   (SIZE = 400m | 2km | 6km, default 2km)
 ## Writes scenes/map/map_illustration.png (2 km) or scenes/map/map_illustration_<size>.png. Re-run after the ground
-## changes, then re-import (tools/sync_world_sizes.sh does both).
+## changes, then re-import (tools/export_world.sh does not run it).
 
 const Ground = preload("res://scripts/build/world_ground.gd")
 ## The part of the 2 km world the picture depicts (x, z); other sizes scale it by their width. It must match MapFloor.world_rect
-## (scripts/build/build_world_sizes.gd sets that for the derived sizes).
+## (set per tower in each size's world_landscape_<size>.tscn).
 const WORLD_RECT_2KM: Rect2 = Rect2(-1000.0, -1000.0, 2000.0, 2000.0)
 ## PLACEHOLDER: art direction, not designed. Resolution, shading strength and contour spacing (metres of height, at 2 km;
 ## other sizes keep the contours on the same terrain features by scaling the spacing with their height factor).

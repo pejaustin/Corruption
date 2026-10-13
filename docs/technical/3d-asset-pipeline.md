@@ -47,8 +47,8 @@ Examples already in the project following this pattern:
 
 ## The world map and backdrop
 
-Terrain, backdrop, POIs and world props come from `.blend` files in `art/world/` through `tools/sync_world_sizes.sh`, not
-the layers below. Steps (including re-exporting the backdrop after sculpting it): `art/world/README.md`.
+The ground and backdrop come from `.blend` files in `art/world/` through `tools/export_world.sh` (geo and backdrop only);
+markers, POIs, towers and water are authored in the landscape scenes. Not the layers below. Steps (including re-exporting the backdrop after sculpting it): `art/world/README.md`.
 
 ## The three layers
 

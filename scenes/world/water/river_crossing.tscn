@@ -1,7 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scenes/world/water/river_crossing.gd" id="1_crossing"]
+[ext_resource type="Script" uid="uid://0vructpig4gy" path="res://scenes/world/water/river_crossing.gd" id="1_crossing"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_ford"]
+resource_local_to_scene = true
+height = 0.2
+radius = 20.0
 
 [node name="RiverCrossing" type="Marker3D" groups=["river_crossings"]]
 gizmo_extents = 10.0
 script = ExtResource("1_crossing")
+
+[node name="Ford" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Ford"]
+shape = SubResource("CylinderShape3D_ford")
