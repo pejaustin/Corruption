@@ -346,3 +346,18 @@ Austin, 2026-10-13:
 **C6. When the Paladin resists a command, what does that look like?** (A refuses; B hesitates; C pulls his blow; D mix)
 Austin, 2026-10-13:
 > he will still swing, but after a significant delay, and maybe not in the right direct
+
+**C7. How do held sites turn into moves and obedience?** (A count and specific sites: the number of temples held sets
+obedience, each temple's crystal also unlocks its own moves; B count only; C specific sites only; D other)
+Austin, 2026-10-13:
+> A
+
+**C8. What does the Paladin's armor do?** (A defence only; B defence against weight: heavier armor takes less damage but
+slows his dodge and stamina; C defence plus resistances; D other)
+Austin, 2026-10-13:
+> do defence against weight for now
+
+**C9. In the boss gauntlet, how does a rival control their boss form?** (A like the Paladin: same Souls controls, bigger
+body; B like a Souls boss: big, slow, a few heavy telegraphed attacks, you pick which to throw; C other)
+Austin, 2026-10-13:
+> dark souls boss controlled with a third person camera

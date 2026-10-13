@@ -163,7 +163,18 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
   and soldiers until you're stronger. (Overview, Q18) **Tiers plus resistance:** actions unlock in steps (for example
   walk, attack, dodge, abilities; which action sits in which tier is a placeholder), and against the Goddess's people
   he resists until control is high. Temple crystals are what raise control. (Austin, 2026-10-12)
-- **Combat** is built later; the old combat-stream branch stays parked, unmerged. (Austin, 2026-10-12)
+- **Combat** (Austin, 2026-10-13, interview C1–C9; the old combat-stream branch stays parked, reference only):
+  - **Feel:** Dark Souls: slow and deliberate, stamina, dodge rolls, lock-on, enemies that hit hard. (C1)
+  - **Weapons:** three main kinds: sword and shield, two-handed weapon, magic quarterstaff. He starts with one; the
+    others are unlocked through the world. (C2, C3)
+  - **Gear stays with the Paladin:** weapons and armor go with him when he changes hands. The controller's held
+    corruption sites decide which moves they can use and how well he follows their commands. (C4)
+  - **Start:** with few sites he can only walk and make a very slow basic attack, and he resists attacking humans. (C5)
+  - **Resisting:** he still swings, but after a significant delay, and maybe not in the right direction. (C6)
+  - **Sites:** the number of temples held sets obedience; each temple's crystal also unlocks its own moves. (C7)
+  - **Armor:** heavier armor takes less damage but slows his dodge and stamina ("for now"). (C8)
+  - **Boss forms in the gauntlet** play like a Dark Souls boss (big, slow, a few heavy telegraphed attacks the player
+    picks), controlled with a third-person camera. (C9)
 - **Seen by all:** through any Palantir, every player sees and hears him live, and the viewers hear each other. Each
   viewer appears as a ghostly orb orbiting him where their camera is. This can give away your troops and strategy.
   He also lets his controller "see" the field. (Overview, Q19)
