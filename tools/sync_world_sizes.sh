@@ -7,6 +7,8 @@
 #   tools/sync_world_sizes.sh --no-export     the .blend is unchanged; you edited art/world/export/world_landscape_2km.tscn
 #                                             (something under a marker) or scenes/world/world.tscn (moved places)
 #   tools/sync_world_sizes.sh --no-bake       as above, and the ground did not change: skip the navmesh and map-picture bakes
+#   tools/sync_world_sizes.sh --ground        only the ground: exports world_landscape_<size>.glb (and areas_<size>.json) and stops;
+#                                             focus the Godot editor to see it. No POIs, props, backdrop, builds or bakes.
 #
 # What it does:
 #   1. exports every size from art/world/source/world_landscape.blend (tools/blender/export_landscape.py; never saves the .blend),
@@ -32,15 +34,17 @@ SIZES=(2km)
 GODOT="${GODOT:-godot}"
 DO_EXPORT=1
 DO_BAKE=1
+GROUND_ONLY=0
 while [ $# -gt 0 ]; do
   arg="$1"; shift
   [ "$arg" = "--sizes" ] && { IFS=, read -ra SIZES <<< "${1:?--sizes needs a list}"; shift; continue; }
   case "$arg" in
     --no-export) DO_EXPORT=0 ;;
+    --ground) GROUND_ONLY=1 ;;
     --no-bake) DO_BAKE=0; DO_EXPORT=0 ;;
     --all-sizes) SIZES=(400m 2km 6km) ;;
     --sizes=*) IFS=, read -ra SIZES <<< "${arg#--sizes=}" ;;
-    -h|--help) sed -n 2,26p "$0"; exit 0 ;;
+    -h|--help) sed -n 2,28p "$0"; exit 0 ;;
     *) echo "unknown option: $arg (see --help)" >&2; exit 2 ;;
   esac
 done
@@ -126,11 +130,15 @@ if [ "$DO_EXPORT" = 1 ]; then
     grep -E '^EXPORTED|GEOMETRY_AND_NAMES_UNCHANGED' "$LOG" | sed "s/^/  [$size] /"
     grep -q 'GEOMETRY_AND_NAMES_UNCHANGED True' "$LOG" || { echo "the export changed the scene in memory ($size); stop" >&2; exit 1; }
     # the backdrop around the map (generated once by tools/blender/build_backdrop.py, then Austin's to sculpt)
-    if [ -f "$ROOT/art/world/source/world_backdrop.blend" ]; then
+    if [ "$GROUND_ONLY" = 0 ] && [ -f "$ROOT/art/world/source/world_backdrop.blend" ]; then
       run 300 "$BLENDER" -b "$(conv "$ROOT/art/world/source/world_backdrop.blend")" --python "$(conv "$ROOT/tools/blender/export_backdrop.py")" -- "$(conv "$ROOT")" "$size" >"$LOG" 2>&1 || { cat "$LOG" >&2; echo "Blender backdrop export failed for $size" >&2; exit 1; }
       grep -E '^EXPORTED' "$LOG" | sed "s/^/  [$size] /"
     fi
   done
+  if [ "$GROUND_ONLY" = 1 ]; then
+    echo "  ground exported; focus the Godot editor to reimport it (navmesh, forests and water not rebuilt: run without --ground for those)"
+    exit 0
+  fi
   # one POI blockout per marker of his map (snake_case name; tower markers have none), and the shared props
   for snake in $(poi_snakes); do
     [ -f "$ROOT/art/world/pois/$snake.blend" ] || { echo "  no art/world/pois/$snake.blend for a marker; skipped" >&2; continue; }
