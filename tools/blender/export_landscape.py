@@ -49,6 +49,8 @@ def digest(c):
 
 
 before = checksum()
+if bpy.context.object and bpy.context.object.mode != "OBJECT":   # saved in Edit/Sculpt mode: mesh data is empty until flushed
+    bpy.ops.object.mode_set(mode="OBJECT")
 geo = bpy.data.objects["geo"]
 # The ocean: Austin's flat sea plane, a guide like the others (its outline and height become the sea in Godot).
 # Detected as any mesh whose name contains "ocean" (any case; Austin's is "Glittering Ocean"), else the first version's `Plane`.

@@ -18,6 +18,8 @@ SIZES = {"400m": (0.2, 0.2), "2km": (1.0, 1.0), "6km": (3.0, 5.0)}   # same as e
 size = _a[1] if len(_a) > 1 and _a[1] in SIZES else "2km"
 out = os.path.join(root, "art/world/export/world_backdrop_%s.glb" % size)
 
+if bpy.context.object and bpy.context.object.mode != "OBJECT":   # saved in Edit/Sculpt mode: mesh data is empty until flushed
+    bpy.ops.object.mode_set(mode="OBJECT")
 land = bpy.data.objects["backdrop"]
 me = land.data
 if "Splat" in me.color_attributes and "Col" in me.color_attributes:   # in memory only, as export_landscape.py does for geo
