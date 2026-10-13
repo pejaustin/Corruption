@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dxk4j5sckqia8" path="res://assets/world/env/mod-castle/Walls/Walls_Short/Wall_Short_x1.fbx" id="6_5dhyi"]
 [ext_resource type="PackedScene" uid="uid://bpu5gh4vbgaep" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Large_Gate.fbx" id="7_3o7cy"]
 [ext_resource type="PackedScene" uid="uid://b6xjupp7r7mpo" path="res://assets/world/env/mod-castle/Props/Decoration/Banner_Wall_Worn_1.fbx" id="8_7wf5u"]
-[ext_resource type="PackedScene" uid="uid://chkr1qie5phr6" path="res://assets/world/env/mod-castle/Props/Lighting_Fixtures/Wall_Stand_Lamp.fbx" id="9_6guij"]
+[ext_resource type="PackedScene" uid="uid://c67817l7qbhsu" path="res://scenes/environment/wall_stand_lamp.tscn" id="9_6guij"]
 [ext_resource type="PackedScene" uid="uid://cir4tlunwsq1m" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x2_Window_1.fbx" id="10_k0irn"]
 [ext_resource type="PackedScene" uid="uid://rb5885yoji8w" path="res://assets/world/env/mod-castle/Floors&Ramps/Floors/Floor_1x1.fbx" id="11_eoso1"]
 [ext_resource type="PackedScene" uid="uid://d2tk2tenrigj7" path="res://assets/world/env/mod-castle/Stairs&Slabs/Stairs/Stair_Long_1.fbx" id="12_2u4nm"]
