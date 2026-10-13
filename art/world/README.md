@@ -45,6 +45,12 @@ memory around the origin to the preset (relative to 2 km: 6 km is 3x wide and 5x
 `Glittering Ocean`), else the first version's `Plane`; the Godot node keeps his exact name (`Plane` becomes `Ocean`), with `water_placeholder` (curved-world shader), no collision (so no navmesh on its surface; the ground beneath is the
 sea floor) and not a guide. PLACEHOLDER look. **The sea blocks movement (Austin, 2026-10-12)**; not built yet: units can still walk the sea floor under it (Vikunja #615).
 
+**Water plan (Austin, 2026-10-12):** the river, lake and ocean planes are rough location markers only. The ground under them is
+sunk once in Blender (`tools/blender/carve_water.py`, run by Austin in his Blender; depths PLACEHOLDER) and the water surfaces
+become Godot `.tscn` scenes. **Pale River blocks movement except at crossings; every town on the river is a crossing:** Forest
+Ruins, Hopes Gate, Entbridge and Teshfield. **Hopes Gate is three crossings:** its city gates span three river openings. Not
+built yet.
+
 **Two files are hand-edited sources, the rest is generated from them:**
 
 | Source (edit these) | Generated from it (each starts with a `GENERATED` comment; never edit) |
