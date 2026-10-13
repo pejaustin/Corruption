@@ -181,6 +181,9 @@ Glittering Ocean carries on), south a mountain wall, west rolling hills.** I gen
 - `tools/blender/export_backdrop.py` -> `export/world_backdrop_<size>.glb` (size presets as `geo`; never saves the
   .blend); `tools/sync_world_sizes.sh` runs it. The .glb.import maps `ground_placeholder` / `water_placeholder` (both
   curved) and makes no collision; `export/world_backdrop_2km.tscn` turns off its shadows. Not walkable, not on the navmesh.
+- **After sculpting:** save the .blend, then either `tools/sync_world_sizes.sh` (everything, ~minutes) or, backdrop only,
+  `"$BLENDER" -b art/world/source/world_backdrop.blend --python tools/blender/export_backdrop.py -- "$PWD" 2km` and focus
+  the Godot editor (it reimports the changed .glb; nothing to bake, the backdrop is off the navmesh).
 - The balcony lookout's far plane is 6 km so it reaches the ring's far edge.
 - The curved-world bend (`WorldCurve`) hides the ring past the horizon like a planet; with the bend off the ring ends at the
   far plane, so the far rows should stay high (mountains) or be fogged.

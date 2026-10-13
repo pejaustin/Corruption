@@ -45,6 +45,11 @@ Examples already in the project following this pattern:
 
 ---
 
+## The world map and backdrop
+
+Terrain, backdrop, POIs and world props come from `.blend` files in `art/world/` through `tools/sync_world_sizes.sh`, not
+the layers below. Steps (including re-exporting the backdrop after sculpting it): `art/world/README.md`.
+
 ## The three layers
 
 ```
