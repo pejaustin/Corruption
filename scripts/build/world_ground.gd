@@ -25,7 +25,9 @@ func y_at(x: float, z: float) -> float:
 	var inv := xf.affine_inverse()
 	var a: Vector3 = inv * Vector3(x, 3000.0, z)
 	var b: Vector3 = inv * Vector3(x, -3000.0, z)
-	var hit := tri.intersect_ray(a, (b - a).normalized())
+	# A segment, not a ray: through geo's uneven scale (1000 wide, 3 tall) intersect_ray missed ~5% of the ground
+	# (Godot 4.7), which left the river's bank heights empty and its blockers at y = inf.
+	var hit := tri.intersect_segment(a, b)
 	return NAN if hit.is_empty() else (xf * (hit["position"] as Vector3)).y
 
 func factors_against(reference: RefCounted) -> Vector2:

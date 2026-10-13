@@ -51,6 +51,10 @@ const BANK_SAMPLE_M: float = 4.0
 ## under the lower bank or the water; the navmesh blockers reach BLOCKER_PAD_M past the lowest and highest bank.
 const WALL_HEIGHT_M: float = 4.0
 const WALL_DEPTH_M: float = 10.0
+## The river's walls are about 10 ft high (Austin, 2026-10-13): from RIVER_WALL_BELOW_M under the lower bank to
+## RIVER_WALL_ABOVE_M over the higher one (3.05 m where the banks are level). Real metres at every size.
+const RIVER_WALL_BELOW_M: float = 0.5
+const RIVER_WALL_ABOVE_M: float = 2.55
 const BLOCKER_PAD_M: float = 50.0
 const CROSSING_SIDES: int = 24
 ## A guide of kind "water" whose name contains this is a river, any other a lake.
@@ -438,6 +442,9 @@ func _block(body: Node3D, owner_node: Node, shapes: Array[PackedVector2Array], b
 			gb = ga if is_nan(gb) else gb
 			var bottom := minf(minf(ga, gb), level if not is_nan(level) else INF) - WALL_DEPTH_M * _tall_scale()
 			var top := maxf(ga, gb) + WALL_HEIGHT_M
+			if is_nan(level):   # the river (only it follows the ground instead of one water level)
+				bottom = minf(ga, gb) - RIVER_WALL_BELOW_M
+				top = maxf(ga, gb) + RIVER_WALL_ABOVE_M
 			faces.append_array(PackedVector3Array([Vector3(a.x, bottom, a.y), Vector3(b.x, bottom, b.y), Vector3(b.x, top, b.y),
 				Vector3(a.x, bottom, a.y), Vector3(b.x, top, b.y), Vector3(a.x, top, a.y)]))
 	var wall := ConcavePolygonShape3D.new()
