@@ -69,7 +69,3 @@ static func world_scene() -> String:
 const STARTING_GROUP_SIZE: int = 4
 ## PLACEHOLDER: tuning, not designed — how many couriers wait at the tower.
 const STARTING_COURIERS: int = 2
-## Order granularity (GDD Q2, ticket #539): how many points an order's route
-## may pass through before its destination. Training and relics widen it.
-## PLACEHOLDER: tuning, not designed.
-const STARTING_ROUTE_POINTS: int = 3

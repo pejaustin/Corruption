@@ -7,5 +7,4 @@
 script = ExtResource("1_script")
 id = &"placeholder_b"
 display_name = "PLACEHOLDER: Relic B"
-description = "PLACEHOLDER: its keeper may plan one more point on a route."
-route_point_bonus = 1
+description = "PLACEHOLDER: no effect yet."

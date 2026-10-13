@@ -1,8 +1,8 @@
 class_name Relic extends Resource
 
 ## A relic found somewhere on the map and carried home (GDD §5, Q35). It grants
-## its effect through flags: a group that brings it home gains `auto_courier`,
-## and its player gains route points. Authored as .tres under res://data/relics/.
+## its effect through flags: a group that brings it home gains `auto_courier`.
+## Authored as .tres under res://data/relics/.
 ## PLACEHOLDER: which relics exist and what each does is Austin's (ticket #580).
 ## The shipped entries are stand-ins.
 
@@ -13,8 +13,6 @@ const DIR: String = "res://data/relics/"
 @export_multiline var description: String
 ## The group that brings it home sends a runner on the first hit (UnitGroup.auto_courier).
 @export var grants_auto_courier: bool = false
-## Extra route points its player may walk when planning (GameState.add_route_point_bonus).
-@export var route_point_bonus: int = 0
 
 static var _all: Array[Relic] = []
 static var _loaded: bool = false
@@ -43,9 +41,9 @@ static func at(index: int) -> Relic:
 	var list := all()
 	return list[index] if index >= 0 and index < list.size() else null
 
-func apply(peer_id: int, group: UnitGroup) -> void:
+func apply(_peer_id: int, group: UnitGroup) -> void:
 	## Host-only: the effect, once the relic is home.
 	if grants_auto_courier and group != null:
 		group.auto_courier = true
-	if route_point_bonus != 0:
-		GameState.add_route_point_bonus(peer_id, route_point_bonus)
+	# PLACEHOLDER: no effect — the relic that granted extra route points keeps
+	# existing, but route points were dropped (Austin, 2026-10-13); its new effect is Austin's call.
