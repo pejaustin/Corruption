@@ -8,6 +8,7 @@ var gm: GroupManager
 const CLEAR_RADIUS: float = 80.0
 
 var origin: Vector3 = Vector3.ZERO
+var only: String = OS.get_environment("ONLY")
 
 func run_tests() -> void:
 	var world := await load_world()
@@ -20,8 +21,10 @@ func run_tests() -> void:
 	origin = _find_open_ground()
 	_park_paladin()
 
-	await _speed_at_rates()
-	await _jump_lands()
+	# ONLY=<name> runs one section while iterating.
+	for section in [&"_speed_at_rates", &"_jump_lands", &"_chase_closes"]:
+		if only.is_empty() or only == String(section):
+			await call(section)
 
 func _find_open_ground() -> Vector3:
 	## A navmesh point with no actor within CLEAR_RADIUS and a straight 60 m run along +x, so tests are not
@@ -110,4 +113,26 @@ func _jump_lands() -> void:
 	var miss := Vector2(skel.global_position.x - target.x, skel.global_position.z - target.z).length()
 	check(waited < 4.0 and miss <= 1.0, "jump lands within 1 m of its target (missed by %.2f m after %.2f s)" % [miss, waited])
 	mm.despawn_minion(skel)
+	await frames(3)
+
+func _chase_closes() -> void:
+	## A skeleton chasing a holy knight that walks away at half speed gets a swing in, and damage lands once he stops.
+	var skel := await _spawn(1, &"skeleton", origin)
+	var knight := await _spawn(-1, &"holy_knight", origin + Vector3(6, 0, 0))
+	knight.aggro_radius = 0.0  # He only walks his waypoint: never turns on the skeleton.
+	knight.move_speed = skel.move_speed * 0.5
+	knight.nav_agent.max_speed = knight.move_speed
+	knight.waypoint = _snap(origin + Vector3(26, 0, 0))  # He walks 20 m, then stands: a swing at a target in full flight misses by design.
+	var hp := knight.hp
+	var swung_at := -1.0
+	var elapsed := 0.0
+	while elapsed < 20.0 and knight.hp == hp:
+		await get_tree().physics_frame
+		elapsed += get_physics_process_delta_time()
+		if swung_at < 0.0 and skel._state_machine.state == &"AttackState":
+			swung_at = elapsed
+	check(swung_at >= 0.0 and swung_at < 7.0, "a chaser starts a swing while the target is still walking away (at %.1f s; he stops at about 10 s)" % swung_at)
+	check(knight.hp < hp, "the swing lands damage within 20 s (knight %d/%d, %.1f s)" % [knight.hp, hp, elapsed])
+	for m in [skel, knight]:
+		mm.despawn_minion(m)
 	await frames(3)
