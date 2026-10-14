@@ -87,6 +87,7 @@ func march_on_tower(extra: int = 0) -> Tower:
 	if target == null or mm == null:
 		return null
 	var at: Node3D = target.courier_spawn if target.courier_spawn else target
+	# PLACEHOLDER: rule, not designed — the army appears in a grid at the city centre.
 	var from := HolySite.city_centre(get_tree())
 	for i in MARCH_SIZE + extra:
 		var offset := Vector3(float(i % 3) * 1.5, 0.5, float(i / 3) * 1.5)

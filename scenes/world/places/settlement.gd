@@ -11,6 +11,7 @@ const GROUP: StringName = &"settlements"
 ## How often idle villagers pick a new spot to wander to.
 const WANDER_INTERVAL: float = 6.0
 
+## PLACEHOLDER: rule and tuning, not designed — people start at random spots within this radius of the settlement.
 @export var radius: float = 16.0
 ## PLACEHOLDER: tuning, not designed — the people living here.
 @export var villagers: int = 4
