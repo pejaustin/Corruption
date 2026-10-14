@@ -7,8 +7,7 @@ licence not recorded.
   (the old Paladin model's height; feet at the origin, the Mixamo rig's 0.01 scale applied so retargeting reads his
   hip height right). The sword is skinned to his right hand. It imports with
   `art/characters/ual/mixamo_bone_map.tres` (Mixamo names to Godot's humanoid profile), so the Universal Animation
-  Library plays on him. The pack's own 11 Mixamo takes were unnamed; named by eye where used (`light_1`-`3`, `heavy`,
-  `idle`, `sword_idle`, `run`; the rest `clip_NN`). Their bone location keys are scaled with the rig.
+  Library plays on him. The pack's own 11 Mixamo takes were unnamed; named where used: `heavy` (take 1), `light_1`-`3` (takes 4, 6, 5; Austin, 2026-10-14), by eye `idle`, `sword_idle`, `run`; the rest `clip_NN`). Their bone location keys are scaled with the rig.
 - `templar.res`: the pack's clips as library `templar` (saved from the glb's player), used for his attacks.
 - `templar.tscn`: the model scene the Paladin uses. Libraries `ual` and `templar`, autoplay `ual/Sword_Idle`; `RightHand` is a bone
   attachment the actor scene hangs its `AttackHitbox` on (a capsule along the blade, which is about 2.7 m long).
