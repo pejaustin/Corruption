@@ -462,7 +462,7 @@ When making changes:
 
 ### Current state
 
-The game is being rebuilt to the GDD v2 (`docs/GDD.md`) on branch `gdd-v2-overhaul`; plan and status in
+The game is being rebuilt to the GDD v2 (`docs/GDD.md`) on `master` (branch `gdd-v2-overhaul` merged 2026-10-14); plan and status in
 `docs/technical/gdd-v2-overhaul.md`. Removed as superseded: the summoning currency, the upgrade altar, the numeric
 corruption score, divine intervention, the scripted Guardian/Seraph bosses and the Gem, AstralProjection, Avatar
 hold-E site capture (`CaptureChannel` / `ChannelState`), the `AvatarClaim` tower station, the Paladin passing to whoever
@@ -741,5 +741,5 @@ Subclass surface: just `set_focused(focused, who)` is called by the controller. 
 
 ### What's built
 
-The GDD v2 overhaul is in progress on branch `gdd-v2-overhaul`; its phase list and status are in
+The GDD v2 overhaul is in progress on `master` (merged from `gdd-v2-overhaul` 2026-10-14); its phase list and status are in
 `docs/technical/gdd-v2-overhaul.md`, and every stand-in is in `PLACEHOLDERS.md`.

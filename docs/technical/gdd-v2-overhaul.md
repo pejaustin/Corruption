@@ -1,6 +1,6 @@
 # GDD v2 overhaul — work plan and status
 
-Branch `gdd-v2-overhaul`. Rebuilds the game around `docs/GDD.md` (Austin, 2026-10-08). Anything that is Austin's to
+Branch `gdd-v2-overhaul`, merged into `master` 2026-10-14; work continues on `master`. Rebuilds the game around `docs/GDD.md` (Austin, 2026-10-08). Anything that is Austin's to
 design (site types, relics, maneuvers, advisor lines, the map and its locations, unit types, boss forms, tuning
 numbers) goes in as a marked placeholder; see `PLACEHOLDERS.md`. The GDD's §11 open questions stay open: where the
 build needs an answer to run, it uses a placeholder rule and says so.
