@@ -18,6 +18,9 @@ const PORT: int = preload("res://scripts/network/enet_network.gd").SERVER_PORT
 ## Minions stand in a row across the far end, this far apart.
 const MINION_SPACING: float = 2.0
 
+## Godot's own "Visible Collision Shapes" (the editor's Debug menu), on in the arena so hit and
+## hurt boxes show: set before the shapes enter the tree. `--no-hitboxes` turns it off.
+@export var show_collision_shapes: bool = true
 ## The fight to set up; the panel and the command line start from it.
 @export var config: ArenaConfig
 @export var boss_scene: PackedScene
@@ -41,6 +44,9 @@ var _pin_serial: int = 0
 @onready var _nav: NavigationRegion3D = $World/Nav
 @onready var _minion_manager: MinionManager = $MinionManager
 @onready var _panel: ArenaPanel = %ArenaPanel
+
+func _enter_tree() -> void:
+	get_tree().debug_collisions_hint = show_collision_shapes and not "--no-hitboxes" in OS.get_cmdline_user_args()
 
 func _ready() -> void:
 	config = config.duplicate() if config else ArenaConfig.new()
@@ -90,6 +96,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _exit_tree() -> void:
+	get_tree().debug_collisions_hint = false
 	if GameState.avatar_changed.is_connected(_on_avatar_changed):
 		GameState.avatar_changed.disconnect(_on_avatar_changed)
 	NetworkManager.is_hosting_game = false

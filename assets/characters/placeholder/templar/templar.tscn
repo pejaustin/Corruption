@@ -21,3 +21,4 @@ libraries/ = SubResource("AnimationLibrary_empty")
 libraries/ual = ExtResource("2_ual")
 libraries/templar = ExtResource("3_templar")
 autoplay = &"ual/Sword_Idle"
+playback_default_blend_time = 0.15

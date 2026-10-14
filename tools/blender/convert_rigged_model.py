@@ -106,6 +106,28 @@ if os.environ.get('HEIGHT'):
     zs = [(o.matrix_world @ v.co).z for o in sc.objects if o.type == 'MESH' for v in o.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh().vertices]
     print("HEIGHT", round(min(zs), 3), round(max(zs), 3), "hips", tuple(round(c, 3) for c in arm.matrix_world @ arm.pose.bones[0].head))
     arm.data.pose_position = 'POSE'
+# GROUND_CLIPS=1: the rig's takes were authored for a rest pose with the hips at the origin, so each lifts
+# the body by that height; shift each take's root (hips) keys so its lowest foot touches the floor.
+if os.environ.get('GROUND_CLIPS'):
+    from mathutils import Vector
+    root_bone = arm.pose.bones[0]
+    feet = [pb for pb in arm.pose.bones if 'Foot' in pb.name or 'Toe' in pb.name]
+    to_local = (arm.matrix_world.to_3x3() @ root_bone.bone.matrix_local.to_3x3()).inverted()
+    arm.animation_data_create()
+    for act in list(bpy.data.actions):
+        arm.animation_data.action = act
+        if getattr(act, 'slots', None) and act.slots: arm.animation_data.action_slot = act.slots[0]
+        f0, f1 = int(act.frame_range[0]), int(act.frame_range[1])
+        low = min((arm.matrix_world @ pb.head).z for f in range(f0, f1 + 1) for pb in feet if not sc.frame_set(f))
+        delta = to_local @ Vector((0, 0, -low))
+        try: fcs = list(act.fcurves)
+        except Exception: fcs = [fc for l in act.layers for st in l.strips for cb in st.channelbags for fc in cb.fcurves]
+        for fc in fcs:
+            if fc.data_path == 'pose.bones["%s"].location' % root_bone.name:
+                for k in fc.keyframe_points:
+                    k.co[1] += delta[fc.array_index]; k.handle_left[1] += delta[fc.array_index]; k.handle_right[1] += delta[fc.array_index]
+        print("GROUNDED", act.name, round(low, 3))
+    arm.animation_data.action = None
 slug = os.path.splitext(os.path.basename(out))[0]
 arm.name = 'Armature'
 body = [o for o in sc.objects if o.type == 'MESH' and o.vertex_groups and len(o.vertex_groups) > 1]

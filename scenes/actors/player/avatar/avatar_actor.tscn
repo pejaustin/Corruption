@@ -10,11 +10,11 @@
 [ext_resource type="PackedScene" uid="uid://dyl7bol73bpei" path="res://scenes/ui/avatar_hud.tscn" id="11_hud"]
 [ext_resource type="Script" uid="uid://du8oa62cayfhx" path="res://scenes/actors/player/states/roll_state.gd" id="12_f2kxo"]
 [ext_resource type="Script" uid="uid://cnkysqgjb1adr" path="res://scripts/combat/hurtbox.gd" id="12_hurt"]
-[ext_resource type="Script" path="res://scripts/interaction_focus.gd" id="13_focus"]
-[ext_resource type="Script" path="res://scenes/actors/player/avatar/avatar_ai.gd" id="14_ai"]
-[ext_resource type="Script" path="res://scripts/avatar_abilities.gd" id="15_abilities"]
-[ext_resource type="Script" path="res://scenes/actors/player/avatar/paladin_hold.gd" id="16_hold"]
-[ext_resource type="Script" path="res://scenes/actors/player/avatar/paladin_voice.gd" id="17_voice"]
+[ext_resource type="Script" uid="uid://b5ilnns6m27hf" path="res://scripts/interaction_focus.gd" id="13_focus"]
+[ext_resource type="Script" uid="uid://b8fhel5nln3ic" path="res://scenes/actors/player/avatar/avatar_ai.gd" id="14_ai"]
+[ext_resource type="Script" uid="uid://dg4fq6du2dlqv" path="res://scripts/avatar_abilities.gd" id="15_abilities"]
+[ext_resource type="Script" uid="uid://bjkbb0ngbnadd" path="res://scenes/actors/player/avatar/paladin_hold.gd" id="16_hold"]
+[ext_resource type="Script" uid="uid://bfc5eaclarj8p" path="res://scenes/actors/player/avatar/paladin_voice.gd" id="17_voice"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/watcher_orb.tscn" id="18_orb"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/paladin_voice_player.tscn" id="19_vp"]
 
@@ -33,11 +33,43 @@ collision_layer = 5
 script = ExtResource("6_avatar")
 watcher_orb_scene = ExtResource("18_orb")
 
-; PLACEHOLDER: art — the Crimson Templar Knight stands in for the Paladin (3.1 m, the old model's height).
 [node name="Avatar" parent="Model" index="0" unique_id=1068379943 instance=ExtResource("3_afwa1")]
 
-; Along his sword's blade (the capsule runs from the hand to the tip).
-[node name="AttackHitbox" type="Area3D" parent="Model/Avatar/Armature/GeneralSkeleton/RightHand" index="0"]
+[node name="GeneralSkeleton" parent="Model/Avatar/Armature" parent_id_path=PackedInt32Array(1068379943, 1837777447) index="0" unique_id=299423935]
+bones/0/position = Vector3(0.002848792, 2.5360322, -0.015608147)
+bones/0/rotation = Quaternion(0.04347815, -0.13501984, -0.0047638584, 0.98987705)
+bones/1/rotation = Quaternion(0.19989748, 0.036944345, 0.0054760305, 0.97910476)
+bones/2/rotation = Quaternion(0.032192778, 0.011054236, -0.0069846986, 0.99939615)
+bones/3/rotation = Quaternion(0.032127175, 0.011696526, -0.007008666, 0.99939084)
+bones/4/rotation = Quaternion(-0.110365584, 0.011939552, 0.018730089, 0.9936429)
+bones/5/rotation = Quaternion(-0.12424734, 0.06421463, -0.036874812, 0.98948437)
+bones/7/rotation = Quaternion(0.33377007, 0.5932666, 0.56185734, -0.47005177)
+bones/8/rotation = Quaternion(0.36052516, 0.7498335, -0.5309551, 0.16080454)
+bones/9/rotation = Quaternion(0.23776194, -0.6724295, 0.11457249, 0.69150645)
+bones/10/rotation = Quaternion(0.04194328, 0.29815626, 0.3998293, 0.86572516)
+bones/11/rotation = Quaternion(0.5974173, -0.099031135, -0.09925674, 0.789578)
+bones/12/rotation = Quaternion(0.4416075, 0.058447674, -0.12703651, 0.88624406)
+bones/13/rotation = Quaternion(0.5443148, 0.051791817, 0.078853816, 0.83355933)
+bones/15/rotation = Quaternion(0.25598505, -0.6359766, -0.55268294, -0.47386387)
+bones/16/rotation = Quaternion(-0.3785123, 0.72041756, -0.47340086, -0.33707353)
+bones/17/rotation = Quaternion(0.3189868, 0.6564375, -0.19219933, 0.6560463)
+bones/18/rotation = Quaternion(0.0746357, -0.4701807, -0.2661528, 0.83816606)
+bones/19/rotation = Quaternion(0.18075012, -0.07275148, -0.0623091, 0.9788536)
+bones/20/rotation = Quaternion(0.8448977, 0.15012123, 0.08199257, 0.50684184)
+bones/21/rotation = Quaternion(0.30127838, -0.055420287, 0.05606038, 0.9502722)
+bones/23/rotation = Quaternion(0.050199993, 0.25809363, 0.96289384, -0.060854807)
+bones/24/rotation = Quaternion(-0.026488513, 0.95645875, -0.2881465, 0.03816697)
+bones/25/rotation = Quaternion(-0.034454983, 0.65845025, -0.75090784, 0.03732967)
+bones/26/rotation = Quaternion(0.012045187, 0.9999205, 0.0031649177, 0.002026494)
+bones/28/rotation = Quaternion(-0.10811695, 0.100404374, 0.98601264, 0.077516586)
+bones/29/rotation = Quaternion(0.0030587576, 0.95449376, -0.29227468, -0.059227493)
+bones/30/rotation = Quaternion(0.063089654, 0.5432502, -0.8345598, -0.06639896)
+bones/31/rotation = Quaternion(-0.010593215, 0.9998844, 0.010718882, 0.0020042784)
+
+[node name="RightHand" parent="Model/Avatar/Armature/GeneralSkeleton" index="2"]
+transform = Transform3D(-0.28185767, 0.25051743, 0.92617357, 0.9522227, -0.045271844, 0.30203044, 0.117593735, 0.9670532, -0.2257881, -0.28517282, 2.4819303, 0.59826076)
+
+[node name="AttackHitbox" type="Area3D" parent="Model/Avatar/Armature/GeneralSkeleton/RightHand" index="0" unique_id=1012492010]
 unique_name_in_owner = true
 collision_layer = 0
 collision_mask = 8
@@ -45,7 +77,7 @@ monitorable = false
 script = ExtResource("5_hitbox")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Armature/GeneralSkeleton/RightHand/AttackHitbox" index="0" unique_id=1540985233]
-transform = Transform3D(0.2210, 0.8505, 0.4773, -0.9753, 0.1928, 0.1082, 0, -0.4895, 0.8720, 1.1313, 0.2564, -0.6511)
+transform = Transform3D(0.221, 0.8505, 0.4773, -0.9753, 0.1928, 0.1082, 0, -0.4895, 0.872, 1.1313, 0.2564, -0.6511)
 shape = SubResource("CapsuleShape3D_yy7ks")
 disabled = true
 debug_color = Color(0.7019608, 0.23529412, 0.25882354, 0.59607846)
@@ -67,53 +99,50 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 [node name="AvatarInput" type="Node" parent="." index="3" unique_id=597958932]
 script = ExtResource("8_input")
 
-; PLACEHOLDER: art — clip mapping onto the Universal Animation Library (PLACEHOLDERS.md "Paladin stand-in").
-[node name="StaggerState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="0"]
+[node name="StaggerState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="0" unique_id=626342158]
 animation_name = "ual/Hit_Chest"
 
-[node name="DeathState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="1"]
+[node name="DeathState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="1" unique_id=73700415]
 animation_name = "ual/Death01"
 
-[node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2"]
+[node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2" unique_id=1173378999]
 animation_name = "ual/Sword_Idle"
 
-[node name="MoveState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3"]
+[node name="MoveState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3" unique_id=655784458]
 animation_name = "ual/Walk"
 
-[node name="JumpState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4"]
+[node name="JumpState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4" unique_id=87081217]
 animation_name = "ual/Jump_Start"
 
-; PLACEHOLDER: tuning — the light string (three swings) and the strong attack (right mouse, Austin 2026-10-14): which clips,
-; hit windows, chain windows and the strong attack's damage (PLACEHOLDERS.md "Paladin attacks").
 [node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
 script = ExtResource("9_attack")
-animation_name = "templar/light_1"
 next_light = &"LightAttack2State"
 next_heavy = &"HeavyAttackState"
+animation_name = "templar/light_1"
 
-[node name="LightAttack2State" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8"]
+[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=1033644063]
+script = ExtResource("12_f2kxo")
+animation_name = "ual/Roll"
+
+[node name="LightAttack2State" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8" unique_id=1106750662]
 script = ExtResource("9_attack")
-animation_name = "templar/light_2"
 next_light = &"LightAttack3State"
 next_heavy = &"HeavyAttackState"
+animation_name = "templar/light_2"
 
-[node name="LightAttack3State" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="9"]
+[node name="LightAttack3State" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="9" unique_id=534720113]
 script = ExtResource("9_attack")
-animation_name = "templar/light_3"
 next_heavy = &"HeavyAttackState"
+animation_name = "templar/light_3"
 
-[node name="HeavyAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="10"]
+[node name="HeavyAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="10" unique_id=1042291004]
 script = ExtResource("9_attack")
-animation_name = "templar/heavy"
 hitbox_start_ratio = 0.5
 hitbox_end_ratio = 0.8
 damage_multiplier = 2.0
 combo_window_start = 0.85
 next_light = &"AttackState"
-
-[node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=1033644063]
-script = ExtResource("12_f2kxo")
-animation_name = "ual/Roll"
+animation_name = "templar/heavy"
 
 [node name="WatcherLabel" type="Label3D" parent="." index="5" unique_id=957424953]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
@@ -142,33 +171,29 @@ path_search_max_polygons = 131072
 [node name="AvatarAI" type="Node" parent="." index="11" unique_id=1422890772]
 script = ExtResource("14_ai")
 
-[node name="AvatarAbilities" type="Node" parent="." index="12"]
+[node name="AvatarAbilities" type="Node" parent="." index="12" unique_id=764155718]
 unique_name_in_owner = true
 script = ExtResource("15_abilities")
 
-; Takeover, overpower and hold (host-authoritative).
-[node name="PaladinHold" type="Node" parent="." index="13"]
+[node name="PaladinHold" type="Node" parent="." index="13" unique_id=1373816764]
 unique_name_in_owner = true
 script = ExtResource("16_hold")
 
-; Live voice among Palantir viewers and his controller.
-[node name="PaladinVoice" type="Node" parent="." index="14"]
+[node name="PaladinVoice" type="Node" parent="." index="14" unique_id=552283129]
 unique_name_in_owner = true
 script = ExtResource("17_voice")
 voice_player_scene = ExtResource("19_vp")
 
-[node name="Mic" type="AudioStreamPlayer" parent="PaladinVoice" index="0"]
+[node name="Mic" type="AudioStreamPlayer" parent="PaladinVoice" index="0" unique_id=28288861]
 stream = SubResource("AudioStreamMicrophone_voice")
-bus = &"PaladinMic"
 
-[node name="ResistLabel" type="Label3D" parent="." index="15"]
+[node name="ResistLabel" type="Label3D" parent="." index="15" unique_id=1564566399]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
 visible = false
 billboard = 1
 modulate = Color(1, 0.9, 0.5, 1)
-outline_size = 8
 text = "He resists"
-font_size = 32
+outline_size = 8
 
 [editable path="Model/Avatar"]
