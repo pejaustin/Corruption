@@ -3,3 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://dq3iwxxwguora" path="res://art/world/pois/export/hopes_gate.glb" id="1_glb"]
 
 [node name="HopesGate" instance=ExtResource("1_glb")]
+
+[node name="Arrival" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.02, 4.14, 1.66)
+gizmo_extents = 3.0

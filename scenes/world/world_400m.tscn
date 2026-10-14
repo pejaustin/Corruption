@@ -169,7 +169,8 @@ point_id = &"RoadNorth"
 display_name = "Road (Avequel'la)"
 neighbors = [NodePath("../BossSite"), NodePath("../SettlementNW"), NodePath("../Ford")]
 
-[node name="Chapel" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors")]
+[node name="Chapel" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors", "location")]
+location = NodePath("../../Nav/WorldLandscape/Forest Ruins")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.76318, 0.5517993, -91.00026)
 script = ExtResource("6_2chqg")
 point_id = &"Chapel"
@@ -178,7 +179,8 @@ kind = 4
 target = NodePath("../../../SiteChapel")
 neighbors = [NodePath("../City")]
 
-[node name="AvatarSite" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors")]
+[node name="AvatarSite" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors", "location")]
+location = NodePath("../../Nav/WorldLandscape/Ale Bend")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.92201, -0.00018310547, 32.752506)
 script = ExtResource("6_2chqg")
 point_id = &"AvatarSite"
@@ -187,7 +189,8 @@ kind = 4
 target = NodePath("../../../SiteAvatar")
 neighbors = [NodePath("../City")]
 
-[node name="BossSite" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors")]
+[node name="BossSite" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors", "location")]
+location = NodePath("../../Nav/WorldLandscape/Valley Cross")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -131.9199, -0.20422374, 32.13999)
 script = ExtResource("6_2chqg")
 point_id = &"BossSite"
@@ -196,14 +199,16 @@ kind = 4
 target = NodePath("../../../SiteBoss")
 neighbors = [NodePath("../City")]
 
-[node name="City" type="Marker3D" parent="World/MapPoints"]
+[node name="City" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("location")]
+location = NodePath("../../Nav/WorldLandscape/Hopes Gate")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.698034, -0.6442945, 10.195521)
 script = ExtResource("6_2chqg")
 point_id = &"City"
 display_name = "Hopes Gate"
 kind = 3
 
-[node name="SettlementSE" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors")]
+[node name="SettlementSE" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors", "location")]
+location = NodePath("../../Nav/WorldLandscape/Entbridge")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.63134, -3.8422854, 43.89351)
 script = ExtResource("6_2chqg")
 point_id = &"SettlementSE"
@@ -211,7 +216,8 @@ display_name = "Entbridge"
 kind = 2
 neighbors = [NodePath("../MineSE")]
 
-[node name="SettlementNW" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors")]
+[node name="SettlementNW" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("neighbors", "location")]
+location = NodePath("../../Nav/WorldLandscape/Teshfield")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.493534, -0.43917486, -29.512989)
 script = ExtResource("6_2chqg")
 point_id = &"SettlementNW"
@@ -233,7 +239,8 @@ point_id = &"MineNW"
 display_name = "Mine (Teshfield)"
 kind = 5
 
-[node name="Ford" type="Marker3D" parent="World/MapPoints"]
+[node name="Ford" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("location")]
+location = NodePath("../../Nav/WorldLandscape/Mountain Pass")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.783466, -0.8280884, -106.21984)
 script = ExtResource("6_2chqg")
 point_id = &"Ford"
@@ -241,7 +248,8 @@ display_name = "Mountain Pass"
 kind = 1
 known_at_start = false
 
-[node name="Crossing" type="Marker3D" parent="World/MapPoints"]
+[node name="Crossing" type="Marker3D" parent="World/MapPoints" node_paths=PackedStringArray("location")]
+location = NodePath("../../Nav/WorldLandscape/Lastford")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1762769, -0.27171385, 99.72499)
 script = ExtResource("6_2chqg")
 point_id = &"Crossing"

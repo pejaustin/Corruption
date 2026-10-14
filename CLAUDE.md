@@ -544,7 +544,8 @@ draw.
   adds a marker for each `World/MapPoints` point and a line for each neighbour pair that the floor lacks (markers scaled,
   a line's ends on its markers); existing ones are left alone unless `overwrite_on_copy` (`OVERWRITE=1`). In play, code
   only shows known points and links, highlights, and draws pieces, pencil and ink.
-  `MapPoint`s (`World/MapPoints`) are known at start or discovered by reports. `MapPiece` chess pieces from beliefs (E
+  `MapPoint`s (`World/MapPoints`) are known at start or discovered by reports. A point with a `location` (its place's marker in the landscape) stands at that place's `Arrival`
+  marker, a Marker3D in the place's POI scene (`art/world/pois/<place>.tscn`) that Austin moves to where it counts as reached (2026-10-13); tower points stand at their tower's courier gate. `MapPiece` chess pieces from beliefs (E
   select, LMB move by hand); looking at a point while authoring lights up the way there (`MapFloor.plan_to`, the
   markers' and links' `Highlight`); E on it = destination → a scroll in hand (`OverlordActor.held_order`, Q tears it up; its route
   pencilled along the floor's links) → the advisor (`advisor_handoff.gd` + `AdvisorDialogue`) asks the goal and

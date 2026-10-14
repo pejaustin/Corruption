@@ -3,3 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://dele4bc707iep" path="res://art/world/pois/export/forest_ruins.glb" id="1_glb"]
 
 [node name="ForestRuins" instance=ExtResource("1_glb")]
+
+[node name="Arrival" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.00, 0.98, -0.00)
+gizmo_extents = 3.0

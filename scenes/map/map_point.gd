@@ -34,6 +34,11 @@ enum Kind { ROAD, CROSSING, SETTLEMENT, CITY, SITE, RESOURCE, TOWER, LANDMARK }
 @export var target: NodePath
 ## Tower points: snap onto the courier gate of the tower in this slot.
 @export var tower_slot: int = -1
+## The place this point is (a marker in the landscape, e.g. Hopes Gate): the point stands at that place's `Arrival`
+## marker, a Marker3D in the place's own scene (art/world/pois/<place>.tscn) that Austin moves to where the place
+## counts as reached (Austin, 2026-10-13). Empty: the point stands where it is authored.
+@export var location: Node3D
+const ARRIVAL_NODE: StringName = &"Arrival"
 ## The points next to this one: a unit here may walk straight to any of them. Two-way: listing B on A is enough for
 ## A–B (listing it on both is harmless). Pick them in the Inspector (drag MapPoints from the scene tree).
 ## PLACEHOLDER: the shipped neighbours are one pair per old road (2026-10-13), not designed (PLACEHOLDERS.md).
@@ -65,6 +70,10 @@ func _snap() -> void:
 			if t and t.slot_index == tower_slot and t.courier_spawn:
 				global_position = t.courier_spawn.global_position
 				return
+	var arrival := arrival_marker(location)
+	if arrival:
+		global_position = arrival.global_position  # exactly where Austin put it: no drop
+		return
 	# Drop onto the ground below (terrain or static geometry).
 	var space := get_world_3d().direct_space_state
 	var from := global_position + Vector3.UP * 200.0
@@ -72,6 +81,12 @@ func _snap() -> void:
 	var hit := space.intersect_ray(query)
 	if not hit.is_empty():
 		global_position = hit.position
+
+static func arrival_marker(place: Node) -> Node3D:
+	## The place's Arrival marker (in its POI scene), or null.
+	if place == null:
+		return null
+	return place.find_child(String(ARRIVAL_NODE), true, false) as Node3D
 
 static func spot_in_world(p: MapPoint, world: Node) -> Vector3:
 	## Where `p` stands in play, read from a world scene that is not in the tree (tools): a tower point on its
@@ -83,6 +98,8 @@ static func spot_in_world(p: MapPoint, world: Node) -> Vector3:
 			if int(t.get("slot_index")) == p.tower_slot and t.has_node("CourierSpawn"):
 				n = t.get_node("CourierSpawn")
 				break
+	elif p.location != null and arrival_marker(p.location) != null:
+		n = arrival_marker(p.location)
 	while n is Node3D:
 		xf = (n as Node3D).transform * xf
 		n = n.get_parent()

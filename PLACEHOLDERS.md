@@ -79,6 +79,8 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 
 - `scenes/map/map_piece.gd` debug truth pieces (Toggle True Positions): pale see-through owner colour, "TRUE <count> <status>" label.
 
+- `art/world/pois/<place>.tscn`, node `Arrival` (Forest Ruins, Ale Bend, Valley Cross, Hopes Gate, Entbridge, Teshfield, Mountain Pass, Lastford): where the place counts as reached, set 2026-10-13 to where its map point stood; Hopes Gate and Entbridge to the nearest navmesh spot, which is a small disconnected patch: Austin to place both on the walkable ground.
+
 ## Wording
 
 | What | Stands in for | Where | Ticket |
