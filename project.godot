@@ -43,7 +43,7 @@ KnowledgeManager="*res://scripts/knowledge/knowledge_manager.gd"
 
 [corruption]
 
-debug/free_lookout=false
+debug/free_lookout=true
 
 [display]
 

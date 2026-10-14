@@ -1,13 +1,12 @@
-[gd_resource type="Resource" script_class="BossAttack" format=3]
+[gd_resource type="Resource" script_class="BossAttack" format=3 uid="uid://d31m3kctmnmfc"]
 
-[ext_resource type="Script" path="res://scripts/combat/boss_attack.gd" id="1_attack"]
+[ext_resource type="Script" uid="uid://q8s1owvunh03" path="res://scripts/combat/boss_attack.gd" id="1_attack"]
 
 [resource]
 script = ExtResource("1_attack")
-; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
 display_name = "PLACEHOLDER: Ground Stomp"
-animation = &"blackhorn/stomp"
 input_action = &"item_1"
+animation = &"blackhorn/stomp"
 windup_seconds = 1.4
 active_seconds = 0.3
 recovery_seconds = 1.5
