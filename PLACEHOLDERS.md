@@ -42,6 +42,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 
 | What | Stands in for | Where | Ticket |
 |---|---|---|---|
+| Humanoid model: Quaternius's grey UAL mannequin (CC0), skinned to the UAL rig and playing the `ual` library | Austin's model built around the UAL rig (2026-10-13) | `art/characters/ual/ual_mannequin_placeholder.tscn`, `export/ual_mannequin_placeholder.glb`, `Mannequin` in `source/ual_mvp.blend` | |
 | World blockout: the whole landscape (heights, mountains, rivers, roads, forests, coast), the stand-in shape of every place, the props and the 32 px textures, all read off the sketch by eye | The world's real geography and art | `art/world/` (see its README), generators in `tools/blender/` | #604 |
 | Textures on Austin's hand-made map: `geo` is vertex-painted (`Splat` layer: black grass, red rock, green dirt, blue sand; the channel -> texture mapping and the 50% threshold are guesses, seeded from the old height / slope look); `Pale River` and `The Still Lake` water; `elder wood` and `northwood` darkened `leaf_pine` (no forest texture exists); nearest-filtered, 8 m tile size is a guess | His real ground art | `art/world/source/world_landscape.blend`, `tools/blender/add_splat.py`, `tools/blender/texture_austin_map.py` | #604 |
 | Open-world scene: sun, sky and fog, and the navmesh tuning (2 km: 1 m cells, climb 1 m, agents search 131072 polygons and reach a waypoint within 2.5 m; 6 km: 1.5 m cells (1.25 and finer make the bake fail), climb 1.5 m, slope limits scaled with the map's extra steepness, baked without the towers like 400 m (0.5 m cells); agent radius 0.5 m, height 2.9 m, a little over the 2.86 m capsule, so ground under low overhangs is not walkable (climb >= cell x tan(slope) or slopes split the mesh), walkable on `geo` and tower floors) | The world's real lighting and nav settings | `scenes/world/open_world/open_world_<size>.tscn`, `open_world_<size>_navmesh.res`, the NavigationMesh on `World/Nav` (editor bake) | #605 |
@@ -191,6 +192,7 @@ summoned there cannot walk out (`test_world_layout` fails two checks for it); no
 
 ## Scenes and resources (no comments in these files; moved here 2026-10-13)
 
+- `art/characters/ual/ual_mannequin_placeholder.tscn`, whole file: the stand-in humanoid (see "Art and look").
 - `art/world/export/world_landscape_400m.tscn`, whole file: the 400 m layout is the 2 km scene's scaled by 1/5 (formerly a `GENERATED` comment), not designed by Austin; which slot (0-3) is which site and which way each tower faces are the 2 km scene's; the `Ocean` node is the old 400 m export's sea plane.
 - `art/world/export/world_landscape_2km.tscn`, node `Hell's Mouth/POI` (and every `POI`): the place's look is a blockout stand-in (`art/world/pois/*.blend`), not designed by Austin.
 - `art/world/export/world_landscape_<size>.tscn`, nodes `Waters/*/Blockers/*`: written once (2026-10-13) as stand-ins; see the Water row under "Art and look".

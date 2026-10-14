@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://t0mifag7i8f2" path="res://art/characters/ual/export/ual_mannequin_placeholder.glb" id="1_mann"]
+[ext_resource type="AnimationLibrary" uid="uid://bfd4xnuw5tbm0" path="res://art/characters/ual/export/ual_anims.glb" id="2_ual"]
+
+[node name="ual_mannequin_placeholder" instance=ExtResource("1_mann")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries/ual = ExtResource("2_ual")
+autoplay = &"ual/Idle_Loop"

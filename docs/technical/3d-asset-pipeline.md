@@ -103,6 +103,8 @@ Used when the DCC file exports all animations in a single `.glb`. Godot's import
 
 Example: `large-male.glb` → `large-male.res` → referenced by `large_male.tscn` → `autoplay = &"large-male/Idle"`.
 
+**Humanoid library `ual`** (`art/characters/ual/`, see its README): the glb is imported straight as an AnimationLibrary and retargeted with a humanoid bone map, so any humanoid model imported with a bone map plays `ual/<clip>`.
+
 ### Pattern B — Per-clip glbs + hand-authored `AnimationLibrary`
 Used when animations come as separate files from a mocap library or asset store.
 
