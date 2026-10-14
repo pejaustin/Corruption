@@ -13,7 +13,7 @@ class_name BossActor extends PlayerActor
 ## - **Attacks** (`attacks`, BossAttack data): windup (telegraphed), active (the
 ##   blow lands, host only), recovery. `attack_index` and `attack_time` are
 ##   rollback state so every peer sees the same phase.
-## PLACEHOLDER: the model (KayKit Skeleton Warrior, scaled), its clips, the camera distance
+## PLACEHOLDER: the model (the avatar, scaled and tinted), the camera distance
 ## and the walk speed are stand-ins, not designed.
 
 ## PLACEHOLDER: tuning — metres per second; a boss does not run.
@@ -23,11 +23,8 @@ const TURN_SPEED: float = 4.0
 const HIT_HEIGHT: float = 4.0
 ## A target's own width, added to a blow's reach and half-width.
 const TARGET_RADIUS: float = 0.5
-## PLACEHOLDER: art — the glow on the body at the end of a windup: the overlay's alpha at full charge.
-const TELL_GLOW_ALPHA: float = 0.6
-## An attack's clip is stretched to the attack's length, but never slower or faster than this.
-const MIN_ATTACK_ANIMATION_SPEED: float = 0.5
-const MAX_ATTACK_ANIMATION_SPEED: float = 2.0
+## PLACEHOLDER: art — the glow on the body at the end of a windup.
+const TELL_GLOW_ENERGY: float = 3.0
 const TELL_GROUND_HEIGHT: float = 0.1
 
 ## Throws, in key order (BossInput.attack_pick indexes this).
@@ -37,7 +34,7 @@ const TELL_GROUND_HEIGHT: float = 0.1
 @export var attack_damage: int = 20
 ## PLACEHOLDER: art — the camera sits this far behind and above him.
 @export var camera_offset: Vector3 = Vector3(0, 3.0, 9.0)
-## The body mesh whose material overlay glows during a windup.
+## The body mesh whose material glows during a windup.
 @export var body_mesh: MeshInstance3D
 
 ## Rollback state: which attack he is throwing and how long into it.
@@ -137,25 +134,6 @@ func _set_overlord_active(peer_id: int, active: bool) -> void:
 	if overlord:
 		overlord.set_overlord_active(active)
 
-# --- Animation ---
-
-func _on_display_state_changed(old_state: RewindableState, new_state: RewindableState) -> void:
-	super(old_state, new_state)
-	if new_state is BossAttackState:
-		_play_attack_animation()
-
-func _play_attack_animation() -> void:
-	## The attack's clip, stretched over the whole attack (windup, blow, recovery) so the
-	## swing reads against the telegraph. PLACEHOLDER: the hit frame is not matched to the
-	## active window, only the clip's length to the attack's.
-	var attack := current_attack()
-	if attack == null or _animation_player == null or not _animation_player.has_animation(attack.animation):
-		return
-	var length := _animation_player.get_animation(attack.animation).length
-	var speed := clampf(length / maxf(attack.total_seconds(), 0.01), MIN_ATTACK_ANIMATION_SPEED, MAX_ATTACK_ANIMATION_SPEED)
-	_animation_player.play(attack.animation, -1.0, speed)
-	_animation_player.seek(attack_time * speed, true)
-
 # --- Attacks ---
 
 func current_attack() -> BossAttack:
@@ -231,16 +209,16 @@ func _update_tell() -> void:
 	var charge := clampf(attack_time / maxf(attack.windup_seconds, 0.01), 0.0, 1.0)
 	if phase == BossAttack.Phase.ACTIVE:
 		charge = 1.0
-	_set_glow(TELL_GLOW_ALPHA * charge)
+	_set_glow(TELL_GLOW_ENERGY * charge)
 
 func _hide_tell() -> void:
 	_tell_label.visible = false
 	_tell_area.visible = false
 	_set_glow(0.0)
 
-func _set_glow(alpha: float) -> void:
+func _set_glow(energy: float) -> void:
 	if body_mesh == null:
 		return
-	var material := body_mesh.material_overlay as StandardMaterial3D
+	var material := body_mesh.material_override as StandardMaterial3D
 	if material:
-		material.albedo_color.a = alpha
+		material.emission_energy_multiplier = energy

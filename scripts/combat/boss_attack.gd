@@ -12,9 +12,6 @@ enum Phase { WINDUP, ACTIVE, RECOVERY, DONE }
 @export var display_name: String = ""
 ## The input action that throws it.
 @export var input_action: StringName = &""
-## The model's clip for it, as "<library>/<clip>". BossActor stretches it to
-## span windup + active + recovery. PLACEHOLDER: the mapping is a stand-in.
-@export var animation: StringName = &""
 @export var windup_seconds: float = 1.0
 @export var active_seconds: float = 0.25
 @export var recovery_seconds: float = 1.0
