@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dg26qtmqois7g"
-path="res://.godot/imported/crimson_templar_grebas templarias.png-896a4f94d06a755407dc9ccf88ad2023.ctex"
+uid="uid://bimry2qiax8uv"
+path="res://.godot/imported/necrothread_body mutant  aracnide.png-f1de9310245157381d51ba91186cc5bb.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "806ead9c018031470134bbce5a6d9357"
+"md5": "bbce41c19f00eb413cd24c89e487f7dd"
 }
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar_grebas templarias.png"
-dest_files=["res://.godot/imported/crimson_templar_grebas templarias.png-896a4f94d06a755407dc9ccf88ad2023.ctex"]
+source_file="res://assets/characters/placeholder/monsters/necrothread_body mutant  aracnide.png"
+dest_files=["res://.godot/imported/necrothread_body mutant  aracnide.png-f1de9310245157381d51ba91186cc5bb.ctex"]
 
 [params]
 

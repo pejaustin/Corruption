@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwkvx4tr8ma6l"
-path="res://.godot/imported/crimson_templar_casco caballlero templario.png-384b9e2ae9fbfaf16b0728f37595d8f0.ctex"
+uid="uid://6p48s0bksubl"
+path="res://.godot/imported/vyrkael_green dragon.png-85bdf6acb72612153b2d539dd1c75e8e.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "dd591dc9a79e68c892d493e89bc4ae59"
+"md5": "d38cb2973645744fc35630cd80f7123c"
 }
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar_casco caballlero templario.png"
-dest_files=["res://.godot/imported/crimson_templar_casco caballlero templario.png-384b9e2ae9fbfaf16b0728f37595d8f0.ctex"]
+source_file="res://assets/characters/placeholder/monsters/vyrkael_green dragon.png"
+dest_files=["res://.godot/imported/vyrkael_green dragon.png-85bdf6acb72612153b2d539dd1c75e8e.ctex"]
 
 [params]
 

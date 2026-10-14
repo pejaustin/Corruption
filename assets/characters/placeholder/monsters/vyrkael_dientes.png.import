@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ciiir0vil57at"
-path="res://.godot/imported/crimson_templar_cuerpo templario.png-90bc2aa059f1a279b03096f569873bb1.ctex"
+uid="uid://vr002y5f51iu"
+path="res://.godot/imported/vyrkael_dientes.png-dfd2a69bd1912d1091f8e850b3047313.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "ae874ba0e112acbddd78c1d1bb6daac5"
+"md5": "2fb739901cf0aa09798496a2a69b8047"
 }
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar_cuerpo templario.png"
-dest_files=["res://.godot/imported/crimson_templar_cuerpo templario.png-90bc2aa059f1a279b03096f569873bb1.ctex"]
+source_file="res://assets/characters/placeholder/monsters/vyrkael_dientes.png"
+dest_files=["res://.godot/imported/vyrkael_dientes.png-dfd2a69bd1912d1091f8e850b3047313.ctex"]
 
 [params]
 

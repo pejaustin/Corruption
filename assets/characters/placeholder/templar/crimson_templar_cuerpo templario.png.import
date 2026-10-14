@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://badvrdcye2eux"
-path="res://.godot/imported/crimson_templar_sword metal (1).png-e88f0294fe9051a3a41ca1d10d4a4964.ctex"
+uid="uid://bdrlojmkynh22"
+path="res://.godot/imported/crimson_templar_cuerpo templario.png-8d748817d10fbcd901fad14345c0567c.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "aff1868bae6a35e248c0b27c49c1e5b3"
+"md5": "ae874ba0e112acbddd78c1d1bb6daac5"
 }
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar_sword metal (1).png"
-dest_files=["res://.godot/imported/crimson_templar_sword metal (1).png-e88f0294fe9051a3a41ca1d10d4a4964.ctex"]
+source_file="res://assets/characters/placeholder/templar/crimson_templar_cuerpo templario.png"
+dest_files=["res://.godot/imported/crimson_templar_cuerpo templario.png-8d748817d10fbcd901fad14345c0567c.ctex"]
 
 [params]
 

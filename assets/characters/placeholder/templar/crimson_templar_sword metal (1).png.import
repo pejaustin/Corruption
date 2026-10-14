@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://uut4gw78publ"
-path="res://.godot/imported/crimson_templar_brazales templarios.png-b3d4a1c870492bc607da48acadd68488.ctex"
+uid="uid://dgf651v1v8qj"
+path="res://.godot/imported/crimson_templar_sword metal (1).png-04ce2149cc2635997f9d8ca80cd6fe03.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "1d4e85cbec17ffc7a6e47437a29ee3f3"
+"md5": "aff1868bae6a35e248c0b27c49c1e5b3"
 }
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar_brazales templarios.png"
-dest_files=["res://.godot/imported/crimson_templar_brazales templarios.png-b3d4a1c870492bc607da48acadd68488.ctex"]
+source_file="res://assets/characters/placeholder/templar/crimson_templar_sword metal (1).png"
+dest_files=["res://.godot/imported/crimson_templar_sword metal (1).png-04ce2149cc2635997f9d8ca80cd6fe03.ctex"]
 
 [params]
 

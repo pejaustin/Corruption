@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://yuote7qk88ni"
-path="res://.godot/imported/crimson_templar.glb-8618f428542227f12d561176c007d801.scn"
+uid="uid://bv2yy4er4drs6"
+path="res://.godot/imported/vyrkael.glb-c47bf8ad85b73b1eefea7758aa827d1f.scn"
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar.glb"
-dest_files=["res://.godot/imported/crimson_templar.glb-8618f428542227f12d561176c007d801.scn"]
+source_file="res://assets/characters/placeholder/monsters/vyrkael.glb"
+dest_files=["res://.godot/imported/vyrkael.glb-c47bf8ad85b73b1eefea7758aa827d1f.scn"]
 
 [params]
 

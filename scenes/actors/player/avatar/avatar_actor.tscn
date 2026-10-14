@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://dsnyn2e8y152j"]
 
 [ext_resource type="PackedScene" uid="uid://bq0mxc1lqy3ta" path="res://scenes/actors/player/player_actor.tscn" id="1_base"]
-[ext_resource type="PackedScene" uid="uid://bv1qhiv4lk5ls" path="res://assets/characters/avatar/avatar.tscn" id="3_afwa1"]
-[ext_resource type="PackedScene" uid="uid://d1f2d2crfxy8x" path="res://assets/characters/accessories/sword.fbx" id="4_7i2nu"]
+[ext_resource type="PackedScene" path="res://assets/characters/placeholder/templar/templar.tscn" id="3_afwa1"]
 [ext_resource type="Script" uid="uid://cr7oh6l6iom5q" path="res://scripts/combat/attack_hitbox.gd" id="5_hitbox"]
 [ext_resource type="Script" uid="uid://d0aehpnqgu5yc" path="res://scenes/actors/player/avatar/avatar_actor.gd" id="6_avatar"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar_camera.tscn" id="7_camera"]
@@ -20,8 +19,8 @@
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar/paladin_voice_player.tscn" id="19_vp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_yy7ks"]
-radius = 0.2
-height = 1.9326172
+radius = 0.25
+height = 2.661
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_avatar_hurt"]
 radius = 0.4
@@ -34,32 +33,24 @@ collision_layer = 5
 script = ExtResource("6_avatar")
 watcher_orb_scene = ExtResource("18_orb")
 
+; PLACEHOLDER: art — the Crimson Templar Knight stands in for the Paladin (3.1 m, the old model's height).
 [node name="Avatar" parent="Model" index="0" unique_id=1068379943 instance=ExtResource("3_afwa1")]
 
-[node name="Skeleton3D" parent="Model/Avatar/Root" parent_id_path=PackedInt32Array(1068379943, 888430599) index="0" unique_id=1590710455]
-bones/29/rotation = Quaternion(-0.015085455, 0.7243594, -0.031580053, 0.6885336)
-
-[node name="LeftHand" parent="Model/Avatar/Root/Skeleton3D" index="1" unique_id=2050844362]
-transform = Transform3D(0.07474194, 0.14349152, -0.98682487, -0.2270763, -0.9611454, -0.15695614, -0.97100425, 0.2358158, -0.039254427, 0.5139298, 1.3410388, 0.17227304)
-
-[node name="Sword" parent="Model/Avatar/Root/Skeleton3D/RightHand" parent_id_path=PackedInt32Array(1068379943, 1832019117) index="0" unique_id=1582312483 instance=ExtResource("4_7i2nu")]
-transform = Transform3D(-0.12098205, -0.6371934, 0.043004073, 0.61728454, -0.10544567, 0.17419198, -0.16378348, 0.07326108, 0.62474734, -0.075951755, 0.14564335, -0.08455777)
-
-[node name="AttackHitbox" type="Area3D" parent="Model/Avatar/Root/Skeleton3D/RightHand" parent_id_path=PackedInt32Array(1068379943, 1832019117) index="1" unique_id=1546805926]
+; Along his sword's blade (the capsule runs from the hand to the tip).
+[node name="AttackHitbox" type="Area3D" parent="Model/Avatar/Armature/GeneralSkeleton/RightHand" index="0"]
 unique_name_in_owner = true
-transform = Transform3D(0.07913626, -0.16213454, -0.9835906, -0.25083438, -0.9581769, 0.13776435, -0.9647896, 0.23581624, -0.11649541, -0.5023979, 1.3065488, 0.76137525)
 collision_layer = 0
 collision_mask = 8
 monitorable = false
 script = ExtResource("5_hitbox")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Root/Skeleton3D/RightHand/AttackHitbox" index="0" unique_id=1540985233]
-transform = Transform3D(0.07188435, -0.9887191, -0.1313981, 0.7451763, -0.034327775, 0.6659759, -0.66297275, -0.14578909, 0.7343094, 0.037100017, -0.010813117, -0.065440595)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Armature/GeneralSkeleton/RightHand/AttackHitbox" index="0" unique_id=1540985233]
+transform = Transform3D(0.2210, 0.8505, 0.4773, -0.9753, 0.1928, 0.1082, 0, -0.4895, 0.8720, 1.1313, 0.2564, -0.6511)
 shape = SubResource("CapsuleShape3D_yy7ks")
 disabled = true
 debug_color = Color(0.7019608, 0.23529412, 0.25882354, 0.59607846)
 
-[node name="Hurtbox" type="Area3D" parent="Model/Avatar/Root" parent_id_path=PackedInt32Array(1068379943, 888430599) index="1" unique_id=2097877870]
+[node name="Hurtbox" type="Area3D" parent="Model/Avatar" index="2" unique_id=2097877870]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 collision_layer = 4
@@ -67,7 +58,7 @@ collision_mask = 0
 monitoring = false
 script = ExtResource("12_hurt")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Root/Hurtbox" index="0" unique_id=82270526]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/Avatar/Hurtbox" index="0" unique_id=82270526]
 shape = SubResource("CapsuleShape3D_avatar_hurt")
 
 [node name="AvatarCamera" parent="." index="2" unique_id=108768714 instance=ExtResource("7_camera")]
@@ -76,14 +67,29 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 [node name="AvatarInput" type="Node" parent="." index="3" unique_id=597958932]
 script = ExtResource("8_input")
 
+; PLACEHOLDER: art — clip mapping onto the Universal Animation Library (PLACEHOLDERS.md "Paladin stand-in").
+[node name="StaggerState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="0"]
+animation_name = "ual/Hit_Chest"
+
+[node name="DeathState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="1"]
+animation_name = "ual/Death01"
+
+[node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2"]
+animation_name = "ual/Sword_Idle"
+
+[node name="MoveState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3"]
+animation_name = "ual/Walk"
+
+[node name="JumpState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4"]
+animation_name = "ual/Jump_Start"
+
 [node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
 script = ExtResource("9_attack")
-use_animation_keys = true
-animation_name = "large-male/Attack"
+animation_name = "ual/Sword_Attack_Standing"
 
 [node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=1033644063]
 script = ExtResource("12_f2kxo")
-animation_name = "large-male/Crouch"
+animation_name = "ual/Roll"
 
 [node name="WatcherLabel" type="Label3D" parent="." index="5" unique_id=957424953]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)

@@ -1,7 +1,7 @@
-# Blender, one-off conversion of a rigged FBX/.blend from an asset pack into a glb (2026-10-14, Blackhorn and the
-# monsters under assets/characters/placeholder/): images relinked by file name, weapons parented to a hand bone
-# skinned to it, duplicate takes dropped, unnamed Mixamo takes numbered.
-# blender -b --factory-startup -P convert_rigged_model.py -- SRC OUT.glb TEXDIR [ARMATURE_TO_KEEP] [RENAME_JSON] [FALLBACK_PNG]
+# Blender, one-off conversion of a rigged FBX/.blend from an asset pack into a glb (2026-10-14, Blackhorn, the Templar and
+# the monsters under assets/characters/placeholder/): images relinked by file name, weapons parented to a hand bone
+# skinned to it, duplicate takes dropped, unnamed Mixamo takes numbered. HEIGHT=<m> resizes and grounds the rig.
+# [HEIGHT=3.1] blender -b --factory-startup -P convert_rigged_model.py -- SRC OUT.glb TEXDIR [ARMATURE_TO_KEEP] [RENAME_JSON] [FALLBACK_PNG]
 # args: src out.glb texdir [keep_armature] [rename json] [fallback_texture]
 import bpy, sys, os, re, json
 a = sys.argv[sys.argv.index('--')+1:]
@@ -79,6 +79,24 @@ for i, act in enumerate(sorted([x for x in bpy.data.actions if 'mixamo' in x.nam
     act.name = f"clip_{i+1:02d}"
 for act in bpy.data.actions: print("ACT", act.name, int(act.frame_range[1] - act.frame_range[0]))
 arm.animation_data_create(); arm.animation_data.action = None
+# HEIGHT=<m>: scale the rig so its rest-pose mesh is that tall, feet at the origin, then apply the armature's
+# transforms (Mixamo rigs come in at 0.01 scale, which leaves Godot's retarget reading the hip height wrong)
+if os.environ.get('HEIGHT'):
+    arm.data.pose_position = 'REST'; bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    zs = [(o.matrix_world @ v.co).z for o in sc.objects if o.type == 'MESH' for v in o.evaluated_get(dg).to_mesh().vertices]
+    f = float(os.environ['HEIGHT']) / (max(zs) - min(zs))
+    arm.location.z -= min(zs); arm.location *= f; arm.scale *= f
+    bpy.context.view_layer.update()
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in [arm] + list(arm.children_recursive): o.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    arm.data.pose_position = 'POSE'; bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get(); arm.data.pose_position = 'REST'; bpy.context.view_layer.update()
+    zs = [(o.matrix_world @ v.co).z for o in sc.objects if o.type == 'MESH' for v in o.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh().vertices]
+    print("HEIGHT", round(min(zs), 3), round(max(zs), 3), "hips", tuple(round(c, 3) for c in arm.matrix_world @ arm.pose.bones[0].head))
+    arm.data.pose_position = 'POSE'
 slug = os.path.splitext(os.path.basename(out))[0]
 arm.name = 'Armature'
 body = [o for o in sc.objects if o.type == 'MESH' and o.vertex_groups and len(o.vertex_groups) > 1]

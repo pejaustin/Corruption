@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bpq5pi5jirfes"
-path="res://.godot/imported/crimson_templar_mango sword real.png-ce302c9d05e96397b3f3791ff4ad3c4e.ctex"
+uid="uid://dchysa08lvvwx"
+path="res://.godot/imported/vyrkael_alas dragon.png-1006761b5410fef17ee6f236d2138619.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "f5519020c9c458c2d357442fb5c747ef"
+"md5": "8f831b1389013089119f803341b7d499"
 }
 
 [deps]
 
-source_file="res://assets/characters/placeholder/monsters/crimson_templar_mango sword real.png"
-dest_files=["res://.godot/imported/crimson_templar_mango sword real.png-ce302c9d05e96397b3f3791ff4ad3c4e.ctex"]
+source_file="res://assets/characters/placeholder/monsters/vyrkael_alas dragon.png"
+dest_files=["res://.godot/imported/vyrkael_alas dragon.png-1006761b5410fef17ee6f236d2138619.ctex"]
 
 [params]
 
