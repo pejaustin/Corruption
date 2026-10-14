@@ -631,12 +631,25 @@ One shared `AvatarActor` (`World/Avatar`), always awake: unowned he fights for t
 
 `HolySite` (`World/Places/HolySite`, group `holy_site`, city centre) watches the Paladin: when his owner has him alive within
 `radius`, `start_gauntlet` runs. The other players, weakest first (`strength_of`: held non-tower sites, boss-type sites weigh
-`BOSS_SITE_WEIGHT`), each get a `boss_form` minion (`data/minions/boss_form.tres`, a placeholder) spawned at the centre with
-hp and damage scaled by strength; they are AI-driven (no player control yet). Each boss that dies brings on the next; none
-left -> `GameState.announce_win(owner)`. If the Paladin dies (`AvatarActor.died`) the current boss's player takes him
-(`set_avatar_owner`, deferred past his own owner wipe), the gauntlet ends and he is pinned at that player's tower gate
-(`PLACEHOLDER: #576`). Losing his owner some other way aborts. `GoodFaction`'s draw step calls `HolySite.lock_all`. State is
-mirrored in static vars (`HolySite.state`, `boss_peer`, ...) for the F3 overlay. Tests: `tests/component/test_holy_site.gd`; milestone `tests/integration/test_endgame.tscn`.
+`BOSS_SITE_WEIGHT`), each play a **`BossActor`** (`boss_scene`, Austin 2026-10-13) as that turn's boss, hp and damage scaled by
+strength (`_scale_boss`). Each boss that dies brings on the next; none left -> `GameState.announce_win(owner)`. If the Paladin
+dies (`AvatarActor.died`) the current boss's player takes him (`set_avatar_owner`, deferred past his own owner wipe), the
+gauntlet ends and he is pinned at that player's tower gate (`PLACEHOLDER: #576`). Losing his owner some other way aborts.
+`GoodFaction`'s draw step calls `HolySite.lock_all`. State is mirrored in static vars (`HolySite.state`, `boss_peer`, ...) for the
+F3 overlay.
+- **`BossActor`** (`scenes/actors/boss/`, inherits `player_actor.tscn` like the Paladin): spawned on every peer by the `_spawn_boss`
+  RPC as `HolySite/Boss<peer>` and freed by `_free_boss`. Netfox predicts the driving peer's `BossInput` (`input_dir`,
+  `attack_pick`) and `BossCamera` (an `AvatarCamera`); the host is state authority (`attack_index`, `attack_time` are rollback
+  state). `take_control(peer)` sets input/camera authority and idles that peer's overlord (and its HUD); `release_control()`
+  hands the view back. Allegiance = the boss's peer. Never staggered; walk only. Blows to it queue in `incoming_damage` (applied
+  in its rollback tick, as the Paladin's are).
+- **Attacks** are `BossAttack` resources (`data/bosses/placeholder/`, all PLACEHOLDER): windup (shown by `TellArea`/`TellLabel`
+  and a body glow), active (`BossAttackState` -> `strike_targets`, host only, a box in front of the model, once per target),
+  recovery. Keys are the attacks' `input_action`s.
+- **`BossAI`** drives it on the host when nobody plays it: a CPU seat (`DebugManager.is_dummy`) from the start, or a boss whose
+  peer disconnected (`HolySite._on_peer_disconnected` -> `release_control`). Walks at the Paladin, random attack in reach.
+- `data/minions/boss_form.tres` survives only for the runestone's sealed Dark Lord. Real two-process play is untested.
+Tests: `tests/component/test_holy_site.gd`, `test_boss_actor.gd`; milestone `tests/integration/test_endgame.tscn`.
 
 ### Treasure room and ledger (`scripts/interactibles/treasure_room.gd`, `ledger.gd`)
 

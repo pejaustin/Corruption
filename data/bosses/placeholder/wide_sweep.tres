@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BossAttack" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_attack.gd" id="1_attack"]
+
+[resource]
+script = ExtResource("1_attack")
+; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
+display_name = "PLACEHOLDER: Wide Sweep"
+input_action = &"secondary_ability"
+windup_seconds = 0.8
+active_seconds = 0.3
+recovery_seconds = 1.0
+damage_multiplier = 2.0
+reach = 5.0
+width = 8.0

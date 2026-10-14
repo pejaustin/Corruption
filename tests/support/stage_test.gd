@@ -122,3 +122,12 @@ func run_physics(game_seconds: float) -> void:
 	while elapsed < game_seconds:
 		await get_tree().physics_frame
 		elapsed += get_physics_process_delta_time()
+
+func free_netfox_nodes_settled() -> void:
+	## After a test frees a netfox actor mid-test (a boss form): its RollbackSynchronizer never connected
+	## (no time sync here), so freeing it logs "disconnect a nonexistent connection" engine errors, which
+	## GUT would count. Wait for the free, then mark exactly those errors handled.
+	await get_tree().process_frame
+	for err in get_errors():
+		if err.contains_text("signal_is_valid") or err.contains_text("slot_map") or err.contains_text("nonexistent connection"):
+			err.handled = true

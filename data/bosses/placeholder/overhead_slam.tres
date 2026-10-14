@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BossAttack" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/boss_attack.gd" id="1_attack"]
+
+[resource]
+script = ExtResource("1_attack")
+; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
+display_name = "PLACEHOLDER: Overhead Slam"
+input_action = &"primary_ability"
+windup_seconds = 1.0
+active_seconds = 0.25
+recovery_seconds = 1.2
+damage_multiplier = 3.0
+reach = 4.0
+width = 3.0
