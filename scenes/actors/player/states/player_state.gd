@@ -25,6 +25,9 @@ func get_jump() -> bool:
 func get_attack() -> bool:
 	return player.avatar_input.attack_input
 
+func get_heavy() -> bool:
+	return player.avatar_input.heavy_input
+
 func get_roll() -> bool:
 	return player.avatar_input.roll_input
 
@@ -60,12 +63,15 @@ func try_roll() -> bool:
 		return false
 	return actor.try_transition(&"RollState")
 
-## Transition into AttackState if the attack input is held OR was buffered.
-## Used by IdleState/MoveState — call at the top of tick() so a press queued
-## during a locked attack fires the next swing immediately on recovery.
+## Start an attack if its input is held OR was buffered: the strong one (right
+## mouse) into HeavyAttackState, else the light one into AttackState, the first
+## of the light combo. Used by IdleState/MoveState — call at the top of tick() so
+## a press queued during a locked attack fires the next swing on recovery.
 func try_attack() -> bool:
 	if not player.can_use(AvatarActor.ACTION_ATTACK):
 		return false
+	if get_heavy() or player.avatar_input.consume_if_buffered(&"secondary_ability"):
+		return actor.try_transition(&"HeavyAttackState")
 	if not (get_attack() or player.avatar_input.consume_if_buffered(&"primary_ability")):
 		return false
 	return actor.try_transition(&"AttackState")

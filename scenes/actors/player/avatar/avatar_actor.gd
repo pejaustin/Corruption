@@ -107,13 +107,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("cancel"):
 		GameState.request_recall_avatar()
+	# Right mouse is the strong attack (Austin, 2026-10-14): abilities on 1 and 2.
 	if abilities and can_use(ACTION_ABILITIES):
-		if event.is_action_pressed("secondary_ability"):
+		if event.is_action_pressed("item_1"):
 			abilities.activate_ability(0)
-		elif event.is_action_pressed("item_1"):
-			abilities.activate_ability(1)
 		elif event.is_action_pressed("item_2"):
-			abilities.activate_ability(2)
+			abilities.activate_ability(1)
 
 ## The Paladin fights for whoever holds him; unheld, for the good faction.
 func get_allegiance() -> int:

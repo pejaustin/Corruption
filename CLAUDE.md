@@ -619,6 +619,9 @@ One shared `AvatarActor` (`World/Avatar`), always awake: unowned he fights for t
 - **Zero HP** (`AvatarActor._die`): owner → -1 (controller dropped), no teleport; after `RECOVER_DELAY` he gets up in
   place at `RECOVER_HP_FRACTION`. HP changes from outside combat (recovery, regen, a new owner's full heal) are queued
   in `_pending_hp` / `heal()` and applied inside his `_rollback_tick` on the host, or netfox restores the old value.
+- **Attacks** (Austin, 2026-10-14): left mouse is a light string (`AttackState` -> `LightAttack2State` -> `LightAttack3State`),
+  right mouse the strong attack (`HeavyAttackState`); each `AttackState` node names its clip, `damage_multiplier`, and
+  `next_light`/`next_heavy` from `combo_window_start` (decided from held, synced input). Abilities are on 1 and 2.
 - **Control tiers** (`get_control_level` = 1 + owner's `AVATAR_CONTROL` sites, capped; unowned = max): `can_use(action)`
   gates run/jump/roll/attack in `PlayerState` and abilities in `AvatarActor` + `AvatarAbilities` (host).
   `strike(target, dmg)` is the one place his blows land; below `RESIST_GOOD_BELOW_LEVEL` it refuses good-faction targets

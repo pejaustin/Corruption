@@ -91,7 +91,16 @@ if os.environ.get('HEIGHT'):
     bpy.ops.object.select_all(action='DESELECT')
     for o in [arm] + list(arm.children_recursive): o.select_set(True)
     bpy.context.view_layer.objects.active = arm
+    s_old = arm.scale.x
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # Applying scale moves the bones, not the keys: scale the actions' bone location keys to match.
+    for act in bpy.data.actions:
+        try: fcs = list(act.fcurves)
+        except Exception: fcs = [fc for l in act.layers for st in l.strips for cb in st.channelbags for fc in cb.fcurves]
+        for fc in fcs:
+            if fc.data_path.endswith('.location'):
+                for k in fc.keyframe_points:
+                    k.co[1] *= s_old; k.handle_left[1] *= s_old; k.handle_right[1] *= s_old
     arm.data.pose_position = 'POSE'; bpy.context.view_layer.update()
     dg = bpy.context.evaluated_depsgraph_get(); arm.data.pose_position = 'REST'; bpy.context.view_layer.update()
     zs = [(o.matrix_world @ v.co).z for o in sc.objects if o.type == 'MESH' for v in o.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh().vertices]

@@ -83,9 +83,33 @@ animation_name = "ual/Walk"
 [node name="JumpState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4"]
 animation_name = "ual/Jump_Start"
 
+; PLACEHOLDER: tuning — the light string (three swings) and the strong attack (right mouse, Austin 2026-10-14): which clips,
+; hit windows, chain windows and the strong attack's damage (PLACEHOLDERS.md "Paladin attacks").
 [node name="AttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6" unique_id=472463938]
 script = ExtResource("9_attack")
-animation_name = "ual/Sword_Attack_Standing"
+animation_name = "templar/light_1"
+next_light = &"LightAttack2State"
+next_heavy = &"HeavyAttackState"
+
+[node name="LightAttack2State" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="8"]
+script = ExtResource("9_attack")
+animation_name = "templar/light_2"
+next_light = &"LightAttack3State"
+next_heavy = &"HeavyAttackState"
+
+[node name="LightAttack3State" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="9"]
+script = ExtResource("9_attack")
+animation_name = "templar/light_3"
+next_heavy = &"HeavyAttackState"
+
+[node name="HeavyAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="10"]
+script = ExtResource("9_attack")
+animation_name = "templar/heavy"
+hitbox_start_ratio = 0.5
+hitbox_end_ratio = 0.8
+damage_multiplier = 2.0
+combo_window_start = 0.85
+next_light = &"AttackState"
 
 [node name="RollState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="7" unique_id=1033644063]
 script = ExtResource("12_f2kxo")
@@ -100,7 +124,7 @@ font_size = 24
 outline_size = 8
 
 [node name="RollbackSynchronizer" parent="." index="6" unique_id=734396145]
-input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input"])
+input_properties = Array[String](["AvatarInput:input_dir", "AvatarInput:jump_input", "AvatarInput:run_input", "AvatarInput:attack_input", "AvatarCamera:camera_basis", "AvatarInput:roll_input", "AvatarInput:heavy_input"])
 
 [node name="AvatarHUD" parent="." index="8" unique_id=1564158435 instance=ExtResource("11_hud")]
 
