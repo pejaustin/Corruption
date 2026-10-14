@@ -13,7 +13,8 @@ extends CanvasLayer
 @onready var _health_bar: ProgressBar = %HealthBar
 @onready var _ability_cross: AbilityCross = %AbilityCross
 @onready var _damage_vignette: DamageVignette = %DamageVignette
-@onready var _capture_progress: CaptureProgress = %CaptureProgress
+## Your hold on him (PaladinHold.hold), above the health bar (GDD §8 Q15).
+@onready var _hold_bar: ProgressBar = %HoldBar
 
 var _actor: AvatarActor = null
 var _ability_cross_initialized: bool = false
@@ -27,10 +28,13 @@ func _ready() -> void:
 	_health_bar.max_value = _actor.get_max_hp()
 	_health_bar.value = _actor.hp
 	_damage_vignette.bind(_actor)
-	_capture_progress.bind(_actor)
 	GameState.avatar_changed.connect(_on_avatar_changed)
 	_try_init_ability_cross()
 	_refresh()
+
+func _process(_delta: float) -> void:
+	if visible and _actor.hold:
+		_hold_bar.value = _actor.hold.hold
 
 func _on_avatar_changed(_old: int, _new: int) -> void:
 	_try_init_ability_cross()

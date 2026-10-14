@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+; Plays one remote speaker's voice around the Paladin; PaladinVoice instances one
+; per sender and gives it an AudioStreamGenerator at the sender's sample rate.
+
+[node name="VoicePlayer" type="AudioStreamPlayer"]
+bus = &"Master"

@@ -1,0 +1,275 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/arena/arena.gd" id="1_arena"]
+[ext_resource type="Resource" path="res://tools/arena/presets/paladin_vs_boss_ai.tres" id="2_preset"]
+[ext_resource type="PackedScene" path="res://scenes/actors/boss/boss_actor.tscn" id="3_boss"]
+[ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_avatar"]
+[ext_resource type="Script" path="res://scripts/minion_manager.gd" id="5_mm"]
+[ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="6_gm"]
+[ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="7_body"]
+[ext_resource type="Script" path="res://tools/arena/arena_panel.gd" id="8_panel"]
+
+[sub_resource type="Environment" id="Environment_arena"]
+background_mode = 1
+background_color = Color(0.32, 0.34, 0.38, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.55, 0.6, 1)
+
+; Baked at start (arena.gd): the same settings as the test stage's floor (tests/support/stage_test.gd).
+[sub_resource type="NavigationMesh" id="NavigationMesh_arena"]
+geometry_parsed_geometry_type = 1
+cell_size = 0.25
+cell_height = 0.25
+agent_height = 3.0
+agent_radius = 0.75
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ledge"]
+size = Vector3(4, 1, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.42, 0.4, 0.36, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector3(60, 1, 60)
+
+[node name="Arena" type="Node3D"]
+script = ExtResource("1_arena")
+config = ExtResource("2_preset")
+boss_scene = ExtResource("3_boss")
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="Sun" type="DirectionalLight3D" parent="World"]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 20, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="World"]
+environment = SubResource("Environment_arena")
+
+[node name="Nav" type="NavigationRegion3D" parent="World"]
+navigation_mesh = SubResource("NavigationMesh_arena")
+
+[node name="Ground" type="StaticBody3D" parent="World/Nav"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Nav/Ground"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Nav/Ground"]
+mesh = SubResource("BoxMesh_floor")
+
+; The Paladin lives at this path, as in the game world (BossAI and DebugManager look for World/Avatar).
+[node name="Avatar" parent="World" instance=ExtResource("4_avatar")]
+
+[node name="Bosses" type="Node3D" parent="World"]
+
+; Where you start, and where your opponent starts (facing each other), inside the AI Paladin's (10 m) and
+; the minions' (MinionType.aggro_radius, 8 m by default) aggro range, so AI opponents engage at once.
+[node name="PlayerSpot" type="Marker3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.5)
+
+[node name="FoeSpot" type="Marker3D" parent="World"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -3.5)
+
+; The Paladin waits here, hidden and unhurt, in rounds without him: a ledge off the floor, out of everyone's aggro range.
+[node name="ParkedSpot" type="Marker3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50)
+
+[node name="ParkedLedge" type="StaticBody3D" parent="World/ParkedSpot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/ParkedSpot/ParkedLedge"]
+shape = SubResource("BoxShape3D_ledge")
+
+; Shown to whoever drives nothing (before a round, or a peer left watching).
+[node name="OverviewCamera" type="Camera3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 0.774, 0.633, 0, -0.633, 0.774, 0, 18, 22)
+current = true
+
+[node name="Minions" type="Node3D" parent="."]
+
+[node name="MinionManager" type="Node" parent="." node_paths=PackedStringArray("minions_root")]
+script = ExtResource("5_mm")
+minions_root = NodePath("../Minions")
+body_scene = ExtResource("7_body")
+
+[node name="GroupManager" type="Node" parent="."]
+script = ExtResource("6_gm")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="ArenaPanel" type="PanelContainer" parent="UI"]
+unique_name_in_owner = true
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 436.0
+offset_bottom = 560.0
+script = ExtResource("8_panel")
+
+[node name="Margin" type="MarginContainer" parent="UI/ArenaPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="UI/ArenaPanel/Margin"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UI/ArenaPanel/Margin/VBox"]
+layout_mode = 2
+text = "Combat test arena"
+
+[node name="Network" type="HBoxContainer" parent="UI/ArenaPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="OfflineButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Offline"
+
+[node name="HostButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Host"
+
+[node name="JoinAddress" type="LineEdit" parent="UI/ArenaPanel/Margin/VBox/Network"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "127.0.0.1"
+
+[node name="JoinButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Join"
+
+[node name="Grid" type="GridContainer" parent="UI/ArenaPanel/Margin/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="RoleLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "You play"
+
+[node name="RoleOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 2
+popup/item_0/text = "The Paladin"
+popup/item_0/id = 0
+popup/item_1/text = "A boss form"
+popup/item_1/id = 1
+
+[node name="LevelLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Paladin control level"
+
+[node name="LevelSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 4.0
+value = 4.0
+
+[node name="AttacksLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Boss attacks"
+
+[node name="AttackList" type="ItemList" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+select_mode = 1
+
+[node name="BossHpLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Boss HP"
+
+[node name="BossHpSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 10000.0
+value = 300.0
+
+[node name="BossDamageLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Boss damage"
+
+[node name="BossDamageSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1000.0
+value = 20.0
+
+[node name="OpponentLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Opponent"
+
+[node name="OpponentOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 4
+popup/item_0/text = "AI (the other role)"
+popup/item_0/id = 0
+popup/item_1/text = "Second player"
+popup/item_1/id = 1
+popup/item_2/text = "Minions"
+popup/item_2/id = 2
+popup/item_3/text = "Nobody"
+popup/item_3/id = 3
+
+[node name="MinionLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Minion type"
+
+[node name="MinionOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CountLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "How many"
+
+[node name="CountSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 20.0
+value = 1.0
+
+[node name="Buttons" type="HBoxContainer" parent="UI/ArenaPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="FightButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fight"
+
+[node name="SpawnButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Spawn more minions"
+
+[node name="StatusLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="UI/ArenaPanel/Margin/VBox"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.6)
+text = "Esc: this panel. Fight restarts the round with these settings."
+autowrap_mode = 3

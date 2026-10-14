@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bs6sap1d4nbpx"]
+
+[ext_resource type="PackedScene" uid="uid://b8dlo58n2wjln" path="res://art/world/pois/export/teshfield.glb" id="1_glb"]
+
+[node name="Teshfield" instance=ExtResource("1_glb")]
+
+[node name="Arrival" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.97, 0.01, -22.63)
+gizmo_extents = 3.0

@@ -1,3 +1,4 @@
+# PLACEHOLDER: ability not designed by Austin (Austin, 2026-10-14: every ability currently defined is a placeholder): what it does and its numbers.
 class_name EntangleEffect extends AbilityEffect
 
 ## Nature/Fey: instant AoE stagger on nearby neutral minions.

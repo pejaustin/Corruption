@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit_scissor.gdshader" id="1_pv003"]
+[ext_resource type="Texture2D" path="res://assets/world/env/mod-castle/Stairs&Slabs/Slabs/Slab_Corner_Out_0.png" id="2_3w3ee"]
+
+[resource]
+resource_name = "Stair_Mat"
+render_priority = 0
+shader = ExtResource("1_pv003")
+shader_parameter/albedo_tex = ExtResource("2_3w3ee")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_scissor = 0.5

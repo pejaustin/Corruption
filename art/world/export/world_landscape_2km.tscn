@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://b3gujtrkxo5su"]
+
+[ext_resource type="PackedScene" uid="uid://b5024ats0g83l" path="res://art/world/export/world_landscape_2km.glb" id="1_landscape"]
+[ext_resource type="PackedScene" uid="uid://0g3r7ijew0j3" path="res://scenes/world/env/tower.tscn" id="2_tower"]
+[ext_resource type="PackedScene" uid="uid://gpnntnyi7q1w" path="res://scenes/world/env/bridge_woodRound.tscn" id="17_fptcd"]
+[ext_resource type="PackedScene" path="res://art/world/export/forests_2km.tscn" id="branch_forests"]
+[ext_resource type="PackedScene" path="res://art/world/export/waters_2km.tscn" id="branch_waters"]
+[ext_resource type="PackedScene" uid="uid://bjlneb8hnj1ni" path="res://art/world/pois/ale_bend.tscn" id="poi_ale_bend"]
+[ext_resource type="PackedScene" uid="uid://c0ahvpcadc8qq" path="res://art/world/pois/avequella.tscn" id="poi_avequella"]
+[ext_resource type="PackedScene" uid="uid://dmxwixx0koisc" path="res://art/world/pois/entbridge.tscn" id="poi_entbridge"]
+[ext_resource type="PackedScene" uid="uid://cnkqc3m05qerk" path="res://art/world/pois/far_harbor.tscn" id="poi_far_harbor"]
+[ext_resource type="PackedScene" uid="uid://d0ru2yjmgd6dt" path="res://art/world/pois/forest_ruins.tscn" id="poi_forest_ruins"]
+[ext_resource type="PackedScene" uid="uid://nrr8i5b0ggxg" path="res://art/world/pois/hells_mouth.tscn" id="poi_hells_mouth"]
+[ext_resource type="PackedScene" uid="uid://dlp2kgyegx1t" path="res://art/world/pois/hopes_gate.tscn" id="poi_hopes_gate"]
+[ext_resource type="PackedScene" uid="uid://c8h3c7wkt8jw6" path="res://art/world/pois/lastford.tscn" id="poi_lastford"]
+[ext_resource type="PackedScene" uid="uid://vl7b1d7aspgb" path="res://art/world/pois/mountain_pass.tscn" id="poi_mountain_pass"]
+[ext_resource type="PackedScene" uid="uid://dqbatka7l1bfl" path="res://art/world/pois/naf_ishun.tscn" id="poi_naf_ishun"]
+[ext_resource type="PackedScene" uid="uid://bs6sap1d4nbpx" path="res://art/world/pois/teshfield.tscn" id="poi_teshfield"]
+[ext_resource type="PackedScene" uid="uid://cqt5kdyjwyhyd" path="res://art/world/pois/valley_cross.tscn" id="poi_valley_cross"]
+[ext_resource type="PackedScene" uid="uid://fmho8i5wbwb" path="res://art/world/pois/veilton.tscn" id="poi_veilton"]
+
+[node name="WorldLandscape" type="Node3D" unique_id=257760087]
+
+[node name="Ground" parent="." unique_id=1194470118 instance=ExtResource("1_landscape")]
+
+[node name="Naf Ishun" type="Node3D" parent="." unique_id=1997766116]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 540.78204, 0.905118, -781.5008)
+
+[node name="POI" parent="Naf Ishun" unique_id=1020924131 instance=ExtResource("poi_naf_ishun")]
+
+[node name="Tower" parent="Naf Ishun" unique_id=148169520 instance=ExtResource("2_tower")]
+transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, 0, 0, 0)
+slot_index = 0
+
+[node name="Forest Ruins" type="Node3D" parent="." unique_id=1349895603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 118.83353, 0.038391113, -454.99966)
+
+[node name="POI" parent="Forest Ruins" unique_id=446511424 instance=ExtResource("poi_forest_ruins")]
+
+[node name="Avequel\'la" type="Node3D" parent="." unique_id=1382123026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -543.9906, -0.00021362305, -798.5828)
+
+[node name="POI" parent="Avequel\'la" unique_id=411909106 instance=ExtResource("poi_avequella")]
+
+[node name="Tower" parent="Avequel\'la" unique_id=95370411 instance=ExtResource("2_tower")]
+transform = Transform3D(-0.562791, 0, 0.826599, 0, 1, 0, -0.826599, 0, -0.562791, 0, 0, 0)
+slot_index = 3
+
+[node name="Teshfield" type="Node3D" parent="." unique_id=1331618016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -152.00809, -1.7245789, -205.58376)
+
+[node name="POI" parent="Teshfield" unique_id=1831650602 instance=ExtResource("poi_teshfield")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.057938, 0, 34.233932)
+
+[node name="Hopes Gate" type="Node3D" parent="." unique_id=1849279011]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 98.48995, -3.136963, 50.955597)
+
+[node name="POI" parent="Hopes Gate" unique_id=107696431 instance=ExtResource("poi_hopes_gate")]
+transform = Transform3D(1.17188, 0, -0.21384728, 0, 1.2999958, 0, 0.1844069, 0, 1.3589702, 17.259003, 0, 0)
+
+[node name="Entbridge" type="Node3D" parent="." unique_id=1965190129]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 378.17334, -12.443878, 299.4706)
+
+[node name="POI" parent="Entbridge" unique_id=250697327 instance=ExtResource("poi_entbridge")]
+
+[node name="Ale Bend" type="Node3D" parent="." unique_id=1214582508]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -174.62248, -0.00021362305, 163.78436)
+
+[node name="POI" parent="Ale Bend" unique_id=872549984 instance=ExtResource("poi_ale_bend")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.9158783, 134.94385)
+
+[node name="Valley Cross" type="Node3D" parent="." unique_id=2108265971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -659.57513, -6.4112854, 50.71251)
+
+[node name="POI" parent="Valley Cross" unique_id=1883821257 instance=ExtResource("poi_valley_cross")]
+
+[node name="Veilton" type="Node3D" parent="." unique_id=504816623]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -953.5622, -2.0935364, 65.78879)
+
+[node name="POI" parent="Veilton" unique_id=512479768 instance=ExtResource("poi_veilton")]
+
+[node name="Hell\'s Mouth" type="Node3D" parent="." unique_id=453800223]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -687.215, 125.82639, 796.9868)
+
+[node name="POI" parent="Hell\'s Mouth" unique_id=734660024 instance=ExtResource("poi_hells_mouth")]
+
+[node name="Lastford" type="Node3D" parent="." unique_id=1872415715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.879654, -1.0024414, 498.64377)
+
+[node name="POI" parent="Lastford" unique_id=1280822241 instance=ExtResource("poi_lastford")]
+
+[node name="far harbor" type="Node3D" parent="." unique_id=455720248]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 959.0346, 1.8151855, 883.2119)
+
+[node name="POI" parent="far harbor" unique_id=125313905 instance=ExtResource("poi_far_harbor")]
+
+[node name="Mountain Pass" type="Node3D" parent="." unique_id=1530204687]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -302.77066, 5.2956543, -554.85016)
+
+[node name="POI" parent="Mountain Pass" unique_id=2069327270 instance=ExtResource("poi_mountain_pass")]
+
+[node name="Forest Tower" type="Node3D" parent="." unique_id=2122188763]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 694.7862, 18.877075, 464.6996)
+
+[node name="Tower" parent="Forest Tower" unique_id=1255120395 instance=ExtResource("2_tower")]
+transform = Transform3D(0.6404583, 0, -0.767993, 0, 1, 0, 0.767993, 0, 0.6404583, 10.691528, 0, 0)
+slot_index = 1
+
+[node name="Volcano Tower" type="Node3D" parent="." unique_id=2033326056]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -641.13464, 137.21448, 710.52594)
+
+[node name="Tower" parent="Volcano Tower" unique_id=995102441 instance=ExtResource("2_tower")]
+transform = Transform3D(-0.9032786, 0, -0.429054, 0, 1, 0, 0.429054, 0, -0.9032786, -102.097046, -8.145584, 11.046265)
+slot_index = 2
+
+[node name="Forests" parent="." unique_id=470788019 instance=ExtResource("branch_forests")]
+
+[node name="Waters" parent="." unique_id=145698939 instance=ExtResource("branch_waters")]
+
+[node name="BridgeWoodRound" parent="." unique_id=1386321614 instance=ExtResource("17_fptcd")]
+transform = Transform3D(-1.1297168, 0, -2.2604296, 0, 1.5815096, 0, 4.733441, 0, -0.5394903, 264.17233, 0.1637721, -481.63983)
+
+[node name="BridgeWoodRound2" parent="." unique_id=591208520 instance=ExtResource("17_fptcd")]
+transform = Transform3D(-4.8610125, 0, -0.109187126, 0, 1.5815096, 0, 0.22864294, 0, -2.321351, 138.74876, -1.9, -353.69543)
+
+[node name="BridgeWoodRound4" parent="." unique_id=733106935 instance=ExtResource("17_fptcd")]
+transform = Transform3D(4.3263063, 0, 2.3144512, 0, 1.7731013, 0, -4.615723, 0, 2.1693296, 31.488453, -5.6915092, 0)
+
+[node name="BridgeWoodRound3" parent="." unique_id=45790786 instance=ExtResource("17_fptcd")]
+transform = Transform3D(2.6755595, 0, 1.1071227, 0, 1.1747384, 0, -2.4331918, 0, 1.2174025, 79.023796, -6.2289524, -60.878895)

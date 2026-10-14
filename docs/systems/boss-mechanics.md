@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Boss Mechanics
 
 **Build status:** Tier 3 (Guardian) done; Tier 4 (BossManager + Seraph) scripts ready, needs editor setup.

@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://nrr8i5b0ggxg"]
+
+[ext_resource type="PackedScene" uid="uid://27r5b11hn8k3" path="res://art/world/pois/export/hells_mouth.glb" id="1_glb"]
+
+[node name="HellsMouth" instance=ExtResource("1_glb")]

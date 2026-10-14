@@ -45,6 +45,11 @@ Examples already in the project following this pattern:
 
 ---
 
+## The world map and backdrop
+
+The ground and backdrop come from `.blend` files in `art/world/` through `tools/export_world.sh` (geo and backdrop only);
+markers, POIs, towers and water are authored in the landscape scenes. Not the layers below. Steps (including re-exporting the backdrop after sculpting it): `art/world/README.md`.
+
 ## The three layers
 
 ```
@@ -97,6 +102,8 @@ Used when the DCC file exports all animations in a single `.glb`. Godot's import
 4. Code calls animations as `<library_name>/<clip_name>` — e.g. `large-male/Attack`.
 
 Example: `large-male.glb` → `large-male.res` → referenced by `large_male.tscn` → `autoplay = &"large-male/Idle"`.
+
+**Humanoid library `ual`** (`art/characters/ual/`, see its README): the glb is imported straight as an AnimationLibrary and retargeted with a humanoid bone map, so any humanoid model imported with a bone map plays `ual/<clip>`.
 
 ### Pattern B — Per-clip glbs + hand-authored `AnimationLibrary`
 Used when animations come as separate files from a mocap library or asset store.

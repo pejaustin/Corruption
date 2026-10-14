@@ -37,7 +37,20 @@ import_script/path=""
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
-_subresources={}
+_subresources={
+"materials": {
+"metal": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/world/env/mod-castle/curved_materials/desk.metal.tres",
+"use_external/path": "res://assets/world/env/mod-castle/curved_materials/desk.metal.tres"
+},
+"wood": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/world/env/mod-castle/curved_materials/desk.wood.tres",
+"use_external/path": "res://assets/world/env/mod-castle/curved_materials/desk.wood.tres"
+}
+}
+}
 fbx/importer=0
 fbx/allow_geometry_helper_nodes=false
 fbx/embedded_image_handling=1

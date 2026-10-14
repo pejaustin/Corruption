@@ -1,5 +1,8 @@
 extends MinionState
 
+## PLACEHOLDER: tuning — re-path only once the goal has moved this far (metres).
+const REPATH_DISTANCE: float = 1.5
+
 ## Ratio (vs minion.move_speed) of velocity *projected onto the direction to
 ## the destination* below which the agent is considered to be making no
 ## progress. Measuring progress (not raw speed) catches the orbit case: RVO
@@ -19,7 +22,18 @@ const STUCK_DURATION: float = 0.5
 ## the agent is "as good as arrived" and committing to idle/despawn is fine.
 const STUCK_NEAR_DISTANCE: float = 3.5
 
+## PLACEHOLDER: tuning — while the nav says "arrived" short of a live target, force a re-path this often (seconds).
+const FORCED_REPATH_INTERVAL: float = 0.5
+## PLACEHOLDER: tuning — within attack_range plus this of a live target a chaser ignores avoidance and goes straight
+## in: RVO read the target as an obstacle and held chasers about 2.4 m back, outside attack range, for good.
+const ENGAGE_MARGIN: float = 2.0
+
+## PLACEHOLDER: tuning — a finished path ending this far (metres) from a live target means the target is unreachable.
+const UNREACHABLE_GAP: float = 4.0
+const IDLE_IGNORE_SECONDS: float = MinionState.IGNORE_SECONDS
+
 var _stuck_time: float = 0.0
+var _repath_cooldown: float = 0.0
 
 func enter(_previous_state: RewindableState, _tick: int) -> void:
 	_stuck_time = 0.0
@@ -27,6 +41,7 @@ func enter(_previous_state: RewindableState, _tick: int) -> void:
 func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	if minion == null:
 		return
+	_repath_cooldown = maxf(0.0, _repath_cooldown - delta)
 	if check_retreat():
 		return
 	# Hand off to JumpState if the agent flagged a jumpable link this tick.
@@ -56,11 +71,30 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
-	nav.target_position = destination
-	if nav.is_navigation_finished():
+	# Only re-target when the goal has moved: every new target_position is a full path search.
+	if nav.target_position.distance_to(destination) > REPATH_DISTANCE:
+		nav.target_position = destination
+	# The nav "finishes" within target_desired_distance of a goal that may be 1.5 m stale, which can leave
+	# a unit 2-3 m short of a live target. Arrival is judged by the live distance to the target, so keep closing in.
+	var close_in: bool = target != null and nav.is_navigation_finished() and distance_to(target) >= minion.attack_range
+	if close_in and _repath_cooldown <= 0.0:
+		nav.target_position = destination
+		_repath_cooldown = FORCED_REPATH_INTERVAL
+	# Finished but the path ends well short of a live target: it cannot be reached (roof, island). Leave it alone a while.
+	if target != null and nav.is_navigation_finished() and nav.get_final_position().distance_to(destination) > UNREACHABLE_GAP:
+		minion.ignore_target(target, IDLE_IGNORE_SECONDS)
 		actor.velocity.x = 0
 		actor.velocity.z = 0
 		physics_move()
+		state_machine.transition(&"IdleState")
+		return
+	if nav.is_navigation_finished() and not close_in:
+		actor.velocity.x = 0
+		actor.velocity.z = 0
+		physics_move()
+		# Arrived: clear the goal so Idle has nothing to walk back to (couriers keep theirs for arrival).
+		if target == null and minion.minion_trait != &"courier":
+			minion.waypoint = Vector3.ZERO
 		state_machine.transition(&"IdleState")
 		return
 
@@ -74,7 +108,7 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	var path_end: Vector3 = nav.get_final_position()
 	var to_path_end: float = actor.global_position.distance_to(path_end)
 	var path_end_to_dest: float = path_end.distance_to(destination)
-	if to_path_end < 1.0 and path_end_to_dest > nav.target_desired_distance + 0.5:
+	if not close_in and to_path_end < 1.0 and path_end_to_dest > nav.target_desired_distance + 0.5:
 		actor.velocity.x = 0
 		actor.velocity.z = 0
 		physics_move()
@@ -83,9 +117,13 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
-	var next_pos: Vector3 = nav.get_next_path_position()
+	var next_pos: Vector3 = destination if close_in else nav.get_next_path_position()
 	var dir := next_pos - actor.global_position
 	dir.y = 0
+	if dir.length() <= 0.01:
+		# No usable path direction: do not slide on last tick's velocity.
+		actor.velocity.x = 0
+		actor.velocity.z = 0
 	if dir.length() > 0.01:
 		dir = dir.normalized()
 		# Hand the desired velocity to the agent; it computes an
@@ -93,8 +131,12 @@ func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 		# minion._on_velocity_computed caches on minion.safe_velocity.
 		# We read it here (one-tick lag, normal for RVO) and apply it.
 		nav.set_velocity(dir * minion.move_speed)
-		actor.velocity.x = minion.safe_velocity.x
-		actor.velocity.z = minion.safe_velocity.z
+		if target != null and distance_to(target) < minion.attack_range + ENGAGE_MARGIN:
+			actor.velocity.x = dir.x * minion.move_speed
+			actor.velocity.z = dir.z * minion.move_speed
+		else:
+			actor.velocity.x = minion.safe_velocity.x
+			actor.velocity.z = minion.safe_velocity.z
 		face_direction(dir)
 
 		# "Stuck = arrived" backup, in case formation slots are blocked or

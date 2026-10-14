@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: art — Crimson Templar Knight (retro PSX model from Austin's Drive), stands in for the Paladin; see README.md beside it.
+; Its Mixamo rig imports with art/characters/ual/mixamo_bone_map.tres, so it plays the Universal Animation Library (`ual/<clip>`).
+[ext_resource type="PackedScene" uid="uid://yuote7qk88ni" path="res://assets/characters/placeholder/templar/crimson_templar.glb" id="1_glb"]
+[ext_resource type="AnimationLibrary" uid="uid://bfd4xnuw5tbm0" path="res://art/characters/ual/export/ual_anims.glb" id="2_ual"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/placeholder/templar/templar.res" id="3_templar"]
+
+; The pack's own Mixamo takes are in `templar` (templar.res), named by eye where used: light_1-3, heavy, idle, sword_idle, run.
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_empty"]
+
+[node name="Templar" instance=ExtResource("1_glb")]
+
+; His sword is skinned to this bone; the actor scene hangs its AttackHitbox here.
+[node name="RightHand" type="BoneAttachment3D" parent="Armature/GeneralSkeleton" index="2"]
+bone_name = "RightHand"
+bone_idx = 18
+
+[node name="AnimationPlayer" parent="." index="1"]
+libraries/ = SubResource("AnimationLibrary_empty")
+libraries/ual = ExtResource("2_ual")
+libraries/templar = ExtResource("3_templar")
+autoplay = &"ual/Sword_Idle"

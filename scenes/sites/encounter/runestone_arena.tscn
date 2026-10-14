@@ -1,0 +1,135 @@
+[gd_scene format=3]
+
+
+[ext_resource type="Script" path="res://scenes/sites/encounter/encounter_space.gd" id="1_space"]
+[ext_resource type="Script" path="res://scenes/sites/encounter/encounter_spawn.gd" id="2_spawn"]
+[ext_resource type="NavigationMesh" path="res://scenes/sites/encounter/placeholder/runestone_arena_navmesh.res" id="3_nav"]
+
+[sub_resource type="StandardMaterial3D" id="MatFloor"]
+albedo_color = Color(0.55, 0.52, 0.6, 1)
+
+[sub_resource type="StandardMaterial3D" id="MatWall"]
+albedo_color = Color(0.35, 0.33, 0.4, 1)
+
+[sub_resource type="BoxShape3D" id="Box1"]
+size = Vector3(40, 1, 40)
+
+[sub_resource type="BoxMesh" id="Mesh2"]
+size = Vector3(40, 1, 40)
+
+[sub_resource type="BoxShape3D" id="Box3"]
+size = Vector3(42, 8, 1)
+
+[sub_resource type="BoxMesh" id="Mesh4"]
+size = Vector3(42, 8, 1)
+
+[sub_resource type="BoxShape3D" id="Box5"]
+size = Vector3(42, 8, 1)
+
+[sub_resource type="BoxMesh" id="Mesh6"]
+size = Vector3(42, 8, 1)
+
+[sub_resource type="BoxShape3D" id="Box7"]
+size = Vector3(1, 8, 40)
+
+[sub_resource type="BoxMesh" id="Mesh8"]
+size = Vector3(1, 8, 40)
+
+[sub_resource type="BoxShape3D" id="Box9"]
+size = Vector3(1, 8, 40)
+
+[sub_resource type="BoxMesh" id="Mesh10"]
+size = Vector3(1, 8, 40)
+
+[sub_resource type="BoxShape3D" id="Box11"]
+size = Vector3(42, 1, 42)
+
+[sub_resource type="BoxMesh" id="Mesh12"]
+size = Vector3(42, 1, 42)
+
+[node name="RunestoneArena" type="Node3D"]
+script = ExtResource("1_space")
+room_count = 1
+
+[node name="Entry" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 15)
+
+[node name="Nav" type="NavigationRegion3D" parent="."]
+navigation_mesh = ExtResource("3_nav")
+
+[node name="Arena" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Floor" type="StaticBody3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Arena/Floor"]
+material_override = SubResource("MatFloor")
+mesh = SubResource("Mesh2")
+
+[node name="Shape" type="CollisionShape3D" parent="Arena/Floor"]
+shape = SubResource("Box1")
+
+[node name="WallN" type="StaticBody3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.0, -20.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Arena/WallN"]
+material_override = SubResource("MatWall")
+mesh = SubResource("Mesh4")
+
+[node name="Shape" type="CollisionShape3D" parent="Arena/WallN"]
+shape = SubResource("Box3")
+
+[node name="WallS" type="StaticBody3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.0, 20.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="Arena/WallS"]
+material_override = SubResource("MatWall")
+mesh = SubResource("Mesh6")
+
+[node name="Shape" type="CollisionShape3D" parent="Arena/WallS"]
+shape = SubResource("Box5")
+
+[node name="WallW" type="StaticBody3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 4.0, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Arena/WallW"]
+material_override = SubResource("MatWall")
+mesh = SubResource("Mesh8")
+
+[node name="Shape" type="CollisionShape3D" parent="Arena/WallW"]
+shape = SubResource("Box7")
+
+[node name="WallE" type="StaticBody3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 4.0, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Arena/WallE"]
+material_override = SubResource("MatWall")
+mesh = SubResource("Mesh10")
+
+[node name="Shape" type="CollisionShape3D" parent="Arena/WallE"]
+shape = SubResource("Box9")
+
+[node name="Ceiling" type="StaticBody3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Arena/Ceiling"]
+material_override = SubResource("MatWall")
+mesh = SubResource("Mesh12")
+
+[node name="Shape" type="CollisionShape3D" parent="Arena/Ceiling"]
+shape = SubResource("Box11")
+
+[node name="Light" type="OmniLight3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
+light_energy = 2.5
+omni_range = 40
+
+[node name="DarkLord" type="Marker3D" parent="Arena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -10)
+script = ExtResource("2_spawn")
+minion_type = &"boss_form"
+room = 1
+hp_override = 400
+damage_override = 25

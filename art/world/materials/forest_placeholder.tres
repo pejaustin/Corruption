@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://iv3fiy040nng"]
+
+[ext_resource type="Shader" path="res://shaders/world_triplanar.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/world/textures/leaf_pine.png" id="2_tex"]
+
+[resource]
+resource_name = "forest_placeholder"
+shader = ExtResource("1_shader")
+shader_parameter/albedo_tex = ExtResource("2_tex")
+shader_parameter/albedo_color = Color(0.6, 0.7, 0.6, 1)
+shader_parameter/tile_metres = 8.0
+shader_parameter/triplanar_sharpness = 0.5
+metadata/PLACEHOLDER = "stand-in look, not designed by Austin"

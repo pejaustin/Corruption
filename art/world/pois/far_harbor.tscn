@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://cnkqc3m05qerk"]
+
+[ext_resource type="PackedScene" uid="uid://c2w1pof4b0nqc" path="res://art/world/pois/export/far_harbor.glb" id="1_glb"]
+
+[node name="FarHarbor" instance=ExtResource("1_glb")]

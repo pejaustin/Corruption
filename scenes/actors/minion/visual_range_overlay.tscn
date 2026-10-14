@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+; Debug overlay on couriers: a translucent sphere showing how far they see.
+; Instanced by MinionActor for units whose type has a visual range; the script
+; sizes the sphere to that range.
+
+[sub_resource type="SphereMesh" id="SphereMesh_range"]
+resource_local_to_scene = true
+radial_segments = 32
+rings = 16
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_range"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.6, 0.85, 1, 0.18)
+
+[node name="VisualRangeOverlay" type="MeshInstance3D"]
+material_override = SubResource("StandardMaterial3D_range")
+cast_shadow = 0
+mesh = SubResource("SphereMesh_range")

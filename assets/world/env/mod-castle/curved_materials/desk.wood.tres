@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit.gdshader" id="1_8quto"]
+
+[resource]
+resource_name = "wood"
+render_priority = 0
+shader = ExtResource("1_8quto")
+shader_parameter/albedo_color = Color(0.9529211, 0.79866743, 0.6600249, 1)

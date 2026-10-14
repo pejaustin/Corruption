@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/poi_uv.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" path="res://art/world/textures/wood.png" id="2_tex"]
+
+[resource]
+resource_name = "mat_wood"
+shader = ExtResource("1_shader")
+shader_parameter/albedo_tex = ExtResource("2_tex")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+metadata/PLACEHOLDER = "stand-in look, not designed by Austin"

@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit_scissor.gdshader" id="1_13l3c"]
+[ext_resource type="Texture2D" path="res://assets/world/env/mod-castle/Walls/Arches/Arch_Segment_Top_0.png" id="2_2p2c2"]
+
+[resource]
+resource_name = "Wall_Mat"
+render_priority = 0
+shader = ExtResource("1_13l3c")
+shader_parameter/albedo_tex = ExtResource("2_2p2c2")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_scissor = 0.5

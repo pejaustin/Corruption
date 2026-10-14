@@ -2,10 +2,10 @@ class_name AbilityCross
 extends Control
 
 ## Bottom-right diamond of 4 ability slots:
-##   - Top:    secondary_ability → avatar abilities[0]
-##   - Right:  primary_ability (fixed, represents attack)
-##   - Bottom: item_1           → avatar abilities[1]
-##   - Left:   item_2           → avatar abilities[2]
+##   - Top:    secondary_ability (fixed, the strong attack: Austin, 2026-10-14)
+##   - Right:  primary_ability (fixed, the light attack)
+##   - Bottom: item_1           → avatar abilities[0]
+##   - Left:   item_2           → avatar abilities[1]
 ##
 ## Binding labels are read from the InputMap so rebinds update the HUD
 ## automatically. Ability icons and cooldowns come from AvatarAbilities.
@@ -24,6 +24,7 @@ var _abilities: AvatarAbilities = null
 
 func _ready() -> void:
 	_slot_right.is_fixed_primary = true
+	_slot_top.is_fixed_primary = true
 	_slot_top.set_binding_label(_binding_label_for(ACTION_SECONDARY))
 	_slot_right.set_binding_label(_binding_label_for(ACTION_PRIMARY))
 	_slot_bottom.set_binding_label(_binding_label_for(ACTION_ITEM_1))
@@ -41,28 +42,23 @@ func setup(abilities: AvatarAbilities) -> void:
 
 func _refresh_icons() -> void:
 	var list := _abilities.get_abilities()
-	_slot_top.set_ability(list[0] if list.size() > 0 else null)
-	_slot_bottom.set_ability(list[1] if list.size() > 1 else null)
-	_slot_left.set_ability(list[2] if list.size() > 2 else null)
+	_slot_bottom.set_ability(list[0] if list.size() > 0 else null)
+	_slot_left.set_ability(list[1] if list.size() > 1 else null)
 
 func _process(_delta: float) -> void:
 	if _abilities == null:
 		return
 	var list := _abilities.get_abilities()
 	if list.size() > 0:
-		_slot_top.set_cooldown(_abilities.get_cooldown(list[0].id), list[0].cooldown)
+		_slot_bottom.set_cooldown(_abilities.get_cooldown(list[0].id), list[0].cooldown)
 	if list.size() > 1:
-		_slot_bottom.set_cooldown(_abilities.get_cooldown(list[1].id), list[1].cooldown)
-	if list.size() > 2:
-		_slot_left.set_cooldown(_abilities.get_cooldown(list[2].id), list[2].cooldown)
+		_slot_left.set_cooldown(_abilities.get_cooldown(list[1].id), list[1].cooldown)
 
 func _on_ability_ready(ability_id: StringName) -> void:
 	var list := _abilities.get_abilities()
 	if list.size() > 0 and list[0].id == ability_id:
-		_slot_top.flash_ready()
-	elif list.size() > 1 and list[1].id == ability_id:
 		_slot_bottom.flash_ready()
-	elif list.size() > 2 and list[2].id == ability_id:
+	elif list.size() > 1 and list[1].id == ability_id:
 		_slot_left.flash_ready()
 
 func _binding_label_for(action: StringName) -> String:

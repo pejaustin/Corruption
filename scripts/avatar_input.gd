@@ -14,6 +14,8 @@ var input_dir: Vector2 = Vector2.ZERO
 var jump_input := false
 var run_input := false
 var attack_input := false
+## The strong attack (right mouse), Austin 2026-10-14.
+var heavy_input := false
 var roll_input := false
 
 ## When false, all input is zeroed (pause menu open).
@@ -39,13 +41,17 @@ func _gather() -> void:
 		jump_input = Input.is_action_pressed("jump")
 		run_input = Input.is_action_pressed("run")
 		attack_input = Input.is_action_pressed("primary_ability")
+		heavy_input = Input.is_action_pressed("secondary_ability")
 		roll_input = Input.is_action_pressed("roll")
 		var t: int = NetworkTime.tick
 		if Input.is_action_just_pressed("primary_ability"):
 			_press_tick[&"primary_ability"] = t
+		if Input.is_action_just_pressed("secondary_ability"):
+			_press_tick[&"secondary_ability"] = t
 		if Input.is_action_just_pressed("roll"):
 			_press_tick[&"roll"] = t
 	elif ai_driver != null and ai_driver.is_driving():
+		heavy_input = false  # PLACEHOLDER: the AI throws light attacks only
 		ai_driver.drive(self)
 		_press_tick.clear()
 	else:
@@ -53,6 +59,7 @@ func _gather() -> void:
 		jump_input = false
 		run_input = false
 		attack_input = false
+		heavy_input = false
 		roll_input = false
 		_press_tick.clear()
 

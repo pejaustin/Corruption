@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # War Table — Information & Command System
 
 **Build status:** Steps 1–8 in. Phase 3 of the map-representation refactor (in-world inspect popup) is in: pieces and ghosts are now standard `Interactable`s, the modal "press E to use the war table" mode is gone, and every affordance on the table is a single-shot E interaction. The order lifecycle gained a third stage: `draft → readied → dispatched`. Drafts are recorded by the new **MapTarget** interactable; the **Paper** on the table promotes drafts → readied; the **Advisor** still does readied → dispatched. The **Reset** prop wipes drafts + selection. Multi-member stacks open a ghost popup on E (latched, with grace-timer auto-close); each ghost is its own Interactable for per-member selection. Couriers are now batched per `MinionType.max_orders`: N orders for one source cluster ride a single courier; advanced couriers can carry orders across multiple source clusters in a single outing.

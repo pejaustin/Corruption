@@ -9,11 +9,25 @@ class_name OverlordActor extends PlayerActor
 @export var _camera_input: CameraInput
 
 var _overlord_active: bool = true
+## The scroll of orders in this overlord's hand (GDD §3: "a scroll of orders
+## appears in your hand"), empty when holding nothing. Local to its owner:
+## { group_ids, believed, route_points, route, dest_point, dest_kind }.
+var held_order: Dictionary = {}
+
+@onready var _scroll_visual: MeshInstance3D = %HeldScroll
 
 ## Public accessor for the player's visual model. Use this instead of
 ## get_node("Model") so consumers don't depend on child naming.
 func get_model() -> Node3D:
 	return _model
+
+## The dark lord himself fights for his own seat. He isn't a combatant: units
+## that reach a tower sack it (CorruptionSite, GDD §7) rather than kill him.
+func get_allegiance() -> int:
+	return str(name).to_int()
+
+func can_take_damage() -> bool:
+	return false
 
 func _enter_tree() -> void:
 	_player_input.set_multiplayer_authority(str(name).to_int())
@@ -36,6 +50,10 @@ func set_overlord_active(active: bool) -> void:
 	var is_local := multiplayer.get_unique_id() == str(name).to_int()
 
 	_player_input.input_enabled = active
+	# Its HUD goes with it while the player is in the Paladin's or a boss form's body.
+	var hud := get_node_or_null(^"OverlordHUD") as CanvasLayer
+	if hud:
+		hud.visible = active
 
 	if is_local:
 		if active:
@@ -57,3 +75,32 @@ func _set_model_layer(layer: int) -> void:
 		if node is VisualInstance3D:
 			node.set_layer_mask_value(layer, true)
 			node.set_layer_mask_value(other_layer, false)
+
+# --- The scroll of orders (held item) ---
+
+func hold_order(order: Dictionary) -> void:
+	held_order = order.duplicate(true)
+	_show_scroll(true)
+
+func take_order() -> Dictionary:
+	var order := held_order
+	held_order = {}
+	_show_scroll(false)
+	return order
+
+func is_holding_order() -> bool:
+	return not held_order.is_empty()
+
+func _show_scroll(show: bool) -> void:
+	## PLACEHOLDER: art — the rolled scroll (HeldScroll under the camera in
+	## overlord_actor.tscn) is only shown or hidden.
+	_scroll_visual.visible = show
+
+func _unhandled_input(event: InputEvent) -> void:
+	if multiplayer.get_unique_id() != str(name).to_int() or not _overlord_active:
+		return
+	# Q tears up the scroll in hand.
+	if event.is_action_pressed("cancel") and is_holding_order() and not Interactable.has_modal():
+		take_order()
+		KnowledgeManager.advisor_spoke.emit("PLACEHOLDER: You tear up the orders.")
+		get_viewport().set_input_as_handled()

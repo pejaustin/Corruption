@@ -31,7 +31,7 @@ You start in a **ruined tower** that becomes more whole with every corruption si
 | **Map** | A huge stone floor, illustrated, an imprecise rendering of the terrain. (Q1, Q8) |
 | **Palantir** | Live view of the Paladin; possessing and controlling him. (Overview, Q19) |
 | **Magic mirror** | Live calls and recorded messages to rivals. (Q33, Q34) |
-| **Balcony** | Mostly flavour: nearby territory, the day/night cycle, beacons in the sky when sites change hands. (Q8, Q26) |
+| **Balcony** | Mostly flavour: nearby territory, the day/night cycle, beacons in the sky when sites change hands. (Q8, Q26) Day and night are visual only for the MVP; they may gain rules after playtesting. (Austin, 2026-10-12) |
 | **Summoning circle** | Raises human remains into undead. (Q6, Q8) |
 | **Desk with books** | Records (leaders' maneuvers, relics held, what's been learned) and your own free notes. (Q37) |
 | **Treasure room** | Physically shows the gold and special artifacts held at the tower; a **ledger** there holds the latest reports on goods held elsewhere. (Q24) |
@@ -106,7 +106,40 @@ Wealth is material, never a number in the corner. (Q24, Q25)
 - **You feel it.** Your tower becomes more whole and your character stronger as you gain sites. A beacon in the sky,
   seen from the balcony, marks a site taken for the first time, changing hands, or returning to neutral. (Q26)
 - **Your tower is a corruption site that is permanently yours.** It can be sacked but always comes back, and it spawns
-  units in a way that discourages rivals from killing you and hanging around. (Q39)
+  units in a way that discourages rivals from killing you and hanging around. (Q39) It spawns a steady trickle: a few
+  units over time, so a beaten player can rebuild; rate and unit type are placeholders. (Austin, 2026-10-12)
+
+### Points of interest and Avatar encounters (Austin, 2026-10-12)
+
+- **Avatar encounters** are either an **arena duel** or a **mini-dungeon** of 3–5 rooms, about 3–5 minutes each. The
+  shape is fixed per POI type.
+- **Getting there:** the Paladin is sent by an order; when he arrives, the player possesses him through the Palantir
+  (builds on Q17).
+- **Four POI types:**
+  - **Temples:** "huge crystals are sources of power that are needed to ensure evil can't taint the land, and are
+    associated with the Goddess. Taking control and corrupting these sites allows the player that controls them to
+    gain specific upgrades."
+  - **Towns:** "sources of bodies, workers, and spies. To control them a player needs to enthrall their rulers by
+    various means: intimidation, persuasion, etc."
+  - **Work sites:** "where human workers can be commanded to collect resources needed for warfare."
+  - **Runestones:** "sites where previous Dark Lords were defeated and sealed away. This is where players can unlock
+    boss-form upgrades. They fight a boss as the Avatar, and winning means gaining a power, move, ability, technique,
+    etc. that that sealed evil used in the fight."
+- **Burial grounds** are not a POI type of their own. Each belongs to a parent site: temples have crypts, runestones
+  have ancient battlefields, towns have graveyards. Whoever holds the parent site mines its burial ground. Different
+  kinds of burial ground make different troops (for example, starting with armor, or immune to certain attacks).
+  Burial grounds are troops-only: they have no Paladin encounter of their own. Work sites have no burial ground.
+- **Configurable per site:** which upgrades a temple's crystal gives, and which troop traits a burial ground's troops
+  get, are set per site. Until Austin sets them, each uses one default marked PLACEHOLDER.
+- **Temples are mini-dungeons.** Inside are "the Goddesses forces, which are guards, priests, and maybe some minor
+  celestial beings for harder to crack temples. these are not bosses, but can be difficult especially based on the
+  user's level as the avatar." Temples don't scale: each is designed easier or harder, and a player who has unlocked
+  less of the Avatar finds the harder temples harder to clear. Clearing the dungeon is a shortcut: troops can still take a temple slowly, but the
+  Paladin clearing it corrupts it at once or much faster. The forces come back whenever the temple is purified or
+  returns to neutral.
+- **Runestones are arena duels** with the sealed Dark Lord. Each runestone's power can be won once per round: the
+  first winner takes it and the runestone is spent.
+- **No Paladin encounters at towns or work sites.** Those run through troops, goods and the advisor.
 
 ## 8. The Paladin (the Avatar)
 
@@ -114,7 +147,10 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
 (Overview)
 
 - **Taking him:** overpower his current controller with raw corruption (hard); or, the easier way, find him, beat him
-  and his company with troops, and turn him like a site. When he's low on health anyone can begin a takeover. (Q14)
+  and his company with troops, and turn him like a site. (Q14) **Neutral:** whoever defeats him gets control, no
+  contest. **Held:** if a controlled Paladin is defeated (for example, losing a runestone boss fight), any player can
+  contest control of him. A neutral Paladin can also be taken by **domination**, which needs high corruption and a
+  specific ability, from a site or from your faction type. (Austin, 2026-10-12)
 - **Keeping him:** your hold fades over time, unless he's kept near a source of corruption, which holds him
   indefinitely. At zero HP his corruption is wiped and the controller loses him. (Q15)
 - **Unclaimed:** when he's weak, the good faction tries to recover him; at full strength he leads armies out to hunt
@@ -124,7 +160,21 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
   and combat. (Q17)
 - **Imperfect ARPG:** more corruption gives more control. Some actions are locked at first (at the start, maybe only
   walking), and the ones you have can meet resistance; for example, he resists attacking the good faction's priests
-  and soldiers until you're stronger. (Overview, Q18)
+  and soldiers until you're stronger. (Overview, Q18) **Tiers plus resistance:** actions unlock in steps (for example
+  walk, attack, dodge, abilities; which action sits in which tier is a placeholder), and against the Goddess's people
+  he resists until control is high. Temple crystals are what raise control. (Austin, 2026-10-12)
+- **Combat** (Austin, 2026-10-13, interview C1–C9; the old combat-stream branch stays parked, reference only):
+  - **Feel:** Dark Souls: slow and deliberate, stamina, dodge rolls, lock-on, enemies that hit hard. (C1)
+  - **Weapons:** three main kinds: sword and shield, two-handed weapon, magic quarterstaff. He starts with one; the
+    others are unlocked through the world. (C2, C3)
+  - **Gear stays with the Paladin:** weapons and armor go with him when he changes hands. The controller's held
+    corruption sites decide which moves they can use and how well he follows their commands. (C4)
+  - **Start:** with few sites he can only walk and make a very slow basic attack, and he resists attacking humans. (C5)
+  - **Resisting:** he still swings, but after a significant delay, and maybe not in the right direction. (C6)
+  - **Sites:** the number of temples held sets obedience; each temple's crystal also unlocks its own moves. (C7)
+  - **Armor:** heavier armor takes less damage but slows his dodge and stamina ("for now"). (C8)
+  - **Boss forms in the gauntlet** play like a Dark Souls boss (big, slow, a few heavy telegraphed attacks the player
+    picks), controlled with a third-person camera. (C9)
 - **Seen by all:** through any Palantir, every player sees and hears him live, and the viewers hear each other. Each
   viewer appears as a ghostly orb orbiting him where their camera is. This can give away your troops and strategy.
   He also lets his controller "see" the field. (Overview, Q19)
@@ -136,12 +186,14 @@ The good faction's chosen Paladin. What makes him a powerful tool of good makes 
   hold (boss-type sites especially). Beat every boss and you corrupt the site and win. (Overview, Q20, Q27, Q28)
 - **Comeback:** a boss who beats the Paladin takes control of him and the gauntlet ends. The winner uses the
   corruption to take him back to their own tower; to win they must bring him to the city center and start a fresh
-  gauntlet. (Q20, Q21, Q22)
+  gauntlet. (Q20, Q21, Q22) He appears at the winner's tower straight away. (Austin, 2026-10-12)
 - **Building for it:** a player can lean on Avatar sites or boss sites. A strong boss collection makes you the wall
   nobody gets past, and the one who ends up holding the Paladin most. (Q27)
 - **Draw:** the good faction slowly grows stronger. Flavour moments mark it, some corruption sites become permanently
   unusable, and site thresholds keep rising, until the city center can't be corrupted and the match ends in a draw.
   (Q29, Q30)
+- **Late in the round** the good faction, once strong, marches on towers, adding pressure toward an ending; timing
+  and strength are placeholders. (Austin, 2026-10-12)
 
 ## 10. Diplomacy
 
@@ -150,15 +202,11 @@ The magic mirror (Q33, Q34): live calls and recorded messages. It captures audio
 
 ## 11. Open questions (for the next session, after playtesting)
 
-- **Good faction, day to day:** patrols, purifying, how fast its threat grows, whether it attacks towers.
-- **Day and night:** do they change anything beyond the balcony view?
-- **Contested takeover** of the Paladin: Austin wants a rule for when several players try at once. (Q14)
-- **Paladin control tiers:** which actions unlock, and which sites raise control.
+- **Good faction, day to day:** patrols, purifying, how fast its threat grows.
+- **Contested takeover** of the Paladin: how the contest over a defeated, held Paladin resolves. (Q14)
 - **Boss forms:** what each looks like and does; how sites feed them.
-- **How the Paladin gets home** after a gauntlet comeback. (Q22)
-- **Your tower's unit spawning:** what it spawns, and when. (Q39)
-- **Content (Austin's to write):** site types and their capabilities, relics, maneuvers, the advisor, the map and its
-  locations, unit types, boss forms.
+- **Content (Austin's to write):** what each POI type grants beyond the above, relics, maneuvers, the advisor, the map
+  and its locations, unit types, boss forms.
 
 ## 12. Proposals not adopted
 

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ArenaConfig" format=3]
+
+[ext_resource type="Script" path="res://tools/arena/arena_config.gd" id="1_cfg"]
+[ext_resource type="Resource" path="res://data/bosses/placeholder/overhead_slam.tres" id="2_slam"]
+[ext_resource type="Resource" path="res://data/bosses/placeholder/wide_sweep.tres" id="3_sweep"]
+[ext_resource type="Resource" path="res://data/bosses/placeholder/ground_stomp.tres" id="4_stomp"]
+
+[resource]
+script = ExtResource("1_cfg")
+role = 0
+control_level = 4
+boss_attacks = Array[Resource]([ExtResource("2_slam"), ExtResource("3_sweep"), ExtResource("4_stomp")])
+opponent = 0
+minion_type = &"skeleton"
+minion_count = 3

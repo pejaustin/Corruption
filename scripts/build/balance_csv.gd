@@ -2,7 +2,7 @@
 extends EditorScript
 
 ## Round-trips custom-Resource .tres files (MinionType, FactionProfile,
-## AvatarAbility, UpgradeData) through CSVs under res://data/csv/
+## AvatarAbility) through CSVs under res://data/csv/
 ## so balance values can be edited in a spreadsheet.
 ##
 ## Usage:
@@ -30,7 +30,6 @@ const TARGETS: Array[Dictionary] = [
 	{"name": "minions",   "dir": "res://data/minions/",   "script": "res://scripts/minion_type.gd"},
 	{"name": "factions",  "dir": "res://data/factions/",  "script": "res://scripts/faction_profile.gd"},
 	{"name": "abilities", "dir": "res://data/abilities/", "script": "res://scripts/avatar_ability.gd"},
-	{"name": "upgrades",  "dir": "res://data/upgrades/",  "script": "res://scripts/upgrade_data.gd"},
 ]
 
 const _SKIP_PROPS: Array[String] = [

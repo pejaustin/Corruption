@@ -25,11 +25,17 @@ var show_combat_boxes: bool = false
 ## MinionActor (when its MinionType has a non-zero courier_visual_range)
 ## subscribes to courier_visual_range_toggled.
 var show_courier_visual_range: bool = false
+## Debug (Austin, 2026-10-13): the map floor also shows each group where it really is (host only; groups are host-side).
+var show_true_pieces: bool = false
 
 func toggle_aggro_rings() -> void:
 	show_aggro_rings = not show_aggro_rings
 	aggro_rings_toggled.emit(show_aggro_rings)
 	print("[Debug] Minion aggro rings: %s" % ("ON" if show_aggro_rings else "OFF"))
+
+func toggle_true_pieces() -> void:
+	show_true_pieces = not show_true_pieces
+	print("[Debug] True positions on the map floor: %s" % ("ON" if show_true_pieces else "OFF"))
 
 func toggle_combat_boxes() -> void:
 	show_combat_boxes = not show_combat_boxes
@@ -42,21 +48,19 @@ func toggle_courier_visual_range() -> void:
 	print("[Debug] Courier visual range: %s" % ("ON" if show_courier_visual_range else "OFF"))
 
 func toggle_instant_commands() -> void:
-	## Flips KnowledgeManager.INSTANT_COMMANDS. With it ON, war-table dispatch
-	## bypasses the courier loop entirely and minions snap to their orders;
-	## with it OFF (default for "real" play) every order has to ride a courier.
+	## Flips KnowledgeManager.INSTANT_COMMANDS: ON, the advisor's orders reach
+	## groups at once instead of riding a courier.
 	KnowledgeManager.INSTANT_COMMANDS = not KnowledgeManager.INSTANT_COMMANDS
 	print("[Debug] INSTANT_COMMANDS: %s" % ("ON" if KnowledgeManager.INSTANT_COMMANDS else "OFF"))
 
-func toggle_infinite_broadcast_range() -> void:
-	## Flips KnowledgeManager.INFINITE_BROADCAST_RANGE. ON = every minion
-	## continuously updates every overlord's WorldModel (debug-friendly,
-	## belief == truth). OFF = the production information-warfare model where
-	## sightings only reach a peer's WorldModel when within BROADCAST_RANGE
-	## of one of their friendly minions; out-of-range pieces go stale and
-	## eventually pick up a "?" badge on the table.
-	KnowledgeManager.INFINITE_BROADCAST_RANGE = not KnowledgeManager.INFINITE_BROADCAST_RANGE
-	print("[Debug] INFINITE_BROADCAST_RANGE: %s" % ("ON" if KnowledgeManager.INFINITE_BROADCAST_RANGE else "OFF"))
+func toggle_read_couriers() -> void:
+	## Host: lets the local player read captured couriers' papers (the unlock
+	## itself is Austin's to design, ticket #543).
+	if not multiplayer.is_server():
+		return
+	var me := multiplayer.get_unique_id()
+	KnowledgeManager.can_read_couriers[me] = not KnowledgeManager.can_read_couriers.get(me, false)
+	print("[Debug] Read captured couriers: %s" % ("ON" if KnowledgeManager.can_read_couriers[me] else "OFF"))
 
 func add_dummy_player() -> void:
 	if not multiplayer.is_server():
@@ -124,8 +128,7 @@ func spawn_lobby_cpus(cpu_ids: Array) -> void:
 			push_error("[Debug] _player_scene.instantiate() returned null — overlord_actor.tscn may be broken")
 			return
 		dummy.name = str(cpu_id)
-		mm._player_slot_order.append(cpu_id)
-		var slot: int = mm._player_slot_order.find(cpu_id)
+		var slot: int = mm.claim_slot(cpu_id)
 		if slot < mm.TOWER_SPAWNS.size():
 			dummy.position = mm.TOWER_SPAWNS[slot]
 		else:
@@ -148,7 +151,7 @@ func reset() -> void:
 
 func get_max_dummy_players() -> int:
 	var mm = _get_multiplayer_manager()
-	if mm:
+	if mm and GameState.tower_picks.is_empty():
 		return GameConstants.MAX_PLAYERS - mm._player_slot_order.size()
 	return 0
 
@@ -234,12 +237,29 @@ func spawn_minion_at_camera() -> void:
 	spawn_pos.y += 0.5  # clear the surface so the body settles instead of clipping
 	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
 	if mm:
-		var my_id = multiplayer.get_unique_id()
-		mm.resources[my_id] = mm.resources.get(my_id, 0.0) + 25
-		mm.request_summon_minion("", spawn_pos)
+		mm.spawn_unit_for_peer(multiplayer.get_unique_id(), &"", spawn_pos)
 		print("[Debug] Spawned minion at (%.1f, %.1f, %.1f)" % [spawn_pos.x, spawn_pos.y, spawn_pos.z])
 	else:
 		print("[Debug] MinionManager not found")
+
+func give_paladin_to_self() -> void:
+	## Hands the Paladin to the local (host) player so possession can be tried at
+	## once: scry at a Palantir, press E again to take control. He is moved to
+	## your tower gate first: owned at the city centre (where he rests) he would
+	## start the endgame gauntlet at once.
+	if not multiplayer.is_server():
+		print("[Debug] Only the host can hand out the Paladin")
+		return
+	var me := multiplayer.get_unique_id()
+	var avatar := _get_avatar()
+	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
+	var gate: Node3D = mm.get_courier_spawn_for(me) if mm else null
+	if avatar and gate:
+		# Pinned for a moment so the rollback tick keeps the new position.
+		avatar.pin_transform(Transform3D(Basis.IDENTITY, gate.global_position + Vector3.UP))
+		get_tree().create_timer(HolySite.PIN_SECONDS).timeout.connect(avatar.unpin_transform)
+	GameState.set_avatar_owner(me)
+	print("[Debug] The Paladin is yours; scry at a Palantir and press E to take control")
 
 func order_avatar_to_camera() -> void:
 	## Phase B test hook: sends the released (AI-driven) avatar a move order to
@@ -259,30 +279,38 @@ func order_avatar_to_camera() -> void:
 	else:
 		print("[Debug] Avatar (or its AI) not found")
 
-func add_corruption_to_self() -> void:
+func take_nearest_site() -> void:
+	## Hands the corruption site nearest the camera to the local peer.
 	if not multiplayer.is_server():
-		print("[Debug] Only the host can set corruption")
+		print("[Debug] Only the host can hand out sites")
 		return
-	var my_id = multiplayer.get_unique_id()
-	GameState.add_corruption(my_id, 10.0)
-	print("[Debug] Added 10 corruption to peer %d (total: %.1f)" % [my_id, GameState.get_corruption(my_id)])
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	var best: CorruptionSite = null
+	var best_d := INF
+	for node in GameState.get_all_sites():
+		var site := node as CorruptionSite
+		if site == null or site.permanent:
+			continue
+		var d := site.global_position.distance_to(camera.global_position)
+		if d < best_d:
+			best_d = d
+			best = site
+	if best == null:
+		print("[Debug] No corruption site found")
+		return
+	best.debug_give_to(multiplayer.get_unique_id())
+	print("[Debug] Gave %s to peer %d" % [best.get_display_name(), multiplayer.get_unique_id()])
 
-func cycle_faction() -> void:
+func add_remains_to_self() -> void:
 	if not multiplayer.is_server():
-		print("[Debug] Only the host can swap factions")
+		print("[Debug] Only the host can add remains")
 		return
-	var mm = get_tree().current_scene.get_node_or_null("MinionManager")
-	if not mm:
-		print("[Debug] MinionManager not found")
-		return
-	var my_id = multiplayer.get_unique_id()
-	var current = mm._get_player_faction(my_id)
-	var playable = GameConstants.PLAYABLE_FACTIONS
-	var cur_idx = playable.find(current)
-	var next_faction = playable[(cur_idx + 1) % playable.size()] if cur_idx >= 0 else playable[0]
-	GameState.set_faction_override(my_id, next_faction)
-	var name = GameConstants.faction_names.get(next_faction, "Unknown")
-	print("[Debug] Faction swapped to %s (%d)" % [name, next_faction])
+	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
+	if mm:
+		mm.add_remains(multiplayer.get_unique_id(), 1)
+		print("[Debug] +1 remains at your tower (%d)" % mm.get_remains(multiplayer.get_unique_id()))
 
 func _get_multiplayer_manager() -> MultiplayerManager:
 	var scene = get_tree().current_scene

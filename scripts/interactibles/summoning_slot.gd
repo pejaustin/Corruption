@@ -1,9 +1,7 @@
 class_name SummoningSlot extends Interactable
 
-## One slot on the summoning circle table. Reads the parent SummoningCircle's
-## roster, indexes by `slot_index`, and on E asks the circle to summon that
-## minion type. Roster lookups happen each prompt frame so faction swaps and
-## resource changes show immediately.
+## One slot on the summoning circle. Raises one unit of its roster type from
+## one body waiting at the tower.
 
 @export var slot_index: int = 0
 
@@ -11,38 +9,27 @@ func get_prompt_text() -> String:
 	var circle := _find_circle()
 	if circle == null:
 		return ""
-	var pid := get_local_peer_id()
-	if GameState.is_avatar(pid):
-		return "(release Avatar to summon)"
+	if GameState.is_avatar(get_local_peer_id()):
+		return "(release the Paladin to raise the dead)"
 	var roster := circle.get_roster()
 	if slot_index < 0 or slot_index >= roster.size():
 		return ""
 	var mtype: MinionType = roster[slot_index]
-	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
-	var line := "[E] summon %s — HP %d / DMG %d / Cost %d" % [
-		mtype.display_name, mtype.hp, mtype.damage, mtype.cost
-	]
-	if mm:
-		var res := mm.get_resources(pid)
-		var count := mm.get_minion_count(pid)
-		line += "\nResources %.0f | Minions %d/%d" % [
-			res, count, MinionManager.MAX_MINIONS_PER_PLAYER
-		]
-		if res < mtype.cost:
-			line += "  (not enough)"
-		elif count >= MinionManager.MAX_MINIONS_PER_PLAYER:
-			line += "  (cap reached)"
-	if mtype.trait_tag != &"":
-		line += "  [%s]" % mtype.trait_tag
-	return line
+	var remains := circle.get_remains()
+	if remains <= 0:
+		return "%s — no remains to raise. Bring bodies home." % mtype.display_name
+	return "[E] raise a %s (%d remains here)" % [mtype.display_name, remains]
 
 func get_prompt_color() -> Color:
-	return Color(1, 1, 0)
+	var circle := _find_circle()
+	if circle and circle.get_remains() > 0:
+		return Color(0.7, 1.0, 0.7)
+	return Color(0.6, 0.6, 0.6)
 
 func _on_interact() -> void:
 	var circle := _find_circle()
 	if circle:
-		circle.request_summon(slot_index)
+		circle.request_raise(slot_index)
 
 func _find_circle() -> SummoningCircle:
 	var n: Node = get_parent()

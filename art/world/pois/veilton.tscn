@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://fmho8i5wbwb"]
+
+[ext_resource type="PackedScene" uid="uid://cert02tao0eqf" path="res://art/world/pois/export/veilton.glb" id="1_glb"]
+
+[node name="Veilton" instance=ExtResource("1_glb")]

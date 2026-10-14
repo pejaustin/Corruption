@@ -1,0 +1,400 @@
+[gd_scene format=3 uid="uid://clytjbgoy4me8"]
+
+[ext_resource type="Script" uid="uid://cvvrfgxsfvyou" path="res://scenes/map/map_floor.gd" id="1_floor"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_point_marker.tscn" id="2_marker"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_piece.tscn" id="3_piece"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_piece_avatar.tscn" id="4_avatar"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_link_line.tscn" id="5_link"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_line.tscn" id="6_ink"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_line_pencil.tscn" id="7_pencil"]
+[ext_resource type="Texture2D" uid="uid://cb5vggn2o3uh0" path="res://scenes/map/map_illustration.png" id="8_picture"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("8_picture")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+resource_local_to_scene = true
+size = Vector2(14, 14)
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_p1elh"]
+resource_local_to_scene = true
+
+[node name="MapFloor" type="Node3D" unique_id=55876813]
+script = ExtResource("1_floor")
+illustration = ExtResource("8_picture")
+piece_scene = ExtResource("3_piece")
+avatar_piece_scene = ExtResource("4_avatar")
+ink_line_scene = ExtResource("6_ink")
+marker_scene = ExtResource("2_marker")
+link_line_scene = ExtResource("5_link")
+
+[node name="Illustration" type="MeshInstance3D" parent="." unique_id=673319856]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0)
+material_override = SubResource("StandardMaterial3D_floor")
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="Links" type="Node3D" parent="." unique_id=67799478]
+unique_name_in_owner = true
+
+[node name="Link_TowerEast_RoadEast" parent="Links" unique_id=1121975848 instance=ExtResource("5_link")]
+from_point = &"TowerEast"
+to_point = &"RoadEast"
+
+[node name="From" parent="Links/Link_TowerEast_RoadEast" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6248157, 0.02, -5.25307)
+
+[node name="To" parent="Links/Link_TowerEast_RoadEast" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.457, 0.02, -4.473)
+
+[node name="Link_TowerSouth_RoadSouth" parent="Links" unique_id=1624305656 instance=ExtResource("5_link")]
+from_point = &"TowerSouth"
+to_point = &"RoadSouth"
+
+[node name="From" parent="Links/Link_TowerSouth_RoadSouth" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7705417, 0.02, 3.0409255)
+
+[node name="To" parent="Links/Link_TowerSouth_RoadSouth" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.752, 0.02, 2.674)
+
+[node name="Link_TowerWest_RoadWest" parent="Links" unique_id=2026532004 instance=ExtResource("5_link")]
+from_point = &"TowerWest"
+to_point = &"RoadWest"
+
+[node name="From" parent="Links/Link_TowerWest_RoadWest" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.268453, 0.02, 4.9599557)
+
+[node name="To" parent="Links/Link_TowerWest_RoadWest" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0.02, 2.66)
+
+[node name="Link_TowerNorth_RoadNorth" parent="Links" unique_id=1525916534 instance=ExtResource("5_link")]
+from_point = &"TowerNorth"
+to_point = &"RoadNorth"
+
+[node name="From" parent="Links/Link_TowerNorth_RoadNorth" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6615264, 0.02, -5.362804)
+
+[node name="To" parent="Links/Link_TowerNorth_RoadNorth" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.436, 0.02, -3.514)
+
+[node name="Link_RoadEast_Chapel" parent="Links" unique_id=394696265 instance=ExtResource("5_link")]
+from_point = &"RoadEast"
+to_point = &"Chapel"
+
+[node name="From" parent="Links/Link_RoadEast_Chapel" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.457, 0.02, -4.473)
+
+[node name="To" parent="Links/Link_RoadEast_Chapel" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.87381, 0.02, -3.185)
+
+[node name="Link_RoadEast_SettlementSE" parent="Links" unique_id=2005413019 instance=ExtResource("5_link")]
+from_point = &"RoadEast"
+to_point = &"SettlementSE"
+
+[node name="From" parent="Links/Link_RoadEast_SettlementSE" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.457, 0.02, -4.473)
+
+[node name="To" parent="Links/Link_RoadEast_SettlementSE" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.64719, 0.02, 1.98429)
+
+[node name="Link_RoadEast_Ford" parent="Links" unique_id=1773055719 instance=ExtResource("5_link")]
+from_point = &"RoadEast"
+to_point = &"Ford"
+
+[node name="From" parent="Links/Link_RoadEast_Ford" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.457, 0.02, -4.473)
+
+[node name="To" parent="Links/Link_RoadEast_Ford" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.988, 0.02, -3.8507)
+
+[node name="Link_RoadSouth_AvatarSite" parent="Links" unique_id=1769250765 instance=ExtResource("5_link")]
+from_point = &"RoadSouth"
+to_point = &"AvatarSite"
+
+[node name="From" parent="Links/Link_RoadSouth_AvatarSite" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.752, 0.02, 2.674)
+
+[node name="To" parent="Links/Link_RoadSouth_AvatarSite" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.22234, 0.02, 1.1464599)
+
+[node name="Link_RoadSouth_SettlementSE" parent="Links" unique_id=1463499463 instance=ExtResource("5_link")]
+from_point = &"RoadSouth"
+to_point = &"SettlementSE"
+
+[node name="From" parent="Links/Link_RoadSouth_SettlementSE" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.752, 0.02, 2.674)
+
+[node name="To" parent="Links/Link_RoadSouth_SettlementSE" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.64719, 0.02, 1.98429)
+
+[node name="Link_RoadSouth_Crossing" parent="Links" unique_id=875477802 instance=ExtResource("5_link")]
+from_point = &"RoadSouth"
+to_point = &"Crossing"
+
+[node name="From" parent="Links/Link_RoadSouth_Crossing" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.752, 0.02, 2.674)
+
+[node name="To" parent="Links/Link_RoadSouth_Crossing" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041160002, 0.02, 3.4904802)
+
+[node name="Link_RoadWest_City" parent="Links" unique_id=443910193 instance=ExtResource("5_link")]
+from_point = &"RoadWest"
+to_point = &"City"
+
+[node name="From" parent="Links/Link_RoadWest_City" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0.02, 2.66)
+
+[node name="To" parent="Links/Link_RoadWest_City" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68943, 0.02, 0.35672)
+
+[node name="Link_RoadWest_BossSite" parent="Links" unique_id=2086496450 instance=ExtResource("5_link")]
+from_point = &"RoadWest"
+to_point = &"BossSite"
+
+[node name="From" parent="Links/Link_RoadWest_BossSite" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0.02, 2.66)
+
+[node name="To" parent="Links/Link_RoadWest_BossSite" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.61706, 0.02, 0.50897)
+
+[node name="Link_RoadWest_SettlementNW" parent="Links" unique_id=344828458 instance=ExtResource("5_link")]
+from_point = &"RoadWest"
+to_point = &"SettlementNW"
+
+[node name="From" parent="Links/Link_RoadWest_SettlementNW" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0.02, 2.66)
+
+[node name="To" parent="Links/Link_RoadWest_SettlementNW" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0857, 0.02, -1.35786)
+
+[node name="Link_RoadWest_Crossing" parent="Links" unique_id=728721903 instance=ExtResource("5_link")]
+from_point = &"RoadWest"
+to_point = &"Crossing"
+
+[node name="From" parent="Links/Link_RoadWest_Crossing" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0.02, 2.66)
+
+[node name="To" parent="Links/Link_RoadWest_Crossing" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041160002, 0.02, 3.4904802)
+
+[node name="Link_RoadNorth_BossSite" parent="Links" unique_id=2108307950 instance=ExtResource("5_link")]
+from_point = &"RoadNorth"
+to_point = &"BossSite"
+
+[node name="From" parent="Links/Link_RoadNorth_BossSite" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.436, 0.02, -3.514)
+
+[node name="To" parent="Links/Link_RoadNorth_BossSite" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.61706, 0.02, 0.50897)
+
+[node name="Link_RoadNorth_SettlementNW" parent="Links" unique_id=1486393940 instance=ExtResource("5_link")]
+from_point = &"RoadNorth"
+to_point = &"SettlementNW"
+
+[node name="From" parent="Links/Link_RoadNorth_SettlementNW" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.436, 0.02, -3.514)
+
+[node name="To" parent="Links/Link_RoadNorth_SettlementNW" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0857, 0.02, -1.35786)
+
+[node name="Link_RoadNorth_Ford" parent="Links" unique_id=1183759959 instance=ExtResource("5_link")]
+from_point = &"RoadNorth"
+to_point = &"Ford"
+
+[node name="From" parent="Links/Link_RoadNorth_Ford" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.436, 0.02, -3.514)
+
+[node name="To" parent="Links/Link_RoadNorth_Ford" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.988, 0.02, -3.8507)
+
+[node name="Link_Chapel_City" parent="Links" unique_id=1706172852 instance=ExtResource("5_link")]
+from_point = &"Chapel"
+to_point = &"City"
+
+[node name="From" parent="Links/Link_Chapel_City" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.87381, 0.02, -3.185)
+
+[node name="To" parent="Links/Link_Chapel_City" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68943, 0.02, 0.35672)
+
+[node name="Link_AvatarSite_City" parent="Links" unique_id=1346404800 instance=ExtResource("5_link")]
+from_point = &"AvatarSite"
+to_point = &"City"
+
+[node name="From" parent="Links/Link_AvatarSite_City" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.22234, 0.02, 1.1464599)
+
+[node name="To" parent="Links/Link_AvatarSite_City" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68943, 0.02, 0.35672)
+
+[node name="Link_BossSite_City" parent="Links" unique_id=2105590137 instance=ExtResource("5_link")]
+from_point = &"BossSite"
+to_point = &"City"
+
+[node name="From" parent="Links/Link_BossSite_City" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.61706, 0.02, 0.50897)
+
+[node name="To" parent="Links/Link_BossSite_City" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68943, 0.02, 0.35672)
+
+[node name="Link_SettlementSE_MineSE" parent="Links" unique_id=1628294905 instance=ExtResource("5_link")]
+from_point = &"SettlementSE"
+to_point = &"MineSE"
+
+[node name="From" parent="Links/Link_SettlementSE_MineSE" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.64719, 0.02, 1.98429)
+
+[node name="To" parent="Links/Link_SettlementSE_MineSE" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.961, 0.02, 2.303)
+
+[node name="Link_SettlementNW_MineNW" parent="Links" unique_id=784374859 instance=ExtResource("5_link")]
+from_point = &"SettlementNW"
+to_point = &"MineNW"
+
+[node name="From" parent="Links/Link_SettlementNW_MineNW" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0857, 0.02, -1.35786)
+
+[node name="To" parent="Links/Link_SettlementNW_MineNW" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.309, 0.02, -1.652)
+
+[node name="Markers" type="Node3D" parent="." unique_id=661632815]
+unique_name_in_owner = true
+
+[node name="Point_TowerEast" parent="Markers" unique_id=1020268043 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6248157, 0.02, -5.25307)
+point_id = &"TowerEast"
+label_text = "Naf Ishun"
+disc_color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Point_TowerSouth" parent="Markers" unique_id=1522627423 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7705417, 0.02, 3.0409255)
+point_id = &"TowerSouth"
+label_text = "Forest Tower"
+disc_color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Point_TowerWest" parent="Markers" unique_id=1012302803 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.268453, 0.02, 4.9599557)
+point_id = &"TowerWest"
+label_text = "Volcano Tower"
+disc_color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Point_TowerNorth" parent="Markers" unique_id=1888086446 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6615264, 0.02, -5.362804)
+point_id = &"TowerNorth"
+label_text = "Avequel'la"
+disc_color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Point_RoadEast" parent="Markers" unique_id=675651062 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.457, 0.02, -4.473)
+point_id = &"RoadEast"
+label_text = "Road (Naf Ishun)"
+
+[node name="Point_RoadSouth" parent="Markers" unique_id=480795157 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.752, 0.02, 2.674)
+point_id = &"RoadSouth"
+label_text = "Road (Forest Tower)"
+
+[node name="Point_RoadWest" parent="Markers" unique_id=1870788269 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0.02, 2.66)
+point_id = &"RoadWest"
+label_text = "Road (Volcano Tower)"
+
+[node name="Point_RoadNorth" parent="Markers" unique_id=1282916922 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.436, 0.02, -3.514)
+point_id = &"RoadNorth"
+label_text = "Road (Avequel'la)"
+
+[node name="Point_Chapel" parent="Markers" unique_id=1518532030 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.87381, 0.02, -3.185)
+point_id = &"Chapel"
+label_text = "Forest Ruins"
+disc_color = Color(0.35, 0.1, 0.35, 1)
+
+[node name="Point_AvatarSite" parent="Markers" unique_id=829410692 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.22234, 0.02, 1.1464599)
+point_id = &"AvatarSite"
+label_text = "Ale Bend"
+disc_color = Color(0.35, 0.1, 0.35, 1)
+
+[node name="Point_BossSite" parent="Markers" unique_id=942169274 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.61706, 0.02, 0.50897)
+point_id = &"BossSite"
+label_text = "Valley Cross"
+disc_color = Color(0.35, 0.1, 0.35, 1)
+
+[node name="Point_City" parent="Markers" unique_id=519402442 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68943, 0.02, 0.35672)
+point_id = &"City"
+label_text = "Hopes Gate"
+disc_color = Color(0.6, 0.5, 0.1, 1)
+
+[node name="Point_SettlementSE" parent="Markers" unique_id=1394463910 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.64719, 0.02, 1.98429)
+point_id = &"SettlementSE"
+label_text = "Entbridge"
+disc_color = Color(0.45, 0.3, 0.15, 1)
+
+[node name="Point_SettlementNW" parent="Markers" unique_id=461087098 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0857, 0.02, -1.35786)
+point_id = &"SettlementNW"
+label_text = "Teshfield"
+disc_color = Color(0.45, 0.3, 0.15, 1)
+
+[node name="Point_MineSE" parent="Markers" unique_id=304007881 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.961, 0.02, 2.303)
+point_id = &"MineSE"
+label_text = "Mine (Entbridge)"
+disc_color = Color(0.2, 0.35, 0.2, 1)
+
+[node name="Point_MineNW" parent="Markers" unique_id=701901389 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.309, 0.02, -1.652)
+point_id = &"MineNW"
+label_text = "Mine (Teshfield)"
+disc_color = Color(0.2, 0.35, 0.2, 1)
+
+[node name="Point_Ford" parent="Markers" unique_id=957279987 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.988, 0.02, -3.8507)
+point_id = &"Ford"
+label_text = "Mountain Pass"
+disc_color = Color(0.15, 0.25, 0.45, 1)
+
+[node name="Point_Crossing" parent="Markers" unique_id=603364015 instance=ExtResource("2_marker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041160002, 0.02, 3.4904802)
+point_id = &"Crossing"
+label_text = "Lastford"
+disc_color = Color(0.15, 0.25, 0.45, 1)
+
+[node name="Pieces" type="Node3D" parent="." unique_id=1866560622]
+unique_name_in_owner = true
+
+[node name="Ink" type="Node3D" parent="." unique_id=931898559]
+unique_name_in_owner = true
+
+[node name="DraftLine" parent="." unique_id=1680107161 instance=ExtResource("7_pencil")]
+unique_name_in_owner = true
+mesh = SubResource("ImmediateMesh_p1elh")
+
+[editable path="Links/Link_TowerEast_RoadEast"]
+[editable path="Links/Link_TowerSouth_RoadSouth"]
+[editable path="Links/Link_TowerWest_RoadWest"]
+[editable path="Links/Link_TowerNorth_RoadNorth"]
+[editable path="Links/Link_RoadEast_Chapel"]
+[editable path="Links/Link_RoadEast_SettlementSE"]
+[editable path="Links/Link_RoadEast_Ford"]
+[editable path="Links/Link_RoadSouth_AvatarSite"]
+[editable path="Links/Link_RoadSouth_SettlementSE"]
+[editable path="Links/Link_RoadSouth_Crossing"]
+[editable path="Links/Link_RoadWest_City"]
+[editable path="Links/Link_RoadWest_BossSite"]
+[editable path="Links/Link_RoadWest_SettlementNW"]
+[editable path="Links/Link_RoadWest_Crossing"]
+[editable path="Links/Link_RoadNorth_BossSite"]
+[editable path="Links/Link_RoadNorth_SettlementNW"]
+[editable path="Links/Link_RoadNorth_Ford"]
+[editable path="Links/Link_Chapel_City"]
+[editable path="Links/Link_AvatarSite_City"]
+[editable path="Links/Link_BossSite_City"]
+[editable path="Links/Link_SettlementSE_MineSE"]
+[editable path="Links/Link_SettlementNW_MineNW"]

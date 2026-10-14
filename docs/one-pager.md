@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Corruption — One-Page Overview
 
 **A PvP Dark Lord simulator where four players compete to corrupt the land of the good.**

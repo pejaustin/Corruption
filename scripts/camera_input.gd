@@ -8,7 +8,9 @@ class_name CameraInput extends Node3D
 var camera_basis : Basis = Basis.IDENTITY
 
 const CAMERA_MOUSE_ROTATION_SPEED: float = 0.005
-const CAMERA_X_ROT_MIN: float = deg_to_rad(-70)
+## Straight down (not quite -90, which flips the view basis) so the overlord can
+## look at the map floor at his feet.
+const CAMERA_X_ROT_MIN: float = deg_to_rad(-89)
 const CAMERA_X_ROT_MAX: float = deg_to_rad(60)
 const CAMERA_UP_DOWN_MOVEMENT: int = -1
 const CAMERA_JOYSTICK_ROTATION_SPEED: int = 5

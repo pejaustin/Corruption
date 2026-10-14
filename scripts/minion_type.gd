@@ -14,7 +14,9 @@ class_name MinionType extends Resource
 @export var hp: int = 40
 @export var damage: int = 10
 @export var speed: float = 3.5
-@export var cost: int = 8
+## How much this unit counts toward a corruption site's strength threshold
+## (GDD §7, Q11). Couriers, advisors and haulers never count.
+@export var strength: float = 1.0
 
 @export_group("Combat Tuning")
 @export var aggro_radius: float = 8.0
@@ -31,8 +33,13 @@ class_name MinionType extends Resource
 @export var model_scene: PackedScene
 
 @export_group("Behavior")
-## Trait-tag consumed by minion AI and MinionManager (raise_dead, stealth, dominate, ...).
+## Trait-tag consumed by minion AI and MinionManager (courier, advisor, thrall, ...).
 @export var trait_tag: StringName
+## A living human (GDD §5): leaves a body to raise when killed and can be
+## captured alive for a thrall.
+@export var is_human: bool = false
+## A noble (one or a few per settlement) can be bought with goods and a promise.
+@export var is_noble: bool = false
 ## How many distinct sub-orders a courier of this type can carry per outing.
 ## Read by KnowledgeManager._dispatch_entries to batch readied entries into the
 ## fewest couriers. A "sub-order" is one (source cluster, target_pos, minion

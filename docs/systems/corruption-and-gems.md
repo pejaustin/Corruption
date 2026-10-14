@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Corruption & Gem Sites
 
 **Build status:** Implemented; 3 sites placed in `world.tscn` (2026-06-05). Capture/regen loop not yet verified in-engine — see `docs/technical/test-plan-corruption-avatar.md`.

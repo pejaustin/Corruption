@@ -33,9 +33,16 @@ func enter(_previous_state: RewindableState, _tick: int) -> void:
 	actor.velocity.z = horizontal.z / t_total
 	face_direction(horizontal.normalized())
 
+## PLACEHOLDER: tuning — a jump that has not landed after this many seconds is abandoned.
+const MAX_AIR_TIME: float = 3.0
+
 func tick(delta: float, _tick: int, _is_fresh: bool) -> void:
 	_air_time += delta
 	physics_move()
+	if _air_time >= MAX_AIR_TIME:
+		minion.jump_target = Vector3.INF
+		state_machine.transition(&"IdleState")
+		return
 	if _air_time >= MIN_AIR_TIME and actor.is_on_floor():
 		minion.jump_target = Vector3.INF
 		state_machine.transition(&"ChaseState")

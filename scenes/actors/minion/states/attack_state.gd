@@ -61,6 +61,7 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 			if actor._animation_player:
 				actor._animation_player.seek(0.0)
 				actor._animation_player.play(animation_name)
+			minion.swing_count += 1  # synced: clients restart their Attack animation per swing
 		elif target and distance_to(target) < minion.aggro_radius:
 			state_machine.transition(&"ChaseState")
 		else:
@@ -91,18 +92,19 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 			continue
 		var dmg := int(base_dmg * hurtbox.get_damage_multiplier())
 		if other is AvatarActor:
+			(other as AvatarActor).last_hit_by = minion.owner_peer_id
 			other.incoming_damage += dmg
-			other.last_damage_source_peer = minion.owner_peer_id
 			if other.controlling_peer_id > 0 and other.controlling_peer_id != multiplayer.get_unique_id():
 				other.apply_incoming_damage.rpc_id(other.controlling_peer_id, dmg, minion.owner_peer_id)
 		else:
 			# Minions don't have a RollbackSynchronizer draining incoming_damage,
 			# so apply the hit directly on the host. HP is broadcast to clients
 			# via MinionManager._sync_minion_actor.
-			var killed := other.hp - dmg <= 0
+			if "last_hit_by" in other:  # bosses keep no record of who hit them
+				other.last_hit_by = minion.owner_peer_id
+			# Out to take captives: blows against humans stop short of death.
+			if minion.capture_mode and not MatchConfig.humans_kill_only and other is MinionActor and (other as MinionActor).is_human:
+				dmg = mini(dmg, other.hp - 1)
+				if dmg <= 0:
+					continue
 			other.take_damage(dmg)
-			# Raise-dead: if this hit killed the victim, flag for skeleton raise
-			if minion.minion_trait == &"raise_dead" and killed:
-				var mm := actor.get_tree().current_scene.get_node_or_null("MinionManager")
-				if mm and mm.has_method("raise_dead_at"):
-					mm.raise_dead_at(minion.owner_peer_id, minion.faction, other.global_position)

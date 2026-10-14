@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://c0ahvpcadc8qq"]
+
+[ext_resource type="PackedScene" uid="uid://doh14ue5keugo" path="res://art/world/pois/export/avequella.glb" id="1_glb"]
+
+[node name="Avequella" instance=ExtResource("1_glb")]

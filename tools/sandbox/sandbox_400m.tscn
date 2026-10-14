@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/world/world_400m.tscn" id="1_world"]
+[ext_resource type="Script" path="res://tools/sandbox/sandbox_400m.gd" id="2_sandbox"]
+
+[node name="GameWorld" instance=ExtResource("1_world")]
+
+[node name="SandboxHost" type="Node" parent="."]
+script = ExtResource("2_sandbox")

@@ -67,6 +67,9 @@ func _request_activate(ability_id: StringName) -> void:
 		return
 	if _find_ability(ability_id) == null:
 		return
+	# Control tiers (GDD §8): abilities unlock with enough corruption.
+	if _actor and not _actor.can_use(AvatarActor.ACTION_ABILITIES):
+		return
 	_do_activate.rpc(ability_id)
 
 @rpc("authority", "call_local", "reliable")

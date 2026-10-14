@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+; A flat ribbon drawn on the map floor: MapFloor refills the ImmediateMesh with
+; the route's points each time it changes. Inherited variants set the colour.
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_line"]
+resource_local_to_scene = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ink"]
+shading_mode = 0
+albedo_color = Color(0.08, 0.06, 0.05, 1)
+
+[node name="MapLine" type="MeshInstance3D"]
+material_override = SubResource("StandardMaterial3D_ink")
+cast_shadow = 0
+mesh = SubResource("ImmediateMesh_line")

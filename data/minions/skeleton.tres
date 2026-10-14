@@ -9,5 +9,4 @@ display_name = "Skeleton"
 hp = 25
 damage = 8
 speed = 4.0
-cost = 5
 color = Color(0.6, 0.8, 0.5, 1)

@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # Avatar Possession Rework — ownership/control split
 
 **Build status:** Phases A + B implemented 2026-06-05; Phase C implemented 2026-06-09; D re-speced 2026-06-10 (corruption upkeep, escalating rate), not built

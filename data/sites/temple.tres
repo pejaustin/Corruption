@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SiteType" format=3 uid="uid://bgjtnmb8vbhrn"]
+
+[ext_resource type="Script" uid="uid://dyc11mh2b5gqi" path="res://scripts/sites/site_type.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/sites/encounter/temple_dungeon.tscn" id="2_enc"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"temple"
+display_name = "Temple"
+capability = &"avatar_control"
+poi_kind = 1
+encounter = 1
+encounter_scene = ExtResource("2_enc")

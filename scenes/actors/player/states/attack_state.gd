@@ -19,6 +19,15 @@ extends PlayerState
 ## track keys on %AttackHitbox do. Hit-detection still polls while the hitbox
 ## is active. Prevents double-firing when both paths run on the same animation.
 @export var use_animation_keys: bool = false
+## This swing's damage, times the Paladin's attack damage (strong attacks hit harder).
+@export var damage_multiplier: float = 1.0
+## Combos: from this fraction of the swing, a light input chains into
+## `next_light` and a strong input into `next_heavy` (empty = no chain). Decided
+## from held input (synced, so every peer chains on the same tick) or a press
+## buffered on the controlling peer; holding the button runs the whole string.
+@export var combo_window_start: float = 0.6
+@export var next_light: StringName = &""
+@export var next_heavy: StringName = &""
 
 const LIFESTEAL_RATIO: float = 0.3
 
@@ -64,11 +73,24 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 	actor.velocity.z = 0
 	physics_move()
 
+	if progress >= combo_window_start and _try_chain():
+		return
 	if progress >= 1.0:
 		if actor.is_on_floor():
 			state_machine.transition(&"IdleState")
 		else:
 			state_machine.transition(&"FallState")
+
+func _try_chain() -> bool:
+	## Into the next swing of the string, strong before light.
+	var input: AvatarInput = player.avatar_input
+	if next_heavy != &"" and (input.heavy_input or input.consume_if_buffered(&"secondary_ability")):
+		state_machine.transition(next_heavy)
+		return true
+	if next_light != &"" and (input.attack_input or input.consume_if_buffered(&"primary_ability")):
+		state_machine.transition(next_light)
+		return true
+	return false
 
 func _get_animation_progress() -> float:
 	if not actor._animation_player:
@@ -92,13 +114,15 @@ func _check_hits(hitbox: AttackHitbox) -> void:
 	if actor.abilities:
 		damage_mult = actor.abilities.get_damage_multiplier()
 		lifesteal = actor.abilities.should_lifesteal()
-	var base_final := base_damage * damage_mult * hitbox.get_damage_multiplier()
+	var base_final := base_damage * damage_mult * damage_multiplier * hitbox.get_damage_multiplier()
 	for hurtbox in hitbox.get_new_hits():
 		var target := hurtbox.get_actor()
 		if target == null or target == actor:
 			continue
 		var final_damage := int(base_final * hurtbox.get_damage_multiplier())
-		target.take_damage(final_damage)
+		# GDD §8: with too little control he resists striking the good faction.
+		if not player.strike(target, final_damage):
+			continue
 		if lifesteal:
 			var heal := int(final_damage * LIFESTEAL_RATIO)
 			actor.hp = min(actor.hp + heal, actor.get_max_hp())

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SiteType" format=3]
+
+[ext_resource type="Script" path="res://scripts/sites/site_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"tower"
+display_name = "Tower"
+capability = &"tower"
+size = 1
+strength_threshold = 999.0
+corrupt_seconds = 1.0
+slip_seconds = 1.0
+purify_seconds = 1.0

@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit.gdshader" id="1_uppwl"]
+[ext_resource type="Texture2D" path="res://assets/world/env/mod-castle/Floors&Ramps/Ramps/Ramp_Steep_1_0.png" id="2_em00j"]
+
+[resource]
+resource_name = "Floor_Mat"
+render_priority = 0
+shader = ExtResource("1_uppwl")
+shader_parameter/albedo_tex = ExtResource("2_em00j")
+shader_parameter/albedo_color = Color(1, 1, 1, 1)

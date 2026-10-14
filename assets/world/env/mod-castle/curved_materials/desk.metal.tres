@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/curved_kit.gdshader" id="1_sv8hu"]
+
+[resource]
+resource_name = "metal"
+render_priority = 0
+shader = ExtResource("1_sv8hu")
+shader_parameter/albedo_color = Color(0.8759254, 0.91768694, 0.9258912, 1)

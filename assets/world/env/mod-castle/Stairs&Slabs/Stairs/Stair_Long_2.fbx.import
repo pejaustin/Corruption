@@ -38,6 +38,13 @@ materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
 _subresources={
+"materials": {
+"Stair_Mat": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/world/env/mod-castle/curved_materials/Stair_Long_2.Stair_Mat.tres",
+"use_external/path": "res://assets/world/env/mod-castle/curved_materials/Stair_Long_2.Stair_Mat.tres"
+}
+},
 "nodes": {
 "PATH:Stair_Long_2": {
 "physics/body_type": 1

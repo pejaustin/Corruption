@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MinionType" format=3]
+
+[ext_resource type="Script" path="res://scripts/minion_type.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"noble"
+display_name = "PLACEHOLDER: Noble"
+faction = 4
+hp = 30
+damage = 0
+speed = 2.5
+aggro_radius = 0.0
+trait_tag = &""
+is_human = true
+is_noble = true

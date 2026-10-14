@@ -1,0 +1,62 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scenes/world/fog/world_fog.gd" id="1_fog"]
+[ext_resource type="Shader" path="res://shaders/drifting_fog.gdshader" id="2_fog"]
+[ext_resource type="Texture2D" path="res://art/world/export/fog/elder_wood_fog_mask.png" id="3_elder"]
+[ext_resource type="Texture2D" path="res://art/world/export/fog/northwood_fog_mask.png" id="4_north"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_fog"]
+frequency = 0.06
+
+[sub_resource type="NoiseTexture3D" id="NoiseTexture3D_fog"]
+width = 64
+height = 64
+depth = 64
+seamless = true
+noise = SubResource("FastNoiseLite_fog")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_elder"]
+shader = ExtResource("2_fog")
+shader_parameter/density = 0.12
+shader_parameter/full_below = 3.0
+shader_parameter/clear_above = 14.0
+shader_parameter/edge_fade = 10.0
+shader_parameter/use_footprint = true
+shader_parameter/footprint = ExtResource("3_elder")
+shader_parameter/ground_min = -49.97
+shader_parameter/ground_range = 139.09
+shader_parameter/noise = SubResource("NoiseTexture3D_fog")
+shader_parameter/noise_scale = 70.0
+shader_parameter/noise_strength = 0.85
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_north"]
+shader = ExtResource("2_fog")
+shader_parameter/density = 0.12
+shader_parameter/full_below = 3.0
+shader_parameter/clear_above = 14.0
+shader_parameter/edge_fade = 10.0
+shader_parameter/use_footprint = true
+shader_parameter/footprint = ExtResource("4_north")
+shader_parameter/ground_min = -12.24
+shader_parameter/ground_range = 83.39
+shader_parameter/noise = SubResource("NoiseTexture3D_fog")
+shader_parameter/noise_scale = 70.0
+shader_parameter/noise_strength = 0.85
+
+[node name="WorldFog" type="Node"]
+script = ExtResource("1_fog")
+
+; Each wood's volume covers its outline plus 40 m; the shape inside is its baked footprint (tools/bake_forest_fog.gd)
+[node name="Woods" type="Node3D" parent="."]
+
+[node name="ElderWood" type="FogVolume" parent="Woods"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 504.2, 29.6, 602.3)
+size = Vector3(1050.3, 179.1, 673.4)
+shape = 3
+material = SubResource("ShaderMaterial_elder")
+
+[node name="Northwood" type="FogVolume" parent="Woods"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 222.7, 39.5, -472.7)
+size = Vector3(876.4, 123.4, 628.7)
+shape = 3
+material = SubResource("ShaderMaterial_north")

@@ -4,14 +4,12 @@
 [ext_resource type="Script" uid="uid://bos2fmmk4jaaw" path="res://scenes/world/env/tower.gd" id="1_ewiun"]
 [ext_resource type="PackedScene" uid="uid://8mbjo354k5p" path="res://assets/world/env/mod-castle/Walls/Railing&Fences/Railing_Corner_1.fbx" id="2_1p88i"]
 [ext_resource type="PackedScene" uid="uid://byks2n5lgat5u" path="res://assets/world/env/mod-castle/Walls/Railing&Fences/Railing_x1.fbx" id="3_2mnic"]
-[ext_resource type="Script" uid="uid://cii5qfapbe5tc" path="res://scripts/interactibles/war_table_range.gd" id="4_wtrange"]
 [ext_resource type="PackedScene" uid="uid://rwydltwig77s" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x2.fbx" id="4_xd411"]
-[ext_resource type="PackedScene" uid="uid://btwart0000001" path="res://scenes/interactibles/war_table.tscn" id="4_yjlt3"]
 [ext_resource type="PackedScene" uid="uid://m8hq7ma6lnc2" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Corner_Full.fbx" id="5_r4tnh"]
 [ext_resource type="PackedScene" uid="uid://dxk4j5sckqia8" path="res://assets/world/env/mod-castle/Walls/Walls_Short/Wall_Short_x1.fbx" id="6_5dhyi"]
 [ext_resource type="PackedScene" uid="uid://bpu5gh4vbgaep" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Large_Gate.fbx" id="7_3o7cy"]
 [ext_resource type="PackedScene" uid="uid://b6xjupp7r7mpo" path="res://assets/world/env/mod-castle/Props/Decoration/Banner_Wall_Worn_1.fbx" id="8_7wf5u"]
-[ext_resource type="PackedScene" uid="uid://chkr1qie5phr6" path="res://assets/world/env/mod-castle/Props/Lighting_Fixtures/Wall_Stand_Lamp.fbx" id="9_6guij"]
+[ext_resource type="PackedScene" uid="uid://c67817l7qbhsu" path="res://scenes/environment/wall_stand_lamp.tscn" id="9_6guij"]
 [ext_resource type="PackedScene" uid="uid://cir4tlunwsq1m" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x2_Window_1.fbx" id="10_k0irn"]
 [ext_resource type="PackedScene" uid="uid://rb5885yoji8w" path="res://assets/world/env/mod-castle/Floors&Ramps/Floors/Floor_1x1.fbx" id="11_eoso1"]
 [ext_resource type="PackedScene" uid="uid://d2tk2tenrigj7" path="res://assets/world/env/mod-castle/Stairs&Slabs/Stairs/Stair_Long_1.fbx" id="12_2u4nm"]
@@ -19,7 +17,6 @@
 [ext_resource type="PackedScene" uid="uid://8s2o06xp3yxg" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Wall_Full_x1.fbx" id="14_8uuiu"]
 [ext_resource type="PackedScene" uid="uid://c5qqggnx1tr6r" path="res://assets/world/env/mod-castle/Walls/Foundations/Foundation_Full_x1.fbx" id="15_ewiun"]
 [ext_resource type="PackedScene" uid="uid://c8oyl07nm7034" path="res://assets/world/env/mod-castle/Props/Decoration/Table.fbx" id="16_7a0l1"]
-[ext_resource type="PackedScene" uid="uid://bcibq63u7cpy0" path="res://scenes/interactibles/avatar_claim.tscn" id="16_7wf5u"]
 [ext_resource type="PackedScene" uid="uid://bi7aggwvrj1rs" path="res://assets/world/env/table.blend" id="17_yjlt3"]
 [ext_resource type="PackedScene" uid="uid://2oeb3dq7s4o2" path="res://scenes/interactibles/mirror.tscn" id="19_eoso1"]
 [ext_resource type="PackedScene" uid="uid://tvs3gfeui36j" path="res://assets/world/env/mod-castle/Walls/Walls_Full/Gate_Bars.fbx" id="20_2mnic"]
@@ -30,8 +27,14 @@
 [ext_resource type="PackedScene" uid="uid://b1xr8wv4w0t0f" path="res://assets/world/env/mod-castle/Ceilings&Roofs/Roofs/Roof_Cube_2x4.fbx" id="24_3o7cy"]
 [ext_resource type="Shape3D" uid="uid://b3p7215rpyj7p" path="res://scenes/world/env/BOUNDRY.tres" id="26_6guij"]
 [ext_resource type="PackedScene" uid="uid://c8uteh2tyq2lx" path="res://scenes/interactibles/palantir.tscn" id="27_k0irn"]
-[ext_resource type="PackedScene" uid="uid://bupaltar00001" path="res://scenes/interactibles/upgrade_altar.tscn" id="28_upalt"]
 [ext_resource type="PackedScene" uid="uid://d24db7jslh5tl" path="res://scenes/actors/minion/minion_spawn_point.tscn" id="31_8uuiu"]
+[ext_resource type="PackedScene" path="res://scenes/sites/corruption_site.tscn" id="40_site"]
+[ext_resource type="PackedScene" path="res://scenes/map/map_floor.tscn" id="42_mapfloor"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/desk.tscn" id="42_desk"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/balcony.tscn" id="43_balcony"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/treasure_room.tscn" id="44_treasure"]
+[ext_resource type="PackedScene" path="res://scenes/interactibles/ledger.tscn" id="45_ledger"]
+[ext_resource type="Resource" path="res://data/sites/tower.tres" id="41_towertype"]
 [ext_resource type="Script" uid="uid://hthsj34lyade" path="res://scenes/world/env/jumpable_link.gd" id="33_7a0l1"]
 [ext_resource type="PackedScene" uid="uid://71btovk3inad" path="res://scenes/actors/minion/types/advisor_actor.tscn" id="35_n8gnn"]
 [ext_resource type="PackedScene" uid="uid://b6bm3krm5xl8v" path="res://scenes/world/env/foundation_ful_x.tscn" id="38_fndcol"]
@@ -42,15 +45,6 @@ size = Vector3(18.3266, 0.997826, 4.5)
 [sub_resource type="BoxShape3D" id="BoxShape3D_k0irn"]
 size = Vector3(0.5, 5, 9.5)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n8gnn"]
-transparency = 1
-cull_mode = 2
-shading_mode = 0
-albedo_color = Color(0.95, 0.75, 0.2, 0.08)
-
-[sub_resource type="BoxMesh" id="BoxMesh_sernp"]
-size = Vector3(300, 20, 300)
-
 [sub_resource type="SphereShape3D" id="SphereShape3D_courier_zone"]
 radius = 5.41
 
@@ -59,7 +53,7 @@ vertices = PackedVector3Array(11.5, 54.899998, -14.681099, 14.5, 54.899998, -14.
 polygons = [PackedInt32Array(2, 1, 0), PackedInt32Array(6, 5, 3), PackedInt32Array(3, 5, 4), PackedInt32Array(9, 8, 10), PackedInt32Array(10, 8, 7), PackedInt32Array(13, 12, 14), PackedInt32Array(14, 12, 11), PackedInt32Array(17, 16, 18), PackedInt32Array(18, 16, 15), PackedInt32Array(21, 20, 19), PackedInt32Array(24, 23, 22), PackedInt32Array(19, 26, 22), PackedInt32Array(22, 26, 25), PackedInt32Array(22, 25, 24), PackedInt32Array(19, 22, 21), PackedInt32Array(21, 22, 30), PackedInt32Array(30, 22, 29), PackedInt32Array(30, 29, 28), PackedInt32Array(30, 28, 27), PackedInt32Array(23, 24, 31), PackedInt32Array(31, 24, 32), PackedInt32Array(33, 36, 34), PackedInt32Array(34, 36, 35), PackedInt32Array(38, 35, 39), PackedInt32Array(39, 35, 40), PackedInt32Array(39, 40, 37), PackedInt32Array(42, 41, 38), PackedInt32Array(45, 47, 46), PackedInt32Array(47, 48, 37), PackedInt32Array(37, 48, 43), PackedInt32Array(43, 48, 44), PackedInt32Array(44, 48, 45), PackedInt32Array(45, 48, 47), PackedInt32Array(35, 36, 40), PackedInt32Array(40, 36, 49), PackedInt32Array(40, 49, 37), PackedInt32Array(32, 50, 31), PackedInt32Array(31, 50, 37), PackedInt32Array(37, 50, 39), PackedInt32Array(39, 32, 38), PackedInt32Array(38, 32, 42), PackedInt32Array(32, 39, 50), PackedInt32Array(36, 46, 49), PackedInt32Array(49, 46, 47), PackedInt32Array(49, 47, 37), PackedInt32Array(28, 53, 27), PackedInt32Array(27, 53, 54), PackedInt32Array(54, 53, 51), PackedInt32Array(54, 51, 52), PackedInt32Array(56, 55, 57), PackedInt32Array(57, 55, 58), PackedInt32Array(57, 58, 59), PackedInt32Array(59, 58, 60), PackedInt32Array(51, 59, 52), PackedInt32Array(52, 59, 60), PackedInt32Array(64, 63, 61), PackedInt32Array(61, 63, 62), PackedInt32Array(66, 65, 67), PackedInt32Array(67, 65, 68), PackedInt32Array(70, 69, 71), PackedInt32Array(71, 69, 72), PackedInt32Array(72, 69, 73), PackedInt32Array(75, 74, 73), PackedInt32Array(76, 67, 68), PackedInt32Array(73, 69, 77), PackedInt32Array(77, 76, 73), PackedInt32Array(73, 76, 75), PackedInt32Array(75, 76, 68), PackedInt32Array(81, 80, 78), PackedInt32Array(78, 80, 79), PackedInt32Array(85, 84, 82), PackedInt32Array(82, 84, 83), PackedInt32Array(89, 88, 86), PackedInt32Array(86, 88, 87), PackedInt32Array(91, 90, 92), PackedInt32Array(92, 90, 93), PackedInt32Array(93, 90, 94), PackedInt32Array(94, 90, 95), PackedInt32Array(97, 96, 98), PackedInt32Array(98, 96, 99), PackedInt32Array(99, 96, 100), PackedInt32Array(100, 96, 101), PackedInt32Array(103, 102, 104), PackedInt32Array(104, 102, 105), PackedInt32Array(105, 102, 106), PackedInt32Array(106, 102, 107), PackedInt32Array(111, 110, 108), PackedInt32Array(108, 110, 109), PackedInt32Array(115, 114, 112), PackedInt32Array(112, 114, 113), PackedInt32Array(119, 118, 116), PackedInt32Array(116, 118, 117), PackedInt32Array(123, 122, 120), PackedInt32Array(120, 122, 121), PackedInt32Array(127, 126, 124), PackedInt32Array(124, 126, 125), PackedInt32Array(131, 130, 128), PackedInt32Array(128, 130, 129), PackedInt32Array(135, 134, 132), PackedInt32Array(132, 134, 133), PackedInt32Array(139, 138, 136), PackedInt32Array(136, 138, 137), PackedInt32Array(140, 143, 141), PackedInt32Array(141, 143, 142), PackedInt32Array(143, 145, 142), PackedInt32Array(142, 145, 144), PackedInt32Array(143, 146, 145), PackedInt32Array(144, 147, 142), PackedInt32Array(150, 149, 148), PackedInt32Array(34, 152, 33), PackedInt32Array(33, 152, 151), PackedInt32Array(152, 154, 151), PackedInt32Array(151, 154, 153), PackedInt32Array(155, 153, 156), PackedInt32Array(158, 157, 154), PackedInt32Array(153, 155, 151), PackedInt32Array(152, 158, 154), PackedInt32Array(162, 161, 159), PackedInt32Array(159, 161, 160), PackedInt32Array(166, 165, 163), PackedInt32Array(163, 165, 164), PackedInt32Array(170, 169, 167), PackedInt32Array(167, 169, 168), PackedInt32Array(174, 173, 171), PackedInt32Array(171, 173, 172), PackedInt32Array(178, 177, 175), PackedInt32Array(175, 177, 176), PackedInt32Array(182, 181, 179), PackedInt32Array(179, 181, 180), PackedInt32Array(186, 185, 183), PackedInt32Array(183, 185, 184), PackedInt32Array(190, 189, 187), PackedInt32Array(187, 189, 188), PackedInt32Array(191, 194, 192), PackedInt32Array(192, 194, 193), PackedInt32Array(196, 195, 197), PackedInt32Array(197, 195, 198), PackedInt32Array(200, 199, 201), PackedInt32Array(201, 199, 202)]
 cell_height = 0.1
 
-[node name="Tower" type="Node3D" unique_id=679946498]
+[node name="Tower" type="Node3D" unique_id=679946498 groups=["towers"]]
 script = ExtResource("1_ewiun")
 
 [node name="CollisionShapes" type="Node3D" parent="." unique_id=1923657539]
@@ -107,23 +101,6 @@ shape = ExtResource("26_6guij")
 [node name="Table" parent="." unique_id=1695499807 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, -1.82887)
 
-[node name="WarTable" parent="." unique_id=2096886964 instance=ExtResource("4_yjlt3")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7241616, 39.362465, -5.3953505)
-map_world_size = Vector2(300, 300)
-map_world_center = Vector3(0, 0, 0)
-
-[node name="WarTableRange" type="MeshInstance3D" parent="." unique_id=1099551217 node_paths=PackedStringArray("war_table")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
-visible = false
-material_override = SubResource("StandardMaterial3D_n8gnn")
-mesh = SubResource("BoxMesh_sernp")
-script = ExtResource("4_wtrange")
-war_table = NodePath("../WarTable")
-color = Color(0.95, 0.75, 0.2, 0.08)
-
-[node name="AvatarClaim" parent="." unique_id=1313280762 instance=ExtResource("16_7wf5u")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5264935, 39.29396, 0.83745)
-
 [node name="Table2" parent="." unique_id=736994958 instance=ExtResource("16_7a0l1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4145, 47.75, 5.67113)
 
@@ -139,17 +116,39 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 47.
 [node name="SummoningCircle" parent="." unique_id=492818308 instance=ExtResource("21_mbbxa")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4.3884926, 39.058678, 11.0065155)
 
-[node name="UpgradeAltar" parent="." unique_id=1928374650 instance=ExtResource("28_upalt")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 39.75, 11)
-
 [node name="SpawnPoint" type="Marker3D" parent="." unique_id=400429933]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 41.371777, 0)
 
 [node name="Palantir" parent="." unique_id=1536666789 instance=ExtResource("27_k0irn")]
 transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 48.999214, 1.0485661)
 
+[node name="Desk" parent="." unique_id=1793453701 instance=ExtResource("42_desk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 39.4, -6)
+
+[node name="Balcony" parent="." instance=ExtResource("43_balcony")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 39.4, 5)
+
+
+[node name="TreasureRoom" parent="." instance=ExtResource("44_treasure")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 39.4, -8)
+
+[node name="Ledger" parent="." instance=ExtResource("45_ledger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 39.4, -4)
+
 [node name="MinionSpawnPoint" parent="." unique_id=1793453589 instance=ExtResource("31_8uuiu")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3415604, 40.38556, 10.8646965)
+
+[node name="MapFloor" parent="." unique_id=1793453602 instance=ExtResource("42_mapfloor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 39.42, 0)
+
+[node name="TowerSite" parent="." unique_id=1793453601 instance=ExtResource("40_site")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.609, 1, -0.9840002)
+site_type = ExtResource("41_towertype")
+radius = 18.0
+permanent = true
+
+; The steady trickle of units (Austin, 2026-10-12, #577); wait_time set from Tower.TRICKLE_SECONDS.
+[node name="TrickleTimer" type="Timer" parent="."]
 
 [node name="CourierSpawn" type="Area3D" parent="." unique_id=1793453590]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.609, 1, -0.9840002)

@@ -5,6 +5,7 @@
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_m8s1v"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sprw6"]
+resource_local_to_scene = true
 bg_color = Color(0.1172, 0.126193, 0.145413, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
@@ -41,6 +42,11 @@ max_length = 20
 [node name="FactionSelector" type="OptionButton" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="TowerSelector" type="OptionButton" parent="MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 0)
 layout_mode = 2
 
 [node name="ReadyButton" type="Button" parent="MarginContainer/HBoxContainer"]

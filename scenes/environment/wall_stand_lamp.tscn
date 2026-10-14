@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://c67817l7qbhsu"]
+
+[ext_resource type="PackedScene" uid="uid://chkr1qie5phr6" path="res://assets/world/env/mod-castle/Props/Lighting_Fixtures/Wall_Stand_Lamp.fbx" id="1_375qw"]
+
+[node name="Wall_Stand_Lamp" unique_id=1177150557 instance=ExtResource("1_375qw")]
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." index="1" unique_id=1943277871]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_energy = 2.27
+light_bake_mode = 1

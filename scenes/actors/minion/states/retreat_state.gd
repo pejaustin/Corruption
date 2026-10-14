@@ -2,7 +2,7 @@ extends MinionState
 
 ## Forced retreat: navigate to the owner peer's tower spawn marker. On arrival,
 ## flush the actor's _field_log into the owner's WorldModel via
-## KnowledgeManager.flush_observations and transition back to IdleState. The
+## KnowledgeManager.deliver_report and transition back to IdleState. The
 ## minion does not engage hostiles in transit (no aggro check, no attack hand-
 ## off) — it's running for home.
 ##
@@ -16,6 +16,8 @@ extends MinionState
 ## Host-only logic; clients receive position and state via MinionManager sync.
 
 const ARRIVAL_DISTANCE: float = 1.5
+## PLACEHOLDER: tuning — same re-path guard as ChaseState (metres).
+const REPATH_DISTANCE: float = 1.5
 
 func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 	if not multiplayer.is_server():
@@ -38,7 +40,9 @@ func tick(_delta: float, _tick: int, _is_fresh: bool) -> void:
 		state_machine.transition(&"IdleState")
 		return
 
-	nav.target_position = target
+	# Only re-path when the goal moves: a new target every tick is a full navmesh search.
+	if nav.target_position.distance_to(target) > REPATH_DISTANCE:
+		nav.target_position = target
 	if nav.is_navigation_finished():
 		_arrive_home()
 		return
@@ -69,7 +73,14 @@ func _arrive_home() -> void:
 	physics_move()
 	# Flush whatever this minion observed into the owner's WorldModel. Empty
 	# logs are fine — the call is a no-op.
-	KnowledgeManager.flush_observations(minion.owner_peer_id, minion._field_log.values())
+	var gm := actor.get_tree().current_scene.get_node_or_null("GroupManager") as GroupManager
+	var group := gm.get_group(minion.group_id) if gm else null
+	var report: Dictionary = gm.make_report(group) if group else {}
+	var sightings: Array = report.get("sightings", [])
+	sightings.append_array(minion._field_log.values())
+	report["sightings"] = sightings
+	report["source"] = &"returned"
+	KnowledgeManager.deliver_report(minion.owner_peer_id, report)
 	minion._field_log.clear()
 	# Heal back to a small buffer so the retreat-trigger threshold doesn't
 	# immediately re-fire and pin the minion in a Retreat→Idle→Retreat loop.

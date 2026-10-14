@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: art — Blackhorn of the Shattered Peaks (retro PSX model from Austin's Drive), stands in for a boss form; see README.md beside it.
+[ext_resource type="PackedScene" uid="uid://dmge52vpwmf0" path="res://assets/characters/placeholder/blackhorn/blackhorn.glb" id="1_glb"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/placeholder/blackhorn/blackhorn.res" id="2_lib"]
+[ext_resource type="Texture2D" uid="uid://dylkargoqney7" path="res://assets/characters/placeholder/blackhorn/blackhorn_chivato-texture.png" id="3_tex"]
+
+; Nearest filtering, like the world's pixel textures.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_skin"]
+albedo_texture = ExtResource("3_tex")
+roughness = 1.0
+texture_filter = 0
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_empty"]
+
+[node name="Blackhorn" instance=ExtResource("1_glb")]
+
+[node name="blackhorn" parent="Armature/Skeleton3D" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_skin")
+
+[node name="AnimationPlayer" parent="." index="1"]
+libraries/ = SubResource("AnimationLibrary_empty")
+libraries/blackhorn = ExtResource("2_lib")
+autoplay = &"blackhorn/idle"

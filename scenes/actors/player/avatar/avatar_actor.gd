@@ -1,47 +1,170 @@
 class_name AvatarActor extends PlayerActor
 
-## The shared Paladin vessel. Dormant when unclaimed.
-## When a player claims it, their input drives this entity
-## while their Overlord body stays idle in the tower.
+## The Paladin (GDD §8). One shared body in the world, always awake.
+##
+## - **Owner** (`GameState.avatar_owner_peer_id`): the player who holds him, or
+##   the good faction (-1). Taking and keeping him: PaladinHold.
+## - **Controller** (`GameState.avatar_peer_id`): the owner when they drive him
+##   directly from a Palantir; otherwise AvatarAI drives him for whoever owns him.
+## - **Control tiers** (Q18; tiers plus resistance, Austin 2026-10-12): an
+##   owner's control level is 1 + the AVATAR_CONTROL sites (temples: their
+##   crystals raise control) they hold; each action needs a level (`can_use`), and below
+##   RESIST_GOOD_BELOW_LEVEL he refuses to strike the good faction.
+## - **Defeat** (Q14, Q15; Austin, 2026-10-12): unheld, he goes to whoever
+##   defeated him (`last_hit_by`), no contest. Held, his corruption is wiped
+##   (the good faction has him again), PaladinHold opens a contest, and after
+##   RECOVER_DELAY he gets up where he fell, weak; AvatarAI then takes him home
+##   to recover.
 
-const WATCHER_ORB_DISTANCE: float = 2.5
-const WATCHER_ORB_HEIGHT: float = 2.0
-const DEATH_TRANSFER_DELAY: float = 2.0
-const WATCHER_ORB_SIZE: Vector3 = Vector3(0.3, 0.3, 0.3)
-const WATCHER_ORB_COLOR: Color = Color(0.4, 0.6, 1.0, 0.7)
-const WATCHER_ORB_EMISSION: Color = Color(0.4, 0.6, 1.0)
-const WATCHER_ORB_EMISSION_ENERGY: float = 2.0
+signal resisted(target: Actor)
+
+const ACTION_WALK: StringName = &"walk"
+const ACTION_RUN: StringName = &"run"
+const ACTION_JUMP: StringName = &"jump"
+const ACTION_ROLL: StringName = &"roll"
+const ACTION_ATTACK: StringName = &"attack"
+const ACTION_ABILITIES: StringName = &"abilities"
+## PLACEHOLDER: rule for #582 (control tiers) — the control level each action
+## needs. Level = 1 + AVATAR_CONTROL sites the owner holds.
+const CONTROL_UNLOCKS: Dictionary[StringName, int] = {
+	ACTION_WALK: 1,
+	ACTION_ATTACK: 2,
+	ACTION_RUN: 3,
+	ACTION_ROLL: 3,
+	ACTION_JUMP: 3,
+	ACTION_ABILITIES: 4,
+}
+## PLACEHOLDER: tuning — the highest control level (everything unlocked).
+const CONTROL_LEVEL_MAX: int = 4
+## PLACEHOLDER: tuning — below this control level he resists striking the good
+## faction's priests and soldiers (Q18).
+const RESIST_GOOD_BELOW_LEVEL: int = 3
+## PLACEHOLDER: wording — the flash shown when he resists a strike.
+## PLACEHOLDER: tuning — seconds the resist flash stays up.
+const RESIST_FLASH_SECONDS: float = 1.2
+## PLACEHOLDER: tuning — seconds he lies at zero HP before getting up.
+const RECOVER_DELAY: float = 5.0
+## PLACEHOLDER: tuning — fraction of max HP he gets up with after zero HP.
+const RECOVER_HP_FRACTION: float = 0.25
+## The Paladin's own ability set: the first playable faction's avatar
+## abilities, whoever owns him. PLACEHOLDER: which abilities he has (#582).
+const ABILITY_PROFILE_FACTION: int = GameConstants.Faction.UNDEATH
+## PLACEHOLDER: art direction — viewers are translucent spheres in their seat colour.
+const WATCHER_ORB_ALPHA: float = 0.45
+
+## Instanced once per remote viewer (tinted in their seat colour).
+@export var watcher_orb_scene: PackedScene
+
+var controlling_peer_id: int = -1
+## Tools only (the combat test arena): when above 0, his control level whoever holds him; 0 = the rule.
+var control_level_override: int = 0
+## Host: the allegiance of whoever last landed a blow on him (-1 = good faction).
+var last_hit_by: int = GameConstants.GOOD_SIDE
+## Legacy flag kept for old test harnesses (activate/deactivate). In play the
+## Paladin is never dormant: unowned, he serves the good faction.
+var is_dormant: bool = false
+var god_mode: bool = false
+
+var _watcher_orbs: Dictionary[int, MeshInstance3D] = {}
+## Host: HP to set inside the next rollback tick (recovery, owner change).
+## Written there, not from outside the tick loop, or netfox restores the old value.
+var _pending_hp: int = -1
+## Host: healing to apply inside the next rollback tick (AvatarAI regeneration).
+var _pending_heal: int = 0
+var _recover_scheduled: bool = false
+var _resist_timer: float = 0.0
 
 @onready var avatar_input: AvatarInput = $AvatarInput
 @onready var avatar_camera: AvatarCamera = $AvatarCamera
 @onready var watcher_label: Label3D = $WatcherLabel
 @onready var avatar_ai: AvatarAI = $AvatarAI
-
-var controlling_peer_id: int = -1
-var is_dormant: bool = true
-var god_mode: bool = false
-var _watcher_orbs: Dictionary[int, MeshInstance3D] = {}
-# Tracks who dealt the killing blow for hostile takeover
-var last_damage_source_peer: int = -1
-# Faction abilities
-var abilities: AvatarAbilities
-# The CaptureChannel currently locking this avatar (null when not channeling).
-# Read by ChannelState; written by CaptureChannel when the channel starts/ends.
-var active_channel: CaptureChannel = null
-# Where the vessel stands in the level; it respawns here after death.
-var _spawn_position: Vector3
+## Faction abilities.
+@onready var abilities: AvatarAbilities = %AvatarAbilities
+## Takeover, overpower and hold (host-authoritative).
+@onready var hold: PaladinHold = %PaladinHold
+## Live voice among Palantir viewers and his controller.
+@onready var voice: PaladinVoice = %PaladinVoice
+@onready var _resist_label: Label3D = %ResistLabel
 
 func _ready() -> void:
 	super()
-	_spawn_position = global_position
-	_set_dormant_visual(true)
 	GameState.watcher_count_changed.connect(_on_watcher_count_changed)
 	GameState.avatar_owner_changed.connect(_on_avatar_owner_changed)
 	_update_watcher_label(0)
-	# Create abilities node
-	abilities = AvatarAbilities.new()
-	abilities.name = "AvatarAbilities"
-	add_child(abilities)
+	abilities.setup(self, ABILITY_PROFILE_FACTION)
+
+func _process(delta: float) -> void:
+	_update_watcher_orbs()
+	if _resist_timer > 0.0:
+		_resist_timer -= delta
+		if _resist_timer <= 0.0:
+			_resist_label.visible = false
+
+func _unhandled_input(event: InputEvent) -> void:
+	if controlling_peer_id != multiplayer.get_unique_id():
+		return
+	if not avatar_input.input_enabled:
+		return
+	if event.is_action_pressed("cancel"):
+		GameState.request_recall_avatar()
+	# Right mouse is the strong attack (Austin, 2026-10-14): abilities on 1 and 2.
+	if abilities and can_use(ACTION_ABILITIES):
+		if event.is_action_pressed("item_1"):
+			abilities.activate_ability(0)
+		elif event.is_action_pressed("item_2"):
+			abilities.activate_ability(1)
+
+## The Paladin fights for whoever holds him; unheld, for the good faction.
+func get_allegiance() -> int:
+	return GameState.avatar_owner_peer_id if GameState.has_avatar_owner() else GameConstants.GOOD_SIDE
+
+# --- Control tiers and resistance (GDD §8 "Imperfect ARPG", Q18) ---
+
+func get_control_level() -> int:
+	if control_level_override > 0:
+		return clampi(control_level_override, 1, CONTROL_LEVEL_MAX)
+	## Unowned he is the good faction's own and holds nothing back.
+	if not GameState.has_avatar_owner():
+		return CONTROL_LEVEL_MAX
+	var level := 1 + PaladinHold.control_sites(GameState.avatar_owner_peer_id)
+	return clampi(level, 1, CONTROL_LEVEL_MAX)
+
+func can_use(action: StringName) -> bool:
+	return get_control_level() >= CONTROL_UNLOCKS.get(action, 1)
+
+func resists_striking(target: Actor) -> bool:
+	## True when his owner's hold is too weak to make him strike the good faction.
+	if target == null or not GameState.has_avatar_owner():
+		return false
+	return target.get_allegiance() == GameConstants.GOOD_SIDE and get_control_level() < RESIST_GOOD_BELOW_LEVEL
+
+func strike(target: Actor, damage: int) -> bool:
+	## Host: one landed blow from his attack. Returns false when he resists.
+	if resists_striking(target):
+		show_resistance(target)
+		return false
+	if target is MinionActor:
+		(target as MinionActor).last_hit_by = get_allegiance()
+	target.take_damage(damage)
+	return true
+
+func show_resistance(target: Actor = null) -> void:
+	## Host: flash the resist feedback on every peer (throttled per swing).
+	resisted.emit(target)
+	if multiplayer.is_server() and _resist_timer <= 0.0:
+		_flash_resistance.rpc()
+
+# --- Healing (host) ---
+
+func heal(amount: int) -> void:
+	## Host-only. Applied inside the next rollback tick (see _pending_heal).
+	if multiplayer.is_server() and amount > 0:
+		_pending_heal += amount
+
+func restore_full_hp() -> void:
+	## Host: up at full HP inside the next rollback tick, down or not (tools: the test arena's rounds).
+	if multiplayer.is_server():
+		_pending_hp = get_max_hp()
 
 # --- Combat overrides ---
 
@@ -50,49 +173,54 @@ func can_take_damage() -> bool:
 		return false
 	return hp > 0
 
-## No take_damage override needed — Actor.take_damage handles it.
-## Damage from outside rollback (enemies) goes through incoming_damage instead.
-
-## Called by host (enemy/minion attacks) to apply damage through the rollback owner,
-## since incoming_damage is a state-synced property owned by the controlling peer.
+## Called by host (enemy/minion attacks) to apply damage through the rollback
+## owner, since incoming_damage is drained inside the rollback tick.
 @rpc("any_peer", "call_local", "reliable")
-func apply_incoming_damage(amount: int, source_peer: int) -> void:
+func apply_incoming_damage(amount: int, _source_peer: int) -> void:
 	incoming_damage += amount
-	last_damage_source_peer = source_peer
 
 func _die() -> void:
 	super()
-	if multiplayer.is_server():
-		get_tree().create_timer(DEATH_TRANSFER_DELAY).timeout.connect(_on_death_transfer)
-
-func _on_death_transfer() -> void:
 	if not multiplayer.is_server():
 		return
-	# Defeat is one of only two ways ownership moves (the other is the
-	# Phase D upkeep gauge). No auto-possession.
-	var killer_owner := last_damage_source_peer
-	GameState._set_avatar.rpc(-1)  # dead hands off the wheel
-	if killer_owner > 0 and killer_owner != GameState.avatar_owner_peer_id:
-		# Hostile takeover: the killer's owner gains OWNERSHIP (they
-		# choose when to possess); own-minion kills don't transfer.
-		GameState._set_avatar_owner.rpc(killer_owner)
-	elif killer_owner <= 0:
-		# Killed by neutrals: the vessel walks free.
-		GameState._set_avatar_owner.rpc(-1)
-	_respawn.rpc()
-	last_damage_source_peer = -1
+	# Neutral: whoever defeats him gets control, no contest (Austin, 2026-10-12).
+	# Not while a contest over him is open: that is the contest's to settle.
+	if not GameState.has_avatar_owner() and not hold.is_contested() and last_hit_by > 0:
+		GameState.set_avatar_owner(last_hit_by)
+		_pending_hp = get_max_hp()  # PLACEHOLDER: rule — he gets up at once, at full HP, for his new owner.
+		return
+	# Held (Q15): his corruption is wiped and the controller loses him; any
+	# player can now contest him (Austin, 2026-10-12).
+	if GameState.has_avatar_owner():
+		GameState.set_avatar_owner(GameConstants.GOOD_SIDE)
+		hold.open_contest()
+	if not _recover_scheduled:
+		_recover_scheduled = true
+		get_tree().create_timer(RECOVER_DELAY).timeout.connect(_recover_in_place)
 
-@rpc("authority", "call_local", "reliable")
-func _respawn() -> void:
-	# Ownership/control RPCs in _on_death_transfer already drove the mode
-	# swaps via their signals; this just resets the vessel's physical state.
-	global_position = _spawn_position
-	velocity = Vector3.ZERO
-	hp = get_max_hp()
-	hp_changed.emit(hp)
-	_state_machine.transition(&"IdleState")
+func _recover_in_place() -> void:
+	## He gets up where he fell, weak; AvatarAI takes him home to recover.
+	_recover_scheduled = false
+	if hp <= 0:
+		_pending_hp = maxi(1, int(get_max_hp() * RECOVER_HP_FRACTION))
 
-# --- Activation ---
+func _rollback_tick(delta: float, tick: int, is_fresh: bool) -> void:
+	super(delta, tick, is_fresh)
+	if not multiplayer.is_server():
+		return
+	if _pending_hp >= 0:
+		var was_down := hp <= 0
+		hp = mini(_pending_hp, get_max_hp())
+		_pending_hp = -1
+		hp_changed.emit(hp)
+		if was_down and hp > 0:
+			_state_machine.transition(&"IdleState")
+	if _pending_heal > 0 and hp > 0:
+		hp = mini(hp + _pending_heal, get_max_hp())
+		hp_changed.emit(hp)
+	_pending_heal = 0
+
+# --- Activation (legacy harnesses) ---
 
 func activate(peer_id: int) -> void:
 	controlling_peer_id = peer_id
@@ -102,12 +230,7 @@ func activate(peer_id: int) -> void:
 	avatar_input.set_controller(peer_id)
 	avatar_camera.activate(peer_id)
 	rollback_synchronizer.process_settings()
-	_set_dormant_visual(false)
-	# Inherit the controlling peer's faction so hostility checks work
-	# (e.g. MinionState.find_hostile_target treats NEUTRAL-vs-NEUTRAL as ALLIED).
 	faction = GameState.get_faction(peer_id)
-	if abilities:
-		abilities.setup(self, faction)
 
 func deactivate() -> void:
 	controlling_peer_id = -1
@@ -116,7 +239,6 @@ func deactivate() -> void:
 	avatar_input.set_controller(-1)
 	avatar_camera.deactivate()
 	rollback_synchronizer.process_settings()
-	_set_dormant_visual(true)
 	velocity = Vector3.ZERO
 	_state_machine.transition(&"IdleState")
 
@@ -125,69 +247,38 @@ func deactivate() -> void:
 func possess(peer_id: int) -> void:
 	## Take direct control: drives input/camera only. HP and faction are
 	## OWNERSHIP-scoped (_on_avatar_owner_changed) — re-possessing your own
-	## avatar doesn't heal the vessel.
+	## Paladin doesn't heal him.
 	controlling_peer_id = peer_id
 	is_dormant = false
 	avatar_input.set_controller(peer_id)
 	avatar_camera.activate(peer_id)
 	rollback_synchronizer.process_settings()
-	_set_dormant_visual(false)
 	if avatar_ai:
 		avatar_ai.clear_orders()  # the owner took the wheel — pending AI orders are void
 
 func release_control() -> void:
-	## Q: the controller lets go; the avatar remains the owner's pawn —
-	## visible, damageable, owner-factioned, AI-driven (AvatarAI).
+	## Nobody drives him: AvatarAI does, for his owner or the good faction.
 	controlling_peer_id = -1
+	is_dormant = false
 	avatar_input.set_controller(-1)
 	avatar_camera.deactivate()
 	rollback_synchronizer.process_settings()
 	velocity = Vector3.ZERO
-	_state_machine.transition(&"IdleState")
+	if hp > 0:
+		_state_machine.transition(&"IdleState")
 
 func _on_avatar_owner_changed(_old_owner: int, new_owner: int) -> void:
 	if avatar_ai:
 		avatar_ai.clear_orders()  # a new master's pawn doesn't keep old orders
 	if new_owner > 0:
-		# New master: fresh vessel in their faction's colors.
-		is_dormant = false
 		faction = GameState.get_faction(new_owner)
-		hp = get_max_hp()
-		hp_changed.emit(hp)
-		if abilities:
-			abilities.setup(self, faction)
+		# PLACEHOLDER: rule — a player who takes him gets him at full HP.
+		if multiplayer.is_server() and hp > 0:
+			_pending_hp = get_max_hp()
 	else:
-		# Unowned: dormant neutral husk until someone claims it.
-		is_dormant = true
 		faction = GameConstants.Faction.NEUTRAL
-		velocity = Vector3.ZERO
-		_state_machine.transition(&"IdleState")
 
-func _set_dormant_visual(dormant: bool) -> void:
-	if _model:
-		_model.visible = true
-
-func _unhandled_input(event: InputEvent) -> void:
-	if controlling_peer_id != multiplayer.get_unique_id():
-		return
-	if not avatar_input.input_enabled:
-		return
-	# During a capture channel, ignore every avatar input. Pause menu still
-	# works (handled elsewhere) and the interact key is consumed by the
-	# focused Interactable, which routes it to capture_channel.request_cancel().
-	if active_channel != null and active_channel.is_active():
-		return
-	if event.is_action_pressed("cancel"):
-		GameState.request_recall_avatar()
-	if abilities:
-		if event.is_action_pressed("secondary_ability"):
-			abilities.activate_ability(0)
-		elif event.is_action_pressed("item_1"):
-			abilities.activate_ability(1)
-		elif event.is_action_pressed("item_2"):
-			abilities.activate_ability(2)
-
-# --- Watchers ---
+# --- Watchers (GDD §8 "Seen by all") ---
 
 func _on_watcher_count_changed(count: int) -> void:
 	_update_watcher_label(count)
@@ -197,39 +288,38 @@ func _update_watcher_label(count: int) -> void:
 		return
 	if count > 0:
 		watcher_label.visible = true
-		watcher_label.text = "(%d watching)" % count
+		watcher_label.text = "(%d watching)" % count # PLACEHOLDER: wording
 	else:
 		watcher_label.visible = false
 
-func _create_watcher_orb() -> MeshInstance3D:
-	var orb = MeshInstance3D.new()
-	var box = BoxMesh.new()
-	box.size = WATCHER_ORB_SIZE
-	orb.mesh = box
-	var mat = StandardMaterial3D.new()
-	mat.albedo_color = WATCHER_ORB_COLOR
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.emission_enabled = true
-	mat.emission = WATCHER_ORB_EMISSION
-	mat.emission_energy_multiplier = WATCHER_ORB_EMISSION_ENERGY
-	orb.set_surface_override_material(0, mat)
-	add_child(orb)
-	return orb
-
-func _process(_delta: float) -> void:
-	var positions = GameState.watcher_positions
+func _update_watcher_orbs() -> void:
+	## Each viewer is a ghostly orb at their scry camera, orbiting him as they
+	## look around. Only remote viewers have positions here (your own camera is
+	## inside your own orb).
+	var positions := GameState.watcher_positions
 	for peer_id in _watcher_orbs.keys():
 		if peer_id not in positions:
 			_watcher_orbs[peer_id].queue_free()
 			_watcher_orbs.erase(peer_id)
 	for peer_id in positions:
 		if peer_id not in _watcher_orbs:
-			_watcher_orbs[peer_id] = _create_watcher_orb()
-		var cam_pos: Vector3 = positions[peer_id]
-		var dir = (cam_pos - global_position)
-		dir.y = 0
-		if dir.length() > 0.1:
-			dir = dir.normalized()
-		else:
-			dir = Vector3.FORWARD
-		_watcher_orbs[peer_id].position = dir * WATCHER_ORB_DISTANCE + Vector3(0, WATCHER_ORB_HEIGHT, 0)
+			_watcher_orbs[peer_id] = _create_watcher_orb(peer_id)
+		_watcher_orbs[peer_id].global_position = positions[peer_id]
+
+func _create_watcher_orb(peer_id: int) -> MeshInstance3D:
+	## One orb per viewer: an instance of the authored watcher_orb.tscn, tinted.
+	var orb := watcher_orb_scene.instantiate() as MeshInstance3D
+	orb.name = "WatcherOrb%d" % peer_id
+	var color := GameState.get_player_color(peer_id)
+	var mat := orb.material_override as StandardMaterial3D
+	mat.albedo_color = Color(color.r, color.g, color.b, WATCHER_ORB_ALPHA)
+	mat.emission = color
+	add_child(orb)
+	return orb
+
+# --- Resist feedback ---
+
+@rpc("authority", "call_local", "reliable")
+func _flash_resistance() -> void:
+	_resist_label.visible = true
+	_resist_timer = RESIST_FLASH_SECONDS

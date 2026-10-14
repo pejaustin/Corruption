@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=4 uid="uid://gpnntnyi7q1w"]
+[gd_scene format=4 uid="uid://gpnntnyi7q1w"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t4esk"]
 resource_name = "woodBark"
@@ -118,20 +118,24 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_pnlsh")
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_twtn2"]
-size = Vector3(5, 1, 5)
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_d21rg"]
+data = PackedVector3Array(-2.6, 0, -2.3, -2, 1, -2.3, -2, 1, 2.3, -2.6, 0, -2.3, -2, 1, 2.3, -2.6, 0, 2.3, -2, 1, -2.3, 2, 1, -2.3, 2, 1, 2.3, -2, 1, -2.3, 2, 1, 2.3, -2, 1, 2.3, 2, 1, -2.3, 2.6, 0, -2.3, 2.6, 0, 2.3, 2, 1, -2.3, 2.6, 0, 2.3, 2, 1, 2.3, -2.6, -0.5, -2.3, -2, 0.5, -2.3, -2, 2, -2.3, -2.6, -0.5, -2.3, -2, 2, -2.3, -2.6, 2, -2.3, -2, 0.5, -2.3, 2, 0.5, -2.3, 2, 2, -2.3, -2, 0.5, -2.3, 2, 2, -2.3, -2, 2, -2.3, 2, 0.5, -2.3, 2.6, -0.5, -2.3, 2.6, 2, -2.3, 2, 0.5, -2.3, 2.6, 2, -2.3, 2, 2, -2.3, -2.6, -0.5, 2.3, -2, 0.5, 2.3, -2, 2, 2.3, -2.6, -0.5, 2.3, -2, 2, 2.3, -2.6, 2, 2.3, -2, 0.5, 2.3, 2, 0.5, 2.3, 2, 2, 2.3, -2, 0.5, 2.3, 2, 2, 2.3, -2, 2, 2.3, 2, 0.5, 2.3, 2.6, -0.5, 2.3, 2.6, 2, 2.3, 2, 0.5, 2.3, 2.6, 2, 2.3, 2, 2, 2.3)
+backface_collision = true
 
-[node name="BridgeWoodRound" type="Node3D"]
+[node name="BridgeWoodRound" type="Node3D" unique_id=1386321614]
 
-[node name="tmpParent" type="Node3D" parent="."]
+[node name="tmpParent" type="Node3D" parent="." unique_id=527843232]
 
-[node name="bridge_woodRound" type="MeshInstance3D" parent="tmpParent"]
+[node name="bridge_woodRound" type="MeshInstance3D" parent="tmpParent" unique_id=677203799]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
 mesh = SubResource("ArrayMesh_ccdk2")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="tmpParent/bridge_woodRound"]
+[node name="StaticBody3D" type="StaticBody3D" parent="tmpParent/bridge_woodRound" unique_id=1166541054]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="tmpParent/bridge_woodRound/StaticBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.49103, 0)
-shape = SubResource("BoxShape3D_twtn2")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="tmpParent/bridge_woodRound/StaticBody3D" unique_id=1971900037]
+shape = SubResource("ConcavePolygonShape3D_d21rg")
+
+[node name="CrossLink" type="NavigationLink3D" parent="." unique_id=1363730878]
+start_position = Vector3(-3, 0, 0)
+end_position = Vector3(3, 0, 0)

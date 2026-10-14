@@ -1,20 +1,18 @@
 class_name MinionManager extends Node
 
-## Host-authoritative minion spawner, sync, and command manager.
-## Overlords spend resources to summon minions, then command them via War Table.
-## Minion roster comes from the MinionCatalog via FactionData; each minion is a
+## Host-authoritative unit spawner, sync, and command manager.
+## Unit roster comes from the MinionCatalog via FactionData; each unit is a
 ## MinionActor scene that self-applies its MinionType stats on spawn.
+##
+## GDD v2: there is no summoning currency. Undead troops are raised from human
+## remains brought to the tower (or to a site with the right capability), one
+## body per unit (GDD §5); see raise_from_remains().
 
 signal minion_spawned(minion: MinionActor)
 signal minion_died(minion: MinionActor)
+signal remains_changed(peer_id: int, count: int)
 
-const MAX_MINIONS_PER_PLAYER: int = 5
-const RESOURCE_GAIN_RATE: float = 2.0
-const STARTING_RESOURCES: int = 20
 const SYNC_INTERVAL: float = 0.1
-## Undeath raise-dead has its own cost/limit
-const RAISE_DEAD_COST: int = 3
-const DOMINATE_COST: int = 10
 ## Distance between adjacent slots in the move-command formation. Big enough
 ## that NavigationAgent3D RVO (radius 0.5) doesn't see neighbors as blockers
 ## once minions are settled.
@@ -23,13 +21,20 @@ const FORMATION_SPACING: float = 1.6
 ## rank behind. Front rank sits at the click point; trailing ranks fall
 ## back toward the squad's centroid.
 const FORMATION_WIDTH: int = 4
+## Units raised or spawned this close to their tower muster at its gate.
+const MUSTER_RADIUS: float = 60.0
+
+## The authored container (World/Minions in world.tscn) every unit lives under.
+@export var minions_root: Node3D
+## Scene instanced for each body left on the ground.
+@export var body_scene: PackedScene
 
 var _next_minion_id: int = 1
 var _minions_node: Node3D
 var _sync_timer: float = 0.0
 
-# peer_id -> float (resources for summoning)
-var resources: Dictionary[int, float] = {}
+## peer_id -> human remains waiting at that player's tower to be raised.
+var remains: Dictionary[int, int] = {}
 # slot_index -> MinionSpawnPoint / MinionRallyPoint, populated by bind_tower_markers
 var _spawn_points: Dictionary[int, MinionSpawnPoint] = {}
 var _rally_points: Dictionary[int, MinionRallyPoint] = {}
@@ -49,18 +54,32 @@ var _peer_courier_spawn_overrides: Dictionary[int, Node3D] = {}
 ## MultiplayerManager._player_slot_order only exists on the host, so clients
 ## must resolve slots from this map — see _slot_for_peer.
 var _peer_slots: Dictionary[int, int] = {}
+## Host-only: players who have already been given their starting forces.
+var _started_peers: Dictionary[int, bool] = {}
 
 func _ready() -> void:
-	_minions_node = Node3D.new()
-	_minions_node.name = "Minions"
+	_minions_node = minions_root
 	call_deferred("_setup_minions_node")
 
 func _setup_minions_node() -> void:
-	var world = get_tree().current_scene.get_node_or_null("World")
-	if world:
-		world.add_child(_minions_node)
+	# Before anything adopts the towers' advisors: a tower nobody picked in the lobby is out of the match, on every peer.
+	var rallies := _rally_markers()
+	if not GameState.tower_picks.is_empty():
+		TowerPicks.remove_unpicked(get_tree(), TowerPicks.picked_slots(GameState.tower_picks), rallies)
 	_adopt_preplaced_minions()
-	bind_tower_markers()
+	bind_tower_markers(rallies)
+
+func _rally_markers() -> Array[MinionRallyPoint]:
+	## The MinionRallyPoints under World/Markers in child order (the rally of slot N is the Nth).
+	var rallies: Array[MinionRallyPoint] = []
+	var scene := get_tree().current_scene
+	var markers_root := scene.get_node_or_null("World/Markers") if scene else null
+	if markers_root == null:
+		return rallies
+	for child in markers_root.get_children():
+		if child is MinionRallyPoint:
+			rallies.append(child)
+	return rallies
 
 func _adopt_preplaced_minions() -> void:
 	## Moves any MinionActor authored into the scene (e.g. World/Enemies/Guard1)
@@ -114,34 +133,31 @@ func _adopt_preplaced_minions() -> void:
 func _mp_manager() -> MultiplayerManager:
 	return get_tree().current_scene.get_node_or_null("MultiplayerManager") as MultiplayerManager
 
-func bind_tower_markers() -> void:
-	## Pair each tower with a rally point by child order:
-	##   Towers[0] ↔ Markers[0], Towers[1] ↔ Markers[1], …
+func bind_tower_markers(all_rallies: Array[MinionRallyPoint] = []) -> void:
+	## Pair each tower with a rally point: the tower in slot N (its slot_index, authored on
+	## the tower in the landscape scene) gets the Nth MinionRallyPoint under World/Markers
+	## (`all_rallies`, taken before any unpicked tower was removed; empty = read them now).
 	## Then bind each rally to the connected peer in the matching tower slot.
 	_spawn_points.clear()
 	_rally_points.clear()
 	var scene := get_tree().current_scene
 	if scene == null:
 		return
-	var towers_root := scene.get_node_or_null("World/Env/Towers")
 	var markers_root := scene.get_node_or_null("World/Markers")
-	if towers_root == null or markers_root == null:
+	if markers_root == null:
 		return
-	var towers: Array[Tower] = []
-	for child in towers_root.get_children():
-		if child is Tower:
-			towers.append(child)
-	var rallies: Array[MinionRallyPoint] = []
-	for child in markers_root.get_children():
-		if child is MinionRallyPoint:
-			rallies.append(child)
-	for i in towers.size():
+	var towers := Tower.in_slot_order(get_tree())
+	var rallies: Array[MinionRallyPoint] = all_rallies if not all_rallies.is_empty() else _rally_markers()
+	for n in towers.size():
+		var tower := towers[n]
+		# The authored slot, not the list position: unpicked towers may be missing from the list.
+		var i: int = tower.slot_index if tower.slot_index >= 0 else n
 		var rally: MinionRallyPoint = rallies[i] if i < rallies.size() else null
-		towers[i].assign_slot(i, rally)
-		if towers[i].spawn_point:
-			_spawn_points[i] = towers[i].spawn_point
-		if towers[i].courier_spawn:
-			_courier_spawns[i] = towers[i].courier_spawn
+		tower.assign_slot(i, rally)
+		if tower.spawn_point:
+			_spawn_points[i] = tower.spawn_point
+		if tower.courier_spawn:
+			_courier_spawns[i] = tower.courier_spawn
 		if rally:
 			_rally_points[i] = rally
 	# Peer binding is host-authoritative: host knows the slot table, clients
@@ -161,12 +177,28 @@ func bind_tower_markers() -> void:
 		if slot < 0 or slot not in _rally_points:
 			continue
 		_bind_rally_rpc.rpc(slot, pid, _get_player_faction(pid))
+		_give_starting_forces.call_deferred(pid)
+
+func _give_starting_forces(peer_id: int) -> void:
+	## Host-only, once per player: one small group of troops at the tower's
+	## muster point (GDD Q38). Couriers start in the tower's pool (CourierPool).
+	if not multiplayer.is_server() or _started_peers.get(peer_id, false):
+		return
+	var spawn := get_courier_spawn_for(peer_id)
+	if spawn == null:
+		return
+	_started_peers[peer_id] = true
+	KnowledgeManager.give_starting_couriers(peer_id)
+	for i in MatchConfig.STARTING_GROUP_SIZE:
+		var offset := Vector3(float(i % 2) * FORMATION_SPACING, 0.5, float(i / 2) * FORMATION_SPACING)
+		spawn_unit_for_peer(peer_id, &"", spawn.global_position + offset)
 
 @rpc("authority", "call_local", "reliable")
 func _bind_rally_rpc(slot_index: int, peer_id: int, faction: int) -> void:
 	# Record the peer→slot pairing locally — this is the only slot source
 	# clients have (MultiplayerManager's table is host-only).
 	_peer_slots[peer_id] = slot_index
+	GameState.set_player_slot(peer_id, slot_index)
 	var rally: MinionRallyPoint = _rally_points.get(slot_index)
 	if rally:
 		rally.bind(peer_id, faction)
@@ -207,6 +239,8 @@ func _slot_for_peer(peer_id: int) -> int:
 	## before bindings have been broadcast.
 	if peer_id in _peer_slots:
 		return _peer_slots[peer_id]
+	if peer_id in GameState.tower_picks:
+		return GameState.tower_picks[peer_id]
 	var mm := _mp_manager()
 	if mm == null:
 		return -1
@@ -254,14 +288,6 @@ func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server():
 		return
 
-	var peers = multiplayer.get_peers().duplicate()
-	if multiplayer.get_unique_id() not in peers:
-		peers.append(multiplayer.get_unique_id())
-	for pid in peers:
-		if pid not in resources:
-			resources[pid] = STARTING_RESOURCES
-		resources[pid] += RESOURCE_GAIN_RATE * delta
-
 	_sync_timer += delta
 	if _sync_timer >= SYNC_INTERVAL:
 		_sync_timer = 0.0
@@ -290,52 +316,64 @@ func get_minion_by_id(minion_id: int) -> MinionActor:
 func get_minion_count(peer_id: int) -> int:
 	return get_minions_for_player(peer_id).size()
 
-func get_resources(peer_id: int) -> float:
-	return resources.get(peer_id, 0.0)
+func get_remains(peer_id: int) -> int:
+	return remains.get(peer_id, 0)
+
+func add_remains(peer_id: int, count: int) -> void:
+	## Host-only: a body arrived at this player's tower.
+	if not multiplayer.is_server():
+		return
+	_sync_remains.rpc(peer_id, get_remains(peer_id) + count)
+
+@rpc("authority", "call_local", "reliable")
+func _sync_remains(peer_id: int, count: int) -> void:
+	remains[peer_id] = count
+	remains_changed.emit(peer_id, count)
 
 # --- Spawning ---
 
 @rpc("any_peer", "call_local", "reliable")
-func request_summon_minion(type_id: String = "", override_pos: Vector3 = Vector3.INF) -> void:
-	## Any peer can request a minion. Host validates resources and limits.
-	## If type_id is empty, spawns the faction's default minion.
-	## If override_pos is Vector3.INF, the summon happens at the sender's
-	## tower spawn marker and initial waypoint is the sender's rally point.
+func request_raise_from_remains(type_id: String = "") -> void:
+	## The summoning circle (GDD §2, §5): one body at the sender's tower is
+	## raised into one undead unit, which musters at the rally point.
 	if not multiplayer.is_server():
-		request_summon_minion.rpc_id(1, type_id, override_pos)
+		request_raise_from_remains.rpc_id(1, type_id)
 		return
-	var sender = multiplayer.get_remote_sender_id()
+	var sender := multiplayer.get_remote_sender_id()
 	if sender == 0:
 		sender = 1
-	if get_minion_count(sender) >= MAX_MINIONS_PER_PLAYER:
+	if get_remains(sender) <= 0:
 		return
-	var faction: int = _get_player_faction(sender)
-	var mtype: MinionType = _resolve_minion_type(faction, StringName(type_id))
+	var sp := get_spawn_point_for(sender)
+	if sp == null:
+		return
+	if spawn_unit_for_peer(sender, StringName(type_id), sp.global_position) < 0:
+		return
+	_sync_remains.rpc(sender, get_remains(sender) - 1)
+
+func spawn_unit_for_peer(peer_id: int, type_id: StringName, pos: Vector3) -> int:
+	## Host-only. Spawns one of this player's units at `pos`. Near the tower it
+	## musters at the tower gate with the group waiting there; elsewhere it
+	## forms its own group where it stands. Empty type_id = the faction's
+	## default unit. Returns the new unit's id, or -1.
+	if not multiplayer.is_server():
+		return -1
+	var faction: int = _get_player_faction(peer_id)
+	var mtype: MinionType = _resolve_minion_type(faction, type_id)
 	if mtype == null:
-		return
-	if get_resources(sender) < mtype.cost:
-		return
-	var spawn_pos := override_pos
-	var initial_waypoint := spawn_pos
-	if spawn_pos == Vector3.INF:
-		var sp := get_spawn_point_for(sender)
-		if sp == null:
-			return
-		spawn_pos = sp.global_position
-		initial_waypoint = spawn_pos
-	var rally := get_rally_point_for(sender)
-	if rally:
-		initial_waypoint = rally.global_position
-	resources[sender] -= mtype.cost
-	_sync_resources.rpc(sender, resources[sender])
+		return -1
 	var id := _next_minion_id
 	_next_minion_id += 1
-	_spawn_minion_rpc.rpc(id, sender, faction, spawn_pos, String(mtype.id), initial_waypoint)
-	# Slot the full squad around the rally so summons spread out instead of
-	# orbiting one shared waypoint — IdleState re-enters Chase past 1.5m,
-	# so N minions sharing a point never settle.
-	if rally:
-		_assign_formation_waypoints(get_minions_for_player(sender), rally.global_position)
+	_spawn_minion_rpc.rpc(id, peer_id, faction, pos, String(mtype.id), pos)
+	var unit := get_minion_by_id(id)
+	var gm := get_tree().current_scene.get_node_or_null("GroupManager") as GroupManager
+	if unit == null or gm == null:
+		return id
+	var group := gm.join_home_group(peer_id, unit)
+	var gate := get_courier_spawn_for(peer_id)
+	if gate and Vector2(pos.x - gate.global_position.x, pos.z - gate.global_position.z).length() <= MUSTER_RADIUS:
+		_assign_formation_waypoints(gm.get_members(group), gate.global_position)
+	return id
 
 @rpc("authority", "call_local", "reliable")
 func _spawn_minion_rpc(id: int, owner_id: int, faction: int, pos: Vector3, type_id: String, initial_waypoint: Vector3 = Vector3.INF) -> void:
@@ -352,6 +390,8 @@ func _spawn_minion_rpc(id: int, owner_id: int, faction: int, pos: Vector3, type_
 	_minions_node.add_child(minion)
 	minion.global_position = pos
 	minion.waypoint = initial_waypoint if initial_waypoint != Vector3.INF else pos
+	if multiplayer.is_server():
+		minion.waypoint = snap_to_navmesh_point(minion.waypoint)
 	minion_spawned.emit(minion)
 
 func _resolve_minion_type(faction: int, type_id: StringName) -> MinionType:
@@ -364,20 +404,119 @@ func _resolve_minion_type(faction: int, type_id: StringName) -> MinionType:
 
 # --- Neutral spawns (world enemies like zombies, guardian boss) ---
 
-func spawn_neutral_minion(pos: Vector3, type_id: StringName = &"neutral_zombie", waypoint: Vector3 = Vector3.INF) -> void:
-	## Host-only. Spawns a neutral NPC (owner_peer_id = -1, faction = NEUTRAL).
-	## Bypasses resource cost and per-player minion caps.
+func spawn_neutral_minion(pos: Vector3, type_id: StringName = &"neutral_zombie", waypoint: Vector3 = Vector3.INF) -> int:
+	## Host-only. Spawns a good-faction NPC (owner_peer_id = -1, faction = NEUTRAL).
 	if not multiplayer.is_server():
-		return
+		return -1
 	var id := _next_minion_id
 	_next_minion_id += 1
 	var wp := waypoint if waypoint != Vector3.INF else pos
 	_spawn_minion_rpc.rpc(id, -1, GameConstants.Faction.NEUTRAL, pos, String(type_id), wp)
+	return id
+
+# --- Ownership changes (bought nobles, thralls) ---
+
+func set_unit_owner(minion: MinionActor, peer_id: int) -> void:
+	## Host-only: a unit changes sides (a bought noble joins you, or defects).
+	if not multiplayer.is_server():
+		return
+	_set_unit_owner_rpc.rpc(minion.name.to_int(), peer_id)
+	var gm := get_tree().current_scene.get_node_or_null("GroupManager") as GroupManager
+	if gm == null:
+		return
+	var old := gm.get_group(minion.group_id)
+	if old:
+		old.member_ids.erase(minion.name.to_int())
+	minion.group_id = -1
+	if peer_id > 0:
+		gm.join_home_group(peer_id, minion)
+
+@rpc("authority", "call_local", "reliable")
+func _set_unit_owner_rpc(id: int, peer_id: int) -> void:
+	var m := get_minion_by_id(id)
+	if m == null:
+		return
+	m.owner_peer_id = peer_id
+	m.faction = _get_player_faction(peer_id) if peer_id > 0 else GameConstants.Faction.NEUTRAL
+
+# --- Carrying (bodies, captives, goods) ---
+
+func set_carry(minion: MinionActor, kind: StringName, amount: int = 0) -> void:
+	## Host-only. What a unit carries, mirrored to every peer for its look.
+	if not multiplayer.is_server():
+		return
+	_set_carry_rpc.rpc(minion.name.to_int(), kind, amount)
+
+@rpc("authority", "call_local", "reliable")
+func _set_carry_rpc(id: int, kind: StringName, amount: int) -> void:
+	var m := get_minion_by_id(id)
+	if m:
+		m.set_carrying(kind, amount)
+
+# --- Bodies (GDD §5: undead are raised from the bodies of killed humans) ---
+
+var _bodies: Dictionary[int, Body] = {}
+var _next_body_id: int = 1
+
+func spawn_body(pos: Vector3) -> void:
+	## Host-only.
+	if not multiplayer.is_server():
+		return
+	var id := _next_body_id
+	_next_body_id += 1
+	_spawn_body_rpc.rpc(id, pos)
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_body_rpc(id: int, pos: Vector3) -> void:
+	var body := body_scene.instantiate() as Body
+	body.body_id = id
+	body.name = "Body%d" % id
+	if _minions_node:
+		_minions_node.get_parent().add_child(body)
+	body.global_position = pos
+	_bodies[id] = body
+
+func take_body(body: Body) -> void:
+	## Host-only: someone picked it up.
+	if multiplayer.is_server() and body.body_id in _bodies:
+		_remove_body_rpc.rpc(body.body_id)
+
+@rpc("authority", "call_local", "reliable")
+func _remove_body_rpc(id: int) -> void:
+	var body: Body = _bodies.get(id)
+	_bodies.erase(id)
+	if body and is_instance_valid(body):
+		body.queue_free()
+
+func get_bodies() -> Array[Body]:
+	var out: Array[Body] = []
+	for b in _bodies.values():
+		if is_instance_valid(b):
+			out.append(b)
+	return out
+
+# --- Treasury (GDD §6: the treasure room shows the tower's holdings exactly) ---
+
+## peer_id -> goods held at that player's tower.
+var treasury: Dictionary[int, int] = {}
+signal treasury_changed(peer_id: int, amount: int)
+
+func get_treasury(peer_id: int) -> int:
+	return treasury.get(peer_id, 0)
+
+func add_treasury(peer_id: int, amount: int) -> void:
+	## Host-only.
+	if multiplayer.is_server():
+		_sync_treasury.rpc(peer_id, maxi(0, get_treasury(peer_id) + amount))
+
+@rpc("authority", "call_local", "reliable")
+func _sync_treasury(peer_id: int, amount: int) -> void:
+	treasury[peer_id] = amount
+	treasury_changed.emit(peer_id, amount)
 
 func spawn_named_minion_for_peer(peer_id: int, type_id: StringName, pos: Vector3, waypoint: Vector3 = Vector3.INF) -> int:
 	## Host-only. Spawns a specific minion type for a specific owner — used by
-	## Advisor-mediated dispatch (couriers) and other system-driven spawns that
-	## bypass resource cost and the MAX_MINIONS_PER_PLAYER cap.
+	## Advisor-mediated dispatch (couriers) and other system-driven spawns.
 	## Returns the new minion id, or -1 if not the host.
 	if not multiplayer.is_server():
 		return -1
@@ -387,24 +526,6 @@ func spawn_named_minion_for_peer(peer_id: int, type_id: StringName, pos: Vector3
 	var wp := waypoint if waypoint != Vector3.INF else pos
 	_spawn_minion_rpc.rpc(id, peer_id, faction, pos, String(type_id), wp)
 	return id
-
-# --- Raise Dead (Undeath trait) ---
-
-func raise_dead_at(owner_peer_id: int, faction: int, pos: Vector3) -> void:
-	## Host-only: spawn a free skeleton at a corpse location.
-	if not multiplayer.is_server():
-		return
-	if get_minion_count(owner_peer_id) >= MAX_MINIONS_PER_PLAYER:
-		return
-	if get_resources(owner_peer_id) < RAISE_DEAD_COST:
-		return
-	resources[owner_peer_id] -= RAISE_DEAD_COST
-	_sync_resources.rpc(owner_peer_id, resources[owner_peer_id])
-	var id := _next_minion_id
-	_next_minion_id += 1
-	# Always raises a skeleton regardless of faction (it's undead now)
-	_spawn_minion_rpc.rpc(id, owner_peer_id, faction, pos, "skeleton")
-	print("[MinionManager] Raise dead: spawned skeleton for peer %d" % owner_peer_id)
 
 # --- Rally point ---
 
@@ -424,7 +545,7 @@ func request_move_rally(new_pos: Vector3) -> void:
 		return
 	if rally.owning_peer_id != sender:
 		return
-	_apply_rally_move.rpc(rally.slot_index, new_pos)
+	_apply_rally_move.rpc(rally.slot_index, snap_to_navmesh_point(new_pos))
 
 @rpc("authority", "call_local", "reliable")
 func _apply_rally_move(slot_index: int, new_pos: Vector3) -> void:
@@ -447,7 +568,7 @@ func command_minions_move(target_pos: Vector3) -> void:
 	# muster at the latest command point.
 	var rally := get_rally_point_for(sender)
 	if rally and rally.owning_peer_id == sender:
-		_apply_rally_move.rpc(rally.slot_index, target_pos)
+		_apply_rally_move.rpc(rally.slot_index, snap_to_navmesh_point(target_pos))
 
 func _assign_formation_waypoints(minions: Array[MinionActor], target: Vector3) -> void:
 	## Phalanx slot assignment. Each minion gets its own waypoint inside a
@@ -483,7 +604,16 @@ func _assign_formation_waypoints(minions: Array[MinionActor], target: Vector3) -
 func _snap_to_navmesh(minion: MinionActor, point: Vector3) -> Vector3:
 	if minion == null or minion.nav_agent == null:
 		return point
-	var map_rid: RID = minion.nav_agent.get_navigation_map()
+	return snap_to_map(minion.nav_agent.get_navigation_map(), point)
+
+func snap_to_navmesh_point(point: Vector3) -> Vector3:
+	## The nearest walkable point to `point`; `point` itself when there is no usable navmesh yet.
+	## Every waypoint is snapped: a goal off the mesh never counts as arrived (Idle <-> Chase ping-pong).
+	if _minions_node == null or not _minions_node.is_inside_tree():
+		return point
+	return snap_to_map(_minions_node.get_world_3d().navigation_map, point)
+
+static func snap_to_map(map_rid: RID, point: Vector3) -> Vector3:
 	if not map_rid.is_valid():
 		return point
 	var snapped: Vector3 = NavigationServer3D.map_get_closest_point(map_rid, point)
@@ -507,7 +637,7 @@ func command_minion_move(minion_id: int, target_pos: Vector3) -> void:
 	if sender == 0:
 		sender = 1
 	if minion.owner_peer_id == sender:
-		minion.waypoint = target_pos
+		minion.waypoint = _snap_to_navmesh(minion, target_pos)
 
 func command_selection_move(minion_ids: Array, target_pos: Vector3) -> void:
 	## Host-only. Distribute a set of minions across formation slots around
@@ -532,48 +662,6 @@ func command_selection_move(minion_ids: Array, target_pos: Vector3) -> void:
 		return
 	_assign_formation_waypoints(actors, target_pos)
 
-# --- Domination (Eldritch) ---
-
-@rpc("any_peer", "call_local", "reliable")
-func request_dominate_minion(minion_id: int, new_owner_id: int) -> void:
-	if not multiplayer.is_server():
-		request_dominate_minion.rpc_id(1, minion_id, new_owner_id)
-		return
-	var sender = multiplayer.get_remote_sender_id()
-	if sender == 0:
-		sender = 1
-	var faction: int = _get_player_faction(sender)
-	if faction != GameConstants.Faction.ELDRITCH:
-		return
-	if not _minions_node:
-		return
-	var minion := _minions_node.get_node_or_null(str(minion_id)) as MinionActor
-	if minion == null:
-		return
-	if minion.owner_peer_id == sender:
-		return
-	if not minion.can_take_damage():
-		return
-	var cost := DOMINATE_COST
-	if get_resources(sender) < cost:
-		return
-	if get_minion_count(sender) >= MAX_MINIONS_PER_PLAYER:
-		return
-	resources[sender] -= cost
-	_sync_resources.rpc(sender, resources[sender])
-	_dominate_minion.rpc(minion_id, sender, faction)
-
-@rpc("authority", "call_local", "reliable")
-func _dominate_minion(minion_id: int, new_owner: int, new_faction: int) -> void:
-	if not _minions_node:
-		return
-	var minion := _minions_node.get_node_or_null(str(minion_id)) as MinionActor
-	if minion == null:
-		return
-	minion.owner_peer_id = new_owner
-	minion.faction = new_faction
-	print("[MinionManager] Minion %d dominated by peer %d" % [minion_id, new_owner])
-
 # --- Sync ---
 
 func _sync_all_minions() -> void:
@@ -583,24 +671,31 @@ func _sync_all_minions() -> void:
 			minion.global_position,
 			minion.rotation.y,
 			minion._state_machine.state,
-			minion.hp
+			minion.hp,
+			minion.swing_count
 		)
 
 @rpc("authority", "call_remote", "unreliable")
-func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringName, new_hp: int) -> void:
+func _sync_minion_actor(id: int, pos: Vector3, rot_y: float, new_state: StringName, new_hp: int, swings: int = 0) -> void:
 	if not _minions_node:
 		return
 	var minion := _minions_node.get_node_or_null(str(id)) as MinionActor
 	if minion:
-		minion.sync_from_server(pos, rot_y, new_state, new_hp)
+		minion.sync_from_server(pos, rot_y, new_state, new_hp, swings)
 
-@rpc("authority", "call_local", "reliable")
-func _sync_resources(peer_id: int, amount: float) -> void:
-	resources[peer_id] = amount
+func despawn_minion(minion: MinionActor) -> void:
+	## Host-only: remove a unit that left play without dying (a courier home,
+	## a trainee turned courier). Groups still drop it.
+	if not multiplayer.is_server():
+		return
+	minion_died.emit(minion)
+	_remove_minion.rpc(minion.name.to_int())
 
 func notify_minion_died(minion: MinionActor) -> void:
 	if not multiplayer.is_server():
 		return
+	if minion.minion_trait in KnowledgeManager.COURIER_TRAITS:
+		KnowledgeManager.courier_lost(minion, minion.last_hit_by)
 	minion_died.emit(minion)
 	var id := minion.name.to_int()
 	KnowledgeManager.notify_minion_removed(id)

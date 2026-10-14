@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bjlneb8hnj1ni"]
+
+[ext_resource type="PackedScene" uid="uid://co0otq1ew40v3" path="res://art/world/pois/export/ale_bend.glb" id="1_glb"]
+
+[node name="AleBend" instance=ExtResource("1_glb")]
+
+[node name="Arrival" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00, -6.92, -134.95)
+gizmo_extents = 3.0

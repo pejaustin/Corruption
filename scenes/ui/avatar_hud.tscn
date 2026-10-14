@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/widgets/ability_cross.tscn" id="2_cross"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widgets/crosshair.tscn" id="3_crosshair"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widgets/damage_vignette.tscn" id="4_vignette"]
-[ext_resource type="PackedScene" uid="uid://b6captprogress0" path="res://scenes/ui/widgets/capture_progress.tscn" id="5_capture"]
 
 [node name="AvatarHUD" type="CanvasLayer" unique_id=128906444]
 script = ExtResource("1_gya8g")
@@ -62,5 +61,25 @@ offset_bottom = -40.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="CaptureProgress" parent="." instance=ExtResource("5_capture")]
+; Your hold on him (PaladinHold.hold), above the health bar (GDD §8 Q15).
+[node name="HoldBar" type="ProgressBar" parent="."]
 unique_name_in_owner = true
+mouse_filter = 2
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -76.0
+offset_right = 280.0
+offset_bottom = -66.0
+max_value = 1.0
+step = 0.001
+show_percentage = false
+
+[node name="HoldLabel" type="Label" parent="HoldBar"]
+layout_mode = 0
+offset_top = -26.0
+offset_right = 40.0
+offset_bottom = -3.0
+mouse_filter = 2
+text = "Hold"

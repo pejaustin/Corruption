@@ -1,3 +1,5 @@
+> Superseded by docs/GDD.md (v2, 2026-10-08). Reference only: where this disagrees with the GDD, the GDD wins.
+
 # HUDs — Avatar & Overlord
 
 **Build status:** Phase 0 shipped (AvatarHUD + OverlordHUD with InteractionPrompt; AvatarHUD adds HealthBar). Phase 1 shipped: AbilityCross (4-slot diamond, bottom-right), Crosshair (centered free-aim), DamageVignette (fullscreen red flash), CaptureProgress (channel bar, centered). Input actions migrated to `primary_ability` / `secondary_ability` / `item_1` / `item_2` / `interaction` / `cancel` / `roll` so bindings are reconfigurable.

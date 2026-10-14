@@ -11,7 +11,7 @@ const _PLAYER_SCENE_PATH: String = "res://scenes/actors/player/overlord/overlord
 var _players_in_game: Dictionary = {}
 var _player_slot_order: Array[int] = [] # Tracks join order for tower assignment
 
-# Tower spawn positions as offsets from PlayerSpawnPoint (72, 41, 1)
+# Tower spawn positions as offsets from PlayerSpawnPoint, in tower slot order.
 # Each tower's floor is at local Y=40, so spawn Y = tower_global_Y + 40 + 1 (standing height)
 # Offset = tower_spawn_global - PlayerSpawnPoint_global
 @onready var TOWER_SPAWNS: Array[Vector3] = _get_tower_spawns()
@@ -67,8 +67,7 @@ func _remove_player_from_game(network_id: int) -> void:
 func _ready_player(player: OverlordActor, network_id: int) -> void:
 	if is_multiplayer_authority():
 		# Assign to next available tower slot
-		_player_slot_order.append(network_id)
-		var slot = _player_slot_order.find(network_id)
+		var slot: int = claim_slot(network_id)
 		if slot < TOWER_SPAWNS.size():
 			player.position = TOWER_SPAWNS[slot]
 			print("Player %s assigned to Tower %d" % [network_id, slot + 1])
@@ -77,8 +76,17 @@ func _ready_player(player: OverlordActor, network_id: int) -> void:
 			player.position = TOWER_SPAWNS[0]
 			print("Warning: No tower slot for player %s, using Tower 1" % network_id)
 
+func claim_slot(network_id: int) -> int:
+	## Seats a player and returns their tower slot: the tower they picked in the lobby, else the next in join order
+	## (sandbox, tests).
+	_player_slot_order.append(network_id)
+	return GameState.tower_picks.get(network_id, _player_slot_order.find(network_id))
+
 func get_next_available_slot() -> int:
-	## Returns the next open tower slot index (0-3), or -1 if full.
+	## Returns the next open tower slot index (0-3), or -1 if full. Always -1 after a lobby: the towers nobody picked
+	## are out of the match.
+	if not GameState.tower_picks.is_empty():
+		return -1
 	var used_slots = _player_slot_order.size()
 	if used_slots < GameConstants.MAX_PLAYERS:
 		return used_slots
@@ -86,6 +94,8 @@ func get_next_available_slot() -> int:
 
 func get_player_slot(network_id: int) -> int:
 	## Returns the tower slot (0-3) for a given player, or -1 if not found.
+	if network_id in GameState.tower_picks:
+		return GameState.tower_picks[network_id]
 	return _player_slot_order.find(network_id)
 
 func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
@@ -110,12 +120,9 @@ func _on_avatar_changed(old_peer_id: int, new_peer_id: int) -> void:
 				if child is OverlordActor and child.name.to_int() == new_peer_id:
 					child.set_overlord_active(false)
 	else:
-		# No one is driving it. An OWNED avatar stays in the field as its
-		# owner's pawn (AI-driven); only an unowned one goes dormant.
-		if GameState.has_avatar_owner():
-			avatar.release_control()
-		else:
-			avatar.deactivate()
+		# No one is driving him: AvatarAI does, for his owner or, unowned,
+		# for the good faction (GDD §8). He is never dormant.
+		avatar.release_control()
 
 func _peer_connected(network_id: int) -> void:
 	print("Peer connected: %s" % network_id)
@@ -128,7 +135,7 @@ func _peer_disconnected(network_id: int) -> void:
 
 func _get_tower_spawns() -> Array[Vector3]:
 	var towers_arr : Array[Vector3] = []
-	for tower in %Towers.get_children():
+	for tower in Tower.in_slot_order(get_tree()):
 		var tower_spawn : Marker3D = tower.get_node("SpawnPoint")
 		towers_arr.append(_player_spawn_point.to_local(tower_spawn.global_position))
 		
