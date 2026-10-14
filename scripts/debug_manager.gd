@@ -244,11 +244,21 @@ func spawn_minion_at_camera() -> void:
 
 func give_paladin_to_self() -> void:
 	## Hands the Paladin to the local (host) player so possession can be tried at
-	## once: scry at a Palantir, press E again to take control.
+	## once: scry at a Palantir, press E again to take control. He is moved to
+	## your tower gate first: owned at the city centre (where he rests) he would
+	## start the endgame gauntlet at once.
 	if not multiplayer.is_server():
 		print("[Debug] Only the host can hand out the Paladin")
 		return
-	GameState.set_avatar_owner(multiplayer.get_unique_id())
+	var me := multiplayer.get_unique_id()
+	var avatar := _get_avatar()
+	var mm := get_tree().current_scene.get_node_or_null("MinionManager") as MinionManager
+	var gate: Node3D = mm.get_courier_spawn_for(me) if mm else null
+	if avatar and gate:
+		# Pinned for a moment so the rollback tick keeps the new position.
+		avatar.pin_transform(Transform3D(Basis.IDENTITY, gate.global_position + Vector3.UP))
+		get_tree().create_timer(HolySite.PIN_SECONDS).timeout.connect(avatar.unpin_transform)
+	GameState.set_avatar_owner(me)
 	print("[Debug] The Paladin is yours; scry at a Palantir and press E to take control")
 
 func order_avatar_to_camera() -> void:

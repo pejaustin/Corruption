@@ -75,7 +75,7 @@ This file gives Claude Code the context it needs to make informed changes to a G
   - Take Nearest Site (host) — hands the corruption site nearest the camera to you
   - +1 Remains at Tower (host) — a body to raise at your summoning circle
   - Order Avatar to Camera (host) — move order for the released (AI-driven) avatar, same routing as war-table orders
-  - Give Me the Paladin (host) — makes you his owner at once; scry at a Palantir, then E again to possess him
+  - Give Me the Paladin (host) — moves him to your tower gate and makes you his owner (at the city centre he would start the gauntlet); scry at a Palantir, then E again to possess him
   - Toggle Aggro Rings (shows each minion's aggro radius, faction-colored)
   - Toggle True Positions (host) — the map floor also shows every group where it really is: pale "TRUE" pieces with
     their status; the prompt gives the next waypoint (Austin, 2026-10-13, for debugging pathing)

@@ -117,6 +117,16 @@ func test_a_new_owner_drops_whoever_was_driving() -> void:
 	GameState.set_avatar_owner(2)
 	assert_false(GameState.has_avatar())
 
+func test_the_debug_hand_over_moves_him_to_your_gate() -> void:
+	var paladin := add_avatar()
+	var gate := Node3D.new()
+	stage.add_child(gate)
+	gate.global_position = Vector3(300, 0, 40)
+	mm.bind_peer_courier_spawn(1, gate)
+	DebugManager.give_paladin_to_self()
+	assert_true(GameState.is_avatar_owner(1))
+	assert_eq(paladin.global_position, gate.global_position + Vector3.UP)
+
 # --- Hold ---
 
 func test_away_from_corruption_the_hold_fades() -> void:
