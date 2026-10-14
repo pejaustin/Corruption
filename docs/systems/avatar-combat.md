@@ -503,7 +503,7 @@ Goal: the 4-way doesn't break in degenerate ways.
 |---|---|
 | `respawn_invuln_until_tick` state_property | `PlayerActor` — `take_damage` no-ops while set |
 | Respawn delay | `_respawn` schedules transition to IdleState N ticks later; could route via existing `DeathState` exit timing |
-| Spawn-point picker | `RESPAWN_POSITION` → `Array[Vector3]`; pick the one farthest from any alive opponent |
+| Spawn-point picker | `_spawn_position` (the Avatar's placed position) → `Array[Vector3]`; pick the one farthest from any alive opponent |
 | FF filter | `Actor.damage_filter(attacker, victim) -> bool`; default same-peer-same-faction = false; configurable per match |
 | Lag tolerance audit | exercise dual-write damage at 200/400ms simulated latency in the war-table harness |
 | Hostile-takeover edge tests | new harness scenarios in `scenes/test/` — Avatar dies mid-attack, mid-roll, mid-charge, mid-riposte |

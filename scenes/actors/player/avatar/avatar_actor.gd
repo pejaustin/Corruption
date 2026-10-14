@@ -7,7 +7,6 @@ class_name AvatarActor extends PlayerActor
 const WATCHER_ORB_DISTANCE: float = 2.5
 const WATCHER_ORB_HEIGHT: float = 2.0
 const DEATH_TRANSFER_DELAY: float = 2.0
-const RESPAWN_POSITION: Vector3 = Vector3(0.1, 0.04, -0.06)
 const WATCHER_ORB_SIZE: Vector3 = Vector3(0.3, 0.3, 0.3)
 const WATCHER_ORB_COLOR: Color = Color(0.4, 0.6, 1.0, 0.7)
 const WATCHER_ORB_EMISSION: Color = Color(0.4, 0.6, 1.0)
@@ -29,9 +28,12 @@ var abilities: AvatarAbilities
 # The CaptureChannel currently locking this avatar (null when not channeling).
 # Read by ChannelState; written by CaptureChannel when the channel starts/ends.
 var active_channel: CaptureChannel = null
+# Where the vessel stands in the level; it respawns here after death.
+var _spawn_position: Vector3
 
 func _ready() -> void:
 	super()
+	_spawn_position = global_position
 	_set_dormant_visual(true)
 	GameState.watcher_count_changed.connect(_on_watcher_count_changed)
 	GameState.avatar_owner_changed.connect(_on_avatar_owner_changed)
@@ -84,7 +86,7 @@ func _on_death_transfer() -> void:
 func _respawn() -> void:
 	# Ownership/control RPCs in _on_death_transfer already drove the mode
 	# swaps via their signals; this just resets the vessel's physical state.
-	global_position = RESPAWN_POSITION
+	global_position = _spawn_position
 	velocity = Vector3.ZERO
 	hp = get_max_hp()
 	hp_changed.emit(hp)
