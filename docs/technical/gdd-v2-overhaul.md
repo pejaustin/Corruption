@@ -49,8 +49,8 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 - [x] 4 Troops and humans (bodies, remains, thralls at a chapel, nobles; `tests/component/test_field_work.gd`)
 - [x] 5 Goods (resource locations, overseers, hauling, treasure room, ledger; `test_fieldwork`, `test_treasure`)
 - [x] 6 The Paladin (takeover, hold, control tiers, shared Palantir; `test_paladin`)
-- [x] 7 Endgame (holy site, boss gauntlet, comeback, draw lock; `test_endgame`). Boss forms are AI-driven
-  stand-ins; **player-controlled boss forms are not built**.
+- [x] 7 Endgame (holy site, boss gauntlet, comeback, draw lock; `test_endgame`). Boss forms are player-driven `BossActor`s
+  (2026-10-13, `test_boss_actor`; CPU seats get `BossAI`): their moveset is PLACEHOLDER and two-process play is untested.
 - [x] 8 Tower stations (balcony, day/night, desk, treasure room + ledger; `test_balcony`, `test_desk`, `test_treasure`)
 - [x] 9 Mirror
 - [x] 10 Getting better (leader experience, maneuvers, teaching, relics; `test_growth`). Paid gear is not built.
@@ -63,7 +63,7 @@ Each phase is its own commit (or few), pushed as it lands. Status is kept here.
 
 Tests: the GUT fast tier in `tests/unit/` and `tests/component/` (`tools/gut.sh`), milestone suites in `tests/integration/` (CLAUDE.md "Tests").
 
-Still open: player control of boss forms (#560), every placeholder in `PLACEHOLDERS.md`, how the Paladin gets to the
+Still open: the real boss moveset and look (#560), every placeholder in `PLACEHOLDERS.md`, how the Paladin gets to the
 winner's tower (#576), the GDD §11 questions, and real multi-peer testing of the mirror and Palantir voice.
 
 ## Checking it
