@@ -19,9 +19,10 @@ class_name BossActor extends PlayerActor
 ## PLACEHOLDER: tuning — metres per second; a boss does not run.
 const WALK_SPEED: float = 3.0
 const TURN_SPEED: float = 4.0
-## Targets higher or lower than this off the boss's feet are out of a blow's reach.
+## PLACEHOLDER: tuning — targets higher or lower than this off the boss's feet are out of a blow's reach.
+## (A blow is a box in front of him, not a hitbox on his limbs: see strike_targets.)
 const HIT_HEIGHT: float = 4.0
-## A target's own width, added to a blow's reach and half-width.
+## PLACEHOLDER: tuning — a target's own width, added to a blow's reach and half-width.
 const TARGET_RADIUS: float = 0.5
 ## PLACEHOLDER: art — the glow on the body at the end of a windup: the overlay's alpha at full charge.
 const TELL_GLOW_ALPHA: float = 0.6
