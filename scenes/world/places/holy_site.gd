@@ -7,8 +7,9 @@ class_name HolySite extends Node3D
 ## to that player's tower. The good faction's draw locks the site for good.
 ##
 ## Host-authoritative; the state is mirrored to every peer for the HUD.
-## Boss forms are placeholders (data/minions/boss_form.tres) and, for now,
-## are always AI-driven; player control of a boss is not built yet.
+## A boss form is a BossActor (boss_scene): the boss's own player plays it
+## through a third-person camera (Dark Souls style), or BossAI does for a CPU
+## seat or a peer who left. One is spawned on every peer per boss turn.
 
 signal gauntlet_started(challenger: int)
 signal boss_changed(peer_id: int, index: int, total: int)
@@ -18,7 +19,6 @@ signal gauntlet_ended(outcome: StringName, peer_id: int)
 enum State { IDLE, GAUNTLET, ENDED }
 
 const GROUP: StringName = &"holy_site"
-const BOSS_TYPE: StringName = &"boss_form"
 ## PLACEHOLDER: tuning, not designed — how much a held site counts toward a
 ## player's strength for ordering the gauntlet, and for a boss-type site.
 const SITE_WEIGHT: float = 1.0
@@ -36,6 +36,8 @@ const PIN_SECONDS: float = 0.5
 @export var radius: float = 10.0
 ## PLACEHOLDER: tuning — where a boss appears, as a distance from the centre.
 @export var boss_spawn_distance: float = 8.0
+## The player-driven boss form, instanced once per boss turn on every peer.
+@export var boss_scene: PackedScene
 
 ## Mirrored state, readable on every peer.
 static var state: State = State.IDLE
@@ -47,7 +49,7 @@ var locked: bool = false
 
 var _challenger: int = -1
 var _order: Array[int] = []
-var _boss_unit: MinionActor
+var _boss: BossActor
 var _avatar: AvatarActor
 var _mm: MinionManager
 
@@ -57,6 +59,7 @@ func _ready() -> void:
 	add_to_group(GROUP)
 	state = State.IDLE
 	boss_peer = -1
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	_fit_look()
 
 # --- Strength ---
@@ -133,8 +136,6 @@ func start_gauntlet(challenger: int) -> void:
 		return
 	if not _avatar.died.is_connected(_on_paladin_died):
 		_avatar.died.connect(_on_paladin_died)
-	if not _mm.minion_died.is_connected(_on_minion_died):
-		_mm.minion_died.connect(_on_minion_died)
 	boss_total = _order.size()
 	_set_state(State.GAUNTLET, -1, 0)
 	gauntlet_started.emit(challenger)
@@ -150,25 +151,57 @@ func _next_boss() -> void:
 	var index := boss_total - _order.size()
 	var angle := TAU * float(index) / float(maxi(boss_total, 1))
 	var pos := global_position + Vector3(cos(angle), 0.0, sin(angle)) * boss_spawn_distance + Vector3.UP
-	var id := _mm.spawn_named_minion_for_peer(peer, BOSS_TYPE, pos)
-	_boss_unit = _mm.get_minion_by_id(id)
-	if _boss_unit:
-		_scale_boss(_boss_unit, strength_of(peer))
 	_set_state(State.GAUNTLET, peer, index)
+	_spawn_boss.rpc(peer, pos, strength_of(peer))
+	_boss = get_node_or_null(_boss_name(peer)) as BossActor
+	if _boss:
+		_boss.died.connect(_on_boss_died)
 	boss_changed.emit(peer, index, boss_total)
 
-func _scale_boss(unit: MinionActor, strength: float) -> void:
-	## Boss stats scale with the sites its player holds.
-	unit.max_hp_value = int(BOSS_BASE_HP * (1.0 + BOSS_HP_PER_STRENGTH * strength))
-	unit.hp = unit.max_hp_value
-	unit.attack_damage = int(BOSS_BASE_DAMAGE * (1.0 + BOSS_DAMAGE_PER_STRENGTH * strength))
+static func _boss_name(peer: int) -> String:
+	return "Boss%d" % peer
 
-func _on_minion_died(minion: MinionActor) -> void:
-	if state != State.GAUNTLET or minion != _boss_unit:
+@rpc("authority", "call_local", "reliable")
+func _spawn_boss(peer: int, pos: Vector3, strength: float) -> void:
+	## On every peer: the same node name and path, so netfox pairs the boss up.
+	var boss := boss_scene.instantiate() as BossActor
+	boss.name = _boss_name(peer)
+	_scale_boss(boss, peer, strength)
+	add_child(boss)
+	boss.global_position = pos
+
+@rpc("authority", "call_local", "reliable")
+func _free_boss(peer: int) -> void:
+	var boss := get_node_or_null(_boss_name(peer)) as BossActor
+	if boss == null:
 		return
-	_boss_unit = null
-	# Next frame, so the dead boss is out of the way of the next spawn.
+	boss.release_control()  # the player's view goes back to their overlord
+	boss.queue_free()
+
+@rpc("authority", "call_local", "reliable")
+func _release_boss(peer: int) -> void:
+	## The boss's player left: the host's BossAI plays it from here.
+	var boss := get_node_or_null(_boss_name(peer)) as BossActor
+	if boss:
+		boss.release_control()
+
+func _scale_boss(boss: BossActor, peer: int, strength: float) -> void:
+	## Boss stats scale with the sites its player holds (before it is in the tree).
+	boss.setup(peer,
+		int(BOSS_BASE_HP * (1.0 + BOSS_HP_PER_STRENGTH * strength)),
+		int(BOSS_BASE_DAMAGE * (1.0 + BOSS_DAMAGE_PER_STRENGTH * strength)))
+
+func _on_boss_died() -> void:
+	## Host: the boss fell. Gone at once, the next one deferred so it is out of the way.
+	if state != State.GAUNTLET or _boss == null:
+		return
+	_free_boss.rpc(boss_peer)
+	_boss = null
 	_after_boss_fell.call_deferred()
+
+func _on_peer_disconnected(peer: int) -> void:
+	if state == State.GAUNTLET and peer == boss_peer:
+		_release_boss.rpc(peer)
 
 func _after_boss_fell() -> void:
 	if state == State.GAUNTLET:
@@ -204,13 +237,10 @@ func _win() -> void:
 func _end(outcome: StringName, peer_id: int) -> void:
 	if _avatar and _avatar.died.is_connected(_on_paladin_died):
 		_avatar.died.disconnect(_on_paladin_died)
-	if _mm and _mm.minion_died.is_connected(_on_minion_died):
-		_mm.minion_died.disconnect(_on_minion_died)
-	var unit := _boss_unit
-	_boss_unit = null
+	if _boss and is_instance_valid(_boss):
+		_free_boss.rpc(boss_peer)
+	_boss = null
 	_order.clear()
-	if unit and is_instance_valid(unit) and unit.hp > 0 and _mm:
-		_mm.despawn_minion(unit)
 	_set_state(State.IDLE, -1, 0)
 	gauntlet_ended.emit(outcome, peer_id)
 

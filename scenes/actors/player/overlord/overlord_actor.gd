@@ -50,6 +50,10 @@ func set_overlord_active(active: bool) -> void:
 	var is_local := multiplayer.get_unique_id() == str(name).to_int()
 
 	_player_input.input_enabled = active
+	# Its HUD goes with it while the player is in the Paladin's or a boss form's body.
+	var hud := get_node_or_null(^"OverlordHUD") as CanvasLayer
+	if hud:
+		hud.visible = active
 
 	if is_local:
 		if active:

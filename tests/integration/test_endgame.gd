@@ -55,15 +55,16 @@ func run_tests() -> void:
 	await seconds(1.0)
 	check(HolySite.state == HolySite.State.GAUNTLET and HolySite.boss_peer == 2, "owned and inside: the gauntlet starts with the weakest rival")
 	var boss := _boss_of(mm, 2)
-	check(boss != null and boss.minion_type_id == &"boss_form", "that rival's boss form stands in the holy site")
+	check(boss != null and boss.owner_peer_id == 2, "that rival's boss form stands in the holy site, played by them")
 	check(boss != null and boss.max_hp_value > HolySite.BOSS_BASE_HP, "boss health grows with the sites held (%d)" % (boss.max_hp_value if boss else 0))
 
 	# Beat the first; the next steps up, stronger.
+	var first_hp := boss.max_hp_value  # the boss is freed once it falls
 	boss.take_damage(99999)
 	await seconds(1.5)
 	check(HolySite.boss_peer == 3, "beating a boss brings on the next")
 	var boss3 := _boss_of(mm, 3)
-	check(boss3 != null and boss3.max_hp_value > boss.max_hp_value, "the stronger rival's boss is stronger")
+	check(boss3 != null and boss3.max_hp_value > first_hp, "the stronger rival's boss is stronger")
 
 	# A boss beats the Paladin: he is that player's, and goes to their tower.
 	avatar.god_mode = false
@@ -133,11 +134,11 @@ func run_tests() -> void:
 	check(HolySite.state != HolySite.State.GAUNTLET, "a locked holy site starts no gauntlet")
 	Engine.time_scale = 1.0
 
-func _boss_of(mm: MinionManager, peer: int) -> MinionActor:
-	for m in mm.get_minions_for_player(peer):
-		if m.minion_type_id == &"boss_form" and m.hp > 0:
-			return m
-	return null
+func _boss_of(_mm: MinionManager, peer: int) -> BossActor:
+	## The player-driven boss form a peer plays, a child of the holy site (HolySite._spawn_boss).
+	var holy := get_tree().get_first_node_in_group(HolySite.GROUP)
+	var boss := holy.get_node_or_null("Boss%d" % peer) as BossActor if holy else null
+	return boss if boss and boss.hp > 0 and not boss.is_queued_for_deletion() else null
 
 func _walkable_spot_near(world: Node, from: Vector3, metres: float) -> Vector3:
 	## A point about `metres` along the walking path out of `from` (towards the first tower). A fixed offset can land on a

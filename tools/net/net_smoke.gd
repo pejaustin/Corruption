@@ -867,11 +867,11 @@ func _phase_endgame() -> void:
 	var draws := await exchange("draws", _draws)
 	check(all_equal(draws), "every peer saw the draw exactly as often")
 
-func _boss_of(mm: MinionManager, peer: int) -> MinionActor:
-	for m in mm.get_minions_for_player(peer):
-		if m.minion_type_id == &"boss_form" and m.hp > 0:
-			return m
-	return null
+func _boss_of(_mm: MinionManager, peer: int) -> BossActor:
+	## The player-driven boss form a peer plays, a child of the holy site (HolySite._spawn_boss).
+	var holy := get_tree().get_first_node_in_group(HolySite.GROUP)
+	var boss := holy.get_node_or_null("Boss%d" % peer) as BossActor if holy else null
+	return boss if boss and boss.hp > 0 and not boss.is_queued_for_deletion() else null
 
 func _holy_knights(mm: MinionManager) -> int:
 	var n := 0

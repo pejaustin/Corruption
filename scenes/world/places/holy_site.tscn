@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/world/places/holy_site.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/actors/boss/boss_actor.tscn" id="2_boss"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_disc"]
 resource_local_to_scene = true
@@ -15,6 +16,7 @@ albedo_color = Color(1, 0.95, 0.75, 0.35)
 
 [node name="HolySite" type="Node3D"]
 script = ExtResource("1_script")
+boss_scene = ExtResource("2_boss")
 
 [node name="Disc" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true

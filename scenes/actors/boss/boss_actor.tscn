@@ -1,0 +1,121 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://bq0mxc1lqy3ta" path="res://scenes/actors/player/player_actor.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/actors/boss/boss_actor.gd" id="2_boss"]
+[ext_resource type="PackedScene" path="res://scenes/actors/boss/placeholder/placeholder_boss_model.tscn" id="3_model"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player/avatar_camera.tscn" id="4_camera"]
+[ext_resource type="Script" path="res://scripts/boss_input.gd" id="5_input"]
+[ext_resource type="Script" path="res://scenes/actors/boss/boss_ai.gd" id="6_ai"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="7_hurt"]
+[ext_resource type="Script" path="res://scripts/combat/attack_hitbox.gd" id="16_hitbox"]
+[ext_resource type="PackedScene" path="res://scenes/ui/boss_hud.tscn" id="8_hud"]
+[ext_resource type="Script" path="res://scenes/actors/boss/states/boss_idle_state.gd" id="9_idle"]
+[ext_resource type="Script" path="res://scenes/actors/boss/states/boss_move_state.gd" id="10_move"]
+[ext_resource type="Script" path="res://scenes/actors/boss/states/boss_fall_state.gd" id="11_fall"]
+[ext_resource type="Script" path="res://scenes/actors/boss/states/boss_attack_state.gd" id="12_attack"]
+[ext_resource type="Resource" path="res://data/bosses/placeholder/overhead_slam.tres" id="13_slam"]
+[ext_resource type="Resource" path="res://data/bosses/placeholder/wide_sweep.tres" id="14_sweep"]
+[ext_resource type="Resource" path="res://data/bosses/placeholder/ground_stomp.tres" id="15_stomp"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_boss_body"]
+radius = 0.9
+height = 4.2
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_boss_hurt"]
+radius = 1.2
+height = 5.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_unused"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_tell"]
+resource_local_to_scene = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tell"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.1, 0.05, 0.35)
+
+[node name="BossActor" instance=ExtResource("1_base") node_paths=PackedStringArray("body_mesh")]
+script = ExtResource("2_boss")
+attacks = Array[Resource]([ExtResource("13_slam"), ExtResource("14_sweep"), ExtResource("15_stomp")])
+body_mesh = NodePath("Model/BossModel/Root/Skeleton3D/characterLargeMale")
+
+[node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+shape = SubResource("CapsuleShape3D_boss_body")
+
+; PLACEHOLDER: art — the avatar model, twice the size and tinted.
+[node name="BossModel" parent="Model" index="0" instance=ExtResource("3_model")]
+
+; The red box on the ground in front of him during a windup: where the blow will land.
+[node name="TellArea" type="MeshInstance3D" parent="Model" index="1"]
+unique_name_in_owner = true
+visible = false
+mesh = SubResource("BoxMesh_tell")
+surface_material_override/0 = SubResource("StandardMaterial3D_tell")
+
+; Never enabled: his blows are boxes checked in code (BossActor.strike_targets). The shared large-male
+; clips carry a call track to %AttackHitbox, and Godot warns when no node answers to that name.
+[node name="AttackHitbox" type="Area3D" parent="Model" index="2"]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 0
+monitorable = false
+script = ExtResource("16_hitbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Model/AttackHitbox"]
+shape = SubResource("BoxShape3D_unused")
+disabled = true
+
+[node name="BossCamera" parent="." index="2" instance=ExtResource("4_camera")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+
+[node name="BossInput" type="Node" parent="." index="3"]
+unique_name_in_owner = true
+script = ExtResource("5_input")
+
+[node name="Hurtbox" type="Area3D" parent="." index="5"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("7_hurt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hurtbox"]
+shape = SubResource("CapsuleShape3D_boss_hurt")
+
+; PLACEHOLDER: wording — the attack's name floats over his head during its windup.
+[node name="TellLabel" type="Label3D" parent="." index="6"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.0, 0)
+visible = false
+billboard = 1
+modulate = Color(1, 0.4, 0.3, 1)
+outline_size = 8
+font_size = 48
+
+[node name="RollbackSynchronizer" parent="." index="7"]
+state_properties = Array[String]([":transform", ":velocity", ":hp", "Model:transform", "RewindableStateMachine:state", ":attack_index", ":attack_time"])
+input_properties = Array[String](["BossInput:input_dir", "BossInput:attack_pick", "BossCamera:camera_basis"])
+
+[node name="BossAI" type="Node" parent="." index="9"]
+unique_name_in_owner = true
+script = ExtResource("6_ai")
+
+[node name="BossHUD" parent="." index="10" instance=ExtResource("8_hud")]
+
+[node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2"]
+script = ExtResource("9_idle")
+
+[node name="MoveState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3"]
+script = ExtResource("10_move")
+animation_name = "large-male/Walk"
+
+[node name="FallState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5"]
+script = ExtResource("11_fall")
+
+[node name="BossAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6"]
+script = ExtResource("12_attack")
+animation_name = "large-male/Punch"
