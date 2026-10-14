@@ -6,8 +6,7 @@
 script = ExtResource("1_attack")
 ; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
 display_name = "PLACEHOLDER: Ground Stomp"
-; PLACEHOLDER: reuses the slam clip, the golem has no stomp of its own.
-animation = &"golem/attack"
+animation = &"blackhorn/stomp"
 input_action = &"item_1"
 windup_seconds = 1.4
 active_seconds = 0.3

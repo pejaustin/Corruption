@@ -6,7 +6,7 @@
 script = ExtResource("1_attack")
 ; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
 display_name = "PLACEHOLDER: Wide Sweep"
-animation = &"golem/attack2"
+animation = &"blackhorn/sweep"
 input_action = &"secondary_ability"
 windup_seconds = 0.8
 active_seconds = 0.3

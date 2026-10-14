@@ -13,7 +13,7 @@ class_name BossActor extends PlayerActor
 ## - **Attacks** (`attacks`, BossAttack data): windup (telegraphed), active (the
 ##   blow lands, host only), recovery. `attack_index` and `attack_time` are
 ##   rollback state so every peer sees the same phase.
-## PLACEHOLDER: the model (Fire/Ice/Stone golem by umask007), its clips, the camera distance
+## PLACEHOLDER: the model (Blackhorn, retro PSX pack), its clips, the camera distance
 ## and the walk speed are stand-ins, not designed.
 
 ## PLACEHOLDER: tuning — metres per second; a boss does not run.
@@ -36,7 +36,7 @@ const TELL_GROUND_HEIGHT: float = 0.1
 @export var max_hp_value: int = 300
 @export var attack_damage: int = 20
 ## PLACEHOLDER: art — the camera sits this far behind and above him.
-@export var camera_offset: Vector3 = Vector3(0, 4.5, 12.0)
+@export var camera_offset: Vector3 = Vector3(0, 3.5, 9.0)
 ## The body mesh whose material overlay glows during a windup.
 @export var body_mesh: MeshInstance3D
 
