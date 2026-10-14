@@ -49,7 +49,7 @@ const PROGRESS_METRES: float = 1.0
 @onready var _avatar: AvatarActor = get_parent()
 @onready var _nav_agent: NavigationAgent3D = get_node("../NavAgent")
 
-var _target: MinionActor = null
+var _target: Actor = null
 var _waypoint: Vector3 = Vector3.ZERO
 var _has_waypoint: bool = false
 var _repath_timer: float = 0.0
@@ -194,7 +194,7 @@ func _is_blacklisted(minion: Node) -> bool:
 		return false
 	return true
 
-func _can_reach(minion: MinionActor) -> bool:
+func _can_reach(minion: Actor) -> bool:
 	if absf(minion.global_position.y - _avatar.global_position.y) > MAX_VERTICAL_REACH:
 		return false
 	var map_rid: RID = _nav_agent.get_navigation_map()
@@ -256,7 +256,13 @@ func _update_target() -> void:
 	if not mm:
 		return
 	var best_dist := AGGRO_RADIUS
-	for minion in mm.get_all_minions():
+	var foes: Array[Actor] = []
+	foes.append_array(mm.get_all_minions())
+	# A player's boss form fights him too (the gauntlet, or nobody driving him).
+	for node in get_tree().get_nodes_in_group(&"actors"):
+		if node is BossActor:
+			foes.push_back(node)
+	for minion in foes:
 		if not _avatar.is_hostile_to(minion):
 			continue
 		if not minion.can_take_damage():

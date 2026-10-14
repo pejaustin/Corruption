@@ -56,6 +56,8 @@ const WATCHER_ORB_ALPHA: float = 0.45
 @export var watcher_orb_scene: PackedScene
 
 var controlling_peer_id: int = -1
+## Tools only (the combat test arena): when above 0, his control level whoever holds him; 0 = the rule.
+var control_level_override: int = 0
 ## Host: the allegiance of whoever last landed a blow on him (-1 = good faction).
 var last_hit_by: int = GameConstants.GOOD_SIDE
 ## Legacy flag kept for old test harnesses (activate/deactivate). In play the
@@ -120,6 +122,8 @@ func get_allegiance() -> int:
 # --- Control tiers and resistance (GDD §8 "Imperfect ARPG", Q18) ---
 
 func get_control_level() -> int:
+	if control_level_override > 0:
+		return clampi(control_level_override, 1, CONTROL_LEVEL_MAX)
 	## Unowned he is the good faction's own and holds nothing back.
 	if not GameState.has_avatar_owner():
 		return CONTROL_LEVEL_MAX
@@ -157,6 +161,11 @@ func heal(amount: int) -> void:
 	## Host-only. Applied inside the next rollback tick (see _pending_heal).
 	if multiplayer.is_server() and amount > 0:
 		_pending_heal += amount
+
+func restore_full_hp() -> void:
+	## Host: up at full HP inside the next rollback tick, down or not (tools: the test arena's rounds).
+	if multiplayer.is_server():
+		_pending_hp = get_max_hp()
 
 # --- Combat overrides ---
 

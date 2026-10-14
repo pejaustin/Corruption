@@ -23,6 +23,12 @@ This file gives Claude Code the context it needs to make informed changes to a G
 - **Run:** open `project.godot` in Godot 4.6 and press F5 (main menu → host → lobby → start).
 - **Sandbox:** `tools/sandbox/sandbox_400m.tscn` opens the 400 m world on its own as an offline host (you are player 1, no
   lobby): open it and press F6, or `godot --path . res://tools/sandbox/sandbox_400m.tscn`. Esc → Debug panel to spawn units.
+- **Combat test arena** (`tools/arena/`, #640): fight as the Paladin (any control level) or a boss form (any of
+  `data/bosses/` attacks) against an AI, any minion type, or a second player, on a flat floor with no match: open
+  `tools/arena/arena.tscn` and press F6, or `godot --path . res://tools/arena/arena.tscn -- --offline --fight`. Esc = setup
+  panel (Offline / Host / Join, then Fight). Two players: one runs `-- --host --fight --opponent=player`, the other
+  `-- --join=<ip>` and plays the other role. Presets: `tools/arena/presets/*.tres` (`--arena-preset=<path>`); flags in
+  `ArenaConfig.apply_args`. Hooks it relies on: `AvatarActor.control_level_override`, `restore_full_hp`.
 - **Tests (Austin, 2026-10-13):** most tests take milliseconds and check one thing. Tests compound: drive the
   subject directly and trust what other tests cover (kill a boss with `notify_minion_died`, not by fighting it; set a
   site's `present_strength`, don't walk units in). Inject or split code only where a test needs it.
