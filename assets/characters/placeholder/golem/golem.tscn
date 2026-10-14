@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+; PLACEHOLDER: art — Fire/Ice/Stone golem by umask007 (CC-BY 3.0), stands in for a boss form; see README.md beside it.
+[ext_resource type="PackedScene" uid="uid://cybdfccm08sby" path="res://assets/characters/placeholder/golem/golem.glb" id="1_glb"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/placeholder/golem/golem.res" id="2_lib"]
+[ext_resource type="Texture2D" uid="uid://batoigtoyk3n2" path="res://assets/characters/placeholder/golem/golem_fire.png" id="3_fire"]
+
+; The fire look is the default; golem_ice.png and golem_stone.png sit beside it for a swap. Nearest filtering, like the world's pixel textures.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fire"]
+albedo_texture = ExtResource("3_fire")
+roughness = 1.0
+texture_filter = 0
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_empty"]
+
+[node name="Golem" instance=ExtResource("1_glb")]
+
+[node name="stone" parent="Armature/Skeleton3D" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_fire")
+
+[node name="AnimationPlayer" parent="." index="1"]
+libraries/ = SubResource("AnimationLibrary_empty")
+libraries/golem = ExtResource("2_lib")
+autoplay = &"golem/idle"

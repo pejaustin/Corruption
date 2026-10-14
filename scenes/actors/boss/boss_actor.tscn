@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://bq0mxc1lqy3ta" path="res://scenes/actors/player/player_actor.tscn" id="1_base"]
 [ext_resource type="Script" path="res://scenes/actors/boss/boss_actor.gd" id="2_boss"]
-[ext_resource type="PackedScene" path="res://scenes/actors/boss/placeholder/placeholder_boss_model.tscn" id="3_model"]
+[ext_resource type="PackedScene" path="res://assets/characters/placeholder/golem/golem.tscn" id="3_model"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player/avatar_camera.tscn" id="4_camera"]
 [ext_resource type="Script" path="res://scripts/boss_input.gd" id="5_input"]
 [ext_resource type="Script" path="res://scenes/actors/boss/boss_ai.gd" id="6_ai"]
@@ -18,17 +18,25 @@
 [ext_resource type="Resource" path="res://data/bosses/placeholder/ground_stomp.tres" id="15_stomp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_boss_body"]
-radius = 0.9
-height = 4.2
+radius = 1.6
+height = 5.0
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_boss_hurt"]
-radius = 1.2
-height = 5.0
+radius = 2.4
+height = 6.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_unused"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_tell"]
 resource_local_to_scene = true
+
+; The windup glow: an additive red laid over the golem, its alpha raised by BossActor as the blow charges.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glow"]
+resource_local_to_scene = true
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.25, 0.1, 0)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tell"]
 transparency = 1
@@ -38,14 +46,18 @@ albedo_color = Color(1, 0.1, 0.05, 0.35)
 [node name="BossActor" instance=ExtResource("1_base") node_paths=PackedStringArray("body_mesh")]
 script = ExtResource("2_boss")
 attacks = Array[Resource]([ExtResource("13_slam"), ExtResource("14_sweep"), ExtResource("15_stomp")])
-body_mesh = NodePath("Model/BossModel/Root/Skeleton3D/characterLargeMale")
+body_mesh = NodePath("Model/BossModel/Armature/Skeleton3D/stone")
 
 [node name="CollisionShape3D" parent="." index="0" unique_id=2017831966]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 shape = SubResource("CapsuleShape3D_boss_body")
 
-; PLACEHOLDER: art — the avatar model, twice the size and tinted.
+; PLACEHOLDER: art — the golem, about twice the Paladin. Its origin is not at its feet, so it is lifted and centred (feet on the ground, facing +Z).
 [node name="BossModel" parent="Model" index="0" instance=ExtResource("3_model")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.23, 1.45)
+
+[node name="stone" parent="Model/BossModel/Armature/Skeleton3D" index="0"]
+material_overlay = SubResource("StandardMaterial3D_glow")
 
 ; The red box on the ground in front of him during a windup: where the blow will land.
 [node name="TellArea" type="MeshInstance3D" parent="Model" index="1"]
@@ -89,7 +101,7 @@ shape = SubResource("CapsuleShape3D_boss_hurt")
 ; PLACEHOLDER: wording — the attack's name floats over his head during its windup.
 [node name="TellLabel" type="Label3D" parent="." index="6"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.2, 0)
 visible = false
 billboard = 1
 modulate = Color(1, 0.4, 0.3, 1)
@@ -106,16 +118,27 @@ script = ExtResource("6_ai")
 
 [node name="BossHUD" parent="." index="10" instance=ExtResource("8_hud")]
 
+; PLACEHOLDER: art — clip mapping (PLACEHOLDERS.md "Boss form model"). The attacks' clips are on their BossAttack data.
+[node name="StaggerState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="0"]
+animation_name = "golem/flinch"
+
+[node name="DeathState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="1"]
+animation_name = "golem/die"
+
 [node name="IdleState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="2"]
 script = ExtResource("9_idle")
+animation_name = "golem/idle"
 
 [node name="MoveState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="3"]
 script = ExtResource("10_move")
-animation_name = "large-male/Walk"
+animation_name = "golem/walk"
+
+; He cannot jump: the inherited Jump clip does not exist on this model.
+[node name="JumpState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="4"]
+animation_name = ""
 
 [node name="FallState" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="5"]
 script = ExtResource("11_fall")
 
 [node name="BossAttackState" type="Node" parent="RewindableStateMachine" parent_id_path=PackedInt32Array(734603798) index="6"]
 script = ExtResource("12_attack")
-animation_name = "large-male/Punch"

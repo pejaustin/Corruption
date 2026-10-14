@@ -143,3 +143,25 @@ func test_releasing_a_player_boss_hands_it_to_the_ai() -> void:
 	assert_eq(boss.controlling_peer_id, -1)
 	assert_eq(boss.boss_input.get_multiplayer_authority(), 1)
 	assert_true(boss.boss_ai.is_driving())
+
+func test_each_attack_and_state_has_a_clip_the_model_can_play() -> void:
+	var player: AnimationPlayer = boss._animation_player
+	assert_not_null(player, "the model carries an AnimationPlayer")
+	for attack in boss.attacks:
+		assert_true(player.has_animation(attack.animation), "%s: no clip '%s'" % [attack.display_name, attack.animation])
+	for state in boss._state_machine.get_children():
+		var actor_state := state as ActorState
+		if actor_state and actor_state.animation_name != "":
+			assert_true(player.has_animation(actor_state.animation_name), "%s: no clip '%s'" % [state.name, actor_state.animation_name])
+
+func test_an_attack_clip_is_stretched_over_the_whole_attack() -> void:
+	var attack := boss.attacks[0]
+	_start_attack(0)
+	boss._play_attack_animation()
+	assert_eq(boss._animation_player.current_animation, String(attack.animation))
+	var length := boss._animation_player.get_animation(attack.animation).length
+	assert_almost_eq(length / boss._animation_player.get_playing_speed(), attack.total_seconds(), 0.01)
+
+func test_the_windup_glow_has_a_mesh_and_an_overlay_to_raise() -> void:
+	assert_not_null(boss.body_mesh, "the golem's mesh is found by its path")
+	assert_true(boss.body_mesh.material_overlay is StandardMaterial3D, "the glow overlay is set on it")
