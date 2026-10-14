@@ -1,0 +1,1 @@
+PLACEHOLDER: boss form model, not Austin's art. KayKit Skeleton Warrior, by Kay Lousberg (KayKit Character Pack: Skeletons 1.0), CC0, https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0

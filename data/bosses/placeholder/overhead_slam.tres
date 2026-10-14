@@ -6,6 +6,7 @@
 script = ExtResource("1_attack")
 ; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
 display_name = "PLACEHOLDER: Overhead Slam"
+animation = &"skeleton/2H_Melee_Attack_Chop"
 input_action = &"primary_ability"
 windup_seconds = 1.0
 active_seconds = 0.25

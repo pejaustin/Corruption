@@ -6,6 +6,7 @@
 script = ExtResource("1_attack")
 ; PLACEHOLDER: attack name, key, timings, damage and reach are not designed.
 display_name = "PLACEHOLDER: Ground Stomp"
+animation = &"skeleton/1H_Melee_Attack_Jump_Chop"
 input_action = &"item_1"
 windup_seconds = 1.4
 active_seconds = 0.3
