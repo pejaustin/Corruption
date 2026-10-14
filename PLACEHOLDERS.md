@@ -9,6 +9,7 @@ Numbers are collected for the playtest ticket (#587); content is Austin's to wri
 
 | What | Stands in for | Where | Ticket |
 |---|---|---|---|
+| The avatar abilities: Camouflage, Entangle, Hellfire Strike, Demon Rage, Life Drain, Corpse Explosion, Mind Blast (names, descriptions, cooldowns, durations, effects and their numbers), and which faction profile has which (Austin, 2026-10-14: "every ability currently defined is a placeholder") | The Paladin's abilities, and any faction's | `data/abilities/*.tres`, `scripts/abilities/*_effect.gd`, `scenes/abilities/*.tscn`, `avatar_abilities` in `data/factions/*.tres` | |
 | Each temple's and runestone's `grant` (crystal upgrade / runestone power): one default `placeholder_grant` that does nothing yet | What each temple's crystal and each runestone's sealed Dark Lord gives (per site, Austin 2026-10-12) | `scenes/sites/corruption_site.gd` `grant`, set per site in `world.tscn` | |
 | Each burial ground's `troop_trait`: one default `placeholder_trait`, recorded on mining but not yet applied to raised troops | What troops each crypt, ancient battlefield and graveyard makes (per burial ground, Austin 2026-10-12) | `scenes/sites/burial_ground.gd` `troop_trait` | |
 | Temple and runestone stats (thresholds, timings) carried over from the old avatar and boss site stand-ins; the temple keeps AVATAR_CONTROL, the runestone BOSS_POWER | Temple and runestone tuning | `data/sites/temple.tres`, `data/sites/runestone.tres` | |
@@ -192,6 +193,8 @@ summoned there cannot walk out (`test_world_layout` fails two checks for it); no
 
 ## Scenes and resources (no comments in these files; moved here 2026-10-13)
 
+- `data/abilities/*.tres` (all seven), whole files, and `scenes/abilities/*.tscn` (their effect scenes): every ability is a placeholder (Austin, 2026-10-14); see "Content".
+- `data/factions/*.tres`, `avatar_abilities`: which abilities each faction profile (and so the Paladin, through Undeath) has is a placeholder (Austin, 2026-10-14).
 - `art/characters/ual/ual_mannequin_placeholder.tscn`, whole file: the stand-in humanoid (see "Art and look").
 - `art/world/export/world_landscape_400m.tscn`, whole file: the 400 m layout is the 2 km scene's scaled by 1/5 (formerly a `GENERATED` comment), not designed by Austin; which slot (0-3) is which site and which way each tower faces are the 2 km scene's; the `Ocean` node is the old 400 m export's sea plane.
 - `art/world/export/world_landscape_2km.tscn`, node `Hell's Mouth/POI` (and every `POI`): the place's look is a blockout stand-in (`art/world/pois/*.blend`), not designed by Austin.

@@ -1,3 +1,4 @@
+# PLACEHOLDER: ability not designed by Austin (Austin, 2026-10-14: every ability currently defined is a placeholder): what it does and its numbers.
 class_name CamouflageEffect extends AbilityEffect
 
 ## Nature/Fey: Avatar turns invisible for 10 seconds.

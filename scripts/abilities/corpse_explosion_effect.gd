@@ -1,3 +1,4 @@
+# PLACEHOLDER: ability not designed by Austin (Austin, 2026-10-14: every ability currently defined is a placeholder): what it does and its numbers.
 class_name CorpseExplosionEffect extends AbilityEffect
 
 ## Undeath: instant AoE damage to nearby neutral minions.
