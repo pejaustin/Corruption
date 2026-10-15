@@ -51,7 +51,11 @@ Research for an interview with Austin. Nothing here is settled until attributed 
 - For bone-accurate hits under rollback, the pose must be reproducible per tick: animation time as rolled-back state,
   `seek()` each tick, read the bone, or bake per-tick shape transforms. No netfox melee example exists.
 
-## 4. Strategies (one choice per row, for the interview)
+## 4. Decisions
+
+- **Who decides a hit:** predicted, then the host confirms (netfox rollback) "for now" (Austin, 2026-10-15).
+
+## 5. Strategies (one choice per row, for the interview)
 
 | Topic | Options |
 |---|---|
