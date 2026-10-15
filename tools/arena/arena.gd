@@ -60,6 +60,7 @@ func _ready() -> void:
 	_nav.bake_navigation_mesh(false)  # a flat floor: instant, and stays right if the floor is edited
 	# The arena keeps the Paladin's owner fixed per round: no hold fading, no takeovers.
 	_avatar.hold.process_mode = Node.PROCESS_MODE_DISABLED
+	_hide_interaction_ray(_avatar)
 	GameState.avatar_changed.connect(_on_avatar_changed)
 	_avatar.died.connect(_on_fighter_died)
 	_park_paladin(true)
@@ -249,6 +250,7 @@ func _spawn_boss(peer_id: int, at: Transform3D) -> void:
 	_bosses.add_child(boss)
 	boss.global_transform = at
 	boss.boss_input.input_enabled = not _panel_open
+	_hide_interaction_ray(boss)
 	if _is_host:
 		boss.died.connect(_on_fighter_died)
 
@@ -312,6 +314,13 @@ func _pin_paladin(at: Transform3D, seconds: float) -> void:
 		get_tree().create_timer(seconds).timeout.connect(func() -> void:
 			if serial == _pin_serial:
 				_avatar.unpin_transform())
+
+func _hide_interaction_ray(body: Node) -> void:
+	## Nothing to interact with here, and with collision shapes shown the camera's
+	## interaction ray draws as a red wedge from the lens: hide it (it still casts).
+	var ray := body.find_child("InteractionRayCast", true, false) as Node3D
+	if ray:
+		ray.visible = false
 
 func _navigation_ready() -> void:
 	## The floor's navmesh is baked on ready; units query the map, which syncs a few physics frames later.
