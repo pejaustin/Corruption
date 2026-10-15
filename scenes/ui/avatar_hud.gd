@@ -24,16 +24,22 @@ func _ready() -> void:
 	if _actor == null:
 		queue_free()
 		return
-	_actor.hp_changed.connect(_on_hp_changed)
-	_health_bar.max_value = _actor.get_max_hp()
-	_health_bar.value = _actor.hp
 	_damage_vignette.bind(_actor)
 	GameState.avatar_changed.connect(_on_avatar_changed)
 	_try_init_ability_cross()
 	_refresh()
 
 func _process(_delta: float) -> void:
-	if visible and _actor.hold:
+	# Checked every frame, not only on GameState.avatar_changed: listeners of that signal run in the
+	# order they connected, and this HUD's can run before whoever hands him over has called possess().
+	if (_actor.controlling_peer_id == multiplayer.get_unique_id()) != visible:
+		_refresh()
+	if not visible:
+		return
+	# Read every frame: the HUD is ready before he sets his HP, and HP restored by rollback emits nothing.
+	_health_bar.max_value = _actor.get_max_hp()
+	_health_bar.value = _actor.hp
+	if _actor.hold:
 		_hold_bar.value = _actor.hold.hold
 
 func _on_avatar_changed(_old: int, _new: int) -> void:
@@ -57,6 +63,3 @@ func _refresh() -> void:
 func _exit_tree() -> void:
 	if _interaction_prompt and is_instance_valid(_interaction_prompt):
 		InteractionUI.deregister_prompt(_interaction_prompt)
-
-func _on_hp_changed(new_hp: int) -> void:
-	_health_bar.value = new_hp

@@ -5,15 +5,16 @@
 [node name="BossBar" type="CanvasLayer"]
 script = ExtResource("1_bar")
 
+; Bottom centre, between the Paladin's health bar (bottom left) and his ability cross (bottom right).
 [node name="Bottom" type="VBoxContainer" parent="."]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -420.0
+offset_left = -330.0
 offset_top = -96.0
-offset_right = 420.0
+offset_right = 330.0
 offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 0
