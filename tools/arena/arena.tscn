@@ -1,13 +1,13 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bomu6i1q5ccrb"]
 
-[ext_resource type="Script" path="res://tools/arena/arena.gd" id="1_arena"]
+[ext_resource type="Script" uid="uid://b7ehmp1xguh6b" path="res://tools/arena/arena.gd" id="1_arena"]
 [ext_resource type="Resource" path="res://tools/arena/presets/paladin_vs_boss_ai.tres" id="2_preset"]
 [ext_resource type="PackedScene" path="res://scenes/actors/boss/boss_actor.tscn" id="3_boss"]
 [ext_resource type="PackedScene" uid="uid://dsnyn2e8y152j" path="res://scenes/actors/player/avatar/avatar_actor.tscn" id="4_avatar"]
-[ext_resource type="Script" path="res://scripts/minion_manager.gd" id="5_mm"]
-[ext_resource type="Script" path="res://scripts/groups/group_manager.gd" id="6_gm"]
+[ext_resource type="Script" uid="uid://bfakdy6t73olt" path="res://scripts/minion_manager.gd" id="5_mm"]
+[ext_resource type="Script" uid="uid://1ea43cnw2ypi" path="res://scripts/groups/group_manager.gd" id="6_gm"]
 [ext_resource type="PackedScene" path="res://scenes/world/places/body.tscn" id="7_body"]
-[ext_resource type="Script" path="res://tools/arena/arena_panel.gd" id="8_panel"]
+[ext_resource type="Script" uid="uid://b5hfk82t5a16g" path="res://tools/arena/arena_panel.gd" id="8_panel"]
 
 [sub_resource type="Environment" id="Environment_arena"]
 background_mode = 1
@@ -15,95 +15,86 @@ background_color = Color(0.32, 0.34, 0.38, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.55, 0.55, 0.6, 1)
 
-; Baked at start (arena.gd): the same settings as the test stage's floor (tests/support/stage_test.gd).
 [sub_resource type="NavigationMesh" id="NavigationMesh_arena"]
 geometry_parsed_geometry_type = 1
-cell_size = 0.25
-cell_height = 0.25
 agent_height = 3.0
 agent_radius = 0.75
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
 size = Vector3(60, 1, 60)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ledge"]
-size = Vector3(4, 1, 4)
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
 albedo_color = Color(0.42, 0.4, 0.36, 1)
-roughness = 1.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 material = SubResource("StandardMaterial3D_floor")
 size = Vector3(60, 1, 60)
 
-[node name="Arena" type="Node3D"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_ledge"]
+size = Vector3(4, 1, 4)
+
+[node name="Arena" type="Node3D" unique_id=2032166254]
 script = ExtResource("1_arena")
 config = ExtResource("2_preset")
 boss_scene = ExtResource("3_boss")
 
-[node name="World" type="Node3D" parent="."]
+[node name="World" type="Node3D" parent="." unique_id=1901275145]
 
-[node name="Sun" type="DirectionalLight3D" parent="World"]
+[node name="Sun" type="DirectionalLight3D" parent="World" unique_id=363828110]
 transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 20, 0)
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="World"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="World" unique_id=261661281]
 environment = SubResource("Environment_arena")
 
-[node name="Nav" type="NavigationRegion3D" parent="World"]
+[node name="Nav" type="NavigationRegion3D" parent="World" unique_id=2007810145]
 navigation_mesh = SubResource("NavigationMesh_arena")
 
-[node name="Ground" type="StaticBody3D" parent="World/Nav"]
+[node name="Ground" type="StaticBody3D" parent="World/Nav" unique_id=1011100108]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Nav/Ground"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Nav/Ground" unique_id=1495394760]
 shape = SubResource("BoxShape3D_floor")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Nav/Ground"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World/Nav/Ground" unique_id=206496712]
 mesh = SubResource("BoxMesh_floor")
 
-; The Paladin lives at this path, as in the game world (BossAI and DebugManager look for World/Avatar).
-[node name="Avatar" parent="World" instance=ExtResource("4_avatar")]
+[node name="Avatar" parent="World" unique_id=730332005 instance=ExtResource("4_avatar")]
 
-[node name="Bosses" type="Node3D" parent="World"]
+[node name="Bosses" type="Node3D" parent="World" unique_id=774402313]
 
-; Where you start, and where your opponent starts (facing each other), inside the AI Paladin's (10 m) and
-; the minions' (MinionType.aggro_radius, 8 m by default) aggro range, so AI opponents engage at once.
-[node name="PlayerSpot" type="Marker3D" parent="World"]
+[node name="PlayerSpot" type="Marker3D" parent="World" unique_id=1449583271]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.5)
 
-[node name="FoeSpot" type="Marker3D" parent="World"]
+[node name="FoeSpot" type="Marker3D" parent="World" unique_id=44930200]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -3.5)
 
-; The Paladin waits here, hidden and unhurt, in rounds without him: a ledge off the floor, out of everyone's aggro range.
-[node name="ParkedSpot" type="Marker3D" parent="World"]
+[node name="ParkedSpot" type="Marker3D" parent="World" unique_id=1316015312]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50)
 
-[node name="ParkedLedge" type="StaticBody3D" parent="World/ParkedSpot"]
+[node name="ParkedLedge" type="StaticBody3D" parent="World/ParkedSpot" unique_id=2088998345]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/ParkedSpot/ParkedLedge"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/ParkedSpot/ParkedLedge" unique_id=2007757062]
 shape = SubResource("BoxShape3D_ledge")
 
-; Shown to whoever drives nothing (before a round, or a peer left watching).
-[node name="OverviewCamera" type="Camera3D" parent="World"]
+[node name="OverviewCamera" type="Camera3D" parent="World" unique_id=1324801602]
 transform = Transform3D(1, 0, 0, 0, 0.774, 0.633, 0, -0.633, 0.774, 0, 18, 22)
 current = true
 
-[node name="Minions" type="Node3D" parent="."]
+[node name="Minions" type="Node3D" parent="." unique_id=1100369068]
 
-[node name="MinionManager" type="Node" parent="." node_paths=PackedStringArray("minions_root")]
+[node name="MinionManager" type="Node" parent="." unique_id=1989864794 node_paths=PackedStringArray("minions_root")]
 script = ExtResource("5_mm")
 minions_root = NodePath("../Minions")
 body_scene = ExtResource("7_body")
 
-[node name="GroupManager" type="Node" parent="."]
+[node name="GroupManager" type="Node" parent="." unique_id=517471515]
 script = ExtResource("6_gm")
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1759686026]
 
-[node name="ArenaPanel" type="PanelContainer" parent="UI"]
+[node name="ArenaPanel" type="PanelContainer" parent="UI" unique_id=186818657]
 unique_name_in_owner = true
 offset_left = 16.0
 offset_top = 16.0
@@ -111,53 +102,53 @@ offset_right = 436.0
 offset_bottom = 560.0
 script = ExtResource("8_panel")
 
-[node name="Margin" type="MarginContainer" parent="UI/ArenaPanel"]
+[node name="Margin" type="MarginContainer" parent="UI/ArenaPanel" unique_id=1723314145]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="UI/ArenaPanel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="UI/ArenaPanel/Margin" unique_id=1070320139]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="UI/ArenaPanel/Margin/VBox"]
+[node name="Title" type="Label" parent="UI/ArenaPanel/Margin/VBox" unique_id=1015507330]
 layout_mode = 2
 text = "Combat test arena"
 
-[node name="Network" type="HBoxContainer" parent="UI/ArenaPanel/Margin/VBox"]
+[node name="Network" type="HBoxContainer" parent="UI/ArenaPanel/Margin/VBox" unique_id=1784198614]
 layout_mode = 2
 
-[node name="OfflineButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network"]
+[node name="OfflineButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network" unique_id=1280089808]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Offline"
 
-[node name="HostButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network"]
+[node name="HostButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network" unique_id=425047837]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Host"
 
-[node name="JoinAddress" type="LineEdit" parent="UI/ArenaPanel/Margin/VBox/Network"]
+[node name="JoinAddress" type="LineEdit" parent="UI/ArenaPanel/Margin/VBox/Network" unique_id=305825430]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "127.0.0.1"
 
-[node name="JoinButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network"]
+[node name="JoinButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Network" unique_id=1421758108]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Join"
 
-[node name="Grid" type="GridContainer" parent="UI/ArenaPanel/Margin/VBox"]
+[node name="Grid" type="GridContainer" parent="UI/ArenaPanel/Margin/VBox" unique_id=2001373728]
 layout_mode = 2
 columns = 2
 
-[node name="RoleLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="RoleLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=553093609]
 layout_mode = 2
 text = "You play"
 
-[node name="RoleOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="RoleOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=374375768]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -168,53 +159,53 @@ popup/item_0/id = 0
 popup/item_1/text = "A boss form"
 popup/item_1/id = 1
 
-[node name="LevelLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="LevelLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=1367634207]
 layout_mode = 2
 text = "Paladin control level"
 
-[node name="LevelSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="LevelSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=1812263450]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
 max_value = 4.0
 value = 4.0
 
-[node name="AttacksLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="AttacksLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=102465295]
 layout_mode = 2
 text = "Boss attacks"
 
-[node name="AttackList" type="ItemList" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="AttackList" type="ItemList" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=849493924]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 select_mode = 1
 
-[node name="BossHpLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="BossHpLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=2005912000]
 layout_mode = 2
 text = "Boss HP"
 
-[node name="BossHpSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="BossHpSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=68718949]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
 max_value = 10000.0
 value = 300.0
 
-[node name="BossDamageLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="BossDamageLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=349774280]
 layout_mode = 2
 text = "Boss damage"
 
-[node name="BossDamageSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="BossDamageSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=433196049]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 1000.0
 value = 20.0
 
-[node name="OpponentLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="OpponentLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=1359592449]
 layout_mode = 2
 text = "Opponent"
 
-[node name="OpponentOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="OpponentOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=758163313]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
@@ -228,48 +219,48 @@ popup/item_2/id = 2
 popup/item_3/text = "Nobody"
 popup/item_3/id = 3
 
-[node name="MinionLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="MinionLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=719547795]
 layout_mode = 2
 text = "Minion type"
 
-[node name="MinionOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="MinionOption" type="OptionButton" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=1803934064]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="CountLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="CountLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=1898893772]
 layout_mode = 2
 text = "How many"
 
-[node name="CountSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid"]
+[node name="CountSpin" type="SpinBox" parent="UI/ArenaPanel/Margin/VBox/Grid" unique_id=1069072695]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
 max_value = 20.0
 value = 1.0
 
-[node name="Buttons" type="HBoxContainer" parent="UI/ArenaPanel/Margin/VBox"]
+[node name="Buttons" type="HBoxContainer" parent="UI/ArenaPanel/Margin/VBox" unique_id=57064607]
 layout_mode = 2
 
-[node name="FightButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Buttons"]
+[node name="FightButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Buttons" unique_id=1446217033]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Fight"
 
-[node name="SpawnButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Buttons"]
+[node name="SpawnButton" type="Button" parent="UI/ArenaPanel/Margin/VBox/Buttons" unique_id=1779032407]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Spawn more minions"
 
-[node name="StatusLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox"]
+[node name="StatusLabel" type="Label" parent="UI/ArenaPanel/Margin/VBox" unique_id=25234758]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="UI/ArenaPanel/Margin/VBox"]
-layout_mode = 2
+[node name="Hint" type="Label" parent="UI/ArenaPanel/Margin/VBox" unique_id=2133746332]
 modulate = Color(1, 1, 1, 0.6)
+layout_mode = 2
 text = "Esc: this panel. Fight restarts the round with these settings."
 autowrap_mode = 3

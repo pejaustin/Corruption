@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="7_hurt"]
 [ext_resource type="Script" path="res://scripts/combat/attack_hitbox.gd" id="16_hitbox"]
 [ext_resource type="PackedScene" path="res://scenes/ui/boss_hud.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/boss_bar.tscn" id="17_bar"]
 [ext_resource type="Script" path="res://scenes/actors/boss/states/boss_idle_state.gd" id="9_idle"]
 [ext_resource type="Script" path="res://scenes/actors/boss/states/boss_move_state.gd" id="10_move"]
 [ext_resource type="Script" path="res://scenes/actors/boss/states/boss_fall_state.gd" id="11_fall"]
@@ -116,6 +117,8 @@ unique_name_in_owner = true
 script = ExtResource("6_ai")
 
 [node name="BossHUD" parent="." index="10" instance=ExtResource("8_hud")]
+
+[node name="BossBar" parent="." index="11" instance=ExtResource("17_bar")]
 
 ; PLACEHOLDER: art — clip mapping (PLACEHOLDERS.md "Boss form model"). The attacks' clips are on their BossAttack data.
 ; Blackhorn has no hit or death clip: stagger never happens to a boss, and he dies in whatever pose he is in.

@@ -14,16 +14,13 @@ func _ready() -> void:
 	if _boss == null:
 		queue_free()
 		return
-	_boss.hp_changed.connect(_on_hp_changed)
-	_health_bar.max_value = _boss.get_max_hp()
-	_health_bar.value = _boss.hp
 	_attack_list.text = _describe_attacks()
 
 func _process(_delta: float) -> void:
 	visible = _boss.controlling_peer_id == multiplayer.get_unique_id()
-
-func _on_hp_changed(new_hp: int) -> void:
-	_health_bar.value = new_hp
+	# Read every frame: this HUD is ready before its boss sets his HP.
+	_health_bar.max_value = _boss.get_max_hp()
+	_health_bar.value = _boss.hp
 
 func _describe_attacks() -> String:
 	var lines: Array[String] = []

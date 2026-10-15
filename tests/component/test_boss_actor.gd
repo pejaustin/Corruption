@@ -167,3 +167,14 @@ func test_an_attack_clip_is_stretched_over_the_whole_attack_within_the_speed_lim
 func test_the_windup_glow_has_a_mesh_and_an_overlay_to_raise() -> void:
 	assert_not_null(boss.body_mesh, "Blackhorn's mesh is found by its path")
 	assert_true(boss.body_mesh.material_overlay is StandardMaterial3D, "the glow overlay is set on it")
+
+func test_the_paladins_driver_sees_the_boss_bar_while_the_boss_is_near() -> void:
+	var bar := boss.get_node(^"BossBar") as BossBar
+	assert_false(bar.should_show(), "nobody drives the Paladin yet")
+	GameState._set_avatar(1)  # this peer (1) drives him; the boss is peer 2's
+	assert_true(bar.should_show())
+	boss.global_position = avatar.global_position + Vector3(0, 0, BossBar.SHOW_RANGE + 5.0)
+	assert_false(bar.should_show(), "too far away")
+	boss.global_position = avatar.global_position
+	boss.hp = 0
+	assert_false(bar.should_show(), "a dead boss shows no bar")
